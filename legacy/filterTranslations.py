@@ -21,9 +21,13 @@ def loadJson(lfile):
         print "Something went wrong in parsing old files. Perhaps incorrect formatting?"
         exit(1)
     
-def loadTranslations(l10repo):
+def loadTranslations(l10repo):    
     with open("fieldsFromOldLayout.json") as outfile:
-        fieldsFromOldLayout = json.load(outfile)["allFields"]
+        oldLayout = json.load(outfile)
+    
+    fieldsFromOldLayout = oldLayout["allFields"]
+    actionsFromOldLayout = oldLayout["actions"]
+
     with open("manualNeededLabels.json") as outfile:
         manualNeededLabels = json.load(outfile)
 
@@ -45,6 +49,27 @@ def loadTranslations(l10repo):
                             newTrans[manualNeededLabels[label]] = oldTrans[label]
                         else:
                             newTrans[manualNeededLabels[label]] = manualNeededLabels[label]
+                    
+                    for a in actionsFromOldLayout:
+                        actions = actionsFromOldLayout[a]
+                        for action in actions:
+                            if not "label" in action:
+                                continue
+                            curLabel = action["label"]
+                            if curLabel in oldTrans:
+                                newTrans[curLabel] = oldTrans[curLabel]
+                            else:
+                                print "Not found translation for " + curLabel
+
+                            if "keys" in action:
+                                curKeys = action["keys"]
+                                for key in curKeys:
+                                    curLabel = curKeys[key]["label"] 
+                                    if curLabel in oldTrans:
+                                        newTrans[key] = oldTrans[curLabel]
+                                    else:
+                                        print "Not found translation for " + curLabel
+
 
                     newTranslations[file] = newTrans
 
