@@ -29,7 +29,7 @@ export default {
       label: 'Add Zone',
       listView: true,
       popup: true,
-      component: () => import('@/views/infra/ZoneWizard.vue')
+      component: () => import('@/views/infra/zone/ZoneWizard.vue')
     },
     {
       api: 'updateZone',

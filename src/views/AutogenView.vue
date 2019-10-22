@@ -116,6 +116,7 @@
           @cancel="closeAction"
           :confirmLoading="currentAction.loading"
           :footer="null"
+          width="700px"
           centered
         >
           <component :is="currentAction.component" :resource="resource" :loading="loading" v-bind="{currentAction}" />
