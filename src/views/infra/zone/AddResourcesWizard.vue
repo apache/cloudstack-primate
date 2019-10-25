@@ -1,225 +1,175 @@
 <template>
-  <a-form id="components-form-demo-validate-other" :form="form" @submit="handleSubmit">
-    <a-form-item label="Name" v-bind="formItemLayout">
-      <a-input
-        v-decorator="['name', { rules: [{ required: true, message: 'Please enter zone name' }] }]"
-      />
-    </a-form-item>
-    <a-form-item v-bind="formItemLayout" label="Select" has-feedback>
-      <a-select
-        v-decorator="[
-          'select',
-          { rules: [{ required: true, message: 'Please select your country!' }] },
-        ]"
-        placeholder="Please select a country"
-      >
-        <a-select-option value="china">
-          China
-        </a-select-option>
-        <a-select-option value="usa">
-          U.S.A
-        </a-select-option>
-      </a-select>
-    </a-form-item>
+  <div style="width: auto;">
+    <a-steps progressDot :current="currentStep" size="small" style="margin-left: 0px; margin-top: 16px;">
+      <a-step v-for="step in steps" :key="step.title" :title="step.title" :style="'width:' + 100 / steps.length + '%;'"/>
+    </a-steps>
+    <static-inputs-form
+      v-if="currentStep === 0"
+      @nextPressed="nextPressed"
+      @backPressed="handleBack"
+      @fieldsChanged="fieldsChanged"
+      :fields="clusterFields"
+      :prefillContent="prefillContent"
+      :description="steps[currentStep].description"
+    />
 
-    <a-form-item v-bind="formItemLayout" label="Select[multiple]">
-      <a-select
-        v-decorator="[
-          'select-multiple',
-          {
-            rules: [
-              { required: true, message: 'Please select your favourite colors!', type: 'array' },
-            ],
-          },
-        ]"
-        mode="multiple"
-        placeholder="Please select favourite colors"
-      >
-        <a-select-option value="red">
-          Red
-        </a-select-option>
-        <a-select-option value="green">
-          Green
-        </a-select-option>
-        <a-select-option value="blue">
-          Blue
-        </a-select-option>
-      </a-select>
-    </a-form-item>
+    <static-inputs-form
+      v-if="currentStep === 1"
+      @nextPressed="nextPressed"
+      @backPressed="handleBack"
+      @fieldsChanged="fieldsChanged"
+      :fields="hostFields"
+      :prefillContent="prefillContent"
+      :description="steps[currentStep].description"
+    />
 
-    <a-form-item v-bind="formItemLayout" label="InputNumber">
-      <a-input-number v-decorator="['input-number', { initialValue: 3 }]" :min="1" :max="10" />
-      <span class="ant-form-text">
-        machines
-      </span>
-    </a-form-item>
-
-    <a-form-item v-bind="formItemLayout" label="Switch">
-      <a-switch v-decorator="['switch', { valuePropName: 'checked' }]" />
-    </a-form-item>
-
-    <a-form-item v-bind="formItemLayout" label="Slider">
-      <a-slider
-        v-decorator="['slider']"
-        :marks="{ 0: 'A', 20: 'B', 40: 'C', 60: 'D', 80: 'E', 100: 'F' }"
-      />
-    </a-form-item>
-
-    <a-form-item v-bind="formItemLayout" label="Radio.Group">
-      <a-radio-group v-decorator="['radio-group']">
-        <a-radio value="a">
-          item 1
-        </a-radio>
-        <a-radio value="b">
-          item 2
-        </a-radio>
-        <a-radio value="c">
-          item 3
-        </a-radio>
-      </a-radio-group>
-    </a-form-item>
-
-    <a-form-item v-bind="formItemLayout" label="Radio.Button">
-      <a-radio-group v-decorator="['radio-button']">
-        <a-radio-button value="a">
-          item 1
-        </a-radio-button>
-        <a-radio-button value="b">
-          item 2
-        </a-radio-button>
-        <a-radio-button value="c">
-          item 3
-        </a-radio-button>
-      </a-radio-group>
-    </a-form-item>
-
-    <a-form-item v-bind="formItemLayout" label="Checkbox.Group">
-      <a-checkbox-group
-        v-decorator="['checkbox-group', { initialValue: ['A', 'B'] }]"
-        style="width: 100%;"
-      >
-        <a-row>
-          <a-col :span="8">
-            <a-checkbox value="A">
-              A
-            </a-checkbox>
-          </a-col>
-          <a-col :span="8">
-            <a-checkbox disabled value="B">
-              B
-            </a-checkbox>
-          </a-col>
-          <a-col :span="8">
-            <a-checkbox value="C">
-              C
-            </a-checkbox>
-          </a-col>
-          <a-col :span="8">
-            <a-checkbox value="D">
-              D
-            </a-checkbox>
-          </a-col>
-          <a-col :span="8">
-            <a-checkbox value="E">
-              E
-            </a-checkbox>
-          </a-col>
-        </a-row>
-      </a-checkbox-group>
-    </a-form-item>
-
-    <a-form-item v-bind="formItemLayout" label="Rate">
-      <a-rate v-decorator="['rate', { initialValue: 3.5 }]" allow-half />
-    </a-form-item>
-
-    <a-form-item
-      v-bind="formItemLayout"
-      label="Upload"
-      extra="longgggggggggggggggggggggggggggggggggg"
-    >
-      <a-upload
-        v-decorator="[
-          'upload',
-          {
-            valuePropName: 'fileList',
-            getValueFromEvent: normFile,
-          },
-        ]"
-        name="logo"
-        action="/upload.do"
-        list-type="picture"
-      >
-        <a-button> <a-icon type="upload" /> Click to upload </a-button>
-      </a-upload>
-    </a-form-item>
-
-    <a-form-item v-bind="formItemLayout" label="Dragger">
-      <div class="dropbox">
-        <a-upload-dragger
-          v-decorator="[
-            'dragger',
-            {
-              valuePropName: 'fileList',
-              getValueFromEvent: normFile,
-            },
-          ]"
-          name="files"
-          action="/upload.do"
-        >
-          <p class="ant-upload-drag-icon">
-            <a-icon type="inbox" />
-          </p>
-          <p class="ant-upload-text">
-            Click or drag file to this area to upload
-          </p>
-          <p class="ant-upload-hint">
-            Support for a single or bulk upload.
-          </p>
-        </a-upload-dragger>
-      </div>
-    </a-form-item>
-
-    <a-form-item :wrapper-col="{ span: 12, offset: 6 }">
-      <a-button type="primary" html-type="submit">
-        Submit
-      </a-button>
-    </a-form-item>
-  </a-form>
+    <static-inputs-form
+      v-if="currentStep === 2"
+      @nextPressed="nextPressed"
+      @backPressed="handleBack"
+      @fieldsChanged="fieldsChanged"
+      :fields="primaryStorageFields"
+      :prefillContent="prefillContent"
+      :description="steps[currentStep].description"
+    />
+  </div>
 </template>
-
 <script>
+import StaticInputsForm from '@views/infra/zone/StaticInputsForm'
+
 export default {
-  data: () => ({
-    formItemLayout: {
-      labelCol: { span: 6 },
-      wrapperCol: { span: 14 }
+  components: {
+    StaticInputsForm
+  },
+  props: {
+    prefillContent: {
+      type: Object,
+      default: function () {
+        return {}
+      }
     }
-  }),
-  beforeCreate () {
-    this.form = this.$form.createForm(this, { name: 'validate_other' })
+  },
+  computed: {
+    zoneType () {
+      return this.prefillContent.zoneType ? this.prefillContent.zoneType.value : null
+    }
+  },
+  data () {
+    return {
+      physicalNetworks: null,
+      currentStep: 0,
+      steps: [
+        {
+          title: 'Cluster',
+          description: 'Each pod must contain one or more clusters, and we will add the first cluster now. A cluster provides a way to group hosts. The hosts in a cluster all have identical hardware, run the same hypervisor, are on the same subnet, and access the same shared storage. Each cluster consists of one or more hosts and one or more primary storage servers.'
+        },
+        {
+          title: 'Host',
+          description: 'Each cluster must contain at least one host (computer) for guest VMs to run on, and we will add the first host now. For a host to function in CloudStack, you must install hypervisor software on the host, assign an IP address to the host, and ensure the host is connected to the CloudStack management server. Give the hosts DNS or IP address, the user name (usually root) and password, and any labels you use to categorize hosts.'
+        },
+        {
+          title: 'Primary Storage',
+          description: 'Each cluster must contain one or more primary storage servers, and we will add the first one now. Primary storage contains the disk volumes for all the VMs running on hosts in the cluster. Use any standards-compliant protocol that is supported by the underlying hypervisor.'
+        }
+        // {
+        //   title: 'Secondary Storage',
+        //   description: 'Each zone must have at least one NFS or secondary storage server, and we will add the first one now. Secondary storage stores VM templates, ISO images, and VM disk volume snapshots. This server must be available to all hosts in the zone. Provide the IP address and exported path.'
+        // }
+      ],
+      clusterFields: [
+        {
+          title: 'Cluster Name',
+          key: 'clusterName',
+          placeHolder: 'Please enter cluster name',
+          required: true
+        }
+      ],
+      hostFields: [
+        {
+          title: 'Host Name',
+          key: 'hostName',
+          placeHolder: 'Please enter host name',
+          required: true
+        },
+        {
+          title: 'User Name',
+          key: 'hostUserName',
+          placeHolder: 'Please enter host username',
+          required: true
+        },
+        {
+          title: 'Host Password',
+          key: 'hostPassword',
+          placeHolder: 'Please enter host password',
+          required: true
+        },
+        {
+          title: 'Tags',
+          key: 'hostTags',
+          placeHolder: 'Please enter host tags',
+          required: false
+        }
+      ],
+      primaryStorageFields: [
+        {
+          title: 'Name',
+          key: 'primaryStorageName',
+          placeHolder: 'Please enter name',
+          required: true
+        },
+        {
+          title: 'Scope',
+          key: 'primaryStorageScope',
+          placeHolder: 'Please enter scope',
+          required: false
+        },
+        {
+          title: 'Protocol',
+          key: 'primaryStorageProtocol',
+          placeHolder: 'Please enter primary sotrage protocol',
+          required: true
+        },
+        {
+          title: 'Server',
+          key: 'primaryStorageServer',
+          placeHolder: 'Please enter primary sotrage server',
+          required: true
+        },
+        {
+          title: 'Path',
+          key: 'primaryStoragePath',
+          placeHolder: 'Please enter primary sotrage path',
+          required: true
+        },
+        {
+          title: 'Storage Tags',
+          key: 'primaryStorageTags',
+          placeHolder: 'Please enter storage tags',
+          required: false
+        }
+      ]
+    }
   },
   methods: {
-    handleSubmit (e) {
-      e.preventDefault()
-      this.form.validateFields((err, values) => {
-        if (!err) {
-          console.log('Received values of form: ', values)
-        }
-      })
-    },
-    normFile (e) {
-      console.log('Upload event:', e)
-      if (Array.isArray(e)) {
-        return e
+    nextPressed () {
+      if (this.currentStep === this.steps.length - 1) {
+        this.$emit('nextPressed')
+      } else {
+        this.currentStep++
       }
-      return e && e.fileList
+    },
+    handleBack (e) {
+      if (this.currentStep === 0) {
+        this.$emit('backPressed')
+      } else {
+        this.currentStep--
+      }
+    },
+    fieldsChanged (changed) {
+      this.$emit('fieldsChanged', changed)
     }
   }
 }
 </script>
-<style>
-#components-form-demo-validate-other .dropbox {
-  height: 180px;
-  line-height: 1.5;
-}
+<style scoped>
 </style>

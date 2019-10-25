@@ -52,14 +52,14 @@
       </a-form-item>
       <a-form-item v-bind="formItemLayout" label="Network Offering" has-feedback v-if="!isAdvancedZone || securityGroupsEnabled">
         <a-select
-          :loading="networkOfferings === null"
+          :loading="availableNetworkOfferings === null"
           v-decorator="[
             'networkOfferingId',
             { rules: [{ message: 'Please select network offering', initialValue: currentNetworkOfferingId }] },
           ]"
           placeholder="Please select network offering"
         >
-          <a-select-option v-for="networkOffering in networkOfferings" :key="networkOffering.id">
+          <a-select-option v-for="networkOffering in availableNetworkOfferings" :key="networkOffering.id">
             {{ networkOffering.name }}
           </a-select-option>
         </a-select>
@@ -76,11 +76,11 @@
       </a-form-item>
       <a-form-item v-bind="formItemLayout" label="Dedicated">
         <a-switch
-          v-decorator="['dedicated', { valuePropName: 'checked' }]"
-          :value="dedicated"
+          v-decorator="['isDedicated', { valuePropName: 'checked' }]"
+          :value="isDedicated"
         />
       </a-form-item>
-      <a-form-item v-bind="formItemLayout" label="Domains" has-feedback v-if="dedicated">
+      <a-form-item v-bind="formItemLayout" label="Domains" has-feedback v-if="isDedicated">
         <a-select
           :loading="domains === null"
           v-decorator="[
@@ -94,7 +94,7 @@
           </a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item label="Account" v-bind="formItemLayout" v-if="dedicated">
+      <a-form-item label="Account" v-bind="formItemLayout" v-if="isDedicated">
         <a-input
           v-decorator="['account', { rules: [{ message: 'Please enter account to dedicate to', intialValue: guestcidraddress }] }]"
         />
@@ -129,7 +129,7 @@ import { api } from '@/api'
 
 export default {
   props: {
-    preFillContent: {
+    prefillContent: {
       type: Object,
       default: function () {
         return {}
@@ -138,16 +138,32 @@ export default {
   },
   data: () => ({
     formItemLayout: {
-      labelCol: { span: 6 },
-      wrapperCol: { span: 14 }
+      labelCol: { span: 8 },
+      wrapperCol: { span: 12 }
     },
     hypervisors: null,
     networkOfferings: null,
-    domains: null
+    domains: null,
+    baremetalProviders: ['BaremetalDhcpProvider', 'BaremetalPxeProvider', 'BaremetalUserdataProvider'],
+    selectedBaremetalProviders: [],
+    availableNetworkOfferings: null
   }),
-  beforeCreate () {
+  created () {
+    this.hypervisors = this.prefillContent.hypervisors ? this.prefillContent.hypervisors : null
+    this.networkOfferings = this.prefillContent.networkOfferings ? this.prefillContent.networkOfferings : null
     this.form = this.$form.createForm(this, {
       onFieldsChange: (_, changedFields) => {
+        if (this.networkOfferings && changedFields.networkOfferingId) {
+          changedFields['networkOfferings'] = this.networkofferings
+          changedFields['networkOfferingSelected'] = this.networkOfferings[changedFields.networkOfferingId.value]
+        }
+        if (this.hypervisors && changedFields.hypervisor) {
+          changedFields['hypervisors'] = this.hypervisors
+          this.availableNetworkOfferings = this.getAvailableNetworkOfferings(changedFields.hypervisor)
+        }
+        if (this.domains && changedFields.domain) {
+          changedFields['domains'] = this.domains
+        }
         this.$emit('fieldsChanged', changedFields)
       }
     })
@@ -162,21 +178,33 @@ export default {
       'internalDns1': this.internalDns1,
       'internalDns2': this.internalDns2,
       'hypervisor': this.currentHypervisor,
-      'networkOfferingId': this.currentNetworkOfferingId
+      'networkOfferingId': this.currentNetworkOfferingId,
+      'networkDomain': this.networkDomain,
+      'guestcidraddress': this.guestcidraddress,
+      'isDedicated': this.isDedicated,
+      'domain': this.domain,
+      'account': this.account,
+      'localstorageenabled': this.localstorageenabled,
+      'localstorageenabledforsystemvm': this.localstorageenabledforsystemvm
     })
+
+    var cForm = this.form
     api('listHypervisors').then(json => {
       this.hypervisors = json.listhypervisorsresponse.hypervisor
-      this.form.setFieldsValue({
+      cForm.setFieldsValue({
         'hypervisor': this.currentHypervisor
       })
     })
 
-    var cForm = this.form
     api('listNetworkOfferings', { 'state': 'Enabled', 'guestiptype': 'Shared' }).then(json => {
       this.networkOfferings = {}
       json.listnetworkofferingsresponse.networkoffering.forEach(offering => {
+        this.setupNetworkOfferingAdditionalFlags(offering)
         this.networkOfferings[offering.id] = offering
       })
+
+      this.availableNetworkOfferings = this.getAvailableNetworkOfferings(this.currentHypervisor)
+
       cForm.setFieldsValue({
         'networkOfferingId': this.currentNetworkOfferingId
       })
@@ -197,74 +225,74 @@ export default {
       return this.zoneType === 'Advanced'
     },
     zoneType () {
-      return this.preFillContent.zoneType ? this.preFillContent.zoneType.value : null
+      return this.prefillContent.zoneType ? this.prefillContent.zoneType.value : null
     },
     securityGroupsEnabled () {
-      return this.isAdvancedZone && (this.preFillContent.securityGroupsEnabled ? this.preFillContent.securityGroupsEnabled.value : false)
+      return this.isAdvancedZone && (this.prefillContent.securityGroupsEnabled ? this.prefillContent.securityGroupsEnabled.value : false)
     },
     name () {
-      return this.preFillContent.name ? this.preFillContent.name.value : null
+      return this.prefillContent.name ? this.prefillContent.name.value : null
     },
     ipv4Dns1 () {
-      return this.preFillContent.ipv4Dns1 ? this.preFillContent.ipv4Dns1.value : null
+      return this.prefillContent.ipv4Dns1 ? this.prefillContent.ipv4Dns1.value : null
     },
     ipv4Dns2 () {
-      return this.preFillContent.ipv4Dns2 ? this.preFillContent.ipv4Dns2.value : null
+      return this.prefillContent.ipv4Dns2 ? this.prefillContent.ipv4Dns2.value : null
     },
     ipv6Dns1 () {
-      return this.preFillContent.ipv6Dns1 ? this.preFillContent.ipv6Dns1.value : null
+      return this.prefillContent.ipv6Dns1 ? this.prefillContent.ipv6Dns1.value : null
     },
     ipv6Dns2 () {
-      return this.preFillContent.ipv6Dns2 ? this.preFillContent.ipv6Dns2.value : null
+      return this.prefillContent.ipv6Dns2 ? this.prefillContent.ipv6Dns2.value : null
     },
     internalDns1 () {
-      return this.preFillContent.internalDns1 ? this.preFillContent.internalDns1.value : null
+      return this.prefillContent.internalDns1 ? this.prefillContent.internalDns1.value : null
     },
     internalDns2 () {
-      return this.preFillContent.internalDns2 ? this.preFillContent.internalDns2.value : null
+      return this.prefillContent.internalDns2 ? this.prefillContent.internalDns2.value : null
     },
     currentHypervisor () {
-      var lastHypervisor = this.preFillContent.hypervisor ? this.preFillContent.hypervisor.value : null
-      if (this.hypervisors !== null && lastHypervisor !== null) {
-        this.hypervisors.forEach(hyp => {
-          if (hyp.name === lastHypervisor) {
-            return hyp
-          }
-        })
+      if (this.prefillContent.hypervisor) {
+        return this.prefillContent.hypervisor.value
+      } else if (this.hypervisors && this.hypervisors.length > 0) {
+        return this.hypervisors[0]
       }
       return null
     },
     currentNetworkOfferingId () {
-      var lastNetworkOfferingId = this.preFillContent.networkOfferingId ? this.preFillContent.networkOfferingId.value : null
-      if (this.networkOfferings !== null && lastNetworkOfferingId !== null && this.networkOfferings[lastNetworkOfferingId]) {
-        return lastNetworkOfferingId
+      var lastNetworkOfferingId = this.prefillContent.networkOfferingId ? this.prefillContent.networkOfferingId.value : null
+      if (this.networkOfferings) {
+        if (lastNetworkOfferingId !== null && this.networkOfferings[lastNetworkOfferingId]) {
+          return lastNetworkOfferingId
+        }
+        return this.availableNetworkOfferings[0].id
       }
       return null
     },
     networkDomain () {
-      return this.preFillContent.networkDomain ? this.preFillContent.networkDomain.value : null
+      return this.prefillContent.networkDomain ? this.prefillContent.networkDomain.value : null
     },
     guestcidraddress () {
-      return this.preFillContent.guestcidraddress ? this.preFillContent.guestcidraddress : '10.1.1.0/24'
+      return this.prefillContent.guestcidraddress ? this.prefillContent.guestcidraddress.value : '10.1.1.0/24'
     },
-    dedicated () {
-      return this.preFillContent.dedicated ? this.preFillContent.dedicated.value : false
+    isDedicated () {
+      return this.prefillContent.isDedicated ? this.prefillContent.isDedicated.value : false
     },
     domain () {
-      var lastDomainId = this.preFillContent.domainId ? this.preFillContent.domainId.value : null
+      var lastDomainId = this.prefillContent.domainId ? this.prefillContent.domainId.value : null
       if (this.domains !== null && lastDomainId !== null && this.domains[lastDomainId]) {
         return lastDomainId
       }
       return null
     },
     account () {
-      return this.preFillContent.account ? this.preFillContent.account.value : null
+      return this.prefillContent.account ? this.prefillContent.account.value : null
     },
     localstorageenabled () {
-      return this.preFillContent.localstorageenabled ? this.preFillContent.localstorageenabled.value : false
+      return this.prefillContent.localstorageenabled ? this.prefillContent.localstorageenabled.value : false
     },
     localstorageenabledforsystemvm () {
-      return this.preFillContent.localstorageenabledforsystemvm ? this.preFillContent.localstorageenabledforsystemvm.value : false
+      return this.prefillContent.localstorageenabledforsystemvm ? this.prefillContent.localstorageenabledforsystemvm.value : false
     }
   },
   methods: {
@@ -278,6 +306,54 @@ export default {
     },
     handleBack (e) {
       this.$emit('backPressed')
+    },
+    setupNetworkOfferingAdditionalFlags (nOffering) {
+      nOffering.havingNetscaler = false
+      nOffering.havingSG = false
+      nOffering.havingEIP = false
+      nOffering.havingELB = false
+
+      nOffering.service.forEach(service => {
+        service.provider.forEach(provider => {
+          if (provider.name === 'Netscaler') {
+            nOffering.havingNetscaler = true
+          } else if (this.baremetalProviders.includes(provider.name)) {
+            this.selectedBaremetalProviders.push(this.name)
+          }
+        })
+
+        if (service.name === 'SecurityGroup') {
+          nOffering.havingSG = true
+        } else if (service.name === 'StaticNat') {
+          service.capability.forEach(capability => {
+            if (capability.name === 'ElasticIp' && capability.value === 'true') {
+              nOffering.havingEIP = true
+            }
+          })
+        } else if (service.name === 'Lb') {
+          service.capability.forEach(capability => {
+            if (capability.name === 'ElasticLb' && capability.value === 'true') {
+              nOffering.havingELB = true
+            }
+          })
+        }
+      })
+    },
+    getAvailableNetworkOfferings (hypervisor) {
+      if (this.networkOfferings) {
+        return Object.values(this.networkOfferings).filter(nOffering => {
+          if ((hypervisor === 'VMware' || (this.isAdvancedZone && this.securityGroupsEnabled)) && (nOffering.havingEIP && nOffering.havingELB)) {
+            return false
+          }
+
+          if (this.isAdvancedZone && this.securityGroupsEnabled && !nOffering.havingSG) {
+            return false
+          }
+
+          return true
+        })
+      }
+      return null
     }
   }
 }

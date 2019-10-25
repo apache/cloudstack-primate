@@ -39,7 +39,7 @@
 <script>
 export default {
   props: {
-    preFillContent: {
+    prefillContent: {
       type: Object,
       default: function () {
         return {}
@@ -74,10 +74,10 @@ export default {
       return this.zoneType === 'Advanced'
     },
     zoneType () {
-      return this.preFillContent.zoneType ? this.preFillContent.zoneType.value : null
+      return this.prefillContent.zoneType ? this.prefillContent.zoneType.value : null
     },
     securityGroupsEnabled () {
-      return this.isAdvancedZone && (this.preFillContent.securityGroupsEnabled ? this.preFillContent.securityGroupsEnabled.value : false)
+      return this.isAdvancedZone && (this.prefillContent.securityGroupsEnabled ? this.prefillContent.securityGroupsEnabled.value : false)
     }
   },
   methods: {

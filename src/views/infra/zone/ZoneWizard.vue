@@ -1,24 +1,38 @@
 <template>
   <div>
-    <a-steps :current="current" labelPlacement="vertical" :onChange="onChange()">
-      <a-step v-for="(item) in steps" :key="item.title" :title="item.title"></a-step>
+    <a-steps :current="currentStep" labelPlacement="vertical" :onChange="onChange()">
+      <a-step v-for="(item, index) in steps" :key="item.title" :title="item.title" @click="stepClicked(index)"></a-step>
     </a-steps>
     <div>
       <zone-wizard-zone-type-step
-        v-if="current === 0"
+        v-if="currentStep === 0"
         @nextPressed="nextPressed"
         @fieldsChanged="onFieldsChanged"
-        :preFillContent="zoneConfig"
+        :prefillContent="zoneConfig"
       />
       <zone-wizard-zone-details-step
-        v-else-if="current === 1"
+        v-else-if="currentStep === 1"
         @nextPressed="nextPressed"
         @backPressed="backPressed"
         @fieldsChanged="onFieldsChanged"
-        :preFillContent="zoneConfig"
+        :prefillContent="zoneConfig"
+      />
+      <zone-wizard-network-setup-step
+        v-else-if="currentStep === 2"
+        @nextPressed="nextPressed"
+        @backPressed="backPressed"
+        @fieldsChanged="onFieldsChanged"
+        :prefillContent="zoneConfig"
+      />
+      <add-resources-wizard
+        v-else-if="currentStep === 3"
+        @nextPressed="nextPressed"
+        @backPressed="backPressed"
+        @fieldsChanged="onFieldsChanged"
+        :prefillContent="zoneConfig"
       />
       <div v-else>
-        {{ steps[current].description }}
+        {{ steps[currentStep].description }}
       </div>
     </div>
   </div>
@@ -26,15 +40,19 @@
 <script>
 import ZoneWizardZoneTypeStep from '@views/infra/zone/ZoneWizardZoneTypeStep'
 import ZoneWizardZoneDetailsStep from '@views/infra/zone/ZoneWizardZoneDetailsStep'
+import ZoneWizardNetworkSetupStep from '@views/infra/zone/ZoneWizardNetworkSetupStep'
+import AddResourcesWizard from '@views/infra/zone/AddResourcesWizard'
 
 export default {
   components: {
     ZoneWizardZoneTypeStep,
-    ZoneWizardZoneDetailsStep
+    ZoneWizardZoneDetailsStep,
+    ZoneWizardNetworkSetupStep,
+    AddResourcesWizard
   },
   data () {
     return {
-      current: 0,
+      currentStep: 0,
       api: 'createZone',
       steps: [
         {
@@ -67,11 +85,14 @@ export default {
     }
   },
   methods: {
+    stepClicked (stepNum) {
+      this.currentStep = stepNum
+    },
     nextPressed () {
-      this.current++
+      this.currentStep++
     },
     backPressed (data) {
-      this.current--
+      this.currentStep--
     },
     done () {
       this.$message.success('Processing complete!')
@@ -80,8 +101,11 @@ export default {
       // console.log('Step changed')
     },
     onFieldsChanged (data) {
-      console.log(data)
+      if (data.zoneType && this.zoneConfig.zoneType && data.zoneType.value !== this.zoneConfig.zoneType.value || data.networkOfferingId && this.zoneConfig.networkOfferingId && data.networkOfferingId.value !== this.zoneConfig.networkOfferingId.value) {
+        this.zoneConfig.physicalNetworks = null
+      }
       this.zoneConfig = { ...this.zoneConfig, ...data }
+      console.log(data)
     }
   }
 }
