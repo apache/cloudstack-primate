@@ -90,22 +90,11 @@
               @select-compute-item="($event) => updateComputeOffering($event)"
             ></compute-selection>
 
-            <a-form-item :label="this.$t('diskOfferingId')">
-              <a-select
-                v-decorator="['diskofferingid', {
-                  rules: [{ required: diskOfferingId.required, message: 'Please select option' }]
-                }]"
-                :placeholder="this.$t('vm.diskoffering.description')"
-              >
-                <a-select-option
-                  v-for="(opt, optIndex) in diskOfferingId.opts"
-                  :key="optIndex"
-                  :value="opt.id"
-                >
-                  {{ opt.name }}
-                </a-select-option>
-              </a-select>
-            </a-form-item>
+            <disk-offering-selection
+              :items="diskOfferingId.opts"
+              :value="diskOffering ? diskOffering.id : ''"
+              @select-disk-offering-item="($event) => updateDiskOffering($event)"
+            ></disk-offering-selection>
 
             <div class="card-footer">
               <!-- ToDo extract as component -->
@@ -140,10 +129,12 @@ import _ from 'lodash'
 import InfoCard from '@/components/view/InfoCard'
 import ComputeSelection from './wizard/ComputeSelection'
 import TemplateSelection from './wizard/TemplateSelection'
+import DiskOfferingSelection from '@views/compute/wizard/DiskOfferingSelection'
 
 export default {
   name: 'Wizard',
   components: {
+    DiskOfferingSelection,
     InfoCard,
     ComputeSelection,
     TemplateSelection
@@ -247,6 +238,11 @@ export default {
     updateComputeOffering (id) {
       this.form.setFieldsValue({
         computeofferingid: id
+      })
+    },
+    updateDiskOffering (id) {
+      this.form.setFieldsValue({
+        diskofferingid: id
       })
     },
     getParam (paramName) {
