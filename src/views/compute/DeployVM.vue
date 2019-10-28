@@ -321,3 +321,12 @@ export default {
     margin: 2rem 0;
   }
 </style>
+
+<style lang="less">
+  .ant-table-selection-column {
+    // Fix for the table header if the row selection use radio buttons instead of checkboxes
+    > div:empty {
+      width: 16px;
+    }
+  }
+</style>
