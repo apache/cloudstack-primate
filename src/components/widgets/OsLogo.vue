@@ -32,7 +32,7 @@ export default {
   props: {
     osId: {
       type: String,
-      required: true
+      default: ''
     },
     osName: {
       type: String,
