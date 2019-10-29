@@ -93,16 +93,9 @@
       </a-col>
       <a-col :md="24" :lg="7" v-if="!isMobile()">
         <info-card :resource="vm" :title="this.$t('yourInstance')" >
-          <div slot="details" v-if="vm.diskofferingid || instanceConfig.rootdisksize">
+          <div slot="details" v-if="diskSize">
             <a-icon type="hdd"></a-icon>
-            <span style="margin-left: 10px">
-              <span v-if="instanceConfig.rootdisksize">{{ instanceConfig.rootdisksize }} GB (Root)</span>
-              <span v-if="instanceConfig.rootdisksize && instanceConfig.diskofferingid"> | </span>
-              <span v-if="instanceConfig.diskofferingid">
-                <span v-if="diskOffering.disksize > 0">{{ diskOffering.disksize }} GB (Data)</span>
-                <span v-else>{{ instanceConfig.size }} GB (Data)</span>
-              </span>
-            </span>
+            <span style="margin-left: 10px">{{ diskSize }}</span>
           </div>
         </info-card>
       </a-col>
@@ -174,6 +167,20 @@ export default {
     },
     zoneId () {
       return this.getParam('zoneid')
+    },
+    diskSize () {
+      const rootDiskSize = _.get(this.instanceConfig, 'rootdisksize', 0)
+      const customDiskSize = _.get(this.instanceConfig, 'size', 0)
+      const diskOfferingDiskSize = _.get(this.diskOffering, 'disksize', 0)
+      const dataDiskSize = diskOfferingDiskSize > 0 ? diskOfferingDiskSize : customDiskSize
+      const size = []
+      if (rootDiskSize > 0) {
+        size.push(`${rootDiskSize} GB (Root)`)
+      }
+      if (dataDiskSize > 0) {
+        size.push(`${dataDiskSize} GB (Data)`)
+      }
+      return size.join(' | ')
     }
   },
   watch: {
