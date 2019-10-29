@@ -25,7 +25,7 @@
     size="middle"
   >
     <span slot="cpuTitle"><a-icon type="appstore" /> {{ $t('cpu') }}</span>
-    <span slot="ramTitle"><a-icon type="bulb" /> {{ $t('ram') }}</span>
+    <span slot="ramTitle"><a-icon type="bulb" /> {{ $t('memory') }}</span>
   </a-table>
 </template>
 

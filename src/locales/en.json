@@ -943,6 +943,5 @@
 "yourInstance": "Your instance",
 "newInstance": "New instance",
 "cpu": "CPU",
-"ram": "RAM",
 "minMaxIops": "Min IOPS / Max IOPS"
 }

@@ -91,7 +91,7 @@
           </a-form>
         </a-card>
       </a-col>
-      <a-col :md="24" :lg="7">
+      <a-col :md="24" :lg="7" v-if="!isMobile()">
         <info-card :resource="vm" :title="this.$t('yourInstance')" >
           <div slot="details" v-if="vm.diskofferingid || instanceConfig.rootdisksize">
             <a-icon type="hdd"></a-icon>
@@ -115,6 +115,7 @@ import Vue from 'vue'
 import { api } from '@/api'
 import store from '@/store'
 import _ from 'lodash'
+import { mixin, mixinDevice } from '@/utils/mixin.js'
 
 import InfoCard from '@/components/view/InfoCard'
 import ComputeSelection from './wizard/ComputeSelection'
@@ -136,6 +137,7 @@ export default {
       type: Boolean
     }
   },
+  mixins: [mixin, mixinDevice],
   data () {
     return {
       vm: {},
