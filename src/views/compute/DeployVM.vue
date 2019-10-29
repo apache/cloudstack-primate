@@ -57,27 +57,9 @@
                 <template-selection
                   :templates="templateId.opts"
                 ></template-selection>
-                <a-form-item :label="this.$t('diskSize')">
-                  <a-row>
-                    <a-col :span="10">
-                      <a-slider
-                        :min="0"
-                        :max="1024"
-                        v-decorator="['rootdisksize']"
-                      />
-                    </a-col>
-                    <a-col :span="4">
-                      <a-input-number
-                        v-decorator="['rootdisksize', {
-                          rules: [{ required: false, message: 'Please enter a number' }]
-                        }]"
-                        :placeholder="this.$t('vm.rootdisksize')"
-                        :formatter="value => `${value} GB`"
-                        :parser="value => value.replace(' GB', '')"
-                      />
-                    </a-col>
-                  </a-row>
-                </a-form-item>
+                <disk-size-selection
+                  input-decorator="rootdisksize"
+                ></disk-size-selection>
               </a-collapse-panel>
               <a-collapse-panel :header="this.$t('ISOs')" key="isos">
                 <!-- ToDo: Add iso selection -->
@@ -96,6 +78,11 @@
               @select-disk-offering-item="($event) => updateDiskOffering($event)"
             ></disk-offering-selection>
 
+            <disk-size-selection
+              v-if="diskOffering && diskOffering.iscustomized"
+              input-decorator="size"
+            ></disk-size-selection>
+
             <div class="card-footer">
               <!-- ToDo extract as component -->
               <a-button @click="() => this.$router.back()">{{ this.$t('cancel') }}</a-button>
@@ -111,7 +98,10 @@
             <span style="margin-left: 10px">
               <span v-if="instanceConfig.rootdisksize">{{ instanceConfig.rootdisksize }} GB (Root)</span>
               <span v-if="instanceConfig.rootdisksize && instanceConfig.diskofferingid"> | </span>
-              <span v-if="instanceConfig.diskofferingid">{{ diskOffering.disksize }} GB (Data)</span>
+              <span v-if="instanceConfig.diskofferingid">
+                <span v-if="diskOffering.disksize > 0">{{ diskOffering.disksize }} GB (Data)</span>
+                <span v-else>{{ instanceConfig.size }} GB (Data)</span>
+              </span>
             </span>
           </div>
         </info-card>
@@ -130,10 +120,12 @@ import InfoCard from '@/components/view/InfoCard'
 import ComputeSelection from './wizard/ComputeSelection'
 import TemplateSelection from './wizard/TemplateSelection'
 import DiskOfferingSelection from '@views/compute/wizard/DiskOfferingSelection'
+import DiskSizeSelection from '@views/compute/wizard/DiskSizeSelection'
 
 export default {
   name: 'Wizard',
   components: {
+    DiskSizeSelection,
     DiskOfferingSelection,
     InfoCard,
     ComputeSelection,
@@ -224,6 +216,7 @@ export default {
       }
     })
     this.form.getFieldDecorator('computeofferingid', { initialValue: [], preserve: true })
+    this.form.getFieldDecorator('diskofferingid', { initialValue: [], preserve: true })
   },
   created () {
     this.params = store.getters.apis[this.$route.name]['params']
@@ -303,6 +296,7 @@ export default {
 <style lang="less" scoped>
   .card-footer {
     text-align: right;
+    margin-top: 2rem;
 
     button + button {
       margin-left: 8px;

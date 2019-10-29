@@ -26,6 +26,10 @@
   >
     <span slot="diskSizeTitle"><a-icon type="hdd" /> {{ $t('disksize') }}</span>
     <span slot="iopsTitle"><a-icon type="rocket" /> {{ $t('minMaxIops') }}</span>
+    <template slot="diskSize" slot-scope="text, record">
+      <div v-if="record.isCustomized">{{ $t('isCustomized') }}</div>
+      <div v-else>{{ record.diskSize }} GB</div>
+    </template>
   </a-table>
 </template>
 
@@ -52,7 +56,8 @@ export default {
         {
           dataIndex: 'diskSize',
           slots: { title: 'diskSizeTitle' },
-          width: '30%'
+          width: '30%',
+          scopedSlots: { customRender: 'diskSize' }
         },
         {
           dataIndex: 'iops',
@@ -69,8 +74,9 @@ export default {
         return {
           key: item.id,
           name: item.name,
-          diskSize: item.disksize > 0 ? `${item.disksize} GB` : this.$t('isCustomized'),
-          iops: `${item.miniops} – ${item.maxiops}`
+          diskSize: item.disksize,
+          iops: `${item.miniops} – ${item.maxiops}`,
+          isCustomized: item.iscustomized
         }
       })
     },
@@ -94,6 +100,8 @@ export default {
 }
 </script>
 
-<style scoped>
-
+<style lang="less" scoped>
+  .ant-table-wrapper {
+    margin: 2rem 0;
+  }
 </style>
