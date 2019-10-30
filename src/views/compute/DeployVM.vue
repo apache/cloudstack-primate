@@ -61,8 +61,11 @@
                   input-decorator="rootdisksize"
                 ></disk-size-selection>
               </a-collapse-panel>
+
               <a-collapse-panel :header="this.$t('ISOs')" key="isos">
-                <!-- ToDo: Add iso selection -->
+                <iso-selection
+                  :isos="isos"
+                ></iso-selection>
               </a-collapse-panel>
             </a-collapse>
 
@@ -115,10 +118,12 @@ import ComputeSelection from './wizard/ComputeSelection'
 import TemplateSelection from './wizard/TemplateSelection'
 import DiskOfferingSelection from '@views/compute/wizard/DiskOfferingSelection'
 import DiskSizeSelection from '@views/compute/wizard/DiskSizeSelection'
+import IsoSelection from '@views/compute/wizard/IsoSelection'
 
 export default {
   name: 'Wizard',
   components: {
+    IsoSelection,
     DiskSizeSelection,
     DiskOfferingSelection,
     InfoCard,
@@ -147,7 +152,8 @@ export default {
       template: {},
       serviceOffering: {},
       diskOffering: {},
-      zone: {}
+      zone: {},
+      isos: []
     }
   },
   computed: {
@@ -226,12 +232,14 @@ export default {
     })
     this.form.getFieldDecorator('computeofferingid', { initialValue: [], preserve: true })
     this.form.getFieldDecorator('diskofferingid', { initialValue: [], preserve: true })
+    this.form.getFieldDecorator('isoid', { initialValue: [], preserve: true })
   },
   created () {
     this.params = store.getters.apis[this.$route.name]['params']
     this.filteredParams.forEach((param) => {
       this.fetchOptions(param)
     })
+    this.fetchIsos()
     Vue.nextTick().then(() => {
       this.instanceConfig = this.form.getFieldsValue() // ToDo: maybe initialize with some other defaults
     })
@@ -296,6 +304,18 @@ export default {
       }).catch(function (error) {
         console.log(error.stack)
         param.loading = false
+      })
+    },
+    fetchIsos () {
+      api('listIsos', {
+        // zoneid: '', // ToDo: filter by selected zone
+        isofilter: 'community', // ToDo: Repeat for all other filter
+        bootable: true
+      }).then((response) => {
+        this.isos = _.get(response, 'listisosresponse.iso', [])
+      }).catch((reason) => {
+        // ToDo: Handle errors
+        console.log(reason)
       })
     }
   }
