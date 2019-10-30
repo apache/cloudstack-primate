@@ -38,6 +38,7 @@
                   rules: [{ required: zoneId.required, message: 'Please select option' }]
                 }]"
                 :placeholder="this.$t('vm.zone.description')"
+                @change="onSelectZoneId"
               >
                 <a-select-option
                   v-for="(opt, optIndex) in zoneId.opts"
@@ -52,6 +53,7 @@
             <a-collapse
               :accordion="true"
               defaultActiveKey="templates"
+              @change="onTemplatesIsosCollapseChange"
             >
               <a-collapse-panel :header="this.$t('Templates')" key="templates">
                 <template-selection
@@ -239,7 +241,6 @@ export default {
     this.filteredParams.forEach((param) => {
       this.fetchOptions(param)
     })
-    this.fetchIsos()
     Vue.nextTick().then(() => {
       this.instanceConfig = this.form.getFieldsValue() // ToDo: maybe initialize with some other defaults
     })
@@ -308,7 +309,7 @@ export default {
     },
     fetchIsos () {
       api('listIsos', {
-        // zoneid: '', // ToDo: filter by selected zone
+        zoneid: _.get(this.zone, 'id'),
         isofilter: 'community', // ToDo: Repeat for all other filter
         bootable: true
       }).then((response) => {
@@ -317,6 +318,17 @@ export default {
         // ToDo: Handle errors
         console.log(reason)
       })
+    },
+    onTemplatesIsosCollapseChange (key) {
+      if (key === 'isos' && this.isos.length === 0) {
+        this.fetchIsos()
+      }
+    },
+    onSelectZoneId () {
+      if (this.isos.length === 0) {
+        return
+      }
+      this.fetchIsos()
     }
   }
 }

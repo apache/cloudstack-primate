@@ -33,7 +33,16 @@
           <a-radio
             class="radio-group__radio"
             :value="os.id"
-          >{{ os.displaytext }}
+          >
+            {{ os.displaytext }}&nbsp;
+            <a-tag
+              :visible="os.ispublic && !os.isfeatured"
+              color="blue"
+            >{{ $t('community') }}</a-tag>
+            <a-tag
+              :visible="os.isfeatured"
+              color="green"
+            >{{ $t('isFeatured') }}</a-tag>
           </a-radio>
         </a-radio-group>
       </a-form-item>
