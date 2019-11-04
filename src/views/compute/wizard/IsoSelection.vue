@@ -38,15 +38,19 @@
             <a-tag
               :visible="os.ispublic && !os.isfeatured"
               color="blue"
-            >{{ $t('community') }}</a-tag>
+            >{{ $t('isPublic') }}</a-tag>
             <a-tag
               :visible="os.isfeatured"
               color="green"
             >{{ $t('isFeatured') }}</a-tag>
             <a-tag
-              :visible="!os.ispublic"
+              :visible="isSelf(os)"
               color="orange"
-            >{{ $t('self') }}</a-tag>
+            >{{ $t('isSelf') }}</a-tag>
+            <a-tag
+              :visible="isShared(os)"
+              color="cyan"
+            >{{ $t('isShared') }}</a-tag>
           </a-radio>
         </a-radio-group>
       </a-form-item>
@@ -55,6 +59,7 @@
 </template>
 
 <script>
+import store from '@/store'
 import OsLogo from '@/components/widgets/OsLogo'
 import { getNormalizedOsName } from '@/utils/icons'
 
@@ -79,6 +84,14 @@ export default {
         }
       })
       return mappedIsos
+    }
+  },
+  methods: {
+    isShared (iso) {
+      return !iso.ispublic && (iso.account !== store.getters.userInfo.account)
+    },
+    isSelf (iso) {
+      return !iso.ispublic && (iso.account === store.getters.userInfo.account)
     }
   }
 }

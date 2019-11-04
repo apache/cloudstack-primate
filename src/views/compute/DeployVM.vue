@@ -157,8 +157,7 @@ export default {
       zone: {},
       isos: [],
       isoFilter: [
-        'community',
-        'featured',
+        'executable',
         'selfexecutable',
         'sharedexecutable'
       ]
