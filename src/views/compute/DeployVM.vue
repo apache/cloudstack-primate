@@ -56,18 +56,20 @@
               @change="onTemplatesIsosCollapseChange"
             >
               <a-collapse-panel :header="this.$t('Templates')" key="templates">
-                <template-selection
-                  :templates="templateId.opts"
-                ></template-selection>
+                <template-iso-selection
+                  input-decorator="templateid"
+                  :items="templateId.opts"
+                ></template-iso-selection>
                 <disk-size-selection
                   input-decorator="rootdisksize"
                 ></disk-size-selection>
               </a-collapse-panel>
 
               <a-collapse-panel :header="this.$t('ISOs')" key="isos">
-                <iso-selection
-                  :isos="isos"
-                ></iso-selection>
+                <template-iso-selection
+                  input-decorator="isoid"
+                  :items="isos"
+                ></template-iso-selection>
               </a-collapse-panel>
             </a-collapse>
 
@@ -117,20 +119,18 @@ import { mixin, mixinDevice } from '@/utils/mixin.js'
 
 import InfoCard from '@/components/view/InfoCard'
 import ComputeSelection from './wizard/ComputeSelection'
-import TemplateSelection from './wizard/TemplateSelection'
 import DiskOfferingSelection from '@views/compute/wizard/DiskOfferingSelection'
 import DiskSizeSelection from '@views/compute/wizard/DiskSizeSelection'
-import IsoSelection from '@views/compute/wizard/IsoSelection'
+import TemplateIsoSelection from '@views/compute/wizard/TemplateIsoSelection'
 
 export default {
   name: 'Wizard',
   components: {
-    IsoSelection,
+    TemplateIsoSelection,
     DiskSizeSelection,
     DiskOfferingSelection,
     InfoCard,
-    ComputeSelection,
-    TemplateSelection
+    ComputeSelection
   },
   props: {
     visible: {
@@ -326,6 +326,7 @@ export default {
       })
     },
     fetchAllIsos () {
+      this.isos = []
       this.isoFilter.forEach((filter) => {
         this.fetchIsos(filter)
       })

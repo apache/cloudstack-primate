@@ -26,14 +26,31 @@
           v-for="(os, osIndex) in osList"
           :key="osIndex"
           class="radio-group"
-          v-decorator="['templateid', {
+          v-decorator="[inputDecorator, {
             rules: [{ required: true, message: 'Please select option' }]
           }]"
         >
           <a-radio
             class="radio-group__radio"
             :value="os.id"
-          >{{ os.displaytext }}
+          >
+            {{ os.displaytext }}&nbsp;
+            <a-tag
+              :visible="os.ispublic && !os.isfeatured"
+              color="blue"
+            >{{ $t('isPublic') }}</a-tag>
+            <a-tag
+              :visible="os.isfeatured"
+              color="green"
+            >{{ $t('isFeatured') }}</a-tag>
+            <a-tag
+              :visible="isSelf(os)"
+              color="orange"
+            >{{ $t('isSelf') }}</a-tag>
+            <a-tag
+              :visible="isShared(os)"
+              color="cyan"
+            >{{ $t('isShared') }}</a-tag>
           </a-radio>
         </a-radio-group>
       </a-form-item>
@@ -42,33 +59,43 @@
 </template>
 
 <script>
+import store from '@/store'
 import OsLogo from '@/components/widgets/OsLogo'
 import { getNormalizedOsName } from '@/utils/icons'
 
 export default {
-  name: 'TemplateSelection',
+  name: 'TemplateIsoSelection',
   components: { OsLogo },
   props: {
-    templates: {
+    items: {
       type: Array,
       default: () => []
+    },
+    inputDecorator: {
+      type: String,
+      default: ''
     }
-  },
-  data () {
-    return {}
   },
   computed: {
     osTypes () {
-      const mappedTemplates = {}
-      this.templates.forEach((os) => {
+      const mappedItems = {}
+      this.items.forEach((os) => {
         const osName = getNormalizedOsName(os.ostypename)
-        if (Array.isArray(mappedTemplates[osName])) {
-          mappedTemplates[osName].push(os)
+        if (Array.isArray(mappedItems[osName])) {
+          mappedItems[osName].push(os)
         } else {
-          mappedTemplates[osName] = [os]
+          mappedItems[osName] = [os]
         }
       })
-      return mappedTemplates
+      return mappedItems
+    }
+  },
+  methods: {
+    isShared (item) {
+      return !item.ispublic && (item.account !== store.getters.userInfo.account)
+    },
+    isSelf (item) {
+      return !item.ispublic && (item.account === store.getters.userInfo.account)
     }
   }
 }
