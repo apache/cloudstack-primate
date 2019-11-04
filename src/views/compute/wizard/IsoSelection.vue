@@ -43,6 +43,10 @@
               :visible="os.isfeatured"
               color="green"
             >{{ $t('isFeatured') }}</a-tag>
+            <a-tag
+              :visible="!os.ispublic"
+              color="orange"
+            >{{ $t('self') }}</a-tag>
           </a-radio>
         </a-radio-group>
       </a-form-item>

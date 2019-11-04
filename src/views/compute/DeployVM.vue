@@ -155,7 +155,13 @@ export default {
       serviceOffering: {},
       diskOffering: {},
       zone: {},
-      isos: []
+      isos: [],
+      isoFilter: [
+        'community',
+        'featured',
+        'selfexecutable',
+        'sharedexecutable'
+      ]
     }
   },
   computed: {
@@ -307,28 +313,34 @@ export default {
         param.loading = false
       })
     },
-    fetchIsos () {
+    fetchIsos (isoFilter) {
       api('listIsos', {
         zoneid: _.get(this.zone, 'id'),
-        isofilter: 'community', // ToDo: Repeat for all other filter
+        isofilter: isoFilter,
         bootable: true
       }).then((response) => {
-        this.isos = _.get(response, 'listisosresponse.iso', [])
+        const concatedIsos = _.concat(this.isos, _.get(response, 'listisosresponse.iso', []))
+        this.isos = _.uniqWith(concatedIsos, _.isEqual)
       }).catch((reason) => {
         // ToDo: Handle errors
         console.log(reason)
       })
     },
+    fetchAllIsos () {
+      this.isoFilter.forEach((filter) => {
+        this.fetchIsos(filter)
+      })
+    },
     onTemplatesIsosCollapseChange (key) {
       if (key === 'isos' && this.isos.length === 0) {
-        this.fetchIsos()
+        this.fetchAllIsos()
       }
     },
     onSelectZoneId () {
       if (this.isos.length === 0) {
         return
       }
-      this.fetchIsos()
+      this.fetchAllIsos()
     }
   }
 }
