@@ -152,6 +152,7 @@ export default {
       ],
       instanceConfig: [],
       template: {},
+      iso: {},
       serviceOffering: {},
       diskOffering: {},
       zone: {},
@@ -199,6 +200,7 @@ export default {
   watch: {
     instanceConfig (instanceConfig) {
       this.template = this.templateId.opts.find((option) => option.id === instanceConfig.templateid)
+      this.iso = this.isos.find((option) => option.id === instanceConfig.isoid)
       this.serviceOffering = this.serviceOfferingId.opts.find((option) => option.id === instanceConfig.computeofferingid)
       this.diskOffering = this.diskOfferingId.opts.find((option) => option.id === instanceConfig.diskofferingid)
       this.zone = this.zoneId.opts.find((option) => option.id === instanceConfig.zoneid)
@@ -213,6 +215,13 @@ export default {
         this.vm['templatename'] = this.template.displaytext
         this.vm['ostypeid'] = this.template.ostypeid
         this.vm['ostypename'] = this.template.ostypename
+      }
+
+      if (this.iso) {
+        this.vm['templateid'] = this.iso.id
+        this.vm['templatename'] = this.iso.displaytext
+        this.vm['ostypeid'] = this.iso.ostypeid
+        this.vm['ostypename'] = this.iso.ostypename
       }
 
       if (this.serviceOffering) {
