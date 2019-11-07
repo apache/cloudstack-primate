@@ -286,6 +286,7 @@ export default {
       this.actions = []
       this.columns = []
       this.columnKeys = []
+      this.items = []
       var params = { listall: true }
       if (Object.keys(this.$route.query).length > 0) {
         Object.assign(params, this.$route.query)

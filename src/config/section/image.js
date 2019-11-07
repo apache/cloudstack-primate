@@ -25,8 +25,8 @@ export default {
       title: 'Templates',
       icon: 'save',
       permission: [ 'listTemplates' ],
-      resourceType: 'Template',
       params: { 'templatefilter': 'executable' },
+      resourceType: 'Template',
       columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain'],
       details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'directdownload', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created'],
       tabs: [{
@@ -48,7 +48,7 @@ export default {
           args: ['url', 'name', 'displaytext', 'directdownload', 'zoneids', 'hypervisor', 'format', 'ostypeid', 'checksum', 'isextractable', 'passwordenabled', 'sshkeyenabled', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'isrouting', 'requireshvm']
         },
         {
-          api: 'getUploadParamsForVolume',
+          api: 'getUploadParamsForTemplate',
           icon: 'cloud-upload',
           label: 'Upload Local Template',
           listView: true,
@@ -98,6 +98,7 @@ export default {
       title: 'ISOs',
       icon: 'usb',
       permission: [ 'listIsos' ],
+      params: { 'isofilter': 'executable' },
       resourceType: 'ISO',
       columns: ['name', 'ostypename', 'account', 'domain'],
       details: ['name', 'id', 'displaytext', 'checksum', 'ostypename', 'size', 'bootable', 'isready', 'directdownload', 'isextractable', 'ispublic', 'isfeatured', 'crosszones', 'account', 'domain', 'created'],
