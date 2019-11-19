@@ -61,6 +61,8 @@
     "vuex": "^3.1.2"
   },
   "devDependencies": {
+    "@vue/cli": "^4.0.5",
+    "webpack": "^4.41.2",
     "@vue/cli-plugin-babel": "^4.0.5",
     "@vue/cli-plugin-eslint": "^4.0.5",
     "@vue/cli-plugin-unit-jest": "^4.0.5",
