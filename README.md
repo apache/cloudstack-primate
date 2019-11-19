@@ -50,6 +50,39 @@ Fix issues and vulnerabilities:
 
     npm audit
 
+## Production
+
+Fetch dependencies and build:
+
+    npm install
+    npm run build
+
+This creates a static webpack application in `dist/`, which can then be served
+from any web server.
+
+Note that the API server is accessed through the path `/client`, which needs
+be forwarded to an actual CloudStack instance.
+
+A simple way to serve Primate with nginx can be implemented with the following
+nginx configuration (to be put into /etc/nginx/conf.d/default.conf or similar):
+
+```nginx
+server {
+    listen       80;
+    server_name  localhost;
+    location / {
+        # /src/primate/dist contains the built Primate webpack
+        root   /src/primate/dist;
+        index  index.html;
+    }
+    location /client/ {
+        # http://127.0.0.1:800 should be replaced your CloudStack management
+        # server's actual URI
+        proxy_pass   http://127.0.0.1:8000;
+    }
+}
+```
+
 ## Documentation
 
 ### Learning Resources
