@@ -15,13 +15,11 @@ Install node: (CentOS/Fedora)
     curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
     sudo yum install nodejs
 
-Install tools and dependencies:
+For development, install tools and dependencies system-wide:
 
     sudo npm install -g @vue/cli webpack eslint
     sudo npm install -g npm@next
     sudo npm install -g npm-check-updates
-    ncu -u # optional: upgrade dependencies
-    npm install
 
 ## Development
 
@@ -38,11 +36,7 @@ Build and run:
     or
     npm run serve
 
-Production Build:
-
-    npm run build
-
-Upgrade dependencies:
+Upgrade dependencies to the latest versions:
 
     ncu -u
 
