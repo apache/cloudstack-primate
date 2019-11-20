@@ -58,13 +58,18 @@ Fetch dependencies and build:
     npm run build
 
 This creates a static webpack application in `dist/`, which can then be served
-from any web server.
+from any web server or CloudStack management server (jetty).
 
-Note that the API server is accessed through the path `/client`, which needs
-be forwarded to an actual CloudStack instance.
+To use CloudStack management server (jetty), you may copy the built Primate build
+to a new/existing webapp directory on the management server host. If the webapp
+directory is changed, please change the `webapp.dir` in the
+`/etc/cloudstack/management/server.properties` and restart the management server host.
 
-A simple way to serve Primate with nginx can be implemented with the following
-nginx configuration (to be put into /etc/nginx/conf.d/default.conf or similar):
+To use a separate webserver, note that the API server is accessed through the path
+`/client`, which needs be forwarded to an actual CloudStack instance.
+
+For example, a simple way to serve Primate with nginx can be implemented with the
+following nginx configuration (to be put into /etc/nginx/conf.d/default.conf or similar):
 
 ```nginx
 server {
