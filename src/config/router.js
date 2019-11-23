@@ -36,6 +36,7 @@ export function generateRouterMap (section) {
   var map = {
     name: section.name,
     path: '/' + section.name,
+    hidden: section.hidden,
     meta: { title: section.title, keepAlive: true, icon: section.icon },
     component: RouteView
   }
