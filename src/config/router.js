@@ -24,7 +24,8 @@ import storage from '@/config/section/storage'
 import network from '@/config/section/network'
 import image from '@/config/section/image'
 import project from '@/config/section/project'
-import monitor from '@/config/section/monitor'
+import event from '@/config/section/event'
+import alert from '@/config/section/alert'
 import iam from '@/config/section/iam'
 import infra from '@/config/section/infra'
 import offering from '@/config/section/offering'
@@ -167,7 +168,8 @@ export const asyncRouterMap = [
       generateRouterMap(network),
       generateRouterMap(image),
       generateRouterMap(project),
-      generateRouterMap(monitor),
+      generateRouterMap(event),
+      generateRouterMap(alert),
       generateRouterMap(iam),
       generateRouterMap(infra),
       generateRouterMap(offering),
