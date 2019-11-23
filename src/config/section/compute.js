@@ -55,7 +55,7 @@ export default {
         component: () => import('@/views/compute/InstanceHardware.vue')
       }, {
         name: 'settings',
-        component: () => import('@/views/compute/InstanceSettings.vue')
+        component: () => import('@/components/view/DetailSettings')
       }],
       actions: [
         {
