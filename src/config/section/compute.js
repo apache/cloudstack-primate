@@ -232,6 +232,42 @@ export default {
     },
     */
     {
+      name: 'vmgroup',
+      title: 'Instance Groups',
+      icon: 'gold',
+      permission: ['listInstanceGroups'],
+      columns: ['name', 'account', 'domain'],
+      details: ['name', 'id', 'account', 'domain', 'created'],
+      related: [{
+        name: 'vm',
+        title: 'Instances',
+        param: 'groupid'
+      }],
+      actions: [
+        {
+          api: 'createInstanceGroup',
+          icon: 'plus',
+          label: 'New Instance Group',
+          listView: true,
+          args: ['name']
+        },
+        {
+          api: 'updateInstanceGroup',
+          icon: 'edit',
+          label: 'Update Instance Group',
+          dataView: true,
+          args: ['name']
+        },
+        {
+          api: 'deleteInstanceGroup',
+          icon: 'delete',
+          label: 'Delete Instance Group',
+          dataView: true,
+          args: ['id']
+        }
+      ]
+    },
+    {
       name: 'ssh',
       title: 'SSH Key Pairs',
       icon: 'key',
