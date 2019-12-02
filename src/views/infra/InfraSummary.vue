@@ -41,11 +41,102 @@
         </a-button>
         <a-modal
           :title="$t('SSL Certificate')"
-          v-model="sslFormVisible"
-          @ok="handle">
-          <p>Some contents...</p>
-          <p>Some contents...</p>
-          <p>Some contents...</p>
+          :visible="sslFormVisible"
+          :footer="null"
+          @cancel="sslModalClose">
+          <p>
+            Please submit a new X.509 compliant SSL certificate chain to be updated to each console proxy and secondary storage virtual instance:
+          </p>
+
+          <a-form @submit.prevent="handleSslFormSubmit" ref="sslForm" :form="form">
+            <a-form-item label="Root certificate" :required="true">
+              <a-textarea
+                id="rootCert"
+                rows="2"
+                placeholder="Root certificate"
+                :autoFocus="true"
+                name="rootCert"
+                v-decorator="[
+                  'root',
+                  {rules: [{ required: true, message: 'Required' }], validateTrigger:'change'}
+                ]"
+              ></a-textarea>
+            </a-form-item>
+
+            <transition-group name="fadeInUp" tag="div">
+              <a-form-item
+                v-for="(item, index) in intermediateCertificates"
+                :key="`key-${index}`"
+                class="intermediate-certificate"
+                :label="`Intermediate certificate ${index + 1}`">
+                <a-textarea
+                  :id="`intermediateCert${index}`"
+                  rows="2"
+                  :placeholder="`Intermediate certificate ${index + 1}`"
+                  :name="`intermediateCert${index}`"
+                  v-decorator="[
+                    `intermediate${index + 1}`,
+                    {validateTrigger:'change'}
+                  ]"
+                ></a-textarea>
+              </a-form-item>
+            </transition-group>
+
+            <a-form-item>
+              <a-button @click="addIntermediateCert">
+                <a-icon type="plus-circle" />
+                Add intermediate certificate
+              </a-button>
+            </a-form-item>
+
+            <a-form-item label="Server certificate" :required="true">
+              <a-textarea
+                id="serverCert"
+                rows="2"
+                placeholder="Server certificate"
+                name="serverCert"
+                v-decorator="[
+                  'server',
+                  {rules: [{ required: true, message: 'Required' }], validateTrigger:'change'}
+                ]"
+              ></a-textarea>
+            </a-form-item>
+
+            <a-form-item label="PKCS#8 Private Key" :required="true">
+              <a-textarea
+                id="pkcsKey"
+                rows="2"
+                placeholder="PKCS#8 Private Key"
+                name="pkcsKey"
+                v-decorator="[
+                  'pkcs',
+                  {rules: [{ required: true, message: 'Required' }], validateTrigger:'change'}
+                ]"
+              ></a-textarea>
+            </a-form-item>
+
+            <a-form-item label="DNS Domain Suffix (i.e., xyz.com)" :required="true">
+              <a-input
+                id="dnsSuffix"
+                placeholder="DNS Domain Suffix (i.e., xyz.com)"
+                name="dnsSuffix"
+                v-decorator="[
+                  'dns',
+                  {rules: [{ required: true, message: 'Required' }], validateTrigger:'change'}
+                ]"
+              ></a-input>
+            </a-form-item>
+
+            <a-form-item class="controls">
+              <a-button @click="this.sslModalClose" type="danger" class="close-button">
+                Cancel
+              </a-button>
+              <a-button type="primary" htmlType="submit" :loading="sslFormSubmitting">
+                Submit
+              </a-button>
+            </a-form-item>
+          </a-form>
+
         </a-modal>
       </a-card>
     </a-col>
@@ -68,7 +159,7 @@
 </template>
 
 <script>
-import { api } from '@/api'
+import { api, apiPostForm } from '@/api'
 import router from '@/router'
 
 import Breadcrumb from '@/components/widgets/Breadcrumb'
@@ -86,8 +177,13 @@ export default {
       routes: {},
       sections: ['zones', 'pods', 'clusters', 'hosts', 'storagepools', 'imagestores', 'systemvms', 'routers', 'cpusockets', 'managementservers', 'alerts'],
       sslFormVisible: false,
-      stats: {}
+      stats: {},
+      intermediateCertificates: [],
+      sslFormSubmitting: false
     }
+  },
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
   },
   mounted () {
     this.fetchData()
@@ -115,17 +211,109 @@ export default {
         this.loading = false
       })
     },
-    handleSslForm (e) {
-      console.log(e)
+
+    /**
+     * Resets all SSL Form Data to initial values
+     */
+    resetSslFormData () {
+      this.form.resetFields()
+      this.intermediateCertificates = []
+      this.sslFormSubmitting = false
+      this.sslFormVisible = false
+    },
+
+    /**
+     * Method to run when the modal window is closed
+     */
+    sslModalClose () {
+      this.resetSslFormData()
+    },
+
+    /**
+     * Add empty intermediate certificate input to SSL form
+     */
+    addIntermediateCert () {
+      this.intermediateCertificates.push('')
+    },
+
+    /**
+     * Create new FormData object, and append the supplied data to it.
+     * @param {Number} count - The value of the id
+     * @param {String} cert - The certificate value
+     * @param {String} domain - The domain suffix value
+     * @param {String} nameKey - The value of either the 'name' key, or 'privatekey' key
+     * @param {Boolean} [defaultNameKey=true] - This controls whether to use the 'name' key or 'privatekey' key
+     * @returns {FormData} - Returns a FormData object, ready to be sent via POST
+     */
+    appendFormData (count, cert, domain, nameKey, defaultNameKey = true) {
+      const formData = new FormData()
+      formData.append('id', count)
+      formData.append('certificate', cert)
+      formData.append('domainsuffix', domain)
+      defaultNameKey ? formData.append('name', nameKey) : formData.append('privatekey', nameKey)
+      return formData
+    },
+
+    /**
+     * Handle the SSL Form submission from within the modal
+     */
+    handleSslFormSubmit () {
+      this.sslFormSubmitting = true
+
+      this.form.validateFields(errors => {
+        if (errors) {
+          this.sslFormSubmitting = false
+          return
+        }
+
+        const formValues = this.form.getFieldsValue()
+
+        let count = 1
+        let data = this.appendFormData(count, formValues.root, formValues.dns, 'root')
+        apiPostForm('uploadCustomCertificate', data)
+
+        Object.keys(formValues).forEach(key => {
+          if (key.includes('intermediate')) {
+            count = count + 1
+            const data = this.appendFormData(count, formValues[key], formValues.dns, key)
+            apiPostForm('uploadCustomCertificate', data)
+          }
+        })
+
+        count = count <= 2 ? 3 : count + 1
+        data = this.appendFormData(count, formValues.server, formValues.dns, formValues.pkcs, false)
+        apiPostForm('uploadCustomCertificate', data)
+      })
     }
   }
 }
 </script>
 
-<style lang="less" scoped>
-.chart-card-inner {
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-}
+<style lang="scss" scoped>
+  .chart-card-inner {
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .intermediate-certificate {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.2s ease 0s, transform 0.5s ease;
+    will-change: transform;
+  }
+  .intermediate-certificate.fadeInUp-enter-active {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: none;
+  }
+  .controls {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .close-button {
+    margin-right: 20px;
+  }
+  .ant-form-item {
+    margin-bottom: 10px;
+  }
 </style>
