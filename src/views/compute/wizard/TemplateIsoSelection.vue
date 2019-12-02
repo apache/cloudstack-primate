@@ -62,6 +62,7 @@
 import store from '@/store'
 import OsLogo from '@/components/widgets/OsLogo'
 import { getNormalizedOsName } from '@/utils/icons'
+import _ from 'lodash'
 
 export default {
   name: 'TemplateIsoSelection',
@@ -78,7 +79,7 @@ export default {
   },
   computed: {
     osTypes () {
-      const mappedItems = {}
+      let mappedItems = {}
       this.items.forEach((os) => {
         const osName = getNormalizedOsName(os.ostypename)
         if (Array.isArray(mappedItems[osName])) {
@@ -86,6 +87,13 @@ export default {
         } else {
           mappedItems[osName] = [os]
         }
+      })
+      mappedItems = _.mapValues(mappedItems, (list) => {
+        let featuredItems = list.filter((item) => item.isfeatured)
+        let nonFeaturedItems = list.filter((item) => !item.isfeatured)
+        featuredItems = _.sortBy(featuredItems, (item) => item.displaytext.toLowerCase())
+        nonFeaturedItems = _.sortBy(nonFeaturedItems, (item) => item.displaytext.toLowerCase())
+        return featuredItems.concat(nonFeaturedItems) // pin featured isos/templates at the top
       })
       return mappedItems
     }
