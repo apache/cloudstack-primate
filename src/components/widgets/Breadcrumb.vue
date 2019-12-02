@@ -22,30 +22,41 @@
         v-if="item && item.name"
         :to="{ path: item.path === '' ? '/' : item.path }"
       >
-        <a-icon v-if="index == 0" :type="item.meta.icon" />
+        <a-icon v-if="index == 0" :type="item.meta.icon" style="font-size: 16px" @click="resetToMainView" />
         {{ $t(item.meta.title) }}
       </router-link>
       <span v-else-if="$route.params.id">
         {{ $route.params.id }}
-        <a-button shape="circle" type="dashed" size="small" v-clipboard:copy="$route.params.id">
-          <a-icon type="copy" style="margin-left: -1px; margin-top: 1px"/>
-        </a-button>
       </span>
-      <span v-else>{{ $t(item.meta.title) }}</span>
+      <span v-else>
+        {{ $t(item.meta.title) }}
+      </span>
+      <a-tooltip v-if="index === (breadList.length - 1)" placement="bottom">
+        <template slot="title">
+          {{ "Open Documentation" }}
+        </template>
+        <a
+          v-if="item.meta.docHelp"
+          style="margin-right: 5px"
+          :href="docBase + '/' + $route.meta.docHelp"
+          target="_blank">
+          <a-icon type="question-circle-o"></a-icon>
+        </a>
+      </a-tooltip>
     </a-breadcrumb-item>
   </a-breadcrumb>
 </template>
 
 <script>
+import config from '@/config/settings'
 
 export default {
   name: 'Breadcrumb',
-  components: {
-  },
   data () {
     return {
       name: '',
-      breadList: []
+      breadList: [],
+      docBase: config.docBase
     }
   },
   created () {
@@ -63,6 +74,10 @@ export default {
       this.$route.matched.forEach((item) => {
         this.breadList.push(item)
       })
+    },
+    resetToMainView () {
+      this.$store.dispatch('SetProject', {})
+      this.$store.dispatch('ToggleTheme', 'light')
     }
   }
 }

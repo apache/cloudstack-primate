@@ -16,16 +16,16 @@
 // under the License.
 
 <template>
-  <span class="project-wrapper" :disabled="true">
+  <span class="header-notice-opener">
     <a-select
-      class="project-wrapper-select"
-      size="default"
+      class="project-select"
       defaultValue="Default View"
       :value="selectedProject"
       :disabled="isDisabled()"
       :filterOption="filterProject"
       @change="changeProject"
       showSearch>
+      <a-icon slot="suffixIcon" style="font-size:14px" type="project" />
       <a-select-option v-for="(project, index) in projects" :key="index">
         {{ project.displaytext || project.name }}
       </a-select-option>
@@ -35,22 +35,21 @@
 
 <script>
 import Vue from 'vue'
-import { api } from '@/api'
 import store from '@/store'
+import { api } from '@/api'
 import { CURRENT_PROJECT } from '@/store/mutation-types'
 
 export default {
   name: 'ProjectMenu',
   data () {
     return {
+      visible: false,
       projects: [],
       selectedProject: 'Default View'
     }
   },
   mounted () {
     this.fetchData()
-  },
-  computed: {
   },
   methods: {
     fetchData () {
@@ -84,7 +83,7 @@ export default {
       getNextPage()
     },
     isDisabled () {
-      return !store.getters.apis.hasOwnProperty('listProjects')
+      return !Object.prototype.hasOwnProperty.call(store.getters.apis, 'listProjects')
     },
     setSelectedProject (project) {
       this.selectedProject = project.displaytext || project.name
@@ -105,9 +104,16 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.project-wrapper {
+.project {
   &-select {
-    width: 165px;
+    width: 40%;
+  }
+
+  &-icon {
+    font-size: 20px;
+    line-height: 1;
+    padding-top: 5px;
+    padding-right: 5px;
   }
 }
 </style>

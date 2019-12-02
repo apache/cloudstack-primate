@@ -24,25 +24,33 @@ export default {
       name: 'volume',
       title: 'Volumes',
       icon: 'hdd',
-      permission: [ 'listVolumesMetrics', 'listVolumes' ],
+      permission: ['listVolumesMetrics', 'listVolumes'],
       resourceType: 'Volume',
       columns: ['name', 'state', 'type', 'vmname', 'size', 'physicalsize', 'utilization', 'diskkbsread', 'diskkbswrite', 'diskiopstotal', 'storage', 'account', 'zonename'],
       details: ['name', 'id', 'type', 'deviceid', 'sizegb', 'physicalsize', 'provisioningtype', 'utilization', 'diskkbsread', 'diskkbswrite', 'diskioread', 'diskiowrite', 'diskiopstotal', 'path'],
+      related: [{
+        name: 'snapshot',
+        title: 'Snapshots',
+        param: 'volumeid'
+      }],
       actions: [
         {
           api: 'createVolume',
           icon: 'plus',
           label: 'Create Volume',
-          type: 'main',
-          args: ['name', 'zoneid', 'diskofferingid'],
-          listView: true
+          listView: true,
+          args: ['name', 'zoneid', 'diskofferingid']
         }, {
           api: 'uploadVolume',
           icon: 'link',
           label: 'Upload Volume From URL',
-          type: 'main',
+          listView: true,
           args: ['url', 'name', 'zoneid', 'format', 'diskofferingid', 'checksum'],
-          listView: true
+          mapping: {
+            format: {
+              options: ['RAW', 'VHD', 'VHDX', 'OVA', 'QCOW2']
+            }
+          }
         }, {
           api: 'getUploadParamsForVolume',
           icon: 'cloud-upload',
@@ -55,7 +63,7 @@ export default {
           api: 'attachVolume',
           icon: 'paper-clip',
           label: 'Attach Volume',
-          args: ['id', 'virtualmachineid'],
+          args: ['virtualmachineid'],
           dataView: true,
           show: (record) => { return !('virtualmachineid' in record) }
         },
@@ -63,7 +71,6 @@ export default {
           api: 'detachVolume',
           icon: 'link',
           label: 'Detach Volume',
-          args: ['id'],
           dataView: true,
           show: (record) => { return 'virtualmachineid' in record && record.virtualmachineid }
         },
@@ -71,25 +78,37 @@ export default {
           api: 'createSnapshot',
           icon: 'camera',
           label: 'Take Snapshot',
-          args: ['volumeid', 'name', 'asyncbackup', 'tags'],
           dataView: true,
-          show: (record) => { return record.state === 'Ready' }
+          show: (record) => { return record.state === 'Ready' },
+          args: ['volumeid', 'name', 'asyncbackup', 'tags'],
+          mapping: {
+            volumeid: {
+              value: (record) => { return record.id }
+            }
+          }
         },
         {
           api: 'createSnapshotPolicy',
           icon: 'video-camera',
           label: 'Recurring Snapshots',
-          args: ['volumeid', 'schedule', 'timezone', 'intervaltype', 'maxsnaps'],
           dataView: true,
-          show: (record) => { return record.state === 'Ready' }
+          show: (record) => { return record.state === 'Ready' },
+          args: ['volumeid', 'intervaltype', 'schedule', 'maxsnaps', 'timezone'],
+          mapping: {
+            volumeid: {
+              value: (record) => { return record.id }
+            },
+            intervaltype: {
+              options: ['HOURLY', 'DAILY', 'WEEKLY', 'MONTHLY']
+            }
+          }
         },
         {
           api: 'resizeVolume',
           icon: 'fullscreen',
           label: 'Resize Volume',
-          type: 'main',
-          args: ['id', 'virtualmachineid'],
-          dataView: true
+          dataView: true,
+          args: ['size']
         },
         {
           api: 'migrateVolume',
@@ -97,33 +116,48 @@ export default {
           label: 'Migrate Volume',
           args: ['volumeid', 'storageid', 'livemigrate'],
           dataView: true,
-          show: (record) => { return 'virtualmachineid' in record && record.virtualmachineid }
+          show: (record) => { return 'virtualmachineid' in record && record.virtualmachineid },
+          mapping: {
+            volumeid: {
+              value: (record) => { return record.id }
+            },
+            storageid: {
+              api: 'listStoragePools'
+            }
+          }
         },
         {
           api: 'extractVolume',
           icon: 'cloud-download',
           label: 'Download Volume',
-          args: ['id', 'zoneid', 'mode'],
-          paramOptions: {
-            'mode': {
-              'value': 'HTTP_DOWNLOAD'
+          dataView: true,
+          args: ['zoneid', 'mode'],
+          mapping: {
+            zoneid: {
+              value: (record) => { return record.zoneid }
+            },
+            mode: {
+              value: (record) => { return 'HTTP_DOWNLOAD' }
             }
-          },
-          dataView: true
+          }
         },
         {
           api: 'createTemplate',
           icon: 'picture',
           label: 'Create Template from Volume',
-          args: ['volumeid', 'name', 'displaytext', 'ostypeid', 'ispublic', 'isfeatured', 'isdynamicallyscalable', 'requireshvm', 'passwordenabled', 'sshkeyenabled'],
           dataView: true,
-          show: (record) => { return record.type === 'ROOT' }
+          show: (record) => { return record.type === 'ROOT' },
+          args: ['volumeid', 'name', 'displaytext', 'ostypeid', 'ispublic', 'isfeatured', 'isdynamicallyscalable', 'requireshvm', 'passwordenabled', 'sshkeyenabled'],
+          mapping: {
+            volumeid: {
+              value: (record) => { return record.id }
+            }
+          }
         },
         {
           api: 'deleteVolume',
           icon: 'delete',
           label: 'Delete Volume',
-          args: ['id'],
           dataView: true,
           groupAction: true
         }
@@ -133,7 +167,7 @@ export default {
       name: 'snapshot',
       title: 'Snapshots',
       icon: 'build',
-      permission: [ 'listSnapshots' ],
+      permission: ['listSnapshots'],
       resourceType: 'Snapshot',
       columns: ['name', 'state', 'volumename', 'intervaltype', 'created', 'account'],
       details: ['name', 'id', 'volumename', 'intervaltype', 'account', 'domain', 'created'],
@@ -143,28 +177,38 @@ export default {
           icon: 'plus',
           label: 'Create volume',
           dataView: true,
-          args: ['snapshotid', 'name']
+          show: (record) => { return record.state === 'BackedUp' },
+          args: ['snapshotid', 'name'],
+          mapping: {
+            snapshotid: {
+              value: (record) => { return record.id }
+            }
+          }
         },
         {
           api: 'createTemplate',
           icon: 'picture',
           label: 'Create volume',
           dataView: true,
-          args: ['snapshotid', 'name', 'displaytext', 'ostypeid', 'ispublic', 'isfeatured', 'isdynamicallyscalable', 'requireshvm', 'passwordenabled', 'sshkeyenabled']
+          show: (record) => { return record.state === 'BackedUp' },
+          args: ['snapshotid', 'name', 'displaytext', 'ostypeid', 'ispublic', 'isfeatured', 'isdynamicallyscalable', 'requireshvm', 'passwordenabled', 'sshkeyenabled'],
+          mapping: {
+            snapshotid: {
+              value: (record) => { return record.id }
+            }
+          }
         },
         {
           api: 'revertSnapshot',
           icon: 'sync',
           label: 'Revert Snapshot',
-          dataView: true,
-          args: ['id']
+          dataView: true
         },
         {
           api: 'deleteSnapshot',
           icon: 'delete',
           label: 'Delete Snapshot',
-          dataView: true,
-          args: ['id']
+          dataView: true
         }
       ]
     },
@@ -172,7 +216,7 @@ export default {
       name: 'vmsnapshot',
       title: 'VM Snapshots',
       icon: 'camera',
-      permission: [ 'listVMSnapshot' ],
+      permission: ['listVMSnapshot'],
       resourceType: 'VMSnapshot',
       columns: ['name', 'state', 'type', 'current', 'parent', 'created', 'account'],
       details: ['name', 'id', 'displayname', 'description', 'type', 'current', 'parent', 'virtualmachineid', 'account', 'domain', 'created'],
@@ -182,14 +226,25 @@ export default {
           icon: 'sync',
           label: 'Revert VM snapshot',
           dataView: true,
-          args: ['vmsnapshotid']
+          show: (record) => { return record.state === 'Ready' },
+          args: ['vmsnapshotid'],
+          mapping: {
+            vmsnapshotid: {
+              value: (record) => { return record.id }
+            }
+          }
         },
         {
           api: 'deleteVMSnapshot',
           icon: 'delete',
           label: 'Delete VM Snapshot',
           dataView: true,
-          args: ['vmsnapshotid']
+          args: ['vmsnapshotid'],
+          mapping: {
+            vmsnapshotid: {
+              value: (record) => { return record.id }
+            }
+          }
         }
       ]
     }

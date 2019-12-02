@@ -25,7 +25,7 @@
     overlayClassName="header-notice-popover">
     <template slot="content">
       <a-spin :spinning="loading">
-        <a-list>
+        <a-list style="min-width: 200px">
           <a-list-item>
             <a-list-item-meta title="Notifications">
               <a-avatar :style="{backgroundColor: '#6887d0', verticalAlign: 'middle'}" icon="notification" slot="avatar"/>
@@ -61,9 +61,9 @@ export default {
       jobs: [],
       poller: null,
       notificationAvatar: {
-        'done': { 'icon': 'check-circle', 'style': 'backgroundColor:#87d068' },
-        'progress': { 'icon': 'loading', 'style': 'backgroundColor:#ffbf00' },
-        'failed': { 'icon': 'close-circle', 'style': 'backgroundColor:#f56a00' }
+        done: { icon: 'check-circle', style: 'backgroundColor:#87d068' },
+        progress: { icon: 'loading', style: 'backgroundColor:#ffbf00' },
+        failed: { icon: 'close-circle', style: 'backgroundColor:#f56a00' }
       }
     }
   },
@@ -79,17 +79,17 @@ export default {
     startPolling () {
       this.poller = setInterval(() => {
         this.pollJobs()
-      }, 2500)
+      }, 4000)
     },
     async pollJobs () {
       var hasUpdated = false
       for (var i in this.jobs) {
         if (this.jobs[i].status === 'progress') {
-          await api('queryAsyncJobResult', { 'jobid': this.jobs[i].jobid }).then(json => {
+          await api('queryAsyncJobResult', { jobid: this.jobs[i].jobid }).then(json => {
             var result = json.queryasyncjobresultresponse
             if (result.jobstatus === 1 && this.jobs[i].status !== 'done') {
               hasUpdated = true
-              this.$notification['success']({
+              this.$notification.success({
                 message: this.jobs[i].title,
                 description: this.jobs[i].description
               })
@@ -100,7 +100,7 @@ export default {
               if (result.jobresult.errortext !== null) {
                 this.jobs[i].description = '(' + this.jobs[i].description + ') ' + result.jobresult.errortext
               }
-              this.$notification['error']({
+              this.$notification.error({
                 message: this.jobs[i].title,
                 description: this.jobs[i].description
               })

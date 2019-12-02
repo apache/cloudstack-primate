@@ -17,34 +17,21 @@
 
 <template>
   <div>
-    <a-button type="dashed" style="width: 100%" icon="plus" @click="addSettingForm()">Add Setting</a-button>
-    <a-list size="large">
-      <a-list-item :key="index" v-for="(item, index) in items">
-        <a-list-item-meta>
-          <span slot="title">{{ item.name }}</span>
-          <span slot="description" style="word-break: break-all">{{ item.value }}</span>
-        </a-list-item-meta>
-        <div slot="actions">
-          <a-button size="small" shape="circle">
-            <a-icon type="edit" />
-          </a-button>
-        </div>
-        <div slot="actions">
-          <a-button size="small" shape="circle">
-            <a-icon type="close" />
-          </a-button>
-        </div>
-      </a-list-item>
-    </a-list>
+    Boilerplate for implementation
+    {{ loading }}
+    {{ resource }}
   </div>
 </template>
 
 <script>
+
 export default {
-  name: 'SettingTable',
+  name: 'RolePermissionTab',
+  components: {
+  },
   props: {
-    items: {
-      type: Array,
+    resource: {
+      type: Object,
       required: true
     },
     loading: {
@@ -56,13 +43,10 @@ export default {
     return {
     }
   },
-  methods: {
-    addSettingForm () {
-      console.log('Add setting button clicked')
-    }
+  computed: {
   }
 }
 </script>
 
-<style scoped>
+<style lang="less" scoped>
 </style>

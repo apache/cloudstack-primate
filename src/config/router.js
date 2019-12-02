@@ -24,7 +24,7 @@ import storage from '@/config/section/storage'
 import network from '@/config/section/network'
 import image from '@/config/section/image'
 import project from '@/config/section/project'
-import monitor from '@/config/section/monitor'
+import event from '@/config/section/event'
 import iam from '@/config/section/iam'
 import infra from '@/config/section/infra'
 import offering from '@/config/section/offering'
@@ -35,7 +35,8 @@ export function generateRouterMap (section) {
   var map = {
     name: section.name,
     path: '/' + section.name,
-    meta: { title: section.title, keepAlive: true, icon: section.icon },
+    hidden: section.hidden,
+    meta: { title: section.title, keepAlive: true, icon: section.icon, docHelp: section.docHelp },
     component: RouteView
   }
 
@@ -53,6 +54,8 @@ export function generateRouterMap (section) {
           name: child.name,
           keepAlive: true,
           icon: child.icon,
+          docHelp: child.docHelp,
+          hidden: child.hidden,
           permission: child.permission,
           resourceType: child.resourceType,
           params: child.params ? child.params : {},
@@ -71,6 +74,8 @@ export function generateRouterMap (section) {
               name: child.name,
               keepAlive: true,
               icon: child.icon,
+              docHelp: child.docHelp,
+              hidden: child.hidden,
               permission: child.permission,
               resourceType: child.resourceType,
               params: child.params ? child.params : {},
@@ -96,7 +101,7 @@ export function generateRouterMap (section) {
               title: child.title,
               name: child.name,
               keepAlive: true,
-              permission: [ action.api ]
+              permission: [action.api]
             },
             component: action.component,
             hidden: true
@@ -116,6 +121,8 @@ export function generateRouterMap (section) {
         name: section.name,
         keepAlive: true,
         icon: section.icon,
+        docHelp: section.docHelp,
+        hidden: section.hidden,
         permission: section.permission,
         resourceType: section.resourceType,
         params: section.params ? section.params : {},
@@ -167,7 +174,7 @@ export const asyncRouterMap = [
       generateRouterMap(network),
       generateRouterMap(image),
       generateRouterMap(project),
-      generateRouterMap(monitor),
+      generateRouterMap(event),
       generateRouterMap(iam),
       generateRouterMap(infra),
       generateRouterMap(offering),
@@ -184,21 +191,21 @@ export const asyncRouterMap = [
         children: [
           {
             path: '/exception/403',
-            name: 'Exception403',
+            name: '403',
             hidden: true,
             component: () => import(/* webpackChunkName: "fail" */ '@/views/exception/403'),
             meta: { title: '403' }
           },
           {
             path: '/exception/404',
-            name: 'Exception404',
+            name: '404',
             hidden: true,
             component: () => import(/* webpackChunkName: "fail" */ '@/views/exception/404'),
             meta: { title: '404' }
           },
           {
             path: '/exception/500',
-            name: 'Exception500',
+            name: '500',
             hidden: true,
             component: () => import(/* webpackChunkName: "fail" */ '@/views/exception/500'),
             meta: { title: '500' }

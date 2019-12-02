@@ -206,15 +206,15 @@ export default {
       this.zone = this.zoneId.opts.find((option) => option.id === instanceConfig.zoneid)
 
       if (this.zone) {
-        this.vm['zoneid'] = this.zone.id
-        this.vm['zonename'] = this.zone.name
+        this.vm.zoneid = this.zone.id
+        this.vm.zonename = this.zone.name
       }
 
       if (this.template) {
-        this.vm['templateid'] = this.template.id
-        this.vm['templatename'] = this.template.displaytext
-        this.vm['ostypeid'] = this.template.ostypeid
-        this.vm['ostypename'] = this.template.ostypename
+        this.vm.templateid = this.template.id
+        this.vm.templatename = this.template.displaytext
+        this.vm.ostypeid = this.template.ostypeid
+        this.vm.ostypename = this.template.ostypename
       }
 
       if (this.iso) {
@@ -225,17 +225,17 @@ export default {
       }
 
       if (this.serviceOffering) {
-        this.vm['serviceofferingid'] = this.serviceOffering.id
-        this.vm['serviceofferingname'] = this.serviceOffering.displaytext
-        this.vm['cpunumber'] = this.serviceOffering.cpunumber
-        this.vm['cpuspeed'] = this.serviceOffering.cpuspeed
-        this.vm['memory'] = this.serviceOffering.memory
+        this.vm.serviceofferingid = this.serviceOffering.id
+        this.vm.serviceofferingname = this.serviceOffering.displaytext
+        this.vm.cpunumber = this.serviceOffering.cpunumber
+        this.vm.cpuspeed = this.serviceOffering.cpuspeed
+        this.vm.memory = this.serviceOffering.memory
       }
 
       if (this.diskOffering) {
-        this.vm['diskofferingid'] = this.diskOffering.id
-        this.vm['diskofferingname'] = this.diskOffering.displaytext
-        this.vm['diskofferingsize'] = this.diskOffering.disksize
+        this.vm.diskofferingid = this.diskOffering.id
+        this.vm.diskofferingname = this.diskOffering.displaytext
+        this.vm.diskofferingsize = this.diskOffering.disksize
       }
     }
   },
@@ -251,7 +251,7 @@ export default {
     this.form.getFieldDecorator('isoid', { initialValue: [], preserve: true })
   },
   created () {
-    this.params = store.getters.apis[this.$route.name]['params']
+    this.params = store.getters.apis[this.$route.name].params
     this.filteredParams.forEach((param) => {
       this.fetchOptions(param)
     })

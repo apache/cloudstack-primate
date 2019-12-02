@@ -15,33 +15,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
-<template>
-  <div>
-    <setting-table
-      :loading="loading"
-      :items="Object.keys(resource.details).map(k => { return { name: k, value: resource.details[k] } })"
-    >
-    </setting-table>
-  </div>
-</template>
-
-<script>
-import SettingTable from '@/components/view/SettingTable'
-
 export default {
-  name: 'SettingsTab',
-  components: {
-    SettingTable
-  },
-  props: {
-    resource: {
-      type: Object,
-      required: true
-    },
-    loading: {
-      type: Boolean,
-      default: false
-    }
-  }
+  name: 'physicalnetwork',
+  title: 'Physical Networks',
+  icon: 'api',
+  hidden: true,
+  permission: ['listPhysicalNetworks'],
+  columns: ['name', 'state', 'isolationmethods', 'vlan', 'broadcastdomainrange', 'zoneid'],
+  details: ['name', 'state', 'isolationmethods', 'vlan', 'broadcastdomainrange', 'zoneid'],
+  actions: []
 }
-</script>

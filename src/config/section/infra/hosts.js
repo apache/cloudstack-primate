@@ -19,11 +19,16 @@ export default {
   name: 'host',
   title: 'Hosts',
   icon: 'desktop',
-  permission: [ 'listHostsMetrics', 'listHosts' ],
+  permission: ['listHostsMetrics', 'listHosts'],
   resourceType: 'Host',
-  params: { 'type': 'routing' },
-  columns: [ 'name', 'state', 'resourcestate', 'powerstate', 'ipaddress', 'hypervisor', 'instances', 'cpunumber', 'cputotalghz', 'cpuusedghz', 'cpuallocatedghz', 'memorytotalgb', 'memoryusedgb', 'memoryallocatedgb', 'networkread', 'networkwrite', 'clustername', 'zonename' ],
-  details: [ 'name', 'id', 'resourcestate', 'ipaddress', 'hypervisor', 'hypervisorversion', 'version', 'type', 'oscategoryname', 'hosttags', 'clustername', 'podname', 'zonename', 'created' ],
+  params: { type: 'routing' },
+  columns: ['name', 'state', 'resourcestate', 'powerstate', 'ipaddress', 'hypervisor', 'instances', 'cpunumber', 'cputotalghz', 'cpuusedghz', 'cpuallocatedghz', 'memorytotalgb', 'memoryusedgb', 'memoryallocatedgb', 'networkread', 'networkwrite', 'clustername', 'zonename'],
+  details: ['name', 'id', 'resourcestate', 'ipaddress', 'hypervisor', 'hypervisorversion', 'version', 'type', 'oscategoryname', 'hosttags', 'clustername', 'podname', 'zonename', 'created'],
+  related: [{
+    name: 'vm',
+    title: 'Instances',
+    param: 'hostid'
+  }],
   actions: [
     {
       api: 'addHost',
@@ -37,22 +42,26 @@ export default {
       icon: 'edit',
       label: 'label.edit',
       dataView: true,
-      args: ['id', 'hosttags', 'oscategoryid']
+      args: ['hosttags', 'oscategoryid']
     },
     {
       api: 'provisionCertificate',
       icon: 'safety-certificate',
       label: 'label.action.secure.host',
       dataView: true,
+      show: (record) => { return record.hypervisor === 'KVM' },
       args: ['hostid'],
-      show: (record) => { return record.hypervisor === 'KVM' }
+      mapping: {
+        hostid: {
+          value: (record) => { return record.id }
+        }
+      }
     },
     {
       api: 'reconnectHost',
       icon: 'forward',
       label: 'label.action.force.reconnect',
       dataView: true,
-      args: ['id'],
       show: (record) => { return ['Disconnected', 'Up'].includes(record.state) }
     },
     {
@@ -60,7 +69,6 @@ export default {
       icon: 'pause-circle',
       label: 'Disable Host',
       dataView: true,
-      args: ['id'],
       defaultArgs: { allocationstate: 'Disable' },
       show: (record) => { return record.resourcestate === 'Enabled' }
     },
@@ -69,7 +77,6 @@ export default {
       icon: 'play-circle',
       label: 'Enable Host',
       dataView: true,
-      args: [ 'id' ],
       defaultArgs: { allocationstate: 'Enable' },
       show: (record) => { return record.resourcestate === 'Disabled' }
     },
@@ -78,23 +85,32 @@ export default {
       icon: 'user-add',
       label: 'label.dedicate.host',
       dataView: true,
+      show: (record) => { return !record.domainid },
       args: ['hostid', 'domainid', 'account'],
-      show: (record) => { return !record.domainid }
+      mapping: {
+        hostid: {
+          value: (record) => { return record.id }
+        }
+      }
     },
     {
       api: 'releaseDedicatedHost',
       icon: 'user-delete',
       label: 'label.release.dedicated.host',
       dataView: true,
+      show: (record) => { return record.domainid },
       args: ['hostid'],
-      show: (record) => { return record.domainid }
+      mapping: {
+        hostid: {
+          value: (record) => { return record.id }
+        }
+      }
     },
     {
       api: 'prepareHostForMaintenance',
       icon: 'plus-square',
       label: 'label.action.enable.maintenance.mode',
       dataView: true,
-      args: ['id'],
       show: (record) => { return record.resourcestate === 'Enabled' }
     },
     {
@@ -102,7 +118,6 @@ export default {
       icon: 'minus-square',
       label: 'label.action.cancel.maintenance.mode',
       dataView: true,
-      args: ['id'],
       show: (record) => { return record.resourcestate === 'Maintenance' || record.resourcestate === 'ErrorInMaintenance' || record.resourcestate === 'PrepareForMaintenance' }
     },
     {
@@ -110,17 +125,30 @@ export default {
       icon: 'setting',
       label: 'label.outofbandmanagement.configure',
       dataView: true,
-      args: ['hostid', 'address', 'port', 'username', 'password', 'driver']
+      args: ['hostid', 'address', 'port', 'username', 'password', 'driver'],
+      mapping: {
+        hostid: {
+          value: (record) => { return record.id }
+        },
+        driver: {
+          options: ['ipmitool', 'nestedcloudstack']
+        }
+      }
     },
     {
       api: 'enableOutOfBandManagementForHost',
       icon: 'plus-circle',
       label: 'label.outofbandmanagement.enable',
       dataView: true,
-      args: ['hostid'],
       show: (record) => {
         return !record.resourcedetails || !record.resourcedetails.outOfBandManagementEnabled ||
           record.resourcedetails.outOfBandManagementEnabled === 'false'
+      },
+      args: ['hostid'],
+      mapping: {
+        hostid: {
+          value: (record) => { return record.id }
+        }
       }
     },
     {
@@ -128,10 +156,15 @@ export default {
       icon: 'minus-circle',
       label: 'label.outofbandmanagement.disable',
       dataView: true,
-      args: ['hostid'],
       show: (record) => {
         return record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
           record.resourcedetails.outOfBandManagementEnabled === 'true'
+      },
+      args: ['hostid'],
+      mapping: {
+        hostid: {
+          value: (record) => { return record.id }
+        }
       }
     },
     {
@@ -139,10 +172,15 @@ export default {
       icon: 'login',
       label: 'label.outofbandmanagement.action.issue',
       dataView: true,
-      args: ['hostid', 'action'],
       show: (record) => {
         return record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
           record.resourcedetails.outOfBandManagementEnabled === 'true'
+      },
+      args: ['hostid', 'action'],
+      mapping: {
+        hostid: {
+          value: (record) => { return record.id }
+        }
       }
     },
     {
@@ -150,10 +188,15 @@ export default {
       icon: 'key',
       label: 'label.outofbandmanagement.changepassword',
       dataView: true,
-      args: ['hostid', 'password'],
       show: (record) => {
         return record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
           record.resourcedetails.outOfBandManagementEnabled === 'true'
+      },
+      args: ['hostid', 'password'],
+      mapping: {
+        hostid: {
+          value: (record) => { return record.id }
+        }
       }
     },
     {
@@ -161,17 +204,27 @@ export default {
       icon: 'tool',
       label: 'label.ha.configure',
       dataView: true,
-      args: ['hostid', 'provider']
+      args: ['hostid', 'provider'],
+      mapping: {
+        hostid: {
+          value: (record) => { return record.id }
+        }
+      }
     },
     {
       api: 'enableHAForHost',
       icon: 'eye',
       label: 'label.ha.enable',
       dataView: true,
-      args: ['hostid'],
       show: (record) => {
         return !record.resourcedetails || !record.resourcedetails.resourceHAEnabled ||
           record.resourcedetails.resourceHAEnabled === 'false'
+      },
+      args: ['hostid'],
+      mapping: {
+        hostid: {
+          value: (record) => { return record.id }
+        }
       }
     },
     {
@@ -179,10 +232,15 @@ export default {
       icon: 'eye-invisible',
       label: 'label.ha.disable',
       dataView: true,
-      args: ['hostid'],
       show: (record) => {
         return record.resourcedetails && record.resourcedetails.resourceHAEnabled &&
           record.resourcedetails.resourceHAEnabled === 'true'
+      },
+      args: ['hostid'],
+      mapping: {
+        hostid: {
+          value: (record) => { return record.id }
+        }
       }
     },
     {
@@ -190,7 +248,7 @@ export default {
       icon: 'delete',
       label: 'Remove Host',
       dataView: true,
-      args: ['id', 'forced'],
+      args: ['forced'],
       show: (record) => { return ['Maintenance', 'Disabled', 'Down', 'Alert', 'Disconnected'].includes(record.resourcestate) }
     }
   ]

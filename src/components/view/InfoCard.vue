@@ -72,16 +72,10 @@
           <os-logo :osId="resource.ostypeid" :osName="resource.ostypename" size="lg" style="margin-left: -1px" />
           <span style="margin-left: 8px">{{ resource.ostypename }}</span>
         </div>
-
-        <div class="resource-detail-item" v-if="resource.keypair">
-          <a-icon type="key" />
-          <router-link :to="{ path: '/ssh/' + resource.keypair }">{{ resource.keypair }}</router-link>
-        </div>
-        <div class="resource-detail-item" v-if="resource.group">
-          <a-icon type="gold" />{{ resource.group }}
-        </div>
-        <div class="resource-detail-item" v-if="resource.cpunumber && resource.cpuspeed">
-          <a-icon type="appstore" />{{ resource.cpunumber }} CPU x {{ parseFloat(resource.cpuspeed / 1000.0).toFixed(2) }} Ghz
+        <div class="resource-detail-item" v-if="(resource.cpunumber && resource.cpuspeed) || resource.cputotal">
+          <a-icon type="appstore" />
+          <span v-if="resource.cpunumber && resource.cpuspeed">{{ resource.cpunumber }} CPU x {{ parseFloat(resource.cpuspeed / 1000.0).toFixed(2) }} Ghz</span>
+          <span v-else-if="resource.cputotal">{{ resource.cputotal }}</span>
           <span
             v-if="resource.cpuused"
             style="display: flex; padding-left: 25px">
@@ -116,17 +110,39 @@
               :percent="Number(parseFloat(100.0 * (resource.memorykbs - resource.memoryintfreekbs) / resource.memorykbs).toFixed(2))" />
           </span>
         </div>
-        <div class="resource-detail-item" v-else-if="resource.memorytotal">
-          <a-icon type="bulb" />{{ parseFloat(resource.memorytotal / (1024.0 * 1024.0 * 1024.0)).toFixed(2) }} GB Memory
+        <div class="resource-detail-item" v-else-if="resource.memorytotalgb">
+          <a-icon type="bulb" />{{ resource.memorytotalgb }} Memory
           <span
-            v-if="resource.memoryused"
+            v-if="resource.memoryusedgb"
             style="display: flex; padding-left: 25px">
             {{ $t('memoryusedgb') }}
             <a-progress
               style="padding-left: 10px"
               size="small"
               status="active"
-              :percent="Number(parseFloat(100.0 * (resource.memoryused) / resource.memorytotal).toFixed(2))" />
+              :percent="Number(parseFloat(100.0 * parseFloat(resource.memoryusedgb) / parseFloat(resource.memorytotalgb)).toFixed(2))" />
+          </span>
+          <span
+            v-if="resource.memoryallocatedgb"
+            style="display: flex; padding-left: 25px">
+            {{ $t('memoryallocatedgb') }}
+            <a-progress
+              style="padding-left: 10px"
+              size="small"
+              :percent="Number(parseFloat(100.0 * parseFloat(resource.memoryallocatedgb) / parseFloat(resource.memorytotalgb)).toFixed(2))" />
+          </span>
+        </div>
+        <div class="resource-detail-item" v-else-if="resource.memorytotal">
+          <a-icon type="bulb" />{{ resource.memorytotal }} Memory
+          <span
+            v-if="resource.memoryused"
+            style="display: flex; padding-left: 25px">
+            {{ $t('memoryused') }}
+            <a-progress
+              style="padding-left: 10px"
+              size="small"
+              status="active"
+              :percent="parseFloat(resource.memoryused)" />
           </span>
           <span
             v-if="resource.memoryallocated"
@@ -135,17 +151,41 @@
             <a-progress
               style="padding-left: 10px"
               size="small"
-              :percent="Number(parseFloat(100.0 * (resource.memoryallocated) / resource.memorytotal).toFixed(2))" />
+              :percent="parseFloat(resource.memoryallocated)" />
           </span>
         </div>
-        <div class="resource-detail-item" v-if="resource.volumes">
-          <a-icon type="hdd" />{{ (resource.volumes.reduce((total, item) => total += item.size, 0) / (1024 * 1024 * 1024.0)).toFixed(2) }} GB Storage
+        <div class="resource-detail-item" v-if="resource.volumes || resource.sizegb">
+          <a-icon type="hdd" />
+          <span v-if="resource.volumes">{{ (resource.volumes.reduce((total, item) => total += item.size, 0) / (1024 * 1024 * 1024.0)).toFixed(2) }} GB Storage</span>
+          <span v-else-if="resource.sizegb">{{ resource.sizegb }}</span>
           <div style="margin-left: 25px" v-if="resource.diskkbsread && resource.diskkbswrite && resource.diskioread && resource.diskiowrite">
             <a-tag>Read {{ toSize(resource.diskkbsread) }}</a-tag>
             <a-tag>Write {{ toSize(resource.diskkbswrite) }}</a-tag><br/>
             <a-tag>Read (IO) {{ resource.diskioread }}</a-tag>
             <a-tag>Write (IO) {{ resource.diskiowrite }}</a-tag>
           </div>
+        </div>
+        <div class="resource-detail-item" v-else-if="resource.disksizetotalgb">
+          <a-icon type="database" />{{ resource.disksizetotalgb }}
+          <span
+            v-if="resource.disksizeusedgb"
+            style="display: flex; padding-left: 25px">
+            {{ $t('disksizeusedgb') }}
+            <a-progress
+              style="padding-left: 10px"
+              size="small"
+              status="active"
+              :percent="Number(parseFloat(100.0 * parseFloat(resource.disksizeusedgb) / parseFloat(resource.disksizetotalgb)).toFixed(2))" />
+          </span>
+          <span
+            v-if="resource.disksizeallocatedgb"
+            style="display: flex; padding-left: 25px">
+            {{ $t('disksizeallocatedgb') }}
+            <a-progress
+              style="padding-left: 10px"
+              size="small"
+              :percent="Number(parseFloat(100.0 * parseFloat(resource.disksizeallocatedgb) / parseFloat(resource.disksizetotalgb)).toFixed(2))" />
+          </span>
         </div>
         <div class="resource-detail-item" v-if="resource.nic || ('networkkbsread' in resource && 'networkkbswrite' in resource)">
           <a-icon type="wifi" />
@@ -171,6 +211,15 @@
           </slot>
         </div>
 
+        <div class="resource-detail-item" v-if="resource.groupid">
+          <a-icon type="gold" />
+          <router-link :to="{ path: '/vmgroup/' + resource.groupid }">{{ resource.group || resource.groupid }}</router-link>
+        </div>
+        <div class="resource-detail-item" v-if="resource.keypair">
+          <a-icon type="key" />
+          <router-link :to="{ path: '/ssh/' + resource.keypair }">{{ resource.keypair }}</router-link>
+        </div>
+
         <div class="resource-detail-item" v-if="resource.virtualmachineid">
           <a-icon type="desktop" />
           <router-link :to="{ path: '/vm/' + resource.virtualmachineid }">{{ resource.vmname || resource.vm || resource.virtualmachinename || resource.virtualmachineid }} </router-link>
@@ -179,6 +228,18 @@
         <div class="resource-detail-item" v-if="resource.volumeid">
           <a-icon type="hdd" />
           <router-link :to="{ path: '/volume/' + resource.volumeid }">{{ resource.volumename || resource.volume || resource.volumeid }} </router-link>
+        </div>
+        <div class="resource-detail-item" v-if="resource.associatednetworkid">
+          <a-icon type="wifi" />
+          <router-link :to="{ path: '/guestnetwork/' + resource.associatednetworkid }">{{ resource.associatednetworkname || resource.associatednetworkid }} </router-link>
+        </div>
+        <div class="resource-detail-item" v-if="resource.guestnetworkid">
+          <a-icon type="gateway" />
+          <router-link :to="{ path: '/guestnetwork/' + resource.guestnetworkid }">{{ resource.guestnetworkname || resource.guestnetworkid }} </router-link>
+        </div>
+        <div class="resource-detail-item" v-if="resource.vpcid">
+          <a-icon type="deployment-unit" />
+          <router-link :to="{ path: '/vpc/' + resource.vpcid }">{{ resource.vpcname || resource.vpcid }}</router-link>
         </div>
         <div class="resource-detail-item" v-if="resource.serviceofferingname && resource.serviceofferingid">
           <a-icon type="cloud" />
@@ -196,19 +257,10 @@
           <a-icon type="wifi" />
           <router-link :to="{ path: '/networkoffering/' + resource.networkofferingid }">{{ resource.networkofferingname || resource.networkofferingid }} </router-link>
         </div>
-        <div class="resource-detail-item" v-if="resource.associatednetworkid">
-          <a-icon type="wifi" />
-          <router-link :to="{ path: '/guestnetwork/' + resource.associatednetworkid }">{{ resource.associatednetworkname || resource.associatednetworkid }} </router-link>
-        </div>
         <div class="resource-detail-item" v-if="resource.vpcofferingid">
           <a-icon type="deployment-unit" />
           <router-link :to="{ path: '/vpcoffering/' + resource.vpcofferingid }">{{ resource.vpcofferingname || resource.vpcofferingid }} </router-link>
         </div>
-        <div class="resource-detail-item" v-if="resource.guestnetworkid">
-          <a-icon type="gateway" />
-          <router-link :to="{ path: '/guestnetwork/' + resource.guestnetworkid }">{{ resource.guestnetworkname || resource.guestnetworkid }} </router-link>
-        </div>
-
         <div class="resource-detail-item" v-if="resource.storageid">
           <a-icon type="database" />
           <router-link :to="{ path: '/storagepool/' + resource.storageid }">{{ resource.storage || resource.storageid }} </router-link>
@@ -256,8 +308,10 @@
 
       <div class="account-center-tags" v-if="$route.meta.related">
         <span v-for="item in $route.meta.related" :key="item.path">
-          <router-link :to="{ path: '/' + item.name + '?' + item.param + '=' + resource.id }">
-            <a-button style="margin-right: 10px">
+          <router-link
+            v-if="$router.resolve('/' + item.name).route.name !== '404'"
+            :to="{ path: '/' + item.name + '?' + item.param + '=' + (item.param === 'account' ? resource.name + '&domainid=' + resource.domainid : resource.id) }">
+            <a-button style="margin-right: 10px" :icon="$router.resolve('/' + item.name).route.meta.icon" >
               View {{ $t(item.title) }}
             </a-button>
           </router-link>
@@ -496,7 +550,7 @@ export default {
         return
       }
       this.tags = []
-      api('listTags', { 'listall': true, 'resourceid': this.resource.id, 'resourcetype': this.resourceType }).then(json => {
+      api('listTags', { listall: true, resourceid: this.resource.id, resourcetype: this.resourceType }).then(json => {
         if (json.listtagsresponse && json.listtagsresponse.tag) {
           this.tags = json.listtagsresponse.tag
         }
@@ -507,7 +561,7 @@ export default {
         return
       }
       this.notes = []
-      api('listAnnotations', { 'entityid': this.resource.id, 'entitytype': this.annotationType }).then(json => {
+      api('listAnnotations', { entityid: this.resource.id, entitytype: this.annotationType }).then(json => {
         if (json.listannotationsresponse && json.listannotationsresponse.annotation) {
           this.notes = json.listannotationsresponse.annotation
         }
@@ -527,8 +581,8 @@ export default {
     },
     handleInputConfirm () {
       const args = {}
-      args['resourceids'] = this.resource.id
-      args['resourcetype'] = this.resourceType
+      args.resourceids = this.resource.id
+      args.resourcetype = this.resourceType
       args['tags[0].key'] = this.inputKey
       args['tags[0].value'] = this.inputValue
       api('createTags', args).then(json => {
@@ -542,8 +596,8 @@ export default {
     },
     handleDeleteTag (tag) {
       const args = {}
-      args['resourceids'] = tag.resourceid
-      args['resourcetype'] = tag.resourcetype
+      args.resourceids = tag.resourceid
+      args.resourcetype = tag.resourcetype
       args['tags[0].key'] = tag.key
       args['tags[0].value'] = tag.value
       api('deleteTags', args).then(json => {
@@ -560,9 +614,9 @@ export default {
       }
       this.showNotesInput = false
       const args = {}
-      args['entityid'] = this.resource.id
-      args['entitytype'] = this.annotationType
-      args['annotation'] = this.annotation
+      args.entityid = this.resource.id
+      args.entitytype = this.annotationType
+      args.annotation = this.annotation
       api('addAnnotation', args).then(json => {
       }).finally(e => {
         this.getNotes()
@@ -571,7 +625,7 @@ export default {
     },
     deleteNote (annotation) {
       const args = {}
-      args['id'] = annotation.id
+      args.id = annotation.id
       api('removeAnnotation', args).then(json => {
       }).finally(e => {
         this.getNotes()

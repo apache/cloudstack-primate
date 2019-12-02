@@ -19,16 +19,15 @@ export default {
   name: 'router',
   title: 'Virtual Routers',
   icon: 'fork',
-  permission: [ 'listRouters' ],
-  columns: [ 'name', 'state', 'publicip', 'guestnetworkname', 'vpcname', 'redundantstate', 'version', 'hostname', 'account', 'zonename', 'requiresupgrade' ],
-  details: [ 'name', 'id', 'version', 'requiresupgrade', 'guestnetworkname', 'vpcname', 'publicip', 'guestipaddress', 'linklocalip', 'serviceofferingname', 'networkdomain', 'isredundantrouter', 'redundantstate', 'hostname', 'account', 'zonename', 'created' ],
+  permission: ['listRouters'],
+  columns: ['name', 'state', 'publicip', 'guestnetworkname', 'vpcname', 'redundantstate', 'version', 'hostname', 'account', 'zonename', 'requiresupgrade'],
+  details: ['name', 'id', 'version', 'requiresupgrade', 'guestnetworkname', 'vpcname', 'publicip', 'guestipaddress', 'linklocalip', 'serviceofferingname', 'networkdomain', 'isredundantrouter', 'redundantstate', 'hostname', 'account', 'zonename', 'created'],
   actions: [
     {
       api: 'startRouter',
       icon: 'caret-right',
       label: 'label.action.start.router',
       dataView: true,
-      args: ['id'],
       show: (record) => { return record.state === 'Stopped' }
     },
     {
@@ -36,7 +35,7 @@ export default {
       icon: 'stop',
       label: 'label.action.stop.router',
       dataView: true,
-      args: ['id', 'forced'],
+      args: ['forced'],
       show: (record) => { return record.state === 'Running' }
     },
     {
@@ -44,7 +43,6 @@ export default {
       icon: 'sync',
       label: 'label.action.reboot.router',
       dataView: true,
-      args: ['id'],
       hidden: (record) => { return record.state === 'Running' }
     },
     {
@@ -52,8 +50,8 @@ export default {
       icon: 'arrows-alt',
       label: 'label.change.service.offering',
       dataView: true,
-      args: ['id', 'serviceofferingid'],
-      show: (record) => { return record.state === 'Stopped' || record.hypervisor === 'VMWare' }
+      args: ['serviceofferingid'],
+      show: (record) => { return record.hypervisor !== 'KVM' }
     },
     {
       api: 'upgradeRouterTemplate',
@@ -61,7 +59,6 @@ export default {
       label: 'label.upgrade.router.newer.template',
       dataView: true,
       groupAction: true,
-      args: ['id'],
       show: (record) => { return record.requiresupgrade }
     },
     {
@@ -69,23 +66,35 @@ export default {
       icon: 'drag',
       label: 'label.action.migrate.router',
       dataView: true,
+      show: (record) => { return record.state === 'Running' },
       args: ['virtualmachineid', 'hostid'],
-      show: (record) => { return record.state === 'Running' }
+      mapping: {
+        virtualmachineid: {
+          value: (record) => { return record.id }
+        }
+      }
     },
     {
       api: 'runDiagnostics',
       icon: 'reconciliation',
       label: 'label.action.run.diagnostics',
       dataView: true,
+      show: (record) => { return record.state === 'Running' },
       args: ['targetid', 'type', 'ipaddress', 'params'],
-      show: (record) => { return record.state === 'Running' }
+      mapping: {
+        targetid: {
+          value: (record) => { return record.id }
+        },
+        type: {
+          options: ['ping', 'traceroute', 'arping']
+        }
+      }
     },
     {
       api: 'destroyRouter',
       icon: 'delete',
       label: 'label.destroy.router',
       dataView: true,
-      args: ['id'],
       show: (record) => { return ['Running', 'Error', 'Stopped'].includes(record.state) }
     }
   ]

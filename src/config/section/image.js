@@ -24,11 +24,16 @@ export default {
       name: 'template',
       title: 'Templates',
       icon: 'save',
-      permission: [ 'listTemplates' ],
-      params: { 'templatefilter': 'executable' },
+      permission: ['listTemplates'],
+      params: { templatefilter: 'executable' },
       resourceType: 'Template',
       columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain'],
       details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'directdownload', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created'],
+      related: [{
+        name: 'vm',
+        title: 'Instances',
+        param: 'templateid'
+      }],
       tabs: [{
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
@@ -37,7 +42,7 @@ export default {
         component: () => import('@/views/image/TemplateZones.vue')
       }, {
         name: 'settings',
-        component: () => import('@/views/image/TemplateSettings.vue')
+        component: () => import('@/components/view/DetailSettings')
       }],
       actions: [
         {
@@ -60,34 +65,34 @@ export default {
           icon: 'edit',
           label: 'label.edit',
           dataView: true,
-          args: ['id', 'name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable', 'isrouting']
+          args: ['name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable', 'isrouting']
         },
         {
           api: 'extractTemplate',
           icon: 'cloud-download',
           label: 'Download Template',
           dataView: true,
-          args: ['id', 'zoneid', 'mode']
+          args: ['zoneid', 'mode']
         },
         {
           api: 'updateTemplatePermissions',
           icon: 'reconciliation',
           label: 'Update template permissions',
           dataView: true,
-          args: ['id', 'op', 'accounts', 'projectids']
+          args: ['op', 'accounts', 'projectids']
         },
         {
           api: 'copyTemplate',
           icon: 'copy',
           label: 'Copy Template',
-          args: ['id', 'sourcezoneid', 'destzoneids'],
+          args: ['sourcezoneid', 'destzoneids'],
           dataView: true
         },
         {
           api: 'deleteTemplate',
           icon: 'delete',
           label: 'Delete Template',
-          args: ['id', 'zoneid'],
+          args: ['zoneid'],
           dataView: true,
           groupAction: true
         }
@@ -97,11 +102,16 @@ export default {
       name: 'iso',
       title: 'ISOs',
       icon: 'usb',
-      permission: [ 'listIsos' ],
-      params: { 'isofilter': 'executable' },
+      permission: ['listIsos'],
+      params: { isofilter: 'executable' },
       resourceType: 'ISO',
       columns: ['name', 'ostypename', 'account', 'domain'],
       details: ['name', 'id', 'displaytext', 'checksum', 'ostypename', 'size', 'bootable', 'isready', 'directdownload', 'isextractable', 'ispublic', 'isfeatured', 'crosszones', 'account', 'domain', 'created'],
+      related: [{
+        name: 'vm',
+        title: 'Instances',
+        param: 'isoid'
+      }],
       actions: [
         {
           api: 'registerIso',
@@ -123,34 +133,34 @@ export default {
           icon: 'edit',
           label: 'label.edit',
           dataView: true,
-          args: ['id', 'name', 'displaytext', 'bootable', 'ostypeid', 'isdynamicallyscalable', 'isrouting']
+          args: ['name', 'displaytext', 'bootable', 'ostypeid', 'isdynamicallyscalable', 'isrouting']
         },
         {
           api: 'extractIso',
           icon: 'cloud-download',
           label: 'Download ISO',
           dataView: true,
-          args: ['id', 'zoneid', 'mode']
+          args: ['zoneid', 'mode']
         },
         {
           api: 'updateIsoPermissions',
           icon: 'reconciliation',
           label: 'Update ISO Permissions',
           dataView: true,
-          args: ['id', 'op', 'accounts', 'projectids']
+          args: ['op', 'accounts', 'projectids']
         },
         {
           api: 'copyIso',
           icon: 'copy',
           label: 'Copy ISO',
-          args: ['id', 'sourcezoneid', 'destzoneids'],
+          args: ['sourcezoneid', 'destzoneids'],
           dataView: true
         },
         {
           api: 'deleteIso',
           icon: 'delete',
           label: 'Delete ISO',
-          args: ['id', 'zoneid'],
+          args: ['zoneid'],
           dataView: true,
           groupAction: true
         }

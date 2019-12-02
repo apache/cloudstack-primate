@@ -24,14 +24,22 @@ export default {
       name: 'guestnetwork',
       title: 'Guest Networks',
       icon: 'gateway',
-      permission: [ 'listNetworks' ],
+      permission: ['listNetworks'],
       resourceType: 'Network',
       columns: ['name', 'state', 'type', 'cidr', 'ip6cidr', 'broadcasturi', 'account', 'zonename'],
       details: ['name', 'id', 'description', 'type', 'traffictype', 'vpcid', 'vlan', 'broadcasturi', 'cidr', 'ip6cidr', 'netmask', 'gateway', 'ispersistent', 'restartrequired', 'reservediprange', 'redundantrouter', 'networkdomain', 'zonename', 'account', 'domain'],
       related: [{
         name: 'publicip',
         title: 'IP Addresses',
-        param: 'associatedNetworkId'
+        param: 'associatednetworkid'
+      }, {
+        name: 'router',
+        title: 'Routers',
+        param: 'networkid'
+      }, {
+        name: 'vm',
+        title: 'Instances',
+        param: 'networkid'
       }],
       tabs: [{
         name: 'details',
@@ -54,20 +62,19 @@ export default {
           icon: 'edit',
           label: 'Update Network',
           dataView: true,
-          args: ['id', 'name', 'displaytext', 'guestvmcidr']
+          args: ['name', 'displaytext', 'guestvmcidr']
         },
         {
           api: 'restartNetwork',
           icon: 'sync',
           label: 'Restart Network',
           dataView: true,
-          args: ['id', 'makeredundant', 'cleanup']
+          args: ['makeredundant', 'cleanup']
         },
         {
           api: 'deleteNetwork',
           icon: 'delete',
           label: 'Delete Network',
-          args: ['id'],
           dataView: true
         }
       ]
@@ -76,10 +83,15 @@ export default {
       name: 'vpc',
       title: 'VPC',
       icon: 'deployment-unit',
-      permission: [ 'listVPCs' ],
+      permission: ['listVPCs'],
       resourceType: 'Vpc',
       columns: ['name', 'state', 'displaytext', 'cidr', 'account', 'zonename'],
       details: ['name', 'id', 'displaytext', 'cidr', 'networkdomain', 'ispersistent', 'redundantvpcrouter', 'restartrequired', 'zonename', 'account', 'domain'],
+      related: [{
+        name: 'vm',
+        title: 'Instances',
+        param: 'vpcid'
+      }],
       tabs: [{
         name: 'configure',
         component: () => import('@/views/network/VpcConfigure.vue')
@@ -100,20 +112,19 @@ export default {
           icon: 'edit',
           label: 'Update VPC',
           dataView: true,
-          args: ['id', 'name', 'displaytext']
+          args: ['name', 'displaytext']
         },
         {
           api: 'restartVPC',
           icon: 'sync',
           label: 'Restart VPC',
           dataView: true,
-          args: ['id', 'makeredundant', 'cleanup']
+          args: ['makeredundant', 'cleanup']
         },
         {
           api: 'deleteVPC',
           icon: 'delete',
           label: 'Delete VPC',
-          args: ['id'],
           dataView: true
         }
       ]
@@ -122,7 +133,7 @@ export default {
       name: 'securitygroups',
       title: 'Security Groups',
       icon: 'fire',
-      permission: [ 'listSecurityGroups' ],
+      permission: ['listSecurityGroups'],
       resourceType: 'SecurityGroup',
       columns: ['name', 'description', 'account', 'domain'],
       details: ['name', 'id', 'description', 'account', 'domain'],
@@ -148,7 +159,6 @@ export default {
           api: 'deleteSecurityGroup',
           icon: 'delete',
           label: 'Delete Security Group',
-          args: ['id'],
           dataView: true,
           show: (record) => { return record.name !== 'default' }
         }
@@ -158,7 +168,7 @@ export default {
       name: 'publicip',
       title: 'Public IP Addresses',
       icon: 'environment',
-      permission: [ 'listPublicIpAddresses' ],
+      permission: ['listPublicIpAddresses'],
       resourceType: 'PublicIpAddress',
       columns: ['ipaddress', 'state', 'associatednetworkname', 'virtualmachinename', 'allocated', 'account', 'zonename'],
       details: ['ipaddress', 'id', 'associatednetworkname', 'virtualmachinename', 'networkid', 'issourcenat', 'isstaticnat', 'virtualmachinename', 'vmipaddress', 'vlan', 'allocated', 'account', 'zonename'],
@@ -185,36 +195,64 @@ export default {
           icon: 'link',
           label: 'Enable Remote Access VPN',
           dataView: true,
-          args: ['publicipid', 'domainid', 'account']
+          args: ['publicipid', 'domainid', 'account'],
+          mapping: {
+            publicipid: {
+              value: (record) => { return record.id }
+            },
+            domainid: {
+              value: (record) => { return record.domainid }
+            },
+            account: {
+              value: (record) => { return record.account }
+            }
+          }
         },
         {
           api: 'deleteRemoteAccessVpn',
           icon: 'disconnect',
           label: 'Disable Remove Access VPN',
           dataView: true,
-          args: ['publicipid', 'domainid']
+          args: ['publicipid', 'domainid'],
+          mapping: {
+            publicipid: {
+              value: (record) => { return record.id }
+            },
+            domainid: {
+              value: (record) => { return record.domainid }
+            }
+          }
         },
         {
           api: 'enableStaticNat',
           icon: 'plus-circle',
           label: 'Enable Static NAT',
           dataView: true,
+          show: (record) => { return !record.virtualmachineid && !record.issourcenat },
           args: ['ipaddressid', 'virtualmachineid', 'vmguestip'],
-          show: (record) => { return !record.virtualmachineid && !record.issourcenat }
+          mapping: {
+            ipaddressid: {
+              value: (record) => { return record.id }
+            }
+          }
         },
         {
           api: 'disableStaticNat',
           icon: 'minus-circle',
           label: 'Disable Static NAT',
           dataView: true,
+          show: (record) => { return record.virtualmachineid },
           args: ['ipaddressid'],
-          show: (record) => { return record.virtualmachineid }
+          mapping: {
+            ipaddressid: {
+              value: (record) => { return record.id }
+            }
+          }
         },
         {
           api: 'disassociateIpAddress',
           icon: 'delete',
           label: 'Delete IP',
-          args: ['id'],
           dataView: true,
           show: (record) => { return !record.issourcenat }
         }
@@ -224,7 +262,7 @@ export default {
       name: 'vpnuser',
       title: 'VPN Users',
       icon: 'user',
-      permission: [ 'listVpnUsers' ],
+      permission: ['listVpnUsers'],
       columns: ['username', 'state', 'account', 'domain'],
       details: ['username', 'state', 'account', 'domain'],
       actions: [
@@ -240,7 +278,18 @@ export default {
           icon: 'delete',
           label: 'Delete VPN User',
           dataView: true,
-          args: ['username', 'domainid', 'account']
+          args: ['username', 'domainid', 'account'],
+          mapping: {
+            username: {
+              value: (record) => { return record.username }
+            },
+            domainid: {
+              value: (record) => { return record.domainid }
+            },
+            account: {
+              value: (record) => { return record.account }
+            }
+          }
         }
       ]
     },
@@ -248,7 +297,7 @@ export default {
       name: 'vpngateway',
       title: 'VPN Gateway',
       icon: 'lock',
-      permission: [ 'listVpnCustomerGateways' ],
+      permission: ['listVpnCustomerGateways'],
       resourceType: 'VpnGateway',
       columns: ['name', 'ipaddress', 'gateway', 'cidrlist', 'ipsecpsk', 'account', 'domain'],
       details: ['name', 'id', 'ipaddress', 'gateway', 'cidrlist', 'ipsecpsk', 'account', 'domain'],
@@ -259,6 +308,12 @@ export default {
           label: 'Add VPN Customer Gateway',
           listView: true,
           args: ['name', 'gateway', 'cidrlist', 'ipsecpsk', 'ikelifetime', 'esplifetime', 'dpd', 'forceencap', 'ikepolicy', 'esppolicy']
+        },
+        {
+          api: 'deleteVpnCustomerGateway',
+          icon: 'delete',
+          label: 'Delete VPN Customer Gateway',
+          dataView: true
         }
       ]
     }

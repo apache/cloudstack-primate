@@ -19,7 +19,7 @@ export default {
   name: 'project',
   title: 'Projects',
   icon: 'project',
-  permission: [ 'listProjects' ],
+  permission: ['listProjects'],
   resourceType: 'Project',
   columns: ['name', 'state', 'displaytext', 'account', 'domain'],
   details: ['name', 'id', 'displaytext', 'projectaccountname', 'vmtotal', 'cputotal', 'memorytotal', 'volumetotal', 'iptotal', 'vpctotal', 'templatetotal', 'primarystoragetotal', 'account', 'domain'],
@@ -36,14 +36,13 @@ export default {
       icon: 'edit',
       label: 'Edit Project',
       dataView: true,
-      args: ['id', 'displaytext']
+      args: ['displaytext']
     },
     {
       api: 'activateProject',
       icon: 'play-circle',
       label: 'Activate Project',
       dataView: true,
-      args: ['id'],
       show: (record) => { return record.state === 'Suspended' }
     },
     {
@@ -51,7 +50,6 @@ export default {
       icon: 'pause-circle',
       label: 'Suspend Project',
       dataView: true,
-      args: ['id'],
       show: (record) => { return record.state !== 'Suspended' }
     },
     {
@@ -59,14 +57,18 @@ export default {
       icon: 'user-add',
       label: 'Add Account to Project',
       dataView: true,
-      args: ['projectid', 'account', 'email']
+      args: ['projectid', 'account', 'email'],
+      mapping: {
+        projectid: {
+          value: (record) => { return record.id }
+        }
+      }
     },
     {
       api: 'deleteProject',
       icon: 'delete',
       label: 'Delete Project',
-      dataView: true,
-      args: ['id']
+      dataView: true
     }
   ]
 }

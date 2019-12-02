@@ -16,6 +16,7 @@
 // under the License.
 
 import zones from '@/config/section/infra/zones'
+import phynetworks from '@/config/section/infra/phynetworks'
 import pods from '@/config/section/infra/pods'
 import clusters from '@/config/section/infra/clusters'
 import hosts from '@/config/section/infra/hosts'
@@ -28,16 +29,17 @@ export default {
   name: 'infra',
   title: 'Infrastructure',
   icon: 'bank',
-  permission: [ 'listInfrastructure' ],
+  permission: ['listInfrastructure'],
   children: [
     {
       name: 'infrasummary',
       title: 'Summary',
       icon: 'read',
-      permission: [ 'listInfrastructure' ],
+      permission: ['listInfrastructure'],
       component: () => import('@/views/infra/InfraSummary.vue')
     },
     zones,
+    phynetworks,
     pods,
     clusters,
     hosts,
@@ -48,17 +50,51 @@ export default {
     {
       name: 'cpusocket',
       title: 'CPU Sockets',
-      icon: 'api',
-      permission: [ 'listHosts' ],
-      params: { 'type': 'routing' },
-      columns: [ 'hypervisor', 'hosts', 'cpusockets' ]
+      icon: 'inbox',
+      permission: ['listHosts'],
+      params: { type: 'routing' },
+      columns: ['hypervisor', 'hosts', 'cpusockets']
     },
     {
       name: 'managementserver',
       title: 'Management Servers',
       icon: 'rocket',
-      permission: [ 'listManagementServers' ],
-      columns: [ 'name', 'state', 'version' ]
+      permission: ['listManagementServers'],
+      columns: ['name', 'state', 'version']
+    },
+    {
+      name: 'alert',
+      title: 'Alerts',
+      icon: 'flag',
+      permission: ['listAlerts'],
+      columns: ['name', 'description', 'type', 'sent'],
+      details: ['name', 'id', 'type', 'sent', 'description'],
+      actions: [
+        {
+          api: 'archiveAlerts',
+          icon: 'book',
+          label: 'Archive Alert',
+          dataView: true,
+          args: ['ids'],
+          mapping: {
+            ids: {
+              value: (record) => { return record.id }
+            }
+          }
+        },
+        {
+          api: 'deleteAlerts',
+          icon: 'delete',
+          label: 'Delete Alert',
+          dataView: true,
+          args: ['ids'],
+          mapping: {
+            ids: {
+              value: (record) => { return record.id }
+            }
+          }
+        }
+      ]
     }
   ]
 }

@@ -19,9 +19,18 @@ export default {
   name: 'pod',
   title: 'Pods',
   icon: 'appstore',
-  permission: [ 'listPods' ],
-  columns: [ 'name', 'allocationstate', 'gateway', 'netmask', 'zonename' ],
-  details: [ 'name', 'id', 'allocationstate', 'netmask', 'gateway', 'zonename' ],
+  permission: ['listPods'],
+  columns: ['name', 'allocationstate', 'gateway', 'netmask', 'zonename'],
+  details: ['name', 'id', 'allocationstate', 'netmask', 'gateway', 'zonename'],
+  related: [{
+    name: 'cluster',
+    title: 'Clusters',
+    param: 'podid'
+  }, {
+    name: 'host',
+    title: 'Hosts',
+    param: 'podid'
+  }],
   actions: [
     {
       api: 'createPod',
@@ -35,30 +44,39 @@ export default {
       icon: 'edit',
       label: 'label.edit',
       dataView: true,
-      args: ['id', 'name', 'netmask', 'gateway']
+      args: ['name', 'netmask', 'gateway']
     },
     {
       api: 'dedicatePod',
       icon: 'user-add',
       label: 'label.dedicate.pod',
       dataView: true,
+      show: (record) => { return !record.domainid },
       args: ['podid', 'domainid', 'account'],
-      show: (record) => { return !record.domainid }
+      mapping: {
+        podid: {
+          value: (record) => { return record.id }
+        }
+      }
     },
     {
       api: 'releaseDedicatedPod',
       icon: 'user-delete',
       label: 'label.release.dedicated.pod',
       dataView: true,
+      show: (record) => { return record.domainid },
       args: ['podid'],
-      show: (record) => { return record.domainid }
+      mapping: {
+        podid: {
+          value: (record) => { return record.id }
+        }
+      }
     },
     {
       api: 'updatePod',
       icon: 'play-circle',
       label: 'label.action.enable.pod',
       dataView: true,
-      args: ['id'],
       show: (record) => { return record.allocationstate === 'Disabled' }
     },
     {
@@ -66,7 +84,6 @@ export default {
       icon: 'pause-circle',
       label: 'label.action.disable.pod',
       dataView: true,
-      args: ['id'],
       show: (record) => { return record.allocationstate === 'Enabled' },
       defaultArgs: { allocationstate: 'Disabled' }
     },
@@ -74,8 +91,7 @@ export default {
       api: 'deletePod',
       icon: 'delete',
       label: 'label.action.delete.pod',
-      dataView: true,
-      args: ['id']
+      dataView: true
     }
   ]
 }
