@@ -208,6 +208,7 @@ export default {
       }],
       tabs: [
         {
+<<<<<<< HEAD
           name: 'Domain',
           component: () => import('@/components/view/InfoCard.vue'),
           show: (record, route) => { return route.path === '/domain' }
@@ -218,6 +219,14 @@ export default {
         }, {
           name: 'Settings',
           component: () => import('@/components/view/SettingsTab.vue')
+=======
+          name: 'details',
+          component: () => import('@/components/view/DetailsTab.vue')
+        }, {
+          name: 'settings',
+          permission: ['listConfigurations'],
+          component: () => import('@/views/domain/TemplateDomainSettings.vue')
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
         }
       ],
       treeView: true,

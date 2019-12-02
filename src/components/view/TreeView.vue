@@ -28,6 +28,7 @@
           <a-icon slot="prefix" type="search" />
         </a-input-search>
         <a-spin :spinning="loadingSearch">
+<<<<<<< HEAD
           <a-tree
             showLine
             v-if="treeViewData.length > 0"
@@ -44,6 +45,20 @@
             <a-icon slot="parent" type="folder" />
             <a-icon slot="leaf" type="block" />
           </a-tree>
+=======
+          <a-directory-tree
+            showLine
+            v-if="treeViewData.length > 0"
+            class="list-tree-view"
+            :loadData="onLoadData"
+            :treeData="treeViewData"
+            :expandAction="false"
+            :showIcon="false"
+            :defaultSelectedKeys="defaultSelected"
+            :checkStrictly="true"
+            @select="onSelect"
+            :defaultExpandedKeys="arrExpand" />
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
         </a-spin>
       </a-card>
     </a-spin>
@@ -67,8 +82,12 @@
               :resource="resource"
               :items="items"
               :tab="tabActive"
+<<<<<<< HEAD
               :loading="loading"
               :bordered="false" />
+=======
+              :loading="loading" />
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
           </a-tab-pane>
         </a-tabs>
       </a-card>
@@ -100,7 +119,11 @@ export default {
     },
     tabs: {
       type: Array,
+<<<<<<< HEAD
       default () {
+=======
+      default: function () {
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
         return [{
           name: 'details',
           component: DetailsTab
@@ -109,19 +132,26 @@ export default {
     },
     loadedKeys: {
       type: Array,
+<<<<<<< HEAD
       default () {
+=======
+      default: function () {
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
         return []
       }
     },
     loading: {
       type: Boolean,
       default: false
+<<<<<<< HEAD
     },
     actionData: {
       type: Array,
       default () {
         return []
       }
+=======
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
     }
   },
   data () {
@@ -134,7 +164,10 @@ export default {
       defaultSelected: [],
       treeVerticalData: [],
       treeViewData: [],
+<<<<<<< HEAD
       oldTreeViewData: [],
+=======
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
       apiList: '',
       apiChildren: '',
       apiDetail: '',
@@ -145,8 +178,12 @@ export default {
       showSetting: false,
       oldSearchQuery: '',
       searchQuery: '',
+<<<<<<< HEAD
       arrExpand: [],
       rootKey: ''
+=======
+      arrExpand: []
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
     }
   },
   created: function () {
@@ -158,6 +195,7 @@ export default {
     loading () {
       this.detailLoading = this.loading
     },
+<<<<<<< HEAD
     treeData () {
       if (this.oldTreeViewData.length === 0) {
         this.treeViewData = this.treeData
@@ -194,11 +232,25 @@ export default {
       this.defaultSelected.push(this.selectedTreeKey)
 
       // set default expand
+=======
+    treeData: function () {
+      this.treeViewData = this.treeData
+      this.searchQuery = ''
+    },
+    treeSelected: function () {
+      if (Object.keys(this.treeSelected).length === 0) {
+        return
+      }
+      this.resource = this.treeSelected
+      this.selectedTreeKey = this.resource.key
+      this.defaultSelected.push(this.selectedTreeKey)
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
       if (this.defaultSelected.length > 1) {
         const arrSelected = this.defaultSelected
         this.defaultSelected = []
         this.defaultSelected.push(arrSelected[0])
       }
+<<<<<<< HEAD
     },
     actionData (newData, oldData) {
       if (!newData || newData.length === 0) {
@@ -206,20 +258,30 @@ export default {
       }
 
       this.reloadTreeData(newData)
+=======
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
     }
   },
   methods: {
     onLoadData (treeNode) {
+<<<<<<< HEAD
       if (this.searchQuery !== '' && treeNode.eventKey !== this.rootKey) {
+=======
+      if (this.searchQuery !== '') {
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
         return new Promise(resolve => {
           resolve()
         })
       }
+<<<<<<< HEAD
 
+=======
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
       const params = {
         listAll: true,
         id: treeNode.eventKey
       }
+<<<<<<< HEAD
 
       return new Promise(resolve => {
         api(this.apiChildren, params).then(json => {
@@ -251,25 +313,52 @@ export default {
             }
           }
 
+=======
+      return new Promise(resolve => {
+        api(this.apiChildren, params).then(json => {
+          const jsonRespone = this.getResponseJsonData(json)
+          const jsonGenerate = this.generateTreeData(jsonRespone)
+          treeNode.dataRef.children = jsonGenerate
+          if (this.treeVerticalData.length === 0) {
+            this.treeVerticalData = this.treeViewData
+          }
+          this.treeViewData = [...this.treeViewData]
+          this.treeVerticalData = this.treeVerticalData.concat(jsonGenerate)
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
           resolve()
         })
       })
     },
+<<<<<<< HEAD
     onSelect (selectedKeys, event) {
       if (!event.selected) {
         setTimeout(() => { event.node.$refs.selectHandle.click() })
         return
       }
 
+=======
+    onSelect (selectedKeys) {
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
       // check item tree selected, set selectedTreeKey
       if (selectedKeys && selectedKeys[0]) {
         this.selectedTreeKey = selectedKeys[0]
       }
 
+<<<<<<< HEAD
       this.getDetailResource(this.selectedTreeKey)
     },
     onExpand (treeExpand) {
       this.arrExpand = treeExpand
+=======
+      // get item resource
+      const resource = this.treeVerticalData.filter(item => item.id === this.selectedTreeKey)
+
+      // check resource exists
+      if (resource && resource[0]) {
+        this.resource = resource[0]
+        this.$emit('change-resource', this.resource)
+      }
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
     },
     onSearch (value) {
       if (this.searchQuery === '' && this.oldSearchQuery === '') {
@@ -305,6 +394,7 @@ export default {
           return
         }
 
+<<<<<<< HEAD
         if (listDomains[0].id === this.rootKey) {
           const rootDomain = this.generateTreeData(listDomains)
           this.treeViewData = rootDomain
@@ -319,6 +409,11 @@ export default {
           this.resource = this.treeViewData[0]
           this.$emit('change-resource', this.resource)
         }
+=======
+        // get the max level of data search response
+        const maxLevel = Math.max.apply(Math, listDomains.map((o) => { return o.level }))
+        this.recursiveTreeData(listDomains, maxLevel)
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
 
         // check treeViewData, set to expand first children
         if (this.treeViewData &&
@@ -335,6 +430,7 @@ export default {
     onTabChange (key) {
       this.tabActive = key
     },
+<<<<<<< HEAD
     reloadTreeData (objData) {
       // data response from action
       let jsonResponse = this.getResponseJsonData(objData[0])
@@ -410,6 +506,8 @@ export default {
         this.$emit('change-resource', this.resource)
       })
     },
+=======
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
     getResponseJsonData (json) {
       let responseName
       let objectName
@@ -419,12 +517,18 @@ export default {
           break
         }
       }
+<<<<<<< HEAD
 
+=======
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
       for (const key in json[responseName]) {
         if (key === 'count') {
           continue
         }
+<<<<<<< HEAD
 
+=======
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
         objectName = key
         break
       }
@@ -460,11 +564,17 @@ export default {
       }
 
       for (let i = 0; i < jsonData.length; i++) {
+<<<<<<< HEAD
         jsonData[i] = this.createResourceData(jsonData[i])
+=======
+        jsonData[i].title = jsonData[i].name
+        jsonData[i].key = jsonData[i].id
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
       }
 
       return jsonData
     },
+<<<<<<< HEAD
     createResourceData (resource) {
       if (!resource || Object.keys(resource) === 0) {
         return {}
@@ -529,6 +639,29 @@ export default {
 
         if (items[i].haschild) {
           items[i].children = this.getNestedChildren(dataItems, (level + 1), maxLevel, items[i].key)
+=======
+    recursiveTreeData (treeData, maxLevel) {
+      this.newTreeData[0].children = []
+      const items = treeData.filter(item => item.level !== this.newTreeData[0].level)
+      const children = this.getNestedChildren(items, (this.newTreeData[0].level + 1), maxLevel)
+      this.newTreeData[0].children = children
+      this.treeViewData = this.newTreeData
+    },
+    getNestedChildren (dataItems, level, maxLevel) {
+      if (level > maxLevel) {
+        return
+      }
+      const items = dataItems.filter(item => item.level === level)
+      if (items.length === 0 && this.searchQuery !== '') {
+        return this.getNestedChildren(dataItems, (level + 1), maxLevel)
+      }
+      for (let i = 0; i < items.length; i++) {
+        items[i].title = items[i].name
+        items[i].key = items[i].id
+
+        if (items[i].haschild) {
+          items[i].children = this.getNestedChildren(dataItems, (level + 1), maxLevel)
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
         }
       }
 
@@ -567,6 +700,7 @@ export default {
     }
   }
 }
+<<<<<<< HEAD
 
 /deep/.ant-tree li span.ant-tree-switcher.ant-tree-switcher-noop {
   display: none;
@@ -587,4 +721,6 @@ export default {
   padding-left: 0;
   margin-left: 3px;
 }
+=======
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
 </style>
