@@ -218,10 +218,10 @@ export default {
       }
 
       if (this.iso) {
-        this.vm['templateid'] = this.iso.id
-        this.vm['templatename'] = this.iso.displaytext
-        this.vm['ostypeid'] = this.iso.ostypeid
-        this.vm['ostypename'] = this.iso.ostypename
+        this.vm.templateid = this.iso.id
+        this.vm.templatename = this.iso.displaytext
+        this.vm.ostypeid = this.iso.ostypeid
+        this.vm.ostypename = this.iso.ostypename
       }
 
       if (this.serviceOffering) {
