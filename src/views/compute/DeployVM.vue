@@ -99,12 +99,14 @@
         </a-card>
       </a-col>
       <a-col :md="24" :lg="7" v-if="!isMobile()">
-        <info-card :resource="vm" :title="this.$t('yourInstance')" >
-          <div slot="details" v-if="diskSize">
-            <a-icon type="hdd"></a-icon>
-            <span style="margin-left: 10px">{{ diskSize }}</span>
-          </div>
-        </info-card>
+        <a-affix :offsetTop="75">
+          <info-card :resource="vm" :title="this.$t('yourInstance')" >
+            <div slot="details" v-if="diskSize">
+              <a-icon type="hdd"></a-icon>
+              <span style="margin-left: 10px">{{ diskSize }}</span>
+            </div>
+          </info-card>
+        </a-affix>
       </a-col>
     </a-row>
   </div>
