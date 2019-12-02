@@ -33,6 +33,7 @@
                 type="dashed"
                 icon="reload"
 <<<<<<< HEAD
+<<<<<<< HEAD
                 @click="fetchData()">/>
             </a-tooltip>
             <a-tooltip
@@ -56,6 +57,32 @@
 =======
                 @click="fetchData()" />
 >>>>>>> storage: take volume snapshot action (#110)
+=======
+                @click="fetchData()" />
+=======
+                @click="fetchData()">/>
+            </a-tooltip>
+            <a-tooltip
+              v-for="(action, actionIndex) in actions"
+              :key="actionIndex"
+              placement="bottom">
+              <template slot="title">
+                {{ $t(action.label) }}
+              </template>
+              <a-button
+                v-if="action.api in $store.getters.apis &&
+                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) ||
+                  (dataView && action.dataView && ('show' in action ? action.show(resource) : true)) ||
+                  (treeView && ('show' in action ? action.show(treeSelected) : true)))"
+                :icon="action.icon"
+                :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
+                shape="circle"
+                style="margin-right: 5px"
+                @click="execAction(action)"
+              >
+              </a-button>
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
+>>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
             </a-tooltip>
 <<<<<<< HEAD
           </breadcrumb>
