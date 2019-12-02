@@ -46,7 +46,8 @@
               <a-button
                 v-if="action.api in $store.getters.apis &&
                   ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) ||
-                  (dataView && action.dataView && ('show' in action ? action.show(resource) : true)))"
+                  (dataView && action.dataView && ('show' in action ? action.show(resource) : true)) ||
+                  (treeView && ('show' in action ? action.show(treeSelected) : true)))"
                 :icon="action.icon"
                 :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
                 shape="circle"
@@ -59,7 +60,7 @@
               style="width: unset"
               placeholder="Search"
               v-model="searchQuery"
-              v-if="!dataView"
+              v-if="!dataView && !treeView"
               @search="onSearch" />
           </span>
         </a-col>
@@ -191,14 +192,15 @@
       </a-modal>
     </div>
 
-    <div v-if="dataView">
+    <div v-if="dataView && !treeView">
       <resource-view :resource="resource" :loading="loading" :tabs="$route.meta.tabs" />
     </div>
     <div class="row-element" v-else>
       <list-view
         :loading="loading"
         :columns="columns"
-        :items="items" />
+        :items="items"
+        v-if="!treeView" />
       <a-pagination
         class="row-element"
         size="small"
@@ -209,7 +211,15 @@
         :pageSizeOptions="['10', '20', '40', '80', '100']"
         @change="changePage"
         @showSizeChange="changePageSize"
-        showSizeChanger />
+        showSizeChanger
+        v-if="!treeView" />
+      <tree-view
+        v-if="treeView"
+        :treeData="treeData"
+        :treeSelected="treeSelected"
+        :loading="loading"
+        :tabs="$route.meta.tabs"
+        @change-resource="changeResource" />
     </div>
   </div>
 </template>
@@ -225,6 +235,7 @@ import ChartCard from '@/components/widgets/ChartCard'
 import Status from '@/components/widgets/Status'
 import ListView from '@/components/view/ListView'
 import ResourceView from '@/components/view/ResourceView'
+import TreeView from '@/components/view/TreeView'
 import { genericCompare } from '@/utils/sort.js'
 
 export default {
@@ -234,6 +245,7 @@ export default {
     ChartCard,
     ResourceView,
     ListView,
+    TreeView,
     Status
   },
   mixins: [mixinDevice],
@@ -253,7 +265,10 @@ export default {
       currentAction: {},
       showAction: false,
       dataView: false,
-      actions: []
+      treeView: false,
+      actions: [],
+      treeData: [],
+      treeSelected: {}
     }
   },
   computed: {
@@ -291,6 +306,8 @@ export default {
       this.columns = []
       this.columnKeys = []
       this.items = []
+      this.treeData = []
+      this.treeSelected = {}
       var params = { listall: true }
       if (Object.keys(this.$route.query).length > 0) {
         Object.assign(params, this.$route.query)
@@ -307,6 +324,12 @@ export default {
         this.dataView = true
       } else {
         this.dataView = false
+      }
+
+      if (this.$route && this.$route.meta && this.$route.meta.treeView) {
+        this.treeView = true
+      } else {
+        this.treeView = false
       }
 
       if (this.$route && this.$route.meta && this.$route.meta.permission) {
@@ -358,8 +381,16 @@ export default {
           params.name = this.$route.params.id
         }
       }
-      params.page = this.page
-      params.pagesize = this.pageSize
+
+      if (!this.treeView) {
+        params.page = this.page
+        params.pagesize = this.pageSize
+      } else {
+        const domainId = this.$store.getters.userInfo.domainid
+        params.id = domainId
+        delete params.treeView
+      }
+
       api(this.apiName, params).then(json => {
         var responseName
         var objectName
@@ -381,22 +412,33 @@ export default {
         if (!this.items || this.items.length === 0) {
           this.items = []
         }
-        for (let idx = 0; idx < this.items.length; idx++) {
-          this.items[idx].key = idx
-          for (const key in customRender) {
-            const func = customRender[key]
-            if (func && typeof func === 'function') {
-              this.items[idx][key] = func(this.items[idx])
+        if (this.treeView) {
+          this.treeData = this.generateTreeData(this.items)
+        } else {
+          for (let idx = 0; idx < this.items.length; idx++) {
+            this.items[idx].key = idx
+            for (const key in customRender) {
+              const func = customRender[key]
+              if (func && typeof func === 'function') {
+                this.items[idx][key] = func(this.items[idx])
+              }
             }
-          }
-          if (this.$route.path.startsWith('/ssh')) {
-            this.items[idx].id = this.items[idx].name
+            if (this.$route.path.startsWith('/ssh')) {
+              this.items[idx].id = this.items[idx].name
+            }
           }
         }
         if (this.items.length > 0) {
-          this.resource = this.items[0]
+          if (this.treeView) {
+            this.treeSelected = this.items[0]
+            this.resource = this.items[0]
+          } else {
+            this.resource = this.items[0]
+            this.treeSelected = {}
+          }
         } else {
           this.resource = {}
+          this.treeSelected = {}
         }
       }).catch(error => {
         // handle error
@@ -629,6 +671,23 @@ export default {
         this.loading = false
         this.selectedRowKeys = []
       }, 1000)
+    },
+    generateTreeData (treeData) {
+      const result = []
+      const rootItem = treeData
+
+      rootItem[0].title = rootItem[0].title ? rootItem[0].title : rootItem[0].name
+      rootItem[0].key = rootItem[0].id ? rootItem[0].id : 0
+
+      result.push(rootItem[0])
+      return result
+    },
+    changeResource (resource) {
+      this.treeSelected = resource
+      this.resource = this.treeSelected
+    },
+    changeAction (showAction) {
+      this.showAction = showAction
     }
   }
 }

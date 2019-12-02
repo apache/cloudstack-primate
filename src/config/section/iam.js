@@ -167,7 +167,7 @@ export default {
       name: 'domain',
       title: 'Domains',
       icon: 'block',
-      permission: ['listDomains'],
+      permission: ['listDomains', 'listDomainChildren'],
       resourceType: 'Domain',
       columns: ['name', 'state', 'path', 'parentdomainname', 'level'],
       details: ['name', 'id', 'path', 'parentdomainname', 'level', 'networkdomain', 'iptotal', 'vmtotal', 'volumetotal', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit'],
@@ -176,6 +176,17 @@ export default {
         title: 'Accounts',
         param: 'domainid'
       }],
+      tabs: [
+        {
+          name: 'details',
+          component: () => import('@/components/view/DetailsTab.vue')
+        }, {
+          name: 'settings',
+          permission: ['listConfigurations'],
+          component: () => import('@/views/domain/TemplateDomainSettings.vue')
+        }
+      ],
+      treeView: true,
       actions: [
         {
           api: 'createDomain',
