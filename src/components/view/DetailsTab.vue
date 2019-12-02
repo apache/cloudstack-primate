@@ -23,7 +23,8 @@
       <div>
         <strong>{{ $t(item) }}</strong>
         <br/>
-        <div>
+        <div v-if="resource[item]==='Unlimited'">-1</div>
+        <div v-else>
           {{ resource[item] }}
         </div>
       </div>
