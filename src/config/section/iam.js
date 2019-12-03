@@ -183,7 +183,7 @@ export default {
         }, {
           name: 'settings',
           permission: ['listConfigurations'],
-          component: () => import('@/views/domain/TemplateDomainSettings.vue')
+          component: () => import('@/views/iam/TemplateDomainSettings.vue')
         }
       ],
       treeView: true,

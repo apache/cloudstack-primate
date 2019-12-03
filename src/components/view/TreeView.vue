@@ -133,7 +133,8 @@ export default {
       showSetting: false,
       oldSearchQuery: '',
       searchQuery: '',
-      arrExpand: []
+      arrExpand: [],
+      rootKey: ''
     }
   },
   created: function () {
@@ -148,6 +149,9 @@ export default {
     treeData: function () {
       this.treeViewData = this.treeData
       this.searchQuery = ''
+      if (this.treeViewData.length > 0) {
+        this.rootKey = this.treeViewData[0].key
+      }
     },
     treeSelected: function () {
       if (Object.keys(this.treeSelected).length === 0) {
@@ -165,7 +169,7 @@ export default {
   },
   methods: {
     onLoadData (treeNode) {
-      if (this.searchQuery !== '') {
+      if (this.searchQuery !== '' && treeNode.eventKey !== this.rootKey) {
         return new Promise(resolve => {
           resolve()
         })
@@ -234,6 +238,12 @@ export default {
         this.treeVerticalData = this.treeVerticalData.concat(listDomains)
 
         if (!listDomains || listDomains.length === 0) {
+          return
+        }
+
+        if (listDomains[0].id === this.rootKey) {
+          const rootDomain = this.generateTreeData(listDomains)
+          this.treeViewData = rootDomain
           return
         }
 
@@ -311,26 +321,43 @@ export default {
       return jsonData
     },
     recursiveTreeData (treeData, maxLevel) {
-      this.newTreeData[0].children = []
-      const items = treeData.filter(item => item.level !== this.newTreeData[0].level)
-      const children = this.getNestedChildren(items, (this.newTreeData[0].level + 1), maxLevel)
-      this.newTreeData[0].children = children
-      this.treeViewData = this.newTreeData
+      const items = treeData.filter(item => item.level <= maxLevel)
+      this.treeViewData = this.getNestedChildren(items, 0, maxLevel)
     },
-    getNestedChildren (dataItems, level, maxLevel) {
+    getNestedChildren (dataItems, level, maxLevel, id) {
       if (level > maxLevel) {
         return
       }
-      const items = dataItems.filter(item => item.level === level)
-      if (items.length === 0 && this.searchQuery !== '') {
+
+      let items = []
+
+      if (!id || id === '') {
+        items = dataItems.filter(item => item.level === level)
+      } else {
+        items = dataItems.filter(item => {
+          let parentKey = ''
+          const arrKeys = Object.keys(item)
+          for (let i = 0; i < arrKeys.length; i++) {
+            if (arrKeys[i].indexOf('parent') > -1 && arrKeys[i].indexOf('id') > -1) {
+              parentKey = arrKeys[i]
+              break
+            }
+          }
+
+          return parentKey ? item[parentKey] === id : item.level === level
+        })
+      }
+
+      if (items.length === 0) {
         return this.getNestedChildren(dataItems, (level + 1), maxLevel)
       }
+
       for (let i = 0; i < items.length; i++) {
         items[i].title = items[i].name
         items[i].key = items[i].id
 
         if (items[i].haschild) {
-          items[i].children = this.getNestedChildren(dataItems, (level + 1), maxLevel)
+          items[i].children = this.getNestedChildren(dataItems, (level + 1), maxLevel, items[i].key)
         }
       }
 
