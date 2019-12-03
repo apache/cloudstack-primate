@@ -179,11 +179,16 @@ export default {
       oldSearchQuery: '',
       searchQuery: '',
 <<<<<<< HEAD
+<<<<<<< HEAD
       arrExpand: [],
       rootKey: ''
 =======
       arrExpand: []
 >>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
+=======
+      arrExpand: [],
+      rootKey: ''
+>>>>>>> Fix: search tree-view and moving domain settings to the in folder iam
     }
   },
   created: function () {
@@ -236,6 +241,9 @@ export default {
     treeData: function () {
       this.treeViewData = this.treeData
       this.searchQuery = ''
+      if (this.treeViewData.length > 0) {
+        this.rootKey = this.treeViewData[0].key
+      }
     },
     treeSelected: function () {
       if (Object.keys(this.treeSelected).length === 0) {
@@ -265,10 +273,14 @@ export default {
   methods: {
     onLoadData (treeNode) {
 <<<<<<< HEAD
+<<<<<<< HEAD
       if (this.searchQuery !== '' && treeNode.eventKey !== this.rootKey) {
 =======
       if (this.searchQuery !== '') {
 >>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
+=======
+      if (this.searchQuery !== '' && treeNode.eventKey !== this.rootKey) {
+>>>>>>> Fix: search tree-view and moving domain settings to the in folder iam
         return new Promise(resolve => {
           resolve()
         })
@@ -395,12 +407,16 @@ export default {
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Fix: search tree-view and moving domain settings to the in folder iam
         if (listDomains[0].id === this.rootKey) {
           const rootDomain = this.generateTreeData(listDomains)
           this.treeViewData = rootDomain
           return
         }
 
+<<<<<<< HEAD
         this.recursiveTreeData(listDomains)
 
         if (this.treeViewData && this.treeViewData[0]) {
@@ -410,6 +426,8 @@ export default {
           this.$emit('change-resource', this.resource)
         }
 =======
+=======
+>>>>>>> Fix: search tree-view and moving domain settings to the in folder iam
         // get the max level of data search response
         const maxLevel = Math.max.apply(Math, listDomains.map((o) => { return o.level }))
         this.recursiveTreeData(listDomains, maxLevel)
@@ -641,27 +659,48 @@ export default {
           items[i].children = this.getNestedChildren(dataItems, (level + 1), maxLevel, items[i].key)
 =======
     recursiveTreeData (treeData, maxLevel) {
-      this.newTreeData[0].children = []
-      const items = treeData.filter(item => item.level !== this.newTreeData[0].level)
-      const children = this.getNestedChildren(items, (this.newTreeData[0].level + 1), maxLevel)
-      this.newTreeData[0].children = children
-      this.treeViewData = this.newTreeData
+      const items = treeData.filter(item => item.level <= maxLevel)
+      this.treeViewData = this.getNestedChildren(items, 0, maxLevel)
     },
-    getNestedChildren (dataItems, level, maxLevel) {
+    getNestedChildren (dataItems, level, maxLevel, id) {
       if (level > maxLevel) {
         return
       }
-      const items = dataItems.filter(item => item.level === level)
-      if (items.length === 0 && this.searchQuery !== '') {
+
+      let items = []
+
+      if (!id || id === '') {
+        items = dataItems.filter(item => item.level === level)
+      } else {
+        items = dataItems.filter(item => {
+          let parentKey = ''
+          const arrKeys = Object.keys(item)
+          for (let i = 0; i < arrKeys.length; i++) {
+            if (arrKeys[i].indexOf('parent') > -1 && arrKeys[i].indexOf('id') > -1) {
+              parentKey = arrKeys[i]
+              break
+            }
+          }
+
+          return parentKey ? item[parentKey] === id : item.level === level
+        })
+      }
+
+      if (items.length === 0) {
         return this.getNestedChildren(dataItems, (level + 1), maxLevel)
       }
+
       for (let i = 0; i < items.length; i++) {
         items[i].title = items[i].name
         items[i].key = items[i].id
 
         if (items[i].haschild) {
+<<<<<<< HEAD
           items[i].children = this.getNestedChildren(dataItems, (level + 1), maxLevel)
 >>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
+=======
+          items[i].children = this.getNestedChildren(dataItems, (level + 1), maxLevel, items[i].key)
+>>>>>>> Fix: search tree-view and moving domain settings to the in folder iam
         }
       }
 

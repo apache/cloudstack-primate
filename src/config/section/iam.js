@@ -225,8 +225,12 @@ export default {
         }, {
           name: 'settings',
           permission: ['listConfigurations'],
+<<<<<<< HEAD
           component: () => import('@/views/domain/TemplateDomainSettings.vue')
 >>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
+=======
+          component: () => import('@/views/iam/TemplateDomainSettings.vue')
+>>>>>>> Fix: search tree-view and moving domain settings to the in folder iam
         }
       ],
       treeView: true,

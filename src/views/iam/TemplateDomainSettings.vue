@@ -19,6 +19,7 @@
   <div>
     <a-spin :spinning="currentLoading">
       <detail-settings
+        :resource="resource"
         :items="dataSetting"
         :loading="currentLoading"
       >
@@ -89,6 +90,8 @@ export default {
       if (this.oldResource.key === this.resource.key) {
         return
       }
+      console.log(this.oldResource)
+      console.log(this.resource)
       this.oldResource = this.resource
       const params = {
         listAll: true,
