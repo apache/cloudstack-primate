@@ -26,13 +26,18 @@ export function api (command, args = {}) {
 }
 
 export function apiPostForm (command, data = {}) {
+  const params = new URLSearchParams()
+  params.append('command', command)
+  params.append('response', 'json')
+  for (const [key, value] of data) {
+    params.append(key, value)
+  }
   return axios({
-    params: {
-      command,
-      response: 'json'
-    },
     method: 'POST',
-    data
+    data: params,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
   })
 }
 
