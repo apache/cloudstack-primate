@@ -17,6 +17,10 @@
 
 <template>
   <a-tabs :defaultActiveKey="Object.keys(osTypes)[0]">
+    <a-popover slot="tabBarExtraContent" title="Filter" trigger="click" placement="bottomRight" v-model="visible">
+      <a-input-search slot="content" v-model="filter" style="width: 200px;"></a-input-search>
+      <a-button icon="filter" :type="filter !== '' ? 'primary' : 'default'" />
+    </a-popover>
     <a-tab-pane v-for="(osList, osName) in osTypes" :key="osName">
       <span slot="tab">
         <os-logo :os-name="osName"></os-logo>
@@ -77,10 +81,17 @@ export default {
       default: ''
     }
   },
+  data () {
+    return {
+      visible: false,
+      filter: '',
+      filteredItems: this.items
+    }
+  },
   computed: {
     osTypes () {
       let mappedItems = {}
-      this.items.forEach((os) => {
+      this.filteredItems.forEach((os) => {
         const osName = getNormalizedOsName(os.ostypename)
         if (Array.isArray(mappedItems[osName])) {
           mappedItems[osName].push(os)
@@ -96,6 +107,18 @@ export default {
         return featuredItems.concat(nonFeaturedItems) // pin featured isos/templates at the top
       })
       return mappedItems
+    }
+  },
+  watch: {
+    items (items) {
+      this.filteredItems = items
+    },
+    filter (filterString) {
+      if (filterString !== '') {
+        this.filteredItems = this.filteredItems.filter((item) => item.displaytext.toLowerCase().includes(filterString))
+      } else {
+        this.filteredItems = this.items
+      }
     }
   },
   methods: {
