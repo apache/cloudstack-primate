@@ -16,11 +16,19 @@
 // under the License.
 
 <template>
-  <a-button @click="handleSave">
-    <a-icon
-      type="save"
-    />
-  </a-button>
+  <a-tooltip
+    placement="bottom">
+    <template slot="title">
+      Save new Role
+    </template>
+    <a-button
+      icon="save"
+      type="primary"
+      shape="circle"
+      @click="handleSave"
+    >
+    </a-button>
+  </a-tooltip>
 </template>
 
 <script>
