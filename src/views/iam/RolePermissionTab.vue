@@ -61,7 +61,7 @@
           <role-save :record="record" @save="onRuleSave(record)" />
           <a-button @click="onCancelNew(record)" type="danger"><a-icon type="close"/></a-button>
         </div>
-        <role-delete
+        <rule-delete
           v-else
           :record="record"
           @delete="onPermissionDelete(record.id, $event)" />
@@ -74,7 +74,7 @@
 import { api } from '@/api'
 // import draggable from 'vuedraggable'
 import PermissionEditable from './PermissionEditable'
-import RoleDelete from './RoleDelete'
+import RuleDelete from './RuleDelete'
 import DraggableRow from './DraggableRow'
 import APIAutoComplete from './APIAutoComplete'
 import RoleSave from './RoleSave'
@@ -84,7 +84,7 @@ export default {
   components: {
     RoleSave,
     APIAutoComplete,
-    RoleDelete,
+    RuleDelete,
     PermissionEditable,
     DraggableRow
   },

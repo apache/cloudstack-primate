@@ -35,7 +35,7 @@
 
 <script>
 export default {
-  name: 'RoleAutoComplete',
+  name: 'APIAutoComplete',
   props: {
     error: {
       type: Boolean,

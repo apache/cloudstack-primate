@@ -18,10 +18,10 @@
 <template>
   <a-tooltip placement="bottom">
     <template slot="title">
-      Delete role
+      Delete rule
     </template>
     <a-popconfirm
-      title="Delete Role?"
+      title="Delete Rule?"
       @confirm="handleDelete"
     >
       <a-button type="danger">
@@ -40,7 +40,7 @@
 
 <script>
 export default {
-  name: 'RoleDelete',
+  name: 'RuleDelete',
   props: {
     record: {
       type: Object,
