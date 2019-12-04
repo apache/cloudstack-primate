@@ -32,10 +32,11 @@
       </template>
 
       <template slot="rule" slot-scope="text, record">
-        <role-auto-complete
+        <a-p-i-auto-complete
           v-if="record.editable"
           @selectedRecord="onRuleSelect"
           :error="newRuleSelectError"
+          :data="$store.getters.apis"
         />
         <template v-else>
           {{ text }}
@@ -75,14 +76,14 @@ import { api } from '@/api'
 import PermissionEditable from './PermissionEditable'
 import RoleDelete from './RoleDelete'
 import DraggableRow from './DraggableRow'
-import RoleAutoComplete from './RoleAutoComplete'
+import APIAutoComplete from './APIAutoComplete'
 import RoleSave from './RoleSave'
 
 export default {
   name: 'RolePermissionTab',
   components: {
     RoleSave,
-    RoleAutoComplete,
+    APIAutoComplete,
     RoleDelete,
     PermissionEditable,
     DraggableRow

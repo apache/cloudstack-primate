@@ -17,18 +17,16 @@
 
 <template>
   <div>
-    <a-icon v-if="loading" type="loading"></a-icon>
     <a-auto-complete
-      v-else
       :filterOption="filterOption"
       @select="onSelect"
       placeholder="Select Rule"
       :class="{'rule-dropdown-error' : error}">
       <template slot="dataSource">
         <a-select-option
-          v-for="item in dataSource"
-          :key="item.name"
-        >{{ item.name }}</a-select-option>
+          v-for="(item, key) in data"
+          :key="key"
+        >{{ key }}</a-select-option>
       </template>
     </a-auto-complete>
     <div v-if="error" class="error-label">* Required</div>
@@ -36,30 +34,17 @@
 </template>
 
 <script>
-import { api } from '@/api'
-
 export default {
   name: 'RoleAutoComplete',
   props: {
     error: {
       type: Boolean,
       default: false
+    },
+    data: {
+      type: Object,
+      required: true
     }
-  },
-  data () {
-    return {
-      dataSource: [],
-      loading: true
-    }
-  },
-  beforeMount () {
-    this.dataSource = api('listApis', {}).then(response => {
-      this.dataSource = response.listapisresponse.api
-    }).catch(error => {
-      console.error(error)
-    }).finally(() => {
-      this.loading = false
-    })
   },
   methods: {
     filterOption (input, option) {
