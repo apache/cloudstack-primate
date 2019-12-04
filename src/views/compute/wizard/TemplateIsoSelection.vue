@@ -16,61 +16,42 @@
 // under the License.
 
 <template>
-  <a-tabs :defaultActiveKey="Object.keys(osTypes)[0]">
-    <a-popover slot="tabBarExtraContent" title="Filter" trigger="click" placement="bottomRight" v-model="visible">
-      <a-input-search slot="content" v-model="filter" style="width: 200px;"></a-input-search>
-      <a-button icon="filter" :type="filter !== '' ? 'primary' : 'default'" />
-    </a-popover>
+  <a-tabs :defaultActiveKey="Object.keys(osTypes)[0]" v-if="view === TAB_VIEW">
+    <a-button icon="search" slot="tabBarExtraContent" @click="() => toggleView(FILTER_VIEW)"/>
     <a-tab-pane v-for="(osList, osName) in osTypes" :key="osName">
       <span slot="tab">
         <os-logo :os-name="osName"></os-logo>
       </span>
-      <a-form-item>
-        <a-radio-group
-          v-for="(os, osIndex) in osList"
-          :key="osIndex"
-          class="radio-group"
-          v-decorator="[inputDecorator, {
-            rules: [{ required: true, message: 'Please select option' }]
-          }]"
-        >
-          <a-radio
-            class="radio-group__radio"
-            :value="os.id"
-          >
-            {{ os.displaytext }}&nbsp;
-            <a-tag
-              :visible="os.ispublic && !os.isfeatured"
-              color="blue"
-            >{{ $t('isPublic') }}</a-tag>
-            <a-tag
-              :visible="os.isfeatured"
-              color="green"
-            >{{ $t('isFeatured') }}</a-tag>
-            <a-tag
-              :visible="isSelf(os)"
-              color="orange"
-            >{{ $t('isSelf') }}</a-tag>
-            <a-tag
-              :visible="isShared(os)"
-              color="cyan"
-            >{{ $t('isShared') }}</a-tag>
-          </a-radio>
-        </a-radio-group>
-      </a-form-item>
+      <TemplateIsoRadioGroup
+        :osList="osList"
+        :input-decorator="inputDecorator"
+      ></TemplateIsoRadioGroup>
     </a-tab-pane>
   </a-tabs>
+  <div v-else>
+    <a-input class="search-input" v-model="filter">
+      <a-icon slot="prefix" type="search"/>
+      <a-icon slot="addonAfter" type="close" @click="toggleView(TAB_VIEW)"/>
+    </a-input>
+    <TemplateIsoRadioGroup
+      :osList="filteredItems"
+      :input-decorator="inputDecorator"
+    ></TemplateIsoRadioGroup>
+  </div>
 </template>
 
 <script>
-import store from '@/store'
 import OsLogo from '@/components/widgets/OsLogo'
 import { getNormalizedOsName } from '@/utils/icons'
 import _ from 'lodash'
+import TemplateIsoRadioGroup from '@views/compute/wizard/TemplateIsoRadioGroup'
+
+export const TAB_VIEW = 1
+export const FILTER_VIEW = 2
 
 export default {
   name: 'TemplateIsoSelection',
-  components: { OsLogo },
+  components: { TemplateIsoRadioGroup, OsLogo },
   props: {
     items: {
       type: Array,
@@ -83,15 +64,18 @@ export default {
   },
   data () {
     return {
+      TAB_VIEW: TAB_VIEW,
+      FILTER_VIEW: FILTER_VIEW,
       visible: false,
       filter: '',
-      filteredItems: this.items
+      filteredItems: this.items,
+      view: TAB_VIEW
     }
   },
   computed: {
     osTypes () {
       let mappedItems = {}
-      this.filteredItems.forEach((os) => {
+      this.items.forEach((os) => {
         const osName = getNormalizedOsName(os.ostypename)
         if (Array.isArray(mappedItems[osName])) {
           mappedItems[osName].push(os)
@@ -122,23 +106,15 @@ export default {
     }
   },
   methods: {
-    isShared (item) {
-      return !item.ispublic && (item.account !== store.getters.userInfo.account)
-    },
-    isSelf (item) {
-      return !item.ispublic && (item.account === store.getters.userInfo.account)
+    toggleView (view) {
+      this.view = view
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
-  .radio-group {
-    display: flex;
-    flex-direction: column;
-
-    &__radio {
-      margin: 0.5rem 0;
-    }
+  .search-input {
+    margin: 0.5rem 0 1rem;
   }
 </style>
