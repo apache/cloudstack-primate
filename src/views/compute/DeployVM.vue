@@ -244,6 +244,11 @@ export default {
   beforeCreate () {
     this.form = this.$form.createForm(this, {
       onValuesChange: (props, fields) => {
+        if (fields.isoid) {
+          this.form.setFieldsValue({ templateid: null })
+        } else if (fields.templateid) {
+          this.form.setFieldsValue({ isoid: null })
+        }
         this.instanceConfig = { ...this.form.getFieldsValue(), ...fields }
         this.vm = this.instanceConfig
       }
