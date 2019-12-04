@@ -16,7 +16,7 @@
 // under the License.
 
 <template>
-  <a-icon v-if="loading" type="loading" class="main-loading-spinner"></a-icon>
+  <a-icon v-if="loadingTable" type="loading" class="main-loading-spinner"></a-icon>
   <a-list
     v-else
     bordered
@@ -92,7 +92,7 @@ export default {
   },
   data () {
     return {
-      loading: true,
+      loadingTable: true,
       updateTable: false,
       rules: null,
       pagination: {
@@ -114,6 +114,12 @@ export default {
   },
   mounted () {
     this.loadAllRules(() => this.onRuleAdd())
+  },
+  watch: {
+    resource: function () {
+      this.loadingTable = true
+      this.loadAllRules(() => this.onRuleAdd())
+    }
   },
   methods: {
     dragStart (record) {
@@ -147,7 +153,7 @@ export default {
       }).catch(error => {
         console.error(error)
       }).finally(() => {
-        this.loading = false
+        this.loadingTable = false
         this.updateTable = false
         if (callback) callback()
       })
