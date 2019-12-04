@@ -24,15 +24,8 @@
       title="Delete Rule?"
       @confirm="handleDelete"
     >
-      <a-button type="danger">
-        <a-icon
-          type="loading"
-          v-if="deleteLoading"
-        />
-        <a-icon
-          type="delete"
-          v-else
-        />
+      <a-button type="danger" shape="circle">
+        <a-icon type="delete" />
       </a-button>
     </a-popconfirm>
   </a-tooltip>
@@ -47,15 +40,9 @@ export default {
       required: true
     }
   },
-  data () {
-    return {
-      deleteLoading: false
-    }
-  },
   methods: {
     handleDelete () {
-      this.deleteLoading = true
-      this.$emit('delete', this)
+      this.$emit('delete')
     }
   }
 }
