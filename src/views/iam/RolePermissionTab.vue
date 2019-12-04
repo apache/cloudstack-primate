@@ -17,21 +17,24 @@
 
 <template>
   <a-icon v-if="loading" type="loading" class="main-loading-spinner"></a-icon>
-  <div v-else>
-    <a-button
-      type="primary"
-      icon="plus"
-      class="role-add-btn"
-      @click="onRoleAdd"
-      :disabled="newRoleButtonDisabled">
-      Add Role
-    </a-button>
-    <a-table bordered :dataSource="roles" :columns="columns" rowKey="id" :components="customComponents">
-      <template slot="draggable">
+  <a-list
+    v-else
+    bordered
+    itemLayout="horizontal"
+    :dataSource="rules"
+    :pagination="pagination"
+    :loading="updateTable">
+    <a-list-item
+      draggable="true"
+      @dragstart="dragStart(record)"
+      @dragleave="dragEnd(record)"
+      slot="renderItem"
+      slot-scope="record"
+      class="rules-table-item">
+      <div class="rules-table__col rules-table__col--grab">
         <a-icon type="drag" style="cursor: grab;"></a-icon>
-      </template>
-
-      <template slot="rule" slot-scope="text, record">
+      </div>
+      <div class="rules-table__col rules-table__col--rule">
         <a-p-i-auto-complete
           v-if="record.editable"
           @selectedRecord="onRuleSelect"
@@ -39,43 +42,36 @@
           :data="$store.getters.apis"
         />
         <template v-else>
-          {{ text }}
+          {{ record.rule }}
         </template>
-      </template>
-
-      <template slot="permission" slot-scope="text, record">
+      </div>
+      <div class="rules-table__col rules-table__col--permission">
         <permission-editable
-          :defaultValue="text"
+          :defaultValue="record.permission"
           @change="onPermissionChange(record, $event)" />
-      </template>
-
-      <template slot="description" slot-scope="text, record">
-        <a-input v-if="record.editable" v-model="newRoleDescription"></a-input>
+      </div>
+      <div class="rules-table__col rules-table__col--description">
+        <a-input v-if="record.editable" v-model="record.description" placeholder="Optional Description"></a-input>
         <template v-else>
-          {{ text }}
+          {{ record.description }}
         </template>
-      </template>
-
-      <template slot="actions" slot-scope="text, record">
-        <div v-if="record.editable" class="new-role-controls">
-          <role-save :record="record" @save="onRuleSave(record)" />
-          <a-button @click="onCancelNew(record)" type="danger"><a-icon type="close"/></a-button>
-        </div>
+      </div>
+      <div class="rules-table__col rules-table__col--actions">
+        <role-save v-if="record.editable" :record="record" @save="onRuleSave(record)" />
         <rule-delete
-          v-else
           :record="record"
-          @delete="onPermissionDelete(record.id, $event)" />
-      </template>
-    </a-table>
-  </div>
+          v-else
+          @delete="onRuleDelete(record.id)" />
+      </div>
+    </a-list-item>
+  </a-list>
 </template>
 
 <script>
 import { api } from '@/api'
-// import draggable from 'vuedraggable'
+import draggable from 'vuedraggable'
 import PermissionEditable from './PermissionEditable'
 import RuleDelete from './RuleDelete'
-import DraggableRow from './DraggableRow'
 import APIAutoComplete from './APIAutoComplete'
 import RoleSave from './RoleSave'
 
@@ -86,7 +82,7 @@ export default {
     APIAutoComplete,
     RuleDelete,
     PermissionEditable,
-    DraggableRow
+    draggable
   },
   props: {
     resource: {
@@ -97,87 +93,77 @@ export default {
   data () {
     return {
       loading: true,
-      roles: null,
-      customComponents: {
-        body: {
-          row: this.row
-        }
+      updateTable: false,
+      rules: null,
+      pagination: {
+        pageSize: 10
       },
-      columns: [
-        {
-          title: '',
-          dataIndex: null,
-          key: 'draggable',
-          scopedSlots: { customRender: 'draggable' }
-        },
-        {
-          title: 'Rule',
-          dataIndex: 'rule',
-          key: 'rule',
-          sorter: (a, b) => a.rule.localeCompare(b.rule),
-          sortDirections: ['descend', 'ascend'],
-          scopedSlots: { customRender: 'rule' }
-        },
-        {
-          title: 'Permission',
-          dataIndex: 'permission',
-          key: 'permission',
-          sorter: (a, b) => a.permission.localeCompare(b.permission),
-          sortDirections: ['descend', 'ascend'],
-          scopedSlots: { customRender: 'permission' }
-        },
-        {
-          title: 'Description',
-          dataIndex: 'description',
-          key: 'description',
-          sorter: (a, b) => {
-            const aVal = a.description ? a.description : ''
-            const bVal = b.description ? b.description : ''
-
-            return aVal.localeCompare(bVal)
-          },
-          sortDirections: ['descend', 'ascend'],
-          scopedSlots: { customRender: 'description' }
-        },
-        {
-          title: 'Actions',
-          dataIndex: 'actions',
-          key: 'actions',
-          scopedSlots: { customRender: 'actions' }
-        }
-      ],
-      newRoleButtonDisabled: false,
       newRoleSelectedRule: '',
       newRoleSelectedPermission: 'allow',
-      newRoleDescription: '',
-      newRuleSelectError: false
+      newRuleSelectError: false,
+      dragStartIndex: '',
+      dragEndIndex: ''
+    }
+  },
+  computed: {
+    roleids: function () {
+      const arr = []
+      this.rules.slice(1).forEach(item => arr.push(item.id))
+      return arr
     }
   },
   mounted () {
-    this.loadAllRoles()
+    this.loadAllRules(() => this.onRuleAdd())
   },
   methods: {
-    loadAllRoles (callback = null) {
+    dragStart (record) {
+      this.dragStartIndex = this.roleids.findIndex(item => item === record.id)
+    },
+    dragEnd (record) {
+      this.dragEndIndex = this.roleids.findIndex(item => item === record.id)
+      if (this.dragEndIndex === this.dragStartIndex) return
+      this.updateRulesOrder()
+    },
+    updateRulesOrder () {
+      [this.roleids[this.dragEndIndex], this.roleids[this.dragStartIndex]] = [this.roleids[this.dragStartIndex],
+        this.roleids[this.dragEndIndex]]
+
+      api('updateRolePermission', {}, 'POST', {
+        roleid: this.resource.id,
+        ruleorder: this.roleids
+      }).then(response => {
+        console.log(response)
+      }).catch(error => {
+        console.error(error)
+      }).finally(() => {
+        this.loadAllRules(() => {
+          this.onRuleAdd()
+        })
+      })
+    },
+    loadAllRules (callback = null) {
       api('listRolePermissions', { id: this.resource.id }).then(response => {
-        this.roles = response.listrolepermissionsresponse.rolepermission
+        this.rules = response.listrolepermissionsresponse.rolepermission
       }).catch(error => {
         console.error(error)
       }).finally(() => {
         this.loading = false
+        this.updateTable = false
         if (callback) callback()
       })
     },
-    onPermissionDelete (key, component) {
+    onRuleDelete (key) {
+      this.updateTable = true
       api('deleteRolePermission', { id: key }).catch(error => {
         console.error(error)
       }).finally(() => {
-        component.deleteLoading = false
-        this.loadAllRoles()
+        this.loadAllRules(() => {
+          this.onRuleAdd()
+        })
       })
     },
-    onRoleAdd () {
-      this.newRoleButtonDisabled = true
-      this.roles = [
+    onRuleAdd () {
+      this.rules = [
         {
           description: '',
           id: '',
@@ -187,25 +173,26 @@ export default {
           permission: 'allow',
           editable: true
         },
-        ...this.roles
+        ...this.rules
       ]
-    },
-    onCancelNew (record) {
-      this.loadAllRoles(() => {
-        record.editable = false
-        this.newRoleButtonDisabled = false
-        this.newRuleSelectError = false
-        this.newRoleSelectedRule = ''
-        this.newRoleDescription = ''
-      })
     },
     onPermissionChange (record, value) {
       this.newRoleSelectedPermission = value
 
+      if (record.editable) {
+        record.permission = this.newRoleSelectedPermission
+        return
+      }
+
+      this.updateTable = true
       api('updateRolePermission', {
         roleid: this.resource.id,
         ruleid: record.id,
         permission: value
+      }).then(() => {
+        this.loadAllRules(() => {
+          this.onRuleAdd()
+        })
       }).catch(error => {
         console.error(error)
       })
@@ -218,18 +205,19 @@ export default {
         this.newRuleSelectError = true
         return
       }
+
+      this.updateTable = true
       api('createRolePermission', {
         rule: this.newRoleSelectedRule,
         permission: this.newRoleSelectedPermission,
-        description: this.newRoleDescription,
+        description: record.description,
         roleid: this.resource.id
       }).then(() => {
-        record.editable = false
-        this.loadAllRoles()
+        this.loadAllRules(() => {
+          this.onRuleAdd()
+        })
       }).catch(error => {
         console.error(error)
-      }).finally(() => {
-        this.newRoleButtonDisabled = false
       })
     }
   }
@@ -253,6 +241,56 @@ export default {
       &:not(:last-child) {
         margin-right: 5px;
       }
+    }
+
+  }
+
+  .rules-table {
+
+    &-item {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
+    &__col {
+      display: flex;
+      align-items: center;
+      padding-top: 15px;
+      padding-bottom: 15px;
+
+      &:not(:first-child) {
+        padding-left: 20px;
+      }
+
+      &:not(:last-child) {
+        border-right: 1px solid #e8e8e8;
+        padding-right: 20px;
+      }
+
+      &--grab {
+        justify-content: center;
+      }
+
+      &--rule {
+        width: 400px;
+        flex: 1;
+      }
+
+      &--permission {
+        width: 120px;
+        justify-content: center;
+      }
+
+      &--description {
+        min-width: 200px;
+        max-width: 250px;
+        flex: 1;
+      }
+
+      &--actions {
+        max-width: 70px;
+      }
+
     }
 
   }
