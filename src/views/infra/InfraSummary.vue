@@ -212,9 +212,6 @@ export default {
       })
     },
 
-    /**
-     * Resets all SSL Form Data to initial values
-     */
     resetSslFormData () {
       this.form.resetFields()
       this.intermediateCertificates = []
@@ -222,41 +219,20 @@ export default {
       this.sslFormVisible = false
     },
 
-    /**
-     * Method to run when the modal window is closed
-     */
     sslModalClose () {
       this.resetSslFormData()
     },
 
-    /**
-     * Add empty intermediate certificate input to SSL form
-     */
     addIntermediateCert () {
       this.intermediateCertificates.push('')
     },
 
-    /**
-     * Create new FormData object, and append the supplied data to it.
-     * @param {Number} count - The value of the id
-     * @param {String} cert - The certificate value
-     * @param {String} domain - The domain suffix value
-     * @param {String} nameKey - The value of either the 'name' key, or 'privatekey' key
-     * @param {Boolean} [defaultNameKey=true] - This controls whether to use the 'name' key or 'privatekey' key
-     * @returns {FormData} - Returns a FormData object, ready to be sent via POST
-     */
-    appendFormData (count, cert, domain, nameKey, defaultNameKey = true) {
-      const formData = new FormData()
-      formData.append('id', count)
-      formData.append('certificate', cert)
-      formData.append('domainsuffix', domain)
-      defaultNameKey ? formData.append('name', nameKey) : formData.append('privatekey', nameKey)
-      return formData
+    pollActionCompletion (jobId) {
+      api('queryAsyncJobResult', { jobid: jobId }).catch(e => {
+        console.log('Error encountered while fetching async job result' + e)
+      })
     },
 
-    /**
-     * Handle the SSL Form submission from within the modal
-     */
     handleSslFormSubmit () {
       this.sslFormSubmitting = true
 
@@ -269,20 +245,47 @@ export default {
         const formValues = this.form.getFieldsValue()
 
         let count = 1
-        let data = this.appendFormData(count, formValues.root, formValues.dns, 'root')
-        apiPostForm('uploadCustomCertificate', data)
+        let data = {
+          id: count,
+          certificate: formValues.root,
+          domainsuffix: formValues.dns,
+          name: 'root'
+        }
+        api('uploadCustomCertificate', {}, 'POST', data).then(response => {
+          this.pollActionCompletion(response.uploadcustomcertificateresponse.jobid)
+        }).then(() => {
+          this.sslModalClose()
+        })
 
         Object.keys(formValues).forEach(key => {
           if (key.includes('intermediate')) {
             count = count + 1
-            const data = this.appendFormData(count, formValues[key], formValues.dns, key)
-            apiPostForm('uploadCustomCertificate', data)
+            const data = {
+              id: count,
+              certificate: formValues[key],
+              domainsuffix: formValues.dns,
+              name: key
+            }
+            api('uploadCustomCertificate', {}, 'POST', data).then(response => {
+              this.pollActionCompletion(response.uploadcustomcertificateresponse.jobid)
+            }).then(() => {
+              this.sslModalClose()
+            })
           }
         })
 
         count = count <= 2 ? 3 : count + 1
-        data = this.appendFormData(count, formValues.server, formValues.dns, formValues.pkcs, false)
-        apiPostForm('uploadCustomCertificate', data)
+        data = {
+          id: count,
+          certificate: formValues.server,
+          domainsuffix: formValues.dns,
+          privatekey: formValues.pkcs
+        }
+        api('uploadCustomCertificate', {}, 'POST', data).then(response => {
+          this.pollActionCompletion(response.uploadcustomcertificateresponse.jobid)
+        }).then(() => {
+          this.sslModalClose()
+        })
       })
     }
   }
