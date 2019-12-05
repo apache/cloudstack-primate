@@ -21,6 +21,7 @@
       :filterOption="filterOption"
       @select="onSelect"
       placeholder="Select Rule"
+      :value="defaultValue"
       :class="{'rule-dropdown-error' : error}">
       <template slot="dataSource">
         <a-select-option
@@ -44,6 +45,10 @@ export default {
     data: {
       type: Object,
       required: true
+    },
+    defaultValue: {
+      type: String,
+      default: ''
     }
   },
   methods: {
