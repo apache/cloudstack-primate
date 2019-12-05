@@ -290,11 +290,16 @@
         :loading="loading"
         :tabs="$route.meta.tabs"
 <<<<<<< HEAD
+<<<<<<< HEAD
         @change-resource="changeResource"
         :actionData="actionData"/>
 =======
         @change-resource="changeResource" />
 >>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
+=======
+        @change-resource="changeResource"
+        :actionData="actionData"/>
+>>>>>>> Fix issue #27: changes requested
     </div>
   </div>
 </template>
@@ -360,11 +365,16 @@ export default {
       actions: [],
       treeData: [],
 <<<<<<< HEAD
+<<<<<<< HEAD
       treeSelected: {},
       actionData: []
 =======
       treeSelected: {}
 >>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
+=======
+      treeSelected: {},
+      actionData: []
+>>>>>>> Fix issue #27: changes requested
     }
   },
   computed: {
@@ -432,11 +442,7 @@ export default {
         this.dataView = false
       }
 
-      if (this.$route && this.$route.meta && this.$route.meta.treeView) {
-        this.treeView = true
-      } else {
-        this.treeView = false
-      }
+      this.treeView = this.$route && this.$route.meta && this.$route.meta.treeView
 
       if (this.$route && this.$route.meta && this.$route.meta.permission) {
         this.apiName = this.$route.meta.permission[0]
@@ -829,18 +835,25 @@ export default {
       rootItem[0].key = rootItem[0].id ? rootItem[0].id : 0
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Fix issue #27: changes requested
       if (!rootItem[0].haschild) {
         rootItem[0].isLeaf = true
       }
 
+<<<<<<< HEAD
 =======
 >>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
+=======
+>>>>>>> Fix issue #27: changes requested
       result.push(rootItem[0])
       return result
     },
     changeResource (resource) {
       this.treeSelected = resource
       this.resource = this.treeSelected
+<<<<<<< HEAD
     },
 <<<<<<< HEAD
     toggleLoading () {
@@ -849,6 +862,8 @@ export default {
     changeAction (showAction) {
       this.showAction = showAction
 >>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
+=======
+>>>>>>> Fix issue #27: changes requested
     }
   }
 }

@@ -209,6 +209,7 @@ export default {
       tabs: [
         {
 <<<<<<< HEAD
+<<<<<<< HEAD
           name: 'Domain',
           component: () => import('@/components/view/InfoCard.vue'),
           show: (record, route) => { return route.path === '/domain' }
@@ -231,6 +232,14 @@ export default {
 =======
           component: () => import('@/views/iam/TemplateDomainSettings.vue')
 >>>>>>> Fix: search tree-view and moving domain settings to the in folder iam
+=======
+          name: 'info',
+          component: () => import('@/components/view/InfoCard.vue')
+        },
+        {
+          name: 'details',
+          component: () => import('@/components/view/DetailsTab.vue')
+>>>>>>> Fix issue #27: changes requested
         }
       ],
       treeView: true,
@@ -240,7 +249,11 @@ export default {
           icon: 'plus',
           label: 'label.add.domain',
           listView: true,
+<<<<<<< HEAD
           dataView: true,
+=======
+          type: 'create',
+>>>>>>> Fix issue #27: changes requested
           args: ['parentdomainid', 'name', 'networkdomain', 'domainid'],
           mapping: {
             parentdomainid: {
