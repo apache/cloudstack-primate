@@ -138,11 +138,11 @@ export default {
   },
   mounted () {
     this.apis = Object.keys(this.$store.getters.apis).sort((a, b) => a.localeCompare(b))
-    this.loadAllRules()
+    this.fetchData()
   },
   watch: {
     resource: function () {
-      this.loadAllRules(() => {
+      this.fetchData(() => {
         this.resetNewFields()
       })
     }
@@ -153,23 +153,13 @@ export default {
         option.componentOptions.children[0].text.toUpperCase().indexOf(input.toUpperCase()) >= 0
       )
     },
-    changeOrder () {
-      api('updateRolePermission', {}, 'POST', {
-        roleid: this.resource.id,
-        ruleorder: this.rules.map(rule => rule.id)
-      }).catch(error => {
-        console.error(error)
-      }).finally(() => {
-        this.loadAllRules()
-      })
-    },
     resetNewFields () {
       this.newRule = ''
       this.newRulePermission = 'allow'
       this.newRuleDescription = ''
       this.newRuleSelectError = false
     },
-    loadAllRules (callback = null) {
+    fetchData (callback = null) {
       if (!this.resource.id) return
       api('listRolePermissions', { roleid: this.resource.id }).then(response => {
         this.rules = response.listrolepermissionsresponse.rolepermission
@@ -181,12 +171,22 @@ export default {
         if (callback) callback()
       })
     },
+    changeOrder () {
+      api('updateRolePermission', {}, 'POST', {
+        roleid: this.resource.id,
+        ruleorder: this.rules.map(rule => rule.id)
+      }).catch(error => {
+        console.error(error)
+      }).finally(() => {
+        this.fetchData()
+      })
+    },
     onRuleDelete (key) {
       this.updateTable = true
       api('deleteRolePermission', { id: key }).catch(error => {
         console.error(error)
       }).finally(() => {
-        this.loadAllRules()
+        this.fetchData()
       })
     },
     onPermissionChange (record, value) {
@@ -200,7 +200,7 @@ export default {
         ruleid: record.id,
         permission: value
       }).then(() => {
-        this.loadAllRules()
+        this.fetchData()
       }).catch(error => {
         console.error(error)
       })
@@ -225,7 +225,7 @@ export default {
         console.error(error)
       }).finally(() => {
         this.resetNewFields()
-        this.loadAllRules()
+        this.fetchData()
       })
     }
   }
