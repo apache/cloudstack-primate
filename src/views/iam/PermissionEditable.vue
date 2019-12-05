@@ -16,31 +16,27 @@
 // under the License.
 
 <template>
-  <div class="page-header-index-wide page-header-wrapper-grid-content-main">
-    <a-row :gutter="12">
-      <a-col :md="24" :lg="8" style="margin-bottom: 12px">
-        <slot name="left">
-        </slot>
-      </a-col>
-      <a-col :md="24" :lg="16">
-        <slot name="right">
-        </slot>
-      </a-col>
-    </a-row>
-  </div>
+  <a-select
+    :value="defaultValue"
+    @change="handleChange">
+    <a-select-option value="allow">Allow</a-select-option>
+    <a-select-option value="deny">Deny</a-select-option>
+  </a-select>
 </template>
 
 <script>
 export default {
-  name: 'ResourceLayout'
+  props: {
+    defaultValue: {
+      type: String,
+      required: true
+    }
+  },
+  methods: {
+    handleChange (e) {
+      this.$emit('change', e)
+    }
+  }
+
 }
 </script>
-
-<style lang="less" scoped>
-.page-header-wrapper-grid-content-main {
-  width: 100%;
-  height: 100%;
-  min-height: 100%;
-  transition: 0.3s;
-}
-</style>

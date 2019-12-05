@@ -16,31 +16,45 @@
 // under the License.
 
 <template>
-  <div class="page-header-index-wide page-header-wrapper-grid-content-main">
-    <a-row :gutter="12">
-      <a-col :md="24" :lg="8" style="margin-bottom: 12px">
-        <slot name="left">
-        </slot>
-      </a-col>
-      <a-col :md="24" :lg="16">
-        <slot name="right">
-        </slot>
-      </a-col>
-    </a-row>
-  </div>
+  <a-tooltip placement="bottom">
+    <template slot="title">
+      Delete rule
+    </template>
+    <a-popconfirm
+      title="Delete Rule?"
+      @confirm="handleDelete"
+    >
+      <a-button type="danger" shape="circle">
+        <a-icon type="delete" />
+      </a-button>
+    </a-popconfirm>
+  </a-tooltip>
 </template>
 
 <script>
 export default {
-  name: 'ResourceLayout'
+  name: 'RuleDelete',
+  props: {
+    record: {
+      type: Object,
+      required: true
+    }
+  },
+  methods: {
+    handleDelete () {
+      this.$emit('delete')
+    }
+  }
 }
 </script>
 
-<style lang="less" scoped>
-.page-header-wrapper-grid-content-main {
-  width: 100%;
-  height: 100%;
-  min-height: 100%;
-  transition: 0.3s;
-}
+<style
+  scoped
+  lang="scss"
+>
+  .anticon-delete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 </style>
