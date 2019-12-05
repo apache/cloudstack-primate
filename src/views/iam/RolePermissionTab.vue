@@ -73,12 +73,10 @@ import draggable from 'vuedraggable'
 import PermissionEditable from './PermissionEditable'
 import RuleDelete from './RuleDelete'
 import APIAutoComplete from './APIAutoComplete'
-import RoleSave from './RoleSave'
 
 export default {
   name: 'RolePermissionTab',
   components: {
-    RoleSave,
     APIAutoComplete,
     RuleDelete,
     PermissionEditable,
