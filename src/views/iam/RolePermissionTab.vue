@@ -28,20 +28,22 @@
       <div class="rules-table-item ant-list-item">
         <div class="rules-table__col rules-table__col--grab"></div>
         <div class="rules-table__col rules-table__col--rule rules-table__col--new">
-          <a-p-i-auto-complete
-            @selectedRecord="onRuleSelect"
-            :error="newRuleSelectError"
-            :data="$store.getters.apis"
-            :defaultValue="newRoleSelectedRule"
-          />
+          <a-auto-complete
+            :autoFocus="true"
+            :filterOption="filterOption"
+            :dataSource="apis"
+            :value="newRule"
+            @change="val => newRule = val"
+            placeholder="Rule"
+            :class="{'rule-dropdown-error' : newRuleSelectError}" />
         </div>
         <div class="rules-table__col rules-table__col--permission">
           <permission-editable
-            :defaultValue="newRoleSelectedPermission"
+            :defaultValue="newRulePermission"
             @change="onPermissionChange(null, $event)" />
         </div>
         <div class="rules-table__col rules-table__col--description">
-          <a-input v-model="newRoleDescription" placeholder="Description"></a-input>
+          <a-input v-model="newRuleDescription" placeholder="Description"></a-input>
         </div>
         <div class="rules-table__col rules-table__col--actions">
           <a-tooltip
@@ -107,12 +109,10 @@ import { api } from '@/api'
 import draggable from 'vuedraggable'
 import PermissionEditable from './PermissionEditable'
 import RuleDelete from './RuleDelete'
-import APIAutoComplete from './APIAutoComplete'
 
 export default {
   name: 'RolePermissionTab',
   components: {
-    APIAutoComplete,
     RuleDelete,
     PermissionEditable,
     draggable
@@ -128,14 +128,16 @@ export default {
       loadingTable: true,
       updateTable: false,
       rules: null,
-      newRoleSelectedRule: '',
-      newRoleSelectedPermission: 'allow',
-      newRoleDescription: '',
+      newRule: '',
+      newRulePermission: 'allow',
+      newRuleDescription: '',
       newRuleSelectError: false,
-      drag: false
+      drag: false,
+      apis: []
     }
   },
   mounted () {
+    this.apis = Object.keys(this.$store.getters.apis).sort((a, b) => a.localeCompare(b))
     this.loadAllRules()
   },
   watch: {
@@ -146,6 +148,11 @@ export default {
     }
   },
   methods: {
+    filterOption (input, option) {
+      return (
+        option.componentOptions.children[0].text.toUpperCase().indexOf(input.toUpperCase()) >= 0
+      )
+    },
     changeOrder () {
       api('updateRolePermission', {}, 'POST', {
         roleid: this.resource.id,
@@ -157,9 +164,9 @@ export default {
       })
     },
     resetNewFields () {
-      this.newRoleSelectedRule = ''
-      this.newRoleSelectedPermission = 'allow'
-      this.newRoleDescription = ''
+      this.newRule = ''
+      this.newRulePermission = 'allow'
+      this.newRuleDescription = ''
       this.newRuleSelectError = false
     },
     loadAllRules (callback = null) {
@@ -183,7 +190,7 @@ export default {
       })
     },
     onPermissionChange (record, value) {
-      this.newRoleSelectedPermission = value
+      this.newRulePermission = value
 
       if (!record) return
 
@@ -199,25 +206,26 @@ export default {
       })
     },
     onRuleSelect (value) {
-      this.newRoleSelectedRule = value
+      this.newRule = value
     },
     onRuleSave () {
-      if (!this.newRoleSelectedRule) {
+      if (!this.newRule) {
         this.newRuleSelectError = true
         return
       }
 
       this.updateTable = true
       api('createRolePermission', {
-        rule: this.newRoleSelectedRule,
-        permission: this.newRoleSelectedPermission,
-        description: this.newRoleDescription,
+        rule: this.newRule,
+        permission: this.newRulePermission,
+        description: this.newRuleDescription,
         roleid: this.resource.id
       }).then(() => {
-        this.resetNewFields()
-        this.loadAllRules()
       }).catch(error => {
         console.error(error)
+      }).finally(() => {
+        this.resetNewFields()
+        this.loadAllRules()
       })
     }
   }
@@ -413,6 +421,11 @@ export default {
   .rules-table__col--new {
     .ant-select {
       width: 100%;
+    }
+  }
+  .rule-dropdown-error {
+    .ant-input {
+      border-color: #ff0000
     }
   }
 </style>
