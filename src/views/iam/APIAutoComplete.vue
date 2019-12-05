@@ -19,17 +19,11 @@
   <div>
     <a-auto-complete
       :filterOption="filterOption"
+      :dataSource="sortedData"
       @select="onSelect"
       placeholder="Select API"
       :value="defaultValue"
-      :class="{'rule-dropdown-error' : error}">
-      <template slot="dataSource">
-        <a-select-option
-          v-for="(item, key) in data"
-          :key="key"
-        >{{ key }}</a-select-option>
-      </template>
-    </a-auto-complete>
+      :class="{'rule-dropdown-error' : error}" />
     <div v-if="error" class="error-label">* Required</div>
   </div>
 </template>
@@ -50,6 +44,14 @@ export default {
       type: String,
       default: ''
     }
+  },
+  data () {
+    return {
+      sortedData: []
+    }
+  },
+  mounted () {
+    this.sortedData = Object.keys(this.data).sort((a, b) => a.localeCompare(b))
   },
   methods: {
     filterOption (input, option) {
