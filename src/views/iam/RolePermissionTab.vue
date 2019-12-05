@@ -65,7 +65,6 @@
         @change="changeOrder"
         handle=".drag-handle"
         animation="200"
-        pull="clone"
         ghostClass="drag-ghost">
         <transition-group type="transition">
           <div
