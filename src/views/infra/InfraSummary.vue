@@ -159,7 +159,7 @@
 </template>
 
 <script>
-import { api, apiPostForm } from '@/api'
+import { api } from '@/api'
 import router from '@/router'
 
 import Breadcrumb from '@/components/widgets/Breadcrumb'

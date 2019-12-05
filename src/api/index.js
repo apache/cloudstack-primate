@@ -39,17 +39,6 @@ export function api (command, args = {}, method = 'GET', data = {}) {
   })
 }
 
-export function apiPostForm (command, data = {}) {
-  return axios({
-    params: {
-      command,
-      response: 'json'
-    },
-    method: 'POST',
-    data
-  })
-}
-
 export function login (arg) {
   const params = new URLSearchParams()
   params.append('command', 'login')
