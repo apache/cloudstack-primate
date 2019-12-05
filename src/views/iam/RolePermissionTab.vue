@@ -50,7 +50,7 @@
               Save new Rule
             </template>
             <a-button
-              icon="save"
+              icon="plus"
               type="primary"
               shape="circle"
               @click="onRuleSave"
