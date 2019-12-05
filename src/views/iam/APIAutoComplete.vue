@@ -20,7 +20,7 @@
     <a-auto-complete
       :filterOption="filterOption"
       @select="onSelect"
-      placeholder="Select Rule"
+      placeholder="Select API"
       :value="defaultValue"
       :class="{'rule-dropdown-error' : error}">
       <template slot="dataSource">

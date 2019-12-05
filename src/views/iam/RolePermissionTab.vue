@@ -41,7 +41,7 @@
             @change="onPermissionChange(null, $event)" />
         </div>
         <div class="rules-table__col rules-table__col--description">
-          <a-input v-model="newRoleDescription" placeholder="Optional Description"></a-input>
+          <a-input v-model="newRoleDescription" placeholder="Description"></a-input>
         </div>
         <div class="rules-table__col rules-table__col--actions">
           <a-tooltip
