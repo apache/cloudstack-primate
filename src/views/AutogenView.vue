@@ -219,7 +219,8 @@
         :treeSelected="treeSelected"
         :loading="loading"
         :tabs="$route.meta.tabs"
-        @change-resource="changeResource" />
+        @change-resource="changeResource"
+        :actionData="actionData"/>
     </div>
   </div>
 </template>
@@ -268,7 +269,8 @@ export default {
       treeView: false,
       actions: [],
       treeData: [],
-      treeSelected: {}
+      treeSelected: {},
+      actionData: []
     }
   },
   computed: {
@@ -326,11 +328,7 @@ export default {
         this.dataView = false
       }
 
-      if (this.$route && this.$route.meta && this.$route.meta.treeView) {
-        this.treeView = true
-      } else {
-        this.treeView = false
-      }
+      this.treeView = this.$route && this.$route.meta && this.$route.meta.treeView
 
       if (this.$route && this.$route.meta && this.$route.meta.permission) {
         this.apiName = this.$route.meta.permission[0]
@@ -463,6 +461,7 @@ export default {
       this.currentAction = {}
     },
     execAction (action) {
+      this.actionData = []
       if (action.component && action.api && !action.popup) {
         this.$router.push({ name: action.api })
         return
@@ -622,6 +621,11 @@ export default {
 
           var hasJobId = false
           api(this.currentAction.api, params).then(json => {
+            // set action data for reload tree-view
+            if (this.treeView) {
+              this.actionData.push(json)
+            }
+
             for (const obj in json) {
               if (obj.includes('response')) {
                 for (const res in json[obj]) {
@@ -679,15 +683,16 @@ export default {
       rootItem[0].title = rootItem[0].title ? rootItem[0].title : rootItem[0].name
       rootItem[0].key = rootItem[0].id ? rootItem[0].id : 0
 
+      if (!rootItem[0].haschild) {
+        rootItem[0].isLeaf = true
+      }
+
       result.push(rootItem[0])
       return result
     },
     changeResource (resource) {
       this.treeSelected = resource
       this.resource = this.treeSelected
-    },
-    changeAction (showAction) {
-      this.showAction = showAction
     }
   }
 }

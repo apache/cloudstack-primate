@@ -178,12 +178,12 @@ export default {
       }],
       tabs: [
         {
+          name: 'info',
+          component: () => import('@/components/view/InfoCard.vue')
+        },
+        {
           name: 'details',
           component: () => import('@/components/view/DetailsTab.vue')
-        }, {
-          name: 'settings',
-          permission: ['listConfigurations'],
-          component: () => import('@/views/iam/TemplateDomainSettings.vue')
         }
       ],
       treeView: true,
@@ -193,7 +193,13 @@ export default {
           icon: 'plus',
           label: 'label.add.domain',
           listView: true,
-          args: ['parentdomainid', 'name', 'networkdomain', 'domainid']
+          type: 'create',
+          args: ['parentdomainid', 'name', 'networkdomain', 'domainid'],
+          mapping: {
+            parentdomainid: {
+              value: (record) => { return record.id }
+            }
+          }
         },
         {
           api: 'updateDomain',
