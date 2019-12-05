@@ -17,54 +17,90 @@
 
 <template>
   <a-icon v-if="loadingTable" type="loading" class="main-loading-spinner"></a-icon>
-  <a-list
-    v-else
-    bordered
-    itemLayout="horizontal"
-    :dataSource="rules"
-    :pagination="pagination"
-    :loading="updateTable">
-    <a-list-item
-      draggable="true"
-      @dragstart="dragStart(record)"
-      @dragleave="dragEnd(record)"
-      slot="renderItem"
-      slot-scope="record"
-      class="rules-table-item">
-      <div class="rules-table__col rules-table__col--grab">
-        <a-icon type="drag" style="cursor: grab;"></a-icon>
+  <div v-else>
+    <div v-if="updateTable" class="loading-overlay">
+      <a-icon type="loading" />
+    </div>
+    <div
+      class="rules-list ant-list ant-list-bordered"
+      :class="{'rules-list--overflow-hidden' : updateTable}" >
+
+      <div class="rules-table-item ant-list-item">
+        <div class="rules-table__col rules-table__col--grab"></div>
+        <div class="rules-table__col rules-table__col--rule rules-table__col--new">
+          <a-p-i-auto-complete
+            @selectedRecord="onRuleSelect"
+            :error="newRuleSelectError"
+            :data="$store.getters.apis"
+            :defaultValue="newRoleSelectedRule"
+          />
+        </div>
+        <div class="rules-table__col rules-table__col--permission">
+          <permission-editable
+            :defaultValue="newRoleSelectedPermission"
+            @change="onPermissionChange(null, $event)" />
+        </div>
+        <div class="rules-table__col rules-table__col--description">
+          <a-input v-model="newRoleDescription" placeholder="Optional Description"></a-input>
+        </div>
+        <div class="rules-table__col rules-table__col--actions">
+          <a-tooltip
+            placement="bottom">
+            <template slot="title">
+              Save new Rule
+            </template>
+            <a-button
+              icon="save"
+              type="primary"
+              shape="circle"
+              @click="onRuleSave"
+            >
+            </a-button>
+          </a-tooltip>
+        </div>
       </div>
-      <div class="rules-table__col rules-table__col--rule">
-        <a-p-i-auto-complete
-          v-if="record.editable"
-          @selectedRecord="onRuleSelect"
-          :error="newRuleSelectError"
-          :data="$store.getters.apis"
-        />
-        <template v-else>
-          {{ record.rule }}
-        </template>
-      </div>
-      <div class="rules-table__col rules-table__col--permission">
-        <permission-editable
-          :defaultValue="record.permission"
-          @change="onPermissionChange(record, $event)" />
-      </div>
-      <div class="rules-table__col rules-table__col--description">
-        <a-input v-if="record.editable" v-model="record.description" placeholder="Optional Description"></a-input>
-        <template v-else>
-          {{ record.description }}
-        </template>
-      </div>
-      <div class="rules-table__col rules-table__col--actions">
-        <role-save v-if="record.editable" :record="record" @save="onRuleSave(record)" />
-        <rule-delete
-          :record="record"
-          v-else
-          @delete="onRuleDelete(record.id)" />
-      </div>
-    </a-list-item>
-  </a-list>
+
+      <draggable
+        v-model="rules"
+        @change="changeOrder"
+        handle=".drag-handle"
+        animation="200"
+        pull="clone"
+        ghostClass="drag-ghost">
+        <transition-group type="transition">
+          <div
+            v-for="(record, index) in rules"
+            :key="`item-${index}`"
+            class="rules-table-item ant-list-item">
+            <div class="rules-table__col rules-table__col--grab drag-handle">
+              <a-icon type="drag"></a-icon>
+            </div>
+            <div class="rules-table__col rules-table__col--rule">
+              {{ record.rule }}
+            </div>
+            <div class="rules-table__col rules-table__col--permission">
+              <permission-editable
+                :defaultValue="record.permission"
+                @change="onPermissionChange(record, $event)" />
+            </div>
+            <div class="rules-table__col rules-table__col--description">
+              <template v-if="record.description">
+                {{ record.description }}
+              </template>
+              <div v-else class="no-description">
+                No description entered.
+              </div>
+            </div>
+            <div class="rules-table__col rules-table__col--actions">
+              <rule-delete
+                :record="record"
+                @delete="onRuleDelete(record.id)" />
+            </div>
+          </div>
+        </transition-group>
+      </draggable>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -93,60 +129,43 @@ export default {
       loadingTable: true,
       updateTable: false,
       rules: null,
-      pagination: {
-        pageSize: 10
-      },
       newRoleSelectedRule: '',
       newRoleSelectedPermission: 'allow',
+      newRoleDescription: '',
       newRuleSelectError: false,
-      dragStartIndex: '',
-      dragEndIndex: ''
-    }
-  },
-  computed: {
-    roleids: function () {
-      const arr = []
-      this.rules.slice(1).forEach(item => arr.push(item.id))
-      return arr
+      drag: false
     }
   },
   mounted () {
-    this.loadAllRules(() => this.onRuleAdd())
+    this.loadAllRules()
   },
   watch: {
     resource: function () {
-      this.loadingTable = true
-      this.loadAllRules(() => this.onRuleAdd())
+      this.loadAllRules(() => {
+        this.resetNewFields()
+      })
     }
   },
   methods: {
-    dragStart (record) {
-      this.dragStartIndex = this.roleids.findIndex(item => item === record.id)
-    },
-    dragEnd (record) {
-      this.dragEndIndex = this.roleids.findIndex(item => item === record.id)
-      if (this.dragEndIndex === this.dragStartIndex) return
-      this.updateRulesOrder()
-    },
-    updateRulesOrder () {
-      [this.roleids[this.dragEndIndex], this.roleids[this.dragStartIndex]] = [this.roleids[this.dragStartIndex],
-        this.roleids[this.dragEndIndex]]
-
+    changeOrder () {
       api('updateRolePermission', {}, 'POST', {
         roleid: this.resource.id,
-        ruleorder: this.roleids
-      }).then(response => {
-        console.log(response)
+        ruleorder: this.rules.map(rule => rule.id)
       }).catch(error => {
         console.error(error)
       }).finally(() => {
-        this.loadAllRules(() => {
-          this.onRuleAdd()
-        })
+        this.loadAllRules()
       })
     },
+    resetNewFields () {
+      this.newRoleSelectedRule = ''
+      this.newRoleSelectedPermission = 'allow'
+      this.newRoleDescription = ''
+      this.newRuleSelectError = false
+    },
     loadAllRules (callback = null) {
-      api('listRolePermissions', { id: this.resource.id }).then(response => {
+      if (!this.resource.id) return
+      api('listRolePermissions', { roleid: this.resource.id }).then(response => {
         this.rules = response.listrolepermissionsresponse.rolepermission
       }).catch(error => {
         console.error(error)
@@ -161,32 +180,13 @@ export default {
       api('deleteRolePermission', { id: key }).catch(error => {
         console.error(error)
       }).finally(() => {
-        this.loadAllRules(() => {
-          this.onRuleAdd()
-        })
+        this.loadAllRules()
       })
-    },
-    onRuleAdd () {
-      this.rules = [
-        {
-          description: '',
-          id: '',
-          roleid: '',
-          rolename: '',
-          rule: '',
-          permission: 'allow',
-          editable: true
-        },
-        ...this.rules
-      ]
     },
     onPermissionChange (record, value) {
       this.newRoleSelectedPermission = value
 
-      if (record.editable) {
-        record.permission = this.newRoleSelectedPermission
-        return
-      }
+      if (!record) return
 
       this.updateTable = true
       api('updateRolePermission', {
@@ -194,9 +194,7 @@ export default {
         ruleid: record.id,
         permission: value
       }).then(() => {
-        this.loadAllRules(() => {
-          this.onRuleAdd()
-        })
+        this.loadAllRules()
       }).catch(error => {
         console.error(error)
       })
@@ -204,7 +202,7 @@ export default {
     onRuleSelect (value) {
       this.newRoleSelectedRule = value
     },
-    onRuleSave (record) {
+    onRuleSave () {
       if (!this.newRoleSelectedRule) {
         this.newRuleSelectError = true
         return
@@ -214,12 +212,11 @@ export default {
       api('createRolePermission', {
         rule: this.newRoleSelectedRule,
         permission: this.newRoleSelectedPermission,
-        description: record.description,
+        description: this.newRoleDescription,
         roleid: this.resource.id
       }).then(() => {
-        this.loadAllRules(() => {
-          this.onRuleAdd()
-        })
+        this.resetNewFields()
+        this.loadAllRules()
       }).catch(error => {
         console.error(error)
       })
@@ -249,53 +246,174 @@ export default {
 
   }
 
+  .rules-list {
+    max-height: 600px;
+    overflow: scroll;
+
+    &--overflow-hidden {
+      overflow: hidden;
+    }
+
+  }
+
   .rules-table {
 
     &-item {
-      padding-top: 0;
-      padding-bottom: 0;
+      position: relative;
+      display: flex;
+      align-items: stretch;
+      padding: 0;
+      flex-wrap: wrap;
+
+      @media (min-width: 760px) {
+        flex-wrap: nowrap;
+        padding-right: 25px;
+      }
+
     }
 
     &__col {
       display: flex;
       align-items: center;
-      padding-top: 15px;
-      padding-bottom: 15px;
+      padding: 15px;
 
-      &:not(:first-child) {
-        padding-left: 20px;
-      }
+      @media (min-width: 760px) {
+        padding: 15px 0;
 
-      &:not(:last-child) {
-        border-right: 1px solid #e8e8e8;
-        padding-right: 20px;
+        &:not(:first-child) {
+          padding-left: 20px;
+        }
+
+        &:not(:last-child) {
+          border-right: 1px solid #e8e8e8;
+          padding-right: 20px;
+        }
       }
 
       &--grab {
-        justify-content: center;
+        position: absolute;
+        top: 4px;
+        left: 0;
+        width: 100%;
+
+        @media (min-width: 760px) {
+          position: relative;
+          top: auto;
+          width: 35px;
+          padding-left: 25px;
+          justify-content: center;
+        }
+
+      }
+
+      &--rule,
+      &--description {
+        word-break: break-all;
+        flex: 1;
+        width: 100%;
+
+        @media (min-width: 760px) {
+          width: auto;
+        }
+
       }
 
       &--rule {
-        width: 400px;
-        flex: 1;
+        padding-left: 60px;
+        background-color: rgba(#e6f7ff, 0.7);
+
+        @media (min-width: 760px) {
+          padding-left: 0;
+          background: none;
+        }
+
       }
 
       &--permission {
-        width: 120px;
         justify-content: center;
-      }
+        width: 100%;
 
-      &--description {
-        min-width: 200px;
-        max-width: 250px;
-        flex: 1;
+        .ant-select {
+          width: 100%;
+        }
+
+        @media (min-width: 760px) {
+          width: auto;
+
+          .ant-select {
+            width: auto;
+          }
+
+        }
+
       }
 
       &--actions {
-        max-width: 70px;
+        max-width: 60px;
+        width: 100%;
+        padding-right: 0;
+
+        @media (min-width: 760px) {
+          width: auto;
+          max-width: 70px;
+          padding-right: 15px;
+        }
+
+      }
+
+      &--new {
+        padding-left: 15px;
+        background-color: transparent;
+
+        div {
+          width: 100%;
+        }
+
       }
 
     }
 
+  }
+
+  .no-description {
+    opacity: 0.4;
+    font-size: 0.7rem;
+
+    @media (min-width: 760px) {
+      display: none;
+    }
+
+  }
+
+  .drag-handle {
+    cursor: pointer;
+  }
+
+  .drag-ghost {
+    opacity: 0.5;
+    background: #f0f2f5;
+  }
+
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #39A7DE;
+    background-color: rgba(#fff, 0.8);
+  }
+</style>
+
+<style lang="scss">
+  .rules-table__col--new {
+    .ant-select {
+      width: 100%;
+    }
   }
 </style>
