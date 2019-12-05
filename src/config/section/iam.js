@@ -113,7 +113,7 @@ export default {
           args: ['account', 'domainid'],
           mapping: {
             account: {
-              value: (record) => { return record.account }
+              value: (record) => { return record.name }
             },
             domainid: {
               value: (record) => { return record.domainid }
@@ -224,7 +224,7 @@ export default {
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
-        name: 'rules',
+        name: 'Rules',
         component: () => import('@/views/iam/RolePermissionTab.vue')
       }],
       actions: [
