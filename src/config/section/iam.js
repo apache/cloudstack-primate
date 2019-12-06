@@ -179,7 +179,8 @@ export default {
       tabs: [
         {
           name: 'info',
-          component: () => import('@/components/view/InfoCard.vue')
+          component: () => import('@/components/view/InfoCard.vue'),
+          show: (treeView) => { return treeView }
         },
         {
           name: 'details',
