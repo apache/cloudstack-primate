@@ -234,7 +234,8 @@ export default {
 >>>>>>> Fix: search tree-view and moving domain settings to the in folder iam
 =======
           name: 'info',
-          component: () => import('@/components/view/InfoCard.vue')
+          component: () => import('@/components/view/InfoCard.vue'),
+          show: (treeView) => { return treeView }
         },
         {
           name: 'details',

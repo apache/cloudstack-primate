@@ -253,6 +253,7 @@
 
     <div v-if="dataView && !treeView">
 <<<<<<< HEAD
+<<<<<<< HEAD
       <resource-view
         :resource="resource"
         :loading="loading"
@@ -260,6 +261,13 @@
 =======
       <resource-view :resource="resource" :loading="loading" :tabs="$route.meta.tabs" />
 >>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
+=======
+      <resource-view
+        :resource="resource"
+        :loading="loading"
+        :tabs="$route.meta.tabs"
+        :treeView="treeView" />
+>>>>>>> Fix issue display two info card in Resource-view
     </div>
     <div class="row-element" v-else>
       <list-view
@@ -441,8 +449,6 @@ export default {
       } else {
         this.dataView = false
       }
-
-      this.treeView = this.$route && this.$route.meta && this.$route.meta.treeView
 
       if (this.$route && this.$route.meta && this.$route.meta.permission) {
         this.apiName = this.$route.meta.permission[0]
