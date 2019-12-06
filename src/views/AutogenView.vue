@@ -44,9 +44,8 @@
               </template>
               <a-button
                 v-if="action.api in $store.getters.apis &&
-                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) ||
-                  (dataView && action.dataView && ('show' in action ? action.show(resource) : true)) ||
-                  (treeView && ('show' in action ? action.show(treeSelected) : true)))"
+                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
+                  ('show' in action ? action.show(resource) : true)"
                 :icon="action.icon"
                 :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
                 shape="circle"
@@ -560,6 +559,7 @@ export default {
         }
         if (this.items.length > 0) {
 <<<<<<< HEAD
+<<<<<<< HEAD
           this.resource = this.items[0]
           this.treeSelected = this.treeView ? this.items[0] : {}
 =======
@@ -571,6 +571,10 @@ export default {
             this.treeSelected = {}
           }
 >>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
+=======
+          this.resource = this.items[0]
+          this.treeSelected = this.treeView ? this.items[0] : {}
+>>>>>>> fixes
         } else {
           this.resource = {}
           this.treeSelected = {}

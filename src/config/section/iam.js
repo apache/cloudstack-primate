@@ -255,10 +255,14 @@ export default {
           label: 'label.add.domain',
           listView: true,
 <<<<<<< HEAD
+<<<<<<< HEAD
           dataView: true,
 =======
           type: 'create',
 >>>>>>> Fix issue #27: changes requested
+=======
+          dataView: true,
+>>>>>>> fixes
           args: ['parentdomainid', 'name', 'networkdomain', 'domainid'],
           mapping: {
             parentdomainid: {
