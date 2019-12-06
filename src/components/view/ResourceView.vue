@@ -74,10 +74,6 @@ export default {
           component: DetailsTab
         }]
       }
-    },
-    treeView: {
-      type: Boolean,
-      default: false
     }
   },
   data () {
