@@ -265,9 +265,13 @@
       <resource-view
         :resource="resource"
         :loading="loading"
+<<<<<<< HEAD
         :tabs="$route.meta.tabs"
         :treeView="treeView" />
 >>>>>>> Fix issue display two info card in Resource-view
+=======
+        :tabs="$route.meta.tabs" />
+>>>>>>> fixes
     </div>
     <div class="row-element" v-else>
       <list-view

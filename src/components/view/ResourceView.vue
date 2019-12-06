@@ -37,10 +37,14 @@
             :tab="$t(tab.name)"
             :key="tab.name"
 <<<<<<< HEAD
+<<<<<<< HEAD
             v-if="'show' in tab ? tab.show(resource, $route, $store.getters.userInfo) : true">
             <component :is="tab.component" :resource="resource" :loading="loading" :tab="activeTab" />
 =======
             v-if="('show' in tab ? tab.show(treeView) : true)">
+=======
+            v-if="'show' in tab ? tab.show(resource, $route) : true">
+>>>>>>> fixes
             <component :is="tab.component" :resource="resource" :loading="loading" />
 >>>>>>> Fix issue display two info card in Resource-view
           </a-tab-pane>
@@ -78,10 +82,6 @@ export default {
           component: DetailsTab
         }]
       }
-    },
-    treeView: {
-      type: Boolean,
-      default: false
     }
   },
   data () {

@@ -210,6 +210,7 @@ export default {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           name: 'Domain',
           component: () => import('@/components/view/InfoCard.vue'),
           show: (record, route) => { return route.path === '/domain' }
@@ -234,8 +235,11 @@ export default {
 >>>>>>> Fix: search tree-view and moving domain settings to the in folder iam
 =======
           name: 'info',
+=======
+          name: 'Domain',
+>>>>>>> fixes
           component: () => import('@/components/view/InfoCard.vue'),
-          show: (treeView) => { return treeView }
+          show: (record, route) => { return route.path === '/domain' }
         },
         {
           name: 'details',
