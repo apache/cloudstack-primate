@@ -178,9 +178,9 @@ export default {
       }],
       tabs: [
         {
-          name: 'info',
+          name: 'Domain',
           component: () => import('@/components/view/InfoCard.vue'),
-          show: (treeView) => { return treeView }
+          show: (record, route) => { return route.path === '/domain' }
         },
         {
           name: 'details',

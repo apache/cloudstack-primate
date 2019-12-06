@@ -196,8 +196,7 @@
       <resource-view
         :resource="resource"
         :loading="loading"
-        :tabs="$route.meta.tabs"
-        :treeView="treeView" />
+        :tabs="$route.meta.tabs" />
     </div>
     <div class="row-element" v-else>
       <list-view
