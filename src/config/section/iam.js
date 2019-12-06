@@ -194,7 +194,7 @@ export default {
           icon: 'plus',
           label: 'label.add.domain',
           listView: true,
-          type: 'create',
+          dataView: true,
           args: ['parentdomainid', 'name', 'networkdomain', 'domainid'],
           mapping: {
             parentdomainid: {
@@ -206,6 +206,7 @@ export default {
           api: 'updateDomain',
           icon: 'edit',
           label: 'label.action.edit.domain',
+          listView: true,
           dataView: true,
           args: ['name', 'networkdomain']
         },
@@ -213,6 +214,7 @@ export default {
           api: 'updateResourceCount',
           icon: 'sync',
           label: 'label.action.update.resource.count',
+          listView: true,
           dataView: true,
           args: ['domainid'],
           mapping: {
@@ -225,6 +227,7 @@ export default {
           api: 'deleteDomain',
           icon: 'delete',
           label: 'label.delete.domain',
+          listView: true,
           dataView: true,
           show: (record) => { return record.level !== 0 },
           args: ['cleanup']
