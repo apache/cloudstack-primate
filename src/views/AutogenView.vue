@@ -43,9 +43,8 @@
               </template>
               <a-button
                 v-if="action.api in $store.getters.apis &&
-                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) ||
-                  (dataView && action.dataView && ('show' in action ? action.show(resource) : true)) ||
-                  (treeView && ('show' in action ? action.show(treeSelected) : true)))"
+                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
+                  ('show' in action ? action.show(resource) : true)"
                 :icon="action.icon"
                 :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
                 shape="circle"
