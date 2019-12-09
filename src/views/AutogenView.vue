@@ -202,6 +202,7 @@
         :loading="loading"
         :columns="columns"
         :items="items"
+        @refresh="this.fetchData"
         v-if="!treeView" />
       <a-pagination
         class="row-element"
