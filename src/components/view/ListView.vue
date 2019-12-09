@@ -22,7 +22,6 @@
     :columns="columns"
     :dataSource="items"
     :rowKey="record => record.id || record.name"
-    :scroll="{ x: '100%' }"
     :pagination="false"
     :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
     :rowClassName="getRowClassName"
@@ -111,7 +110,7 @@
         @pressEnter="saveValue(record)">
         <a-icon slot="addonAfter" type="close" style="cursor:pointer; color: red;" @click="editableValueKey = null"/>
       </a-input>
-      <div v-else style="width: 300px; word-break: break-all">
+      <div v-else style="width: 200px; word-break: break-all">
         {{ text }}
       </div>
     </template>
