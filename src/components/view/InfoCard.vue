@@ -29,7 +29,7 @@
           <div class="name">
             <slot name="name">
               <h4>
-                {{ resource.displayname || resource.name }}
+                {{ resource.displayname || resource.name || resource.virtualmachinename }}
                 <console :resource="resource" size="default" v-if="resource.id" />
               </h4>
               <a-tag v-if="resource.instancename">
@@ -154,7 +154,7 @@
               :percent="parseFloat(resource.memoryallocated)" />
           </span>
         </div>
-        <div class="resource-detail-item" v-if="resource.volumes || resource.sizegb">
+        <div class="resource-detail-item" v-if="(resource.volumes && Array.isArray(resource.volumes)) || resource.sizegb">
           <a-icon type="hdd" />
           <span v-if="resource.volumes">{{ (resource.volumes.reduce((total, item) => total += item.size, 0) / (1024 * 1024 * 1024.0)).toFixed(2) }} GB Storage</span>
           <span v-else-if="resource.sizegb">{{ resource.sizegb }}</span>
@@ -253,6 +253,10 @@
           <a-icon type="hdd" />
           <router-link :to="{ path: '/diskoffering/' + resource.diskofferingid }">{{ resource.diskofferingname || resource.diskofferingid }} </router-link>
         </div>
+        <div class="resource-detail-item" v-if="resource.backupofferingid">
+          <a-icon type="cloud-upload" />
+          <router-link :to="{ path: '/backupoffering/' + resource.backupofferingid }">{{ resource.backupofferingname || resource.backupofferingid }} </router-link>
+        </div>
         <div class="resource-detail-item" v-if="resource.networkofferingid">
           <a-icon type="wifi" />
           <router-link :to="{ path: '/networkoffering/' + resource.networkofferingid }">{{ resource.networkofferingname || resource.networkofferingid }} </router-link>
@@ -282,7 +286,7 @@
         </div>
         <div class="resource-detail-item" v-if="resource.zoneid">
           <a-icon type="global" />
-          <router-link :to="{ path: '/zone/' + resource.zoneid }">{{ resource.zonename || resource.zoneid }}</router-link>
+          <router-link :to="{ path: '/zone/' + resource.zoneid }">{{ resource.zonename || resource.zone || resource.zoneid }}</router-link>
         </div>
         <div class="resource-detail-item" v-if="resource.account">
           <a-icon type="user" />

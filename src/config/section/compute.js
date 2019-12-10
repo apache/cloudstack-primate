@@ -47,6 +47,10 @@ export default {
         title: 'VM Snapshots',
         param: 'virtualmachineid'
       }, {
+        name: 'backup',
+        title: 'Backups',
+        param: 'virtualmachineid'
+      }, {
         name: 'affinitygroup',
         title: 'Affinity Groups',
         param: 'virtualmachineid'
@@ -113,19 +117,6 @@ export default {
           }
         },
         {
-          api: 'createVMSnapshot',
-          icon: 'camera',
-          label: 'Create VM Snapshot',
-          dataView: true,
-          args: ['virtualmachineid', 'name', 'description', 'snapshotmemory', 'quiescevm'],
-          show: (record) => { return ['Running'].includes(record.state) },
-          mapping: {
-            virtualmachineid: {
-              value: (record, params) => { return record.id }
-            }
-          }
-        },
-        {
           api: 'attachIso',
           icon: 'paper-clip',
           label: 'label.action.attach.iso',
@@ -148,6 +139,74 @@ export default {
           dataView: true,
           args: ['virtualmachineid'],
           show: (record) => { return 'isoid' in record && record.isoid },
+          mapping: {
+            virtualmachineid: {
+              value: (record, params) => { return record.id }
+            }
+          }
+        },
+        {
+          api: 'createVMSnapshot',
+          icon: 'camera',
+          label: 'Create VM Snapshot',
+          dataView: true,
+          args: ['virtualmachineid', 'name', 'description', 'snapshotmemory', 'quiescevm'],
+          show: (record) => { return ['Running'].includes(record.state) },
+          mapping: {
+            virtualmachineid: {
+              value: (record, params) => { return record.id }
+            }
+          }
+        },
+        {
+          api: 'assignVirtualMachineToBackupOffering',
+          icon: 'folder-add',
+          label: 'Assign VM to Backup Offering',
+          dataView: true,
+          args: ['virtualmachineid', 'backupofferingid'],
+          show: (record) => { return !record.backupofferingid },
+          mapping: {
+            virtualmachineid: {
+              value: (record, params) => { return record.id }
+            }
+          }
+        },
+        {
+          api: 'createBackup',
+          icon: 'cloud-upload',
+          label: 'Create Backup',
+          dataView: true,
+          args: ['virtualmachineid'],
+          show: (record) => { return record.backupofferingid },
+          mapping: {
+            virtualmachineid: {
+              value: (record, params) => { return record.id }
+            }
+          }
+        },
+        {
+          api: 'createBackupSchedule',
+          icon: 'schedule',
+          label: 'Configure Backup Schedule',
+          dataView: true,
+          args: ['virtualmachineid', 'intervaltype', 'schedule', 'timezone'],
+          show: (record) => { return record.backupofferingid },
+          mapping: {
+            virtualmachineid: {
+              value: (record, params) => { return record.id }
+            },
+            intervaltype: {
+              options: ['HOURLY', 'DAILY', 'WEEKLY', 'MONTHLY']
+            }
+          }
+        },
+        {
+          api: 'removeVirtualMachineFromBackupOffering',
+          icon: 'scissor',
+          label: 'Remove VM from Backup Offering',
+          dataView: true,
+          args: ['virtualmachineid', 'forced'],
+          show: (record) => { return record.backupofferingid },
           mapping: {
             virtualmachineid: {
               value: (record, params) => { return record.id }
