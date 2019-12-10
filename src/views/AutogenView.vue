@@ -45,9 +45,8 @@
               </template>
               <a-button
                 v-if="action.api in $store.getters.apis &&
-                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) ||
-                  (dataView && action.dataView && ('show' in action ? action.show(resource) : true)) ||
-                  (treeView && ('show' in action ? action.show(treeSelected) : true)))"
+                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
+                  ('show' in action ? action.show(resource) : true)"
                 :icon="action.icon"
                 :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
                 shape="circle"
@@ -193,7 +192,10 @@
     </div>
 
     <div v-if="dataView && !treeView">
-      <resource-view :resource="resource" :loading="loading" :tabs="$route.meta.tabs" />
+      <resource-view
+        :resource="resource"
+        :loading="loading"
+        :tabs="$route.meta.tabs" />
     </div>
     <div class="row-element" v-else>
       <list-view
@@ -219,7 +221,8 @@
         :treeSelected="treeSelected"
         :loading="loading"
         :tabs="$route.meta.tabs"
-        @change-resource="changeResource" />
+        @change-resource="changeResource"
+        :actionData="actionData"/>
     </div>
   </div>
 </template>
@@ -268,7 +271,8 @@ export default {
       treeView: false,
       actions: [],
       treeData: [],
-      treeSelected: {}
+      treeSelected: {},
+      actionData: []
     }
   },
   computed: {
@@ -319,17 +323,14 @@ export default {
         params.keyword = this.searchQuery
       }
 
+      this.treeView = this.$route && this.$route.meta && this.$route.meta.treeView
+
       if (this.$route && this.$route.params && this.$route.params.id) {
         this.resource = {}
         this.dataView = true
+        this.treeView = false
       } else {
         this.dataView = false
-      }
-
-      if (this.$route && this.$route.meta && this.$route.meta.treeView) {
-        this.treeView = true
-      } else {
-        this.treeView = false
       }
 
       if (this.$route && this.$route.meta && this.$route.meta.permission) {
@@ -429,25 +430,28 @@ export default {
           }
         }
         if (this.items.length > 0) {
-          if (this.treeView) {
-            this.treeSelected = this.items[0]
-            this.resource = this.items[0]
-          } else {
-            this.resource = this.items[0]
-            this.treeSelected = {}
-          }
+          this.resource = this.items[0]
+          this.treeSelected = this.treeView ? this.items[0] : {}
         } else {
           this.resource = {}
           this.treeSelected = {}
         }
       }).catch(error => {
-        // handle error
         this.$notification.error({
           message: 'Request Failed',
           description: error.response.headers['x-description']
         })
-        if (error.response.status === 431) {
+
+        if ([401, 405].includes(error.response.status)) {
+          this.$router.push({ path: '/exception/403' })
+        }
+
+        if ([430, 431, 432].includes(error.response.status)) {
           this.$router.push({ path: '/exception/404' })
+        }
+
+        if ([530, 531, 532, 533, 534, 535, 536, 537].includes(error.response.status)) {
+          this.$router.push({ path: '/exception/500' })
         }
       }).finally(f => {
         this.loading = false
@@ -463,6 +467,7 @@ export default {
       this.currentAction = {}
     },
     execAction (action) {
+      this.actionData = []
       if (action.component && action.api && !action.popup) {
         this.$router.push({ name: action.api })
         return
@@ -622,6 +627,11 @@ export default {
 
           var hasJobId = false
           api(this.currentAction.api, params).then(json => {
+            // set action data for reload tree-view
+            if (this.treeView) {
+              this.actionData.push(json)
+            }
+
             for (const obj in json) {
               if (obj.includes('response')) {
                 for (const res in json[obj]) {
@@ -679,15 +689,16 @@ export default {
       rootItem[0].title = rootItem[0].title ? rootItem[0].title : rootItem[0].name
       rootItem[0].key = rootItem[0].id ? rootItem[0].id : 0
 
+      if (!rootItem[0].haschild) {
+        rootItem[0].isLeaf = true
+      }
+
       result.push(rootItem[0])
       return result
     },
     changeResource (resource) {
       this.treeSelected = resource
       this.resource = this.treeSelected
-    },
-    changeAction (showAction) {
-      this.showAction = showAction
     }
   }
 }

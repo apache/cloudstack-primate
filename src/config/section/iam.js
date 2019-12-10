@@ -178,12 +178,13 @@ export default {
       }],
       tabs: [
         {
+          name: 'Domain',
+          component: () => import('@/components/view/InfoCard.vue'),
+          show: (record, route) => { return route.path === '/domain' }
+        },
+        {
           name: 'details',
           component: () => import('@/components/view/DetailsTab.vue')
-        }, {
-          name: 'settings',
-          permission: ['listConfigurations'],
-          component: () => import('@/views/domain/TemplateDomainSettings.vue')
         }
       ],
       treeView: true,
@@ -193,12 +194,19 @@ export default {
           icon: 'plus',
           label: 'label.add.domain',
           listView: true,
-          args: ['parentdomainid', 'name', 'networkdomain', 'domainid']
+          dataView: true,
+          args: ['parentdomainid', 'name', 'networkdomain', 'domainid'],
+          mapping: {
+            parentdomainid: {
+              value: (record) => { return record.id }
+            }
+          }
         },
         {
           api: 'updateDomain',
           icon: 'edit',
           label: 'label.action.edit.domain',
+          listView: true,
           dataView: true,
           args: ['name', 'networkdomain']
         },
@@ -206,6 +214,7 @@ export default {
           api: 'updateResourceCount',
           icon: 'sync',
           label: 'label.action.update.resource.count',
+          listView: true,
           dataView: true,
           args: ['domainid'],
           mapping: {
@@ -218,6 +227,7 @@ export default {
           api: 'deleteDomain',
           icon: 'delete',
           label: 'label.delete.domain',
+          listView: true,
           dataView: true,
           show: (record) => { return record.level !== 0 },
           args: ['cleanup']

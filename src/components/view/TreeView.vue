@@ -28,18 +28,22 @@
           <a-icon slot="prefix" type="search" />
         </a-input-search>
         <a-spin :spinning="loadingSearch">
-          <a-directory-tree
+          <a-tree
             showLine
             v-if="treeViewData.length > 0"
             class="list-tree-view"
-            :loadData="onLoadData"
             :treeData="treeViewData"
+            :loadData="onLoadData"
             :expandAction="false"
-            :showIcon="false"
+            :showIcon="true"
             :defaultSelectedKeys="defaultSelected"
             :checkStrictly="true"
             @select="onSelect"
-            :defaultExpandedKeys="arrExpand" />
+            @expand="onExpand"
+            :defaultExpandedKeys="arrExpand">
+            <a-icon slot="parent" type="folder" />
+            <a-icon slot="leaf" type="block" />
+          </a-tree>
         </a-spin>
       </a-card>
     </a-spin>
@@ -63,7 +67,8 @@
               :resource="resource"
               :items="items"
               :tab="tabActive"
-              :loading="loading" />
+              :loading="loading"
+              :bordered="false" />
           </a-tab-pane>
         </a-tabs>
       </a-card>
@@ -95,7 +100,7 @@ export default {
     },
     tabs: {
       type: Array,
-      default: function () {
+      default () {
         return [{
           name: 'details',
           component: DetailsTab
@@ -104,13 +109,19 @@ export default {
     },
     loadedKeys: {
       type: Array,
-      default: function () {
+      default () {
         return []
       }
     },
     loading: {
       type: Boolean,
       default: false
+    },
+    actionData: {
+      type: Array,
+      default () {
+        return []
+      }
     }
   },
   data () {
@@ -123,6 +134,7 @@ export default {
       defaultSelected: [],
       treeVerticalData: [],
       treeViewData: [],
+      oldTreeViewData: [],
       apiList: '',
       apiChildren: '',
       apiDetail: '',
@@ -133,7 +145,8 @@ export default {
       showSetting: false,
       oldSearchQuery: '',
       searchQuery: '',
-      arrExpand: []
+      arrExpand: [],
+      rootKey: ''
     }
   },
   created: function () {
@@ -145,63 +158,118 @@ export default {
     loading () {
       this.detailLoading = this.loading
     },
-    treeData: function () {
-      this.treeViewData = this.treeData
-      this.searchQuery = ''
+    treeData () {
+      if (this.oldTreeViewData.length === 0) {
+        this.treeViewData = this.treeData
+        this.treeVerticalData = this.treeData
+      }
+
+      if (this.treeViewData.length > 0) {
+        this.oldTreeViewData = this.treeViewData
+        this.rootKey = this.treeViewData[0].key
+      }
     },
-    treeSelected: function () {
+    treeSelected () {
       if (Object.keys(this.treeSelected).length === 0) {
         return
       }
+
+      if (Object.keys(this.resource).length > 0) {
+        this.selectedTreeKey = this.resource.key
+        this.$emit('change-resource', this.resource)
+
+        // set default expand
+        if (this.defaultSelected.length > 1) {
+          const arrSelected = this.defaultSelected
+          this.defaultSelected = []
+          this.defaultSelected.push(arrSelected[0])
+        }
+
+        return
+      }
+
       this.resource = this.treeSelected
-      this.selectedTreeKey = this.resource.key
+      this.resource = this.createResourceData(this.resource)
+      this.selectedTreeKey = this.treeSelected.key
       this.defaultSelected.push(this.selectedTreeKey)
+
+      // set default expand
       if (this.defaultSelected.length > 1) {
         const arrSelected = this.defaultSelected
         this.defaultSelected = []
         this.defaultSelected.push(arrSelected[0])
       }
+    },
+    actionData (newData, oldData) {
+      if (!newData || newData.length === 0) {
+        return
+      }
+
+      this.reloadTreeData(newData)
     }
   },
   methods: {
     onLoadData (treeNode) {
-      if (this.searchQuery !== '') {
+      if (this.searchQuery !== '' && treeNode.eventKey !== this.rootKey) {
         return new Promise(resolve => {
           resolve()
         })
       }
+
       const params = {
         listAll: true,
         id: treeNode.eventKey
       }
+
       return new Promise(resolve => {
         api(this.apiChildren, params).then(json => {
-          const jsonRespone = this.getResponseJsonData(json)
-          const jsonGenerate = this.generateTreeData(jsonRespone)
-          treeNode.dataRef.children = jsonGenerate
+          const dataResponse = this.getResponseJsonData(json)
+          const dataGenerate = this.generateTreeData(dataResponse)
+          treeNode.dataRef.children = dataGenerate
+
           if (this.treeVerticalData.length === 0) {
             this.treeVerticalData = this.treeViewData
           }
+
           this.treeViewData = [...this.treeViewData]
-          this.treeVerticalData = this.treeVerticalData.concat(jsonGenerate)
+          this.oldTreeViewData = this.treeViewData
+
+          for (let i = 0; i < dataGenerate.length; i++) {
+            const resource = this.treeVerticalData.filter(item => item.id === dataGenerate[i].id)
+
+            if (!resource || resource.length === 0) {
+              this.treeVerticalData.push(dataGenerate[i])
+            } else {
+              this.treeVerticalData.filter((item, index) => {
+                if (item.id === dataGenerate[i].id) {
+                  // replace all value of tree data
+                  Object.keys(dataGenerate[i]).forEach((value, idx) => {
+                    this.$set(this.treeVerticalData[index], value, dataGenerate[i][value])
+                  })
+                }
+              })
+            }
+          }
+
           resolve()
         })
       })
     },
-    onSelect (selectedKeys) {
+    onSelect (selectedKeys, event) {
+      if (!event.selected) {
+        setTimeout(() => { event.node.$refs.selectHandle.click() })
+        return
+      }
+
       // check item tree selected, set selectedTreeKey
       if (selectedKeys && selectedKeys[0]) {
         this.selectedTreeKey = selectedKeys[0]
       }
 
-      // get item resource
-      const resource = this.treeVerticalData.filter(item => item.id === this.selectedTreeKey)
-
-      // check resource exists
-      if (resource && resource[0]) {
-        this.resource = resource[0]
-        this.$emit('change-resource', this.resource)
-      }
+      this.getDetailResource(this.selectedTreeKey)
+    },
+    onExpand (treeExpand) {
+      this.arrExpand = treeExpand
     },
     onSearch (value) {
       if (this.searchQuery === '' && this.oldSearchQuery === '') {
@@ -237,9 +305,20 @@ export default {
           return
         }
 
-        // get the max level of data search response
-        const maxLevel = Math.max.apply(Math, listDomains.map((o) => { return o.level }))
-        this.recursiveTreeData(listDomains, maxLevel)
+        if (listDomains[0].id === this.rootKey) {
+          const rootDomain = this.generateTreeData(listDomains)
+          this.treeViewData = rootDomain
+          return
+        }
+
+        this.recursiveTreeData(listDomains)
+
+        if (this.treeViewData && this.treeViewData[0]) {
+          this.defaultSelected = []
+          this.defaultSelected.push(this.treeViewData[0].key)
+          this.resource = this.treeViewData[0]
+          this.$emit('change-resource', this.resource)
+        }
 
         // check treeViewData, set to expand first children
         if (this.treeViewData &&
@@ -256,6 +335,81 @@ export default {
     onTabChange (key) {
       this.tabActive = key
     },
+    reloadTreeData (objData) {
+      // data response from action
+      let jsonResponse = this.getResponseJsonData(objData[0])
+      jsonResponse = this.createResourceData(jsonResponse)
+
+      // resource for check create or edit
+      const resource = this.treeVerticalData.filter(item => item.id === jsonResponse.id)
+
+      // when edit
+      if (resource && resource[0]) {
+        this.treeVerticalData.filter((item, index) => {
+          if (item.id === jsonResponse.id) {
+            // replace all value of tree data
+            Object.keys(jsonResponse).forEach((value, idx) => {
+              this.$set(this.treeVerticalData[index], value, jsonResponse[value])
+            })
+          }
+        })
+      } else {
+        // when create
+        let resourceExists = true
+
+        // check is searching data
+        if (this.searchQuery !== '') {
+          resourceExists = jsonResponse.title.indexOf(this.searchQuery) > -1
+        }
+
+        // push new resource to tree data
+        if (this.resource.haschild && resourceExists) {
+          this.treeVerticalData.push(jsonResponse)
+        }
+
+        // set resource is currently active as a parent
+        this.treeVerticalData.filter((item, index) => {
+          if (item.id === this.resource.id) {
+            this.$set(this.treeVerticalData[index], 'isLeaf', false)
+            this.$set(this.treeVerticalData[index], 'haschild', true)
+          }
+        })
+      }
+
+      this.recursiveTreeData(this.treeVerticalData)
+    },
+    getDetailResource (selectedKey) {
+      // set api name and parameter
+      const apiName = this.$route.meta.permission[0]
+      const params = {}
+
+      // set id to parameter
+      params.id = selectedKey
+      params.listAll = true
+      params.page = 1
+      params.pageSize = 1
+
+      api(apiName, params).then(json => {
+        const jsonResponse = this.getResponseJsonData(json)
+
+        // check json response is empty
+        if (!jsonResponse || jsonResponse.length === 0) {
+          this.resource = []
+        } else {
+          this.resource = jsonResponse[0]
+          this.resource = this.createResourceData(this.resource)
+          // set all value of resource tree data
+          this.treeVerticalData.filter((item, index) => {
+            if (item.id === this.resource.id) {
+              this.treeVerticalData[index] = this.resource
+            }
+          })
+        }
+
+        // emit change resource to parent
+        this.$emit('change-resource', this.resource)
+      })
+    },
     getResponseJsonData (json) {
       let responseName
       let objectName
@@ -265,10 +419,12 @@ export default {
           break
         }
       }
+
       for (const key in json[responseName]) {
         if (key === 'count') {
           continue
         }
+
         objectName = key
         break
       }
@@ -304,33 +460,75 @@ export default {
       }
 
       for (let i = 0; i < jsonData.length; i++) {
-        jsonData[i].title = jsonData[i].name
-        jsonData[i].key = jsonData[i].id
+        jsonData[i] = this.createResourceData(jsonData[i])
       }
 
       return jsonData
     },
-    recursiveTreeData (treeData, maxLevel) {
-      this.newTreeData[0].children = []
-      const items = treeData.filter(item => item.level !== this.newTreeData[0].level)
-      const children = this.getNestedChildren(items, (this.newTreeData[0].level + 1), maxLevel)
-      this.newTreeData[0].children = children
-      this.treeViewData = this.newTreeData
+    createResourceData (resource) {
+      if (!resource || Object.keys(resource) === 0) {
+        return {}
+      }
+
+      Object.keys(resource).forEach((value, idx) => {
+        if (resource[value] === 'Unlimited') {
+          this.$set(resource, value, '-1')
+        }
+      })
+      this.$set(resource, 'title', resource.name)
+      this.$set(resource, 'key', resource.id)
+      resource.slots = {
+        icon: 'parent'
+      }
+
+      if (!resource.haschild) {
+        this.$set(resource, 'isLeaf', true)
+        resource.slots = {
+          icon: 'leaf'
+        }
+      }
+
+      return resource
     },
-    getNestedChildren (dataItems, level, maxLevel) {
+    recursiveTreeData (treeData) {
+      const maxLevel = Math.max.apply(Math, treeData.map((o) => { return o.level }))
+      const items = treeData.filter(item => item.level <= maxLevel)
+      this.treeViewData = this.getNestedChildren(items, 0, maxLevel)
+      this.oldTreeViewData = this.treeViewData
+    },
+    getNestedChildren (dataItems, level, maxLevel, id) {
       if (level > maxLevel) {
         return
       }
-      const items = dataItems.filter(item => item.level === level)
-      if (items.length === 0 && this.searchQuery !== '') {
+
+      let items = []
+
+      if (!id || id === '') {
+        items = dataItems.filter(item => item.level === level)
+      } else {
+        items = dataItems.filter(item => {
+          let parentKey = ''
+          const arrKeys = Object.keys(item)
+          for (let i = 0; i < arrKeys.length; i++) {
+            if (arrKeys[i].indexOf('parent') > -1 && arrKeys[i].indexOf('id') > -1) {
+              parentKey = arrKeys[i]
+              break
+            }
+          }
+
+          return parentKey ? item[parentKey] === id : item.level === level
+        })
+      }
+
+      if (items.length === 0) {
         return this.getNestedChildren(dataItems, (level + 1), maxLevel)
       }
+
       for (let i = 0; i < items.length; i++) {
-        items[i].title = items[i].name
-        items[i].key = items[i].id
+        items[i] = this.createResourceData(items[i])
 
         if (items[i].haschild) {
-          items[i].children = this.getNestedChildren(dataItems, (level + 1), maxLevel)
+          items[i].children = this.getNestedChildren(dataItems, (level + 1), maxLevel, items[i].key)
         }
       }
 
@@ -368,5 +566,25 @@ export default {
       }
     }
   }
+}
+
+/deep/.ant-tree li span.ant-tree-switcher.ant-tree-switcher-noop {
+  display: none;
+}
+
+/deep/.ant-tree-node-content-wrapper-open > span:first-child,
+/deep/.ant-tree-node-content-wrapper-close > span:first-child {
+  display: none;
+}
+
+/deep/.ant-tree-icon__customize {
+  color: rgba(0, 0, 0, 0.45);
+  background: #fff;
+  padding-right: 5px;
+}
+
+/deep/.ant-tree li .ant-tree-node-content-wrapper {
+  padding-left: 0;
+  margin-left: 3px;
 }
 </style>
