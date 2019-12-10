@@ -288,6 +288,7 @@ export default {
     '$route' (to, from) {
       if (to.fullPath !== from.fullPath && !to.fullPath.includes('action/')) {
         this.page = 1
+        this.searchQuery = ''
         this.fetchData()
       }
     },

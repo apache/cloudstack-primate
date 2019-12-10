@@ -2,7 +2,7 @@
   <a-list size="large" class="list" :loading="loading">
     <a-list-item :key="index" v-for="(item, index) in items" class="item">
       <a-list-item-meta>
-        <span slot="title" style="word-break: break-all">{{ item.name }}</span>
+        <span slot="title" style="word-break: break-all"><strong>{{ item.name }}</strong></span>
         <span slot="description" style="word-break: break-all">{{ item.description }}</span>
       </a-list-item-meta>
 
@@ -14,7 +14,6 @@
           v-model="editableValue"
           @keydown.esc="editableValueKey = null"
           @pressEnter="updateData(item)">
-          <a-icon slot="addonAfter" type="close" style="cursor:pointer; color: red;" @click="editableValueKey = null"/>
         </a-input>
         <span v-else class="value">
           {{ item.value }}
@@ -24,15 +23,22 @@
       <div slot="actions" class="action">
         <a-button
           shape="circle"
-          v-if="editableValueKey === index"
-          type="primary"
-          icon="save"
-          @click="updateData(item)"></a-button>
-        <a-button
-          shape="circle"
-          v-else
+          v-if="editableValueKey !== index"
           icon="edit"
           @click="setEditableSetting(item, index)" />
+        <a-button
+          shape="circle"
+          size="default"
+          @click="editableValueKey = null"
+          v-if="editableValueKey === index" >
+          <a-icon type="close-circle" theme="twoTone" twoToneColor="#f5222d" />
+        </a-button>
+        <a-button
+          shape="circle"
+          @click="updateData(item)"
+          v-if="editableValueKey === index" >
+          <a-icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />
+        </a-button>
       </div>
     </a-list-item>
   </a-list>
@@ -56,7 +62,7 @@ export default {
   data () {
     return {
       items: [],
-      routeIdName: '',
+      scopeKey: '',
       editableValueKey: null,
       editableValue: ''
     }
@@ -64,25 +70,25 @@ export default {
   beforeMount () {
     switch (this.$route.meta.name) {
       case 'account':
-        this.routeIdName = 'accountid'
+        this.scopeKey = 'accountid'
         break
       case 'domain':
-        this.routeIdName = 'domainid'
+        this.scopeKey = 'domainid'
         break
       case 'zone':
-        this.routeIdName = 'zoneid'
+        this.scopeKey = 'zoneid'
         break
       case 'cluster':
-        this.routeIdName = 'clusterid'
+        this.scopeKey = 'clusterid'
         break
       case 'storagepool':
-        this.routeIdName = 'storageid'
+        this.scopeKey = 'storageid'
         break
       case 'imagestore':
-        this.routeIdName = 'imagestoreuuid'
+        this.scopeKey = 'imagestoreuuid'
         break
       default:
-        this.routeIdName = ''
+        this.scopeKey = ''
     }
   },
   mounted () {
@@ -96,8 +102,9 @@ export default {
   },
   methods: {
     fetchData (callback) {
+      this.loading = true
       api('listConfigurations', {
-        [this.routeIdName]: this.resource.id,
+        [this.scopeKey]: this.resource.id,
         listAll: true
       }).then(response => {
         this.items = response.listconfigurationsresponse.configuration
@@ -105,21 +112,19 @@ export default {
         console.error(error)
         this.$message.error('There was an error loading these settings.')
       }).finally(() => {
+        this.loading = false
         if (!callback) return
         callback()
       })
     },
     updateData (item) {
+      this.loading = true
       api('updateConfiguration', {
-        [this.routeIdName]: this.resource.id,
+        [this.scopeKey]: this.resource.id,
         name: item.name,
         value: this.editableValue
       }).then(() => {
-        this.$message.success('Setting Updated: ' + item.name)
-        this.$notification.success({
-          message: 'Setting Updated',
-          description: `${item.name} successfully updated to ${this.editableValue}`
-        })
+        this.$message.success('Setting ' + item.name + ' updated to ' + this.editableValue)
       }).catch(error => {
         console.error(error)
         this.$message.error('There was an error saving this setting.')
@@ -128,6 +133,7 @@ export default {
           description: 'There was an error saving this setting. Please try again later.'
         })
       }).finally(() => {
+        this.loading = false
         this.fetchData(() => {
           this.editableValueKey = null
         })
@@ -143,14 +149,13 @@ export default {
 
 <style scoped lang="scss">
   .list {
-    max-height: 700px;
-    overflow: scroll;
   }
   .editable-value {
 
     @media (min-width: 760px) {
       text-align: right;
       margin-left: 40px;
+      margin-right: -40px;
     }
 
   }
@@ -166,7 +171,6 @@ export default {
     &__content {
       width: 100%;
       display: flex;
-      font-weight: bold;
       word-break: break-all;
 
       @media (min-width: 760px) {

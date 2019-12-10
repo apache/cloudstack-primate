@@ -108,7 +108,6 @@
         v-model="editableValue"
         @keydown.esc="editableValueKey = null"
         @pressEnter="saveValue(record)">
-        <a-icon slot="addonAfter" type="close" style="cursor:pointer; color: red;" @click="editableValueKey = null"/>
       </a-input>
       <div v-else style="width: 200px; word-break: break-all">
         {{ text }}
@@ -117,15 +116,22 @@
     <template slot="actions" slot-scope="text, record">
       <a-button
         shape="circle"
-        v-if="editableValueKey === record.key"
-        type="primary"
-        icon="save"
-        @click="saveValue(record)" />
-      <a-button
-        shape="circle"
-        v-else
+        v-if="editableValueKey !== record.key"
         icon="edit"
         @click="editValue(record)" />
+      <a-button
+        shape="circle"
+        @click="saveValue(record)"
+        v-if="editableValueKey === record.key" >
+        <a-icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />
+      </a-button>
+      <a-button
+        shape="circle"
+        size="default"
+        @click="editableValueKey = null"
+        v-if="editableValueKey === record.key" >
+        <a-icon type="close-circle" theme="twoTone" twoToneColor="#f5222d" />
+      </a-button>
     </template>
   </a-table>
 </template>
