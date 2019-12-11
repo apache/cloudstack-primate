@@ -30,8 +30,13 @@
       :class="{ 'host-item--selected' : selectedIndex === index }"
     >
       <div class="host-item__row">
+        <a-radio
+          style="padding-right: 10px; padding-top: 20px"
+          @click="selectedIndex = index"
+          :checked="selectedIndex === index"
+          :disabled="!host.suitableformigration" />
         <div class="host-item__value">
-          <span class="host-item__title">Title</span>
+          <span class="host-item__title">{{ $t('name') }}</span>
           {{ host.name }}
         </div>
         <div class="host-item__value">
@@ -49,20 +54,15 @@
             twoToneColor="#f5222d"
             v-else />
         </div>
-      </div>
-      <div class="host-item__row">
         <div class="host-item__value host-item__value--full">
-          <span class="host-item__title">CPU Utilized</span>
+          <span class="host-item__title">{{ $t('cpuused') }}</span>
           {{ host.cpuused }}
         </div>
         <div class="host-item__value">
-          <span class="host-item__title">Memory Used</span>
+          <span class="host-item__title">{{ $t('memused') }}</span>
           {{ host.memoryused | byteToGigabyte }} GB
         </div>
       </div>
-      <a-radio @click="selectedIndex = index" :checked="selectedIndex === index" :disabled="!host.suitableformigration">
-        Select
-      </a-radio>
     </a-list-item>
     <div slot="footer" class="list__footer">
       <a-button type="primary" :disabled="selectedIndex === null" @click="submitForm">
@@ -154,7 +154,7 @@ export default {
 
   .list {
     max-height: 90vh;
-    overflow: scroll;
+    overflow-y: scroll;
     margin: -24px;
 
     @media (min-width: 760px) {
