@@ -145,10 +145,7 @@ export default {
   },
   methods: {
     fetchData () {
-      const apiName = 'listSslCerts'
       const params = {}
-
-      // set parameter for fetching data
       params.listAll = true
       params.page = this.page
       params.pageSize = this.pageSize
@@ -156,7 +153,7 @@ export default {
 
       this.loading = true
 
-      api(apiName, params).then(json => {
+      api('listSslCerts', params).then(json => {
         const listSslResponse = json.listsslcertsresponse.sslcert
 
         // check exists json response
@@ -183,15 +180,13 @@ export default {
       this.loading = false
     },
     onDelete (row) {
-      const apiName = 'deleteSslCert'
       const params = {}
-
       params.id = row.id
 
       // show loading
       const loading = this.$message.loading('Delete certificate in progress for ' + row.name, 0)
 
-      api(apiName, params).then(json => {
+      api('deleteSslCert', params).then(json => {
         const jsonResponse = json.deletesslcertresponse
 
         // hide loading
