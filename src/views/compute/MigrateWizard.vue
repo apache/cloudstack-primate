@@ -74,6 +74,7 @@
 
 <script>
 import { api } from '@/api'
+import { pollActionCompletion } from '@/utils/methods'
 
 export default {
   name: 'VMMigrateWizard',
@@ -113,28 +114,25 @@ export default {
         hostid: this.hosts[this.selectedIndex].id,
         virtualmachineid: this.resource.id
       }).then(response => {
-        this.pollActionCompletion(response.migratevirtualmachineresponse.jobid)
+        pollActionCompletion({
+          jobId: response.migratevirtualmachineresponse.jobid,
+          successMessage: `Migration completed successfully for ${this.resource.name}`,
+          successMethod: () => {
+            this.$parent.$parent.close()
+          },
+          errorMessage: 'Migration failed',
+          errorMethod: () => {
+            this.$parent.$parent.close()
+          },
+          loadingMessage: `Migration in progress for ${this.resource.name}`,
+          catchMessage: 'Error encountered while fetching async job result',
+          catchMethod: () => {
+            this.$parent.$parent.close()
+          }
+        })
       }).catch(error => {
         console.error(error)
         this.$message.error('Failed to migrate host.')
-      })
-    },
-    pollActionCompletion (jobId) {
-      api('queryAsyncJobResult', { jobId }).then(json => {
-        const result = json.queryasyncjobresultresponse
-        if (result.jobstatus === 1) {
-          this.$message.success(`Migration completed successfully for ${this.resource.name}`)
-          this.$parent.$parent.close()
-        } else if (result.jobstatus === 2) {
-          this.$message.error(`Migration failed for ${this.resource.name}`)
-          this.fetchData()
-        } else if (result.jobstatus === 0) {
-          this.$message
-            .loading(`Migration in progress for ${this.resource.name}`, 3)
-            .then(() => this.pollActionCompletion(jobId))
-        }
-      }).catch(e => {
-        console.log('Error encountered while fetching async job result' + e)
       })
     }
   },
