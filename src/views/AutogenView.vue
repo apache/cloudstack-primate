@@ -178,6 +178,15 @@
                   :placeholder="field.description"
                 />
               </span>
+              <span v-else-if="field.name==='certificate' || field.name==='privatekey' || field.name==='certchain'">
+                <a-textarea
+                  rows="2"
+                  v-decorator="[field.name, {
+                    rules: [{ required: field.required, message: 'Please enter input' }]
+                  }]"
+                  :placeholder="field.description"
+                />
+              </span>
               <span v-else>
                 <a-input
                   v-decorator="[field.name, {
@@ -203,6 +212,7 @@
         :loading="loading"
         :columns="columns"
         :items="items"
+        @refresh="this.fetchData"
         v-if="!treeView" />
       <a-pagination
         class="row-element"
@@ -288,6 +298,7 @@ export default {
     '$route' (to, from) {
       if (to.fullPath !== from.fullPath && !to.fullPath.includes('action/')) {
         this.page = 1
+        this.searchQuery = ''
         this.fetchData()
       }
     },
