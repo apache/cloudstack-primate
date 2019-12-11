@@ -134,6 +134,7 @@
 "current": "isCurrent",
 "date": "Date",
 "dedicated": "Dedicated",
+"deleteconfirm": "Please confirm that you would like to delete this {name}",
 "deleteprofile": "Delete Profile",
 "deploymentPlanner": "Deployment planner",
 "deploymentplanner": "Deployment planner",
