@@ -30,8 +30,13 @@
       :class="{ 'host-item--selected' : selectedIndex === index }"
     >
       <div class="host-item__row">
+        <a-radio
+          style="padding-right: 10px; padding-top: 20px"
+          @click="selectedIndex = index"
+          :checked="selectedIndex === index"
+          :disabled="!host.suitableformigration" />
         <div class="host-item__value">
-          <span class="host-item__title">Title</span>
+          <span class="host-item__title">{{ $t('name') }}</span>
           {{ host.name }}
         </div>
         <div class="host-item__value host-item__value--small">
@@ -50,11 +55,11 @@
             v-else />
         </div>
         <div class="host-item__value host-item__value--full">
-          <span class="host-item__title">CPU Utilized</span>
+          <span class="host-item__title">{{ $t('cpuused') }}</span>
           {{ host.cpuused }}
         </div>
         <div class="host-item__value">
-          <span class="host-item__title">Memory Used</span>
+          <span class="host-item__title">{{ $t('memused') }}</span>
           {{ host.memoryused | byteToGigabyte }} GB
         </div>
         <a-radio
