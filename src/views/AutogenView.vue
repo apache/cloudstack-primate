@@ -17,7 +17,7 @@
 
 <template>
   <div>
-    <a-card class="mobile-breadcrumb">
+    <a-card class="breadcrumb-card">
       <a-row>
         <a-col :span="14">
           <breadcrumb style="padding-top: 6px" />
@@ -202,6 +202,7 @@
         :loading="loading"
         :columns="columns"
         :items="items"
+        @refresh="this.fetchData"
         v-if="!treeView" />
       <a-pagination
         class="row-element"
@@ -287,6 +288,7 @@ export default {
     '$route' (to, from) {
       if (to.fullPath !== from.fullPath && !to.fullPath.includes('action/')) {
         this.page = 1
+        this.searchQuery = ''
         this.fetchData()
       }
     },
@@ -439,7 +441,8 @@ export default {
       }).catch(error => {
         this.$notification.error({
           message: 'Request Failed',
-          description: error.response.headers['x-description']
+          description: error.response.headers['x-description'],
+          duration: 0
         })
 
         if ([401, 405].includes(error.response.status)) {
@@ -561,7 +564,7 @@ export default {
           this.fetchData()
         } else if (result.jobstatus === 2) {
           this.fetchData()
-        } else {
+        } else if (result.jobstatus === 0) {
           this.$message
             .loading(this.$t(action.label) + ' in progress for ' + this.resource.name, 3)
             .then(() => this.pollActionCompletion(jobId, action))
@@ -612,17 +615,17 @@ export default {
             }
           }
 
-          console.log(this.currentAction)
-
           if (this.currentAction.mapping) {
             for (const key in this.currentAction.mapping) {
               if (!this.currentAction.mapping[key].value) {
                 continue
               }
-              var keyName = this.currentAction.mapping[key].rename ? this.currentAction.mapping[key].rename : key
-              params[keyName] = this.currentAction.mapping[key].value(this.resource, params)
+              params[key] = this.currentAction.mapping[key].value(this.resource, params)
             }
           }
+
+          console.log(this.currentAction)
+          console.log(this.resource)
           console.log(params)
 
           var hasJobId = false
@@ -706,7 +709,7 @@ export default {
 
 <style scoped>
 
-.mobile-breadcrumb {
+.breadcrumb-card {
   margin-left: -24px;
   margin-right: -24px;
   margin-top: -16px;

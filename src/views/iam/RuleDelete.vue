@@ -15,33 +15,46 @@
 // specific language governing permissions and limitations
 // under the License.
 
+<template>
+  <a-tooltip placement="bottom">
+    <template slot="title">
+      Delete rule
+    </template>
+    <a-popconfirm
+      title="Delete Rule?"
+      @confirm="handleDelete"
+    >
+      <a-button type="danger" shape="circle">
+        <a-icon type="delete" />
+      </a-button>
+    </a-popconfirm>
+  </a-tooltip>
+</template>
+
+<script>
 export default {
-  name: 'imagestore',
-  title: 'Secondary Storages',
-  icon: 'picture',
-  permission: ['listImageStores'],
-  columns: ['name', 'url', 'protocol', 'scope', 'zonename'],
-  details: ['name', 'id', 'url', 'protocol', 'provider', 'scope', 'zonename'],
-  tabs: [{
-    name: 'details',
-    component: () => import('@/components/view/DetailsTab.vue')
-  }, {
-    name: 'Settings',
-    component: () => import('@/components/view/SettingsTab.vue')
-  }],
-  actions: [
-    {
-      api: 'addImageStore',
-      icon: 'plus',
-      label: 'label.add.secondary.storage',
-      listView: true,
-      args: ['name', 'provider', 'zoneid', 'url', 'details']
-    },
-    {
-      api: 'deleteImageStore',
-      icon: 'delete',
-      label: 'label.action.delete.secondary.storage',
-      dataView: true
+  name: 'RuleDelete',
+  props: {
+    record: {
+      type: Object,
+      required: true
     }
-  ]
+  },
+  methods: {
+    handleDelete () {
+      this.$emit('delete')
+    }
+  }
 }
+</script>
+
+<style
+  scoped
+  lang="scss"
+>
+  .anticon-delete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
