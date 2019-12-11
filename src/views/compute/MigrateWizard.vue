@@ -34,7 +34,7 @@
           <span class="host-item__title">Title</span>
           {{ host.name }}
         </div>
-        <div class="host-item__value">
+        <div class="host-item__value host-item__value--small">
           <span class="host-item__title">Suitability</span>
           <a-icon
             class="host-item__suitability-icon"
@@ -49,8 +49,6 @@
             twoToneColor="#f5222d"
             v-else />
         </div>
-      </div>
-      <div class="host-item__row">
         <div class="host-item__value host-item__value--full">
           <span class="host-item__title">CPU Utilized</span>
           {{ host.cpuused }}
@@ -59,10 +57,12 @@
           <span class="host-item__title">Memory Used</span>
           {{ host.memoryused | byteToGigabyte }} GB
         </div>
+        <a-radio
+          class="host-item__radio"
+          @click="selectedIndex = index"
+          :checked="selectedIndex === index"
+          :disabled="!host.suitableformigration"></a-radio>
       </div>
-      <a-radio @click="selectedIndex = index" :checked="selectedIndex === index" :disabled="!host.suitableformigration">
-        Select
-      </a-radio>
     </a-list-item>
     <div slot="footer" class="list__footer">
       <a-button type="primary" :disabled="selectedIndex === null" @click="submitForm">
@@ -153,12 +153,14 @@ export default {
 <style scoped lang="scss">
 
   .list {
-    max-height: 90vh;
+    max-height: 95vh;
+    width: 95vw;
     overflow: scroll;
     margin: -24px;
 
     @media (min-width: 760px) {
-      max-height: 50vh;
+      max-height: 70vh;
+      width: 80vw;
     }
 
     &__header,
@@ -175,9 +177,6 @@ export default {
   }
 
   .host-item {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
     padding-right: 20px;
     padding-bottom: 0;
     padding-left: 20px;
@@ -203,6 +202,17 @@ export default {
       align-items: flex-start;
       flex: 1;
       margin-bottom: 10px;
+
+      &--small {
+
+        @media (min-width: 760px) {
+          flex: none;
+          margin-right: 40px;
+          margin-left: 40px;
+        }
+
+      }
+
     }
 
     &__title {
@@ -211,6 +221,11 @@ export default {
 
     &__suitability-icon {
       margin-top: 5px;
+    }
+
+    &__radio {
+      display: flex;
+      align-items: center;
     }
 
   }
