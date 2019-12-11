@@ -66,7 +66,7 @@
     </a-list-item>
     <div slot="footer" class="list__footer">
       <a-button type="primary" :disabled="selectedIndex === null" @click="submitForm">
-       {{ $t('OK') }}
+        {{ $t('OK') }}
       </a-button>
     </div>
   </a-list>
