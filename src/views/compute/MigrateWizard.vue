@@ -66,7 +66,7 @@
     </a-list-item>
     <div slot="footer" class="list__footer">
       <a-button type="primary" :disabled="selectedIndex === null" @click="submitForm">
-        Ok
+       {{ $t('OK') }}
       </a-button>
     </div>
   </a-list>
@@ -98,14 +98,13 @@ export default {
     fetchData () {
       this.loading = true
       api('findHostsForMigration', {
-        VirtualMachineId: this.resource.id,
+        virtualmachineid: this.resource.id,
         keyword: this.searchQuery
       }).then(response => {
         this.hosts = response.findhostsformigrationresponse.host
         this.loading = false
       }).catch(error => {
-        console.error(error)
-        this.$message.error('Failed to load hosts.')
+        this.$message.error('Failed to load hosts: ' + error)
       })
     },
     submitForm () {
@@ -123,7 +122,6 @@ export default {
     pollActionCompletion (jobId) {
       api('queryAsyncJobResult', { jobId }).then(json => {
         const result = json.queryasyncjobresultresponse
-
         if (result.jobstatus === 1) {
           this.$message.success(`Migration completed successfully for ${this.resource.name}`)
           this.$parent.$parent.close()
@@ -155,12 +153,12 @@ export default {
   .list {
     max-height: 95vh;
     width: 95vw;
-    overflow: scroll;
+    overflow-y: scroll;
     margin: -24px;
 
-    @media (min-width: 760px) {
+    @media (min-width: 1000px) {
       max-height: 70vh;
-      width: 80vw;
+      width: 60vw;
     }
 
     &__header,
