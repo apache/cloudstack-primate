@@ -30,11 +30,6 @@
       :class="{ 'host-item--selected' : selectedIndex === index }"
     >
       <div class="host-item__row">
-        <a-radio
-          style="padding-right: 10px; padding-top: 20px"
-          @click="selectedIndex = index"
-          :checked="selectedIndex === index"
-          :disabled="!host.suitableformigration" />
         <div class="host-item__value">
           <span class="host-item__title">{{ $t('name') }}</span>
           {{ host.name }}
