@@ -201,7 +201,6 @@ export default {
           this.$message.success('Delete success', 3)
           this.fetchData()
         } else {
-          console.log(jsonResponse.displaytext)
           this.$message.error('Delete fail', 3)
         }
       }).catch(error => {
