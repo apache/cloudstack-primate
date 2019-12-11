@@ -90,6 +90,7 @@ export default {
         title: 'Users',
         param: 'account'
       }],
+<<<<<<< HEAD
       tabs: [
         {
           name: 'details',
@@ -104,6 +105,15 @@ export default {
           component: () => import('@/components/view/SettingsTab.vue')
         }
       ],
+=======
+      tabs: [{
+        name: 'details',
+        component: () => import('@/components/view/DetailsTab.vue')
+      }, {
+        name: 'Settings',
+        component: () => import('@/components/view/SettingsTab.vue')
+      }],
+>>>>>>> rebase with latest master
       actions: [
         {
           api: 'createAccount',
@@ -221,6 +231,7 @@ export default {
         }, {
           name: 'Settings',
           component: () => import('@/components/view/SettingsTab.vue')
+<<<<<<< HEAD
 =======
           name: 'details',
           component: () => import('@/components/view/DetailsTab.vue')
@@ -245,6 +256,8 @@ export default {
           name: 'details',
           component: () => import('@/components/view/DetailsTab.vue')
 >>>>>>> Fix issue #27: changes requested
+=======
+>>>>>>> rebase with latest master
         }
       ],
       treeView: true,

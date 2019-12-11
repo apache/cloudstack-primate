@@ -16,6 +16,7 @@
 // under the License.
 
 <template>
+<<<<<<< HEAD
   <a-list :dataSource="hosts" itemLayout="vertical" class="list" :loading="loading">
     <div slot="header" class="list__header">
       <a-input-search
@@ -77,6 +78,20 @@ import { api } from '@/api'
 
 export default {
   name: 'VMMigrateWizard',
+=======
+  <div>
+    {{ resource }}
+    This needs to implement migrate wizard
+  </div>
+</template>
+
+<script>
+
+export default {
+  name: 'VMMigrateWizard',
+  components: {
+  },
+>>>>>>> rebase with latest master
   props: {
     resource: {
       type: Object,
@@ -85,6 +100,7 @@ export default {
   },
   data () {
     return {
+<<<<<<< HEAD
       loading: true,
       hosts: [],
       selectedIndex: null,
@@ -151,10 +167,16 @@ export default {
       value = value / Math.pow(10, 9)
       return value.toFixed(2)
     }
+=======
+    }
+  },
+  methods: {
+>>>>>>> rebase with latest master
   }
 }
 </script>
 
+<<<<<<< HEAD
 <style scoped lang="scss">
 
   .list {
@@ -230,4 +252,7 @@ export default {
     }
 
   }
+=======
+<style scoped>
+>>>>>>> rebase with latest master
 </style>

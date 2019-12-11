@@ -278,9 +278,13 @@
         :columns="columns"
         :items="items"
 <<<<<<< HEAD
+<<<<<<< HEAD
         @refresh="this.fetchData"
 =======
 >>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
+=======
+        @refresh="this.fetchData"
+>>>>>>> rebase with latest master
         v-if="!treeView" />
       <a-pagination
         class="row-element"
@@ -708,6 +712,7 @@ export default {
         jobId,
         successMethod: result => {
           this.fetchData()
+<<<<<<< HEAD
           if (action.response) {
             const description = action.response(result.jobresult)
             if (description) {
@@ -723,6 +728,15 @@ export default {
         loadingMessage: `${this.$t(action.label)} in progress for ${this.resource.name}`,
         catchMessage: 'Error encountered while fetching async job result',
         action
+=======
+        } else if (result.jobstatus === 0) {
+          this.$message
+            .loading(this.$t(action.label) + ' in progress for ' + this.resource.name, 3)
+            .then(() => this.pollActionCompletion(jobId, action))
+        }
+      }).catch(function (e) {
+        console.log('Error encountered while fetching async job result' + e)
+>>>>>>> rebase with latest master
       })
     },
     handleSubmit (e) {

@@ -119,6 +119,10 @@ revokeSecurityGroupEgress
 revokeSecurityGroupIngress
 startInternalLoadBalancerVM
 stopInternalLoadBalancerVM
+<<<<<<< HEAD
+=======
+updateDefaultNicForVirtualMachine
+>>>>>>> rebase with latest master
 updateLoadBalancerRule
 updateNetworkACLItem
 updateNetworkACLList
@@ -128,3 +132,7 @@ updateProjectInvitation
 updateResourceLimit
 updateTrafficType
 updateVpnCustomerGateway
+<<<<<<< HEAD
+=======
+uploadSslCert
+>>>>>>> rebase with latest master

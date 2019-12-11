@@ -119,6 +119,7 @@
       <router-link :to="{ path: '/zone/' + record.zoneid }">{{ text }}</router-link>
     </a>
 
+<<<<<<< HEAD
     <div slot="order" slot-scope="text, record" class="shift-btns">
       <a-tooltip placement="top">
         <template slot="title">Move to top</template>
@@ -146,6 +147,8 @@
       </a-tooltip>
     </div>
 
+=======
+>>>>>>> rebase with latest master
     <template slot="value" slot-scope="text, record">
       <a-input
         v-if="editableValueKey === record.key"
@@ -263,6 +266,7 @@ export default {
     editValue (record) {
       this.editableValueKey = record.key
       this.editableValue = record.value
+<<<<<<< HEAD
     },
     handleUpdateOrder (id, index) {
       this.parentToggleLoading()
@@ -347,6 +351,8 @@ export default {
       data.forEach((item, index) => {
         this.handleUpdateOrder(item.id, index + 1)
       })
+=======
+>>>>>>> rebase with latest master
     }
   }
 }

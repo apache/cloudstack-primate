@@ -16,6 +16,7 @@
 // under the License.
 
 <template>
+<<<<<<< HEAD
   <a-row :gutter="12">
     <a-col :md="24">
       <a-card class="breadcrumb-card">
@@ -37,6 +38,28 @@
             shape="round"
             @click="sslFormVisible = true">
             {{ $t('Setup SSL Certificate') }}
+=======
+  <a-row :gutter="24">
+    <a-col :md="24">
+      <a-card class="breadcrumb-card">
+        <a-col :md="14">
+          <breadcrumb style="padding-top: 6px" />
+        </a-col>
+        <a-col :md="10">
+          <a-button
+            style="margin-left: 10px; float: right"
+            @click="fetchData()"
+            icon="reload"
+            :loading="loading"
+            type="primary">
+            {{ $t('Refresh') }}
+          </a-button>
+          <a-button
+            style="margin-left: 10px; float: right"
+            @click="sslFormVisible = true"
+            icon="safety-certificate">
+            {{ $t('SSL Certificate') }}
+>>>>>>> rebase with latest master
           </a-button>
           <a-modal
             :title="$t('SSL Certificate')"
