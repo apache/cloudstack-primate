@@ -17,6 +17,9 @@
 
 <template>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> merge latest master
   <a-list :dataSource="hosts" itemLayout="vertical" class="list" :loading="loading">
     <div slot="header" class="list__header">
       <a-input-search
@@ -71,6 +74,7 @@
       </a-button>
     </div>
   </a-list>
+<<<<<<< HEAD
 </template>
 
 <script>
@@ -83,15 +87,22 @@ export default {
     {{ resource }}
     This needs to implement migrate wizard
   </div>
+=======
+>>>>>>> merge latest master
 </template>
 
 <script>
+import { api } from '@/api'
+import { pollActionCompletion } from '@/utils/methods'
 
 export default {
   name: 'VMMigrateWizard',
+<<<<<<< HEAD
   components: {
   },
 >>>>>>> rebase with latest master
+=======
+>>>>>>> merge latest master
   props: {
     resource: {
       type: Object,
@@ -101,10 +112,14 @@ export default {
   data () {
     return {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> merge latest master
       loading: true,
       hosts: [],
       selectedIndex: null,
       searchQuery: ''
+<<<<<<< HEAD
     }
   },
   mounted () {
@@ -168,15 +183,81 @@ export default {
       return value.toFixed(2)
     }
 =======
+=======
+>>>>>>> merge latest master
     }
   },
+  mounted () {
+    this.fetchData()
+  },
   methods: {
+<<<<<<< HEAD
 >>>>>>> rebase with latest master
+=======
+    fetchData () {
+      this.loading = true
+      api('findHostsForMigration', {
+        virtualmachineid: this.resource.id,
+        keyword: this.searchQuery,
+        page: 1,
+        pagesize: 500
+      }).then(response => {
+        this.hosts = response.findhostsformigrationresponse.host
+        this.loading = false
+      }).catch(error => {
+        this.$message.error('Failed to load hosts: ' + error)
+      })
+    },
+    submitForm () {
+      this.loading = true
+      api('migrateVirtualMachine', {
+        hostid: this.hosts[this.selectedIndex].id,
+        virtualmachineid: this.resource.id
+      }).then(response => {
+        this.$store.dispatch('AddAsyncJob', {
+          title: `Migrating ${this.resource.name}`,
+          jobid: response.migratevirtualmachineresponse.jobid,
+          description: this.resource.name,
+          status: 'progress'
+        })
+        pollActionCompletion({
+          jobId: response.migratevirtualmachineresponse.jobid,
+          successMessage: `Migration completed successfully for ${this.resource.name}`,
+          successMethod: () => {
+            this.$parent.$parent.close()
+          },
+          errorMessage: 'Migration failed',
+          errorMethod: () => {
+            this.$parent.$parent.close()
+          },
+          loadingMessage: `Migration in progress for ${this.resource.name}`,
+          catchMessage: 'Error encountered while fetching async job result',
+          catchMethod: () => {
+            this.$parent.$parent.close()
+          }
+        })
+        this.$parent.$parent.close()
+      }).catch(error => {
+        console.error(error)
+        this.$message.error('Failed to migrate host.')
+      })
+    }
+  },
+  filters: {
+    byteToGigabyte: value => {
+      if (!value) return ''
+      value = value / Math.pow(10, 9)
+      return value.toFixed(2)
+    }
+>>>>>>> merge latest master
   }
 }
 </script>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> merge latest master
 <style scoped lang="scss">
 
   .list {
@@ -200,6 +281,10 @@ export default {
       display: flex;
       justify-content: flex-end;
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> merge latest master
   }
 
   .host-item {
@@ -219,6 +304,10 @@ export default {
       @media (min-width: 760px) {
         flex-direction: row;
       }
+<<<<<<< HEAD
+=======
+
+>>>>>>> merge latest master
     }
 
     &__value {
@@ -235,7 +324,13 @@ export default {
           margin-right: 40px;
           margin-left: 40px;
         }
+<<<<<<< HEAD
       }
+=======
+
+      }
+
+>>>>>>> merge latest master
     }
 
     &__title {
@@ -252,7 +347,10 @@ export default {
     }
 
   }
+<<<<<<< HEAD
 =======
 <style scoped>
 >>>>>>> rebase with latest master
+=======
+>>>>>>> merge latest master
 </style>

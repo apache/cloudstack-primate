@@ -41,9 +41,13 @@
     <a-list size="large">
       <a-list-item :key="index" v-for="(item, index) in details">
         <a-list-item-meta>
+<<<<<<< HEAD
           <span slot="title">
             {{ item.name }}
           </span>
+=======
+          <span slot="title"><strong>{{ item.name }}</strong></span>
+>>>>>>> merge latest master
           <span slot="description" style="word-break: break-all">
             <span v-if="item.edit" style="display: flex">
               <a-auto-complete

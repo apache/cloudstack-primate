@@ -431,9 +431,12 @@ export default {
       this.columns = []
       this.columnKeys = []
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       this.items = []
 >>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
+=======
+>>>>>>> merge latest master
       this.treeData = []
       this.treeSelected = {}
       var params = { listall: true }

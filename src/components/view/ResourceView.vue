@@ -44,9 +44,13 @@
             v-if="('show' in tab ? tab.show(treeView) : true)">
 =======
             v-if="'show' in tab ? tab.show(resource, $route) : true">
+<<<<<<< HEAD
 >>>>>>> fixes
             <component :is="tab.component" :resource="resource" :loading="loading" />
 >>>>>>> Fix issue display two info card in Resource-view
+=======
+            <component :is="tab.component" :resource="resource" :loading="loading" :tab="activeTab" />
+>>>>>>> merge latest master
           </a-tab-pane>
         </a-tabs>
       </a-card>

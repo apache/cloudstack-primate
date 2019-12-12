@@ -141,7 +141,10 @@
 "current": "isCurrent",
 "date": "Date",
 "dedicated": "Dedicated",
+<<<<<<< HEAD
 "default": "Default",
+=======
+>>>>>>> merge latest master
 "deleteconfirm": "Please confirm that you would like to delete this {name}",
 "deleteprofile": "Delete Profile",
 "deploymentPlanner": "Deployment planner",

@@ -91,6 +91,9 @@ export default {
         param: 'account'
       }],
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> merge latest master
       tabs: [
         {
           name: 'details',
@@ -105,6 +108,7 @@ export default {
           component: () => import('@/components/view/SettingsTab.vue')
         }
       ],
+<<<<<<< HEAD
 =======
       tabs: [{
         name: 'details',
@@ -114,6 +118,8 @@ export default {
         component: () => import('@/components/view/SettingsTab.vue')
       }],
 >>>>>>> rebase with latest master
+=======
+>>>>>>> merge latest master
       actions: [
         {
           api: 'createAccount',
@@ -183,6 +189,7 @@ export default {
           icon: 'safety-certificate',
           label: 'Add certificate',
           dataView: true,
+<<<<<<< HEAD
           args: ['name', 'certificate', 'privatekey', 'certchain', 'password', 'account', 'domainid'],
           show: (record) => { return record.state === 'enabled' },
           mapping: {
@@ -193,6 +200,10 @@ export default {
               value: (record) => { return record.domainid }
             }
           }
+=======
+          args: ['name', 'certificate', 'privatekey', 'certchain', 'password'],
+          show: (record) => { return record.state === 'enabled' }
+>>>>>>> merge latest master
         },
         {
           api: 'deleteAccount',
