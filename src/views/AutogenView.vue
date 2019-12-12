@@ -77,6 +77,7 @@
           :confirmLoading="currentAction.loading"
           :footer="null"
           centered
+          width="auto"
         >
           <component :is="currentAction.component" :resource="resource" :loading="loading" v-bind="{currentAction}" />
         </a-modal>
@@ -171,6 +172,15 @@
               </span>
               <span v-else-if="field.name==='password' || field.name==='currentpassword'">
                 <a-input-password
+                  v-decorator="[field.name, {
+                    rules: [{ required: field.required, message: 'Please enter input' }]
+                  }]"
+                  :placeholder="field.description"
+                />
+              </span>
+              <span v-else-if="field.name==='certificate' || field.name==='privatekey' || field.name==='certchain'">
+                <a-textarea
+                  rows="2"
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: 'Please enter input' }]
                   }]"
@@ -303,7 +313,10 @@ export default {
   },
   methods: {
     fetchData () {
-      this.routeName = this.$route.name
+      if (this.routeName !== this.$route.name) {
+        this.routeName = this.$route.name
+        this.items = []
+      }
       if (!this.routeName) {
         this.routeName = this.$route.matched[this.$route.matched.length - 1].parent.name
       }
@@ -311,7 +324,6 @@ export default {
       this.actions = []
       this.columns = []
       this.columnKeys = []
-      this.items = []
       this.treeData = []
       this.treeSelected = {}
       var params = { listall: true }
