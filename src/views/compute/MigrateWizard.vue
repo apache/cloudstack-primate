@@ -100,7 +100,9 @@ export default {
       this.loading = true
       api('findHostsForMigration', {
         virtualmachineid: this.resource.id,
-        keyword: this.searchQuery
+        keyword: this.searchQuery,
+        page: 1,
+        pagesize: 500
       }).then(response => {
         this.hosts = response.findhostsformigrationresponse.host
         this.loading = false
