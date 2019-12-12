@@ -116,6 +116,12 @@ export default {
         hostid: this.hosts[this.selectedIndex].id,
         virtualmachineid: this.resource.id
       }).then(response => {
+        this.$store.dispatch('AddAsyncJob', {
+          title: `Migrating ${this.resource.name}`,
+          jobid: response.migratevirtualmachineresponse.jobid,
+          description: this.resource.name,
+          status: 'progress'
+        })
         pollActionCompletion({
           jobId: response.migratevirtualmachineresponse.jobid,
           successMessage: `Migration completed successfully for ${this.resource.name}`,
@@ -132,6 +138,7 @@ export default {
             this.$parent.$parent.close()
           }
         })
+        this.$parent.$parent.close()
       }).catch(error => {
         console.error(error)
         this.$message.error('Failed to migrate host.')
