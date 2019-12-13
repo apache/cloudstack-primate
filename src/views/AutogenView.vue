@@ -263,6 +263,11 @@ export default {
     Status
   },
   mixins: [mixinDevice],
+  provide: function () {
+    return {
+      parentFetchData: this.fetchData
+    }
+  },
   data () {
     return {
       apiName: '',
