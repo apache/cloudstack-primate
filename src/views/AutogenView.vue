@@ -19,10 +19,10 @@
   <div>
     <a-card class="breadcrumb-card">
       <a-row>
-        <a-col :span="14">
+        <a-col :span="12">
           <breadcrumb style="padding-top: 6px" />
         </a-col>
-        <a-col :span="10">
+        <a-col :span="12">
           <span style="float: right">
             <a-tooltip placement="bottom">
               <template slot="title">

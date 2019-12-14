@@ -184,7 +184,6 @@ export default {
     submitData () {
       let variableKey = ''
       let variableValue = ''
-      this.loading = true
 
       if (this.selectedAccountType === 'Account') {
         if (!this.selectedAccount) {
@@ -202,12 +201,13 @@ export default {
         variableValue = this.selectedProject
       }
 
+      this.loading = true
       api('assignVirtualMachine', {
         response: 'json',
         virtualmachineid: this.resource.id,
         domainid: this.selectedDomain,
         [variableKey]: variableValue,
-        networkIds: this.selectedNetwork
+        networkids: this.selectedNetwork
       }).then(response => {
         this.$notification.success({
           message: 'Successfully assigned instance'
@@ -215,16 +215,14 @@ export default {
         this.loading = false
         this.$parent.$parent.close()
         this.parentFetchData()
-      })
-        .catch(error => {
-          console.error(error)
-          this.$notification.error({
-            message: 'Failed to assign instance',
-            description: error.response.data.assignvirtualmachineresponse.errortext && error.response.data.assignvirtualmachineresponse.errortext
-          })
-          this.$parent.$parent.close()
-          this.parentFetchData()
+      }).catch(error => {
+        this.$notification.error({
+          message: 'Failed to assign instance',
+          description: error.response.data.assignvirtualmachineresponse.errortext && error.response.data.assignvirtualmachineresponse.errortext
         })
+        this.$parent.$parent.close()
+        this.parentFetchData()
+      })
     }
   }
 }
