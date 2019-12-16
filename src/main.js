@@ -27,9 +27,11 @@ import './core/use'
 import './core/ext'
 import './permission' // permission control
 import './utils/filter' // global filter
+import { queryAsyncJobResultPlugin } from './utils/plugins'
 
 Vue.config.productionTip = false
 Vue.use(VueAxios, router)
+Vue.use(queryAsyncJobResultPlugin)
 
 new Vue({
   router,
