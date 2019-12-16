@@ -75,6 +75,7 @@ export default {
           break
         case 'Alert':
         case 'Created':
+        case 'Pending':
           status = 'warning'
           break
       }

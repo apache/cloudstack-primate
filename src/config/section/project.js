@@ -23,6 +23,20 @@ export default {
   resourceType: 'Project',
   columns: ['name', 'state', 'displaytext', 'account', 'domain'],
   details: ['name', 'id', 'displaytext', 'projectaccountname', 'vmtotal', 'cputotal', 'memorytotal', 'volumetotal', 'iptotal', 'vpctotal', 'templatetotal', 'primarystoragetotal', 'account', 'domain'],
+  tabs: [
+    {
+      name: 'details',
+      component: () => import('@/components/view/DetailsTab.vue')
+    },
+    {
+      name: 'accounts',
+      component: () => import('@/views/projects/AccountsTab.vue')
+    },
+    {
+      name: 'invitations',
+      component: () => import('@/views/projects/InvitationsTab.vue')
+    }
+  ],
   actions: [
     {
       api: 'createProject',
