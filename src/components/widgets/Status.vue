@@ -65,6 +65,7 @@ export default {
         case 'Down':
         case 'Error':
         case 'Stopped':
+        case 'Declined':
           status = 'error'
           break
         case 'Migrating':

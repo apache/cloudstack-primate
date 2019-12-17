@@ -43,17 +43,33 @@
               <template slot="title">
                 {{ $t(action.label) }}
               </template>
-              <a-button
-                v-if="action.api in $store.getters.apis &&
-                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
-                  ('show' in action ? action.show(resource) : true)"
-                :icon="action.icon"
-                :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
-                shape="circle"
-                style="margin-right: 5px"
-                @click="execAction(action)"
-              >
-              </a-button>
+              <template v-if="action.api in $store.getters.apis && action.showBadge">
+                <a-badge
+                  class="button-action-badge"
+                  :overflowCount="9"
+                  :count="action.badge(actionBadge[action.api].badgeNum)">
+                  <a-button
+                    v-if="action.api in $store.getters.apis &&
+                      ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
+                      ('show' in action ? action.show(resource) : true)"
+                    :icon="action.icon"
+                    :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
+                    shape="circle"
+                    style="margin-right: 5px"
+                    @click="execAction(action)" />
+                </a-badge>
+              </template>
+              <template v-else>
+                <a-button
+                  v-if="action.api in $store.getters.apis &&
+                    ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
+                    ('show' in action ? action.show(resource) : true)"
+                  :icon="action.icon"
+                  :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
+                  shape="circle"
+                  style="margin-right: 5px"
+                  @click="execAction(action)" />
+              </template>
             </a-tooltip>
             <a-input-search
               style="width: unset"
@@ -79,7 +95,7 @@
           centered
           width="auto"
         >
-          <component :is="currentAction.component" :resource="resource" :loading="loading" v-bind="{currentAction}" />
+          <component :is="currentAction.component" :resource="resource" :loading="loading" v-bind="{currentAction}" @refresh-data="fetchData" />
         </a-modal>
       </keep-alive>
       <a-modal
@@ -288,7 +304,9 @@ export default {
       actions: [],
       treeData: [],
       treeSelected: {},
-      actionData: []
+      actionData: [],
+      actionBadge: [],
+      adminType: 'Admin',
     }
   },
   computed: {
@@ -357,8 +375,42 @@ export default {
         if (this.$route.meta.columns) {
           this.columnKeys = this.$route.meta.columns
         }
+
         if (this.$route.meta.actions) {
           this.actions = this.$route.meta.actions
+          const arrShowBadge = this.actions.filter(action => action.showBadge === true)
+
+          if (arrShowBadge && arrShowBadge.length > 0) {
+            arrShowBadge.forEach(action => {
+              if (action.showBadge) {
+                this.actionBadge[action.api] = action
+              }
+            })
+          }
+
+          if (Object.keys(this.actionBadge).length > 0) {
+            Object.keys(this.actionBadge).forEach((apiName, index) => {
+              api(apiName, this.actionBadge[apiName].param).then(json => {
+                let responseJsonName
+                for (const key in json) {
+                  if (key.includes('response')) {
+                    responseJsonName = key
+                    break
+                  }
+                }
+
+                this.actionBadge[apiName].badgeNum = 0
+
+                if (json[responseJsonName].count && json[responseJsonName].count > 0) {
+                  this.actionBadge[apiName].badgeNum = json[responseJsonName].count
+                }
+              })
+            })
+          }
+        }
+
+        if (this.$route.meta.filters) {
+          this.filters = this.$route.meta.filters
         }
       }
 
@@ -743,5 +795,13 @@ export default {
 
 .ant-breadcrumb .anticon {
   margin-left: 8px;
+}
+
+.button-action-badge {
+  margin-right: 5px;
+}
+
+/deep/.button-action-badge .ant-badge-count {
+  right: 10px;
 }
 </style>

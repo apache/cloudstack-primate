@@ -30,11 +30,10 @@ export default {
     },
     {
       name: 'accounts',
+      show: (record) => {
+        return record.owner
+      },
       component: () => import('@/views/projects/AccountsTab.vue')
-    },
-    {
-      name: 'invitations',
-      component: () => import('@/views/projects/InvitationsTab.vue')
     }
   ],
   actions: [
@@ -44,6 +43,20 @@ export default {
       label: 'New Project',
       listView: true,
       args: ['name', 'displaytext']
+    },
+    {
+      api: 'listProjectInvitations',
+      icon: 'team',
+      label: 'Project Invitations',
+      listView: true,
+      popup: true,
+      showBadge: true,
+      badgeNum: 0,
+      param: {
+        state: 'Pending'
+      },
+      badge: (badgeNumber) => { return badgeNumber },
+      component: () => import('@/views/projects/InvitationsTemplate.vue')
     },
     {
       api: 'updateProject',
@@ -72,6 +85,7 @@ export default {
       label: 'Add Account to Project',
       dataView: true,
       args: ['projectid', 'account', 'email'],
+      show: (record) => { return record.owner },
       mapping: {
         projectid: {
           value: (record) => { return record.id }

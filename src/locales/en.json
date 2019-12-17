@@ -7,6 +7,8 @@
 "Clusters": "Clusters",
 "Compute": "Compute",
 "Compute Offerings": "Compute Offerings",
+"confirmacceptinvitation": "Please confirm you wish to join this project",
+"confirmdeclineinvitation": "Are you sure you want to decline this project invitation?",
 "Configuration": "Configuration",
 "Dashboard": "Dashboard",
 "Disk Offerings": "Disk Offerings",
