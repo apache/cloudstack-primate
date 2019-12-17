@@ -17,12 +17,12 @@
 
 <template>
   <div>
-    <a-card class="mobile-breadcrumb">
+    <a-card class="breadcrumb-card">
       <a-row>
-        <a-col :span="14">
+        <a-col :span="12">
           <breadcrumb style="padding-top: 6px" />
         </a-col>
-        <a-col :span="10">
+        <a-col :span="12">
           <span style="float: right">
             <a-tooltip placement="bottom">
               <template slot="title">
@@ -45,8 +45,8 @@
               </template>
               <a-button
                 v-if="action.api in $store.getters.apis &&
-                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) ||
-                  (dataView && action.dataView && ('show' in action ? action.show(resource) : true)))"
+                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
+                  ('show' in action ? action.show(resource) : true)"
                 :icon="action.icon"
                 :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
                 shape="circle"
@@ -59,7 +59,7 @@
               style="width: unset"
               placeholder="Search"
               v-model="searchQuery"
-              v-if="!dataView"
+              v-if="!dataView && !treeView"
               @search="onSearch" />
           </span>
         </a-col>
@@ -77,6 +77,7 @@
           :confirmLoading="currentAction.loading"
           :footer="null"
           centered
+          width="auto"
         >
           <component :is="currentAction.component" :resource="resource" :loading="loading" v-bind="{currentAction}" />
         </a-modal>
@@ -177,6 +178,15 @@
                   :placeholder="field.description"
                 />
               </span>
+              <span v-else-if="field.name==='certificate' || field.name==='privatekey' || field.name==='certchain'">
+                <a-textarea
+                  rows="2"
+                  v-decorator="[field.name, {
+                    rules: [{ required: field.required, message: 'Please enter input' }]
+                  }]"
+                  :placeholder="field.description"
+                />
+              </span>
               <span v-else>
                 <a-input
                   v-decorator="[field.name, {
@@ -191,14 +201,19 @@
       </a-modal>
     </div>
 
-    <div v-if="dataView">
-      <resource-view :resource="resource" :loading="loading" :tabs="$route.meta.tabs" />
+    <div v-if="dataView && !treeView">
+      <resource-view
+        :resource="resource"
+        :loading="loading"
+        :tabs="$route.meta.tabs" />
     </div>
     <div class="row-element" v-else>
       <list-view
         :loading="loading"
         :columns="columns"
-        :items="items" />
+        :items="items"
+        @refresh="this.fetchData"
+        v-if="!treeView" />
       <a-pagination
         class="row-element"
         size="small"
@@ -209,7 +224,16 @@
         :pageSizeOptions="['10', '20', '40', '80', '100']"
         @change="changePage"
         @showSizeChange="changePageSize"
-        showSizeChanger />
+        showSizeChanger
+        v-if="!treeView" />
+      <tree-view
+        v-if="treeView"
+        :treeData="treeData"
+        :treeSelected="treeSelected"
+        :loading="loading"
+        :tabs="$route.meta.tabs"
+        @change-resource="changeResource"
+        :actionData="actionData"/>
     </div>
   </div>
 </template>
@@ -225,6 +249,7 @@ import ChartCard from '@/components/widgets/ChartCard'
 import Status from '@/components/widgets/Status'
 import ListView from '@/components/view/ListView'
 import ResourceView from '@/components/view/ResourceView'
+import TreeView from '@/components/view/TreeView'
 import { genericCompare } from '@/utils/sort.js'
 
 export default {
@@ -234,9 +259,15 @@ export default {
     ChartCard,
     ResourceView,
     ListView,
+    TreeView,
     Status
   },
   mixins: [mixinDevice],
+  provide: function () {
+    return {
+      parentFetchData: this.fetchData
+    }
+  },
   data () {
     return {
       apiName: '',
@@ -253,7 +284,11 @@ export default {
       currentAction: {},
       showAction: false,
       dataView: false,
-      actions: []
+      treeView: false,
+      actions: [],
+      treeData: [],
+      treeSelected: {},
+      actionData: []
     }
   },
   computed: {
@@ -268,6 +303,7 @@ export default {
     '$route' (to, from) {
       if (to.fullPath !== from.fullPath && !to.fullPath.includes('action/')) {
         this.page = 1
+        this.searchQuery = ''
         this.fetchData()
       }
     },
@@ -282,7 +318,10 @@ export default {
   },
   methods: {
     fetchData () {
-      this.routeName = this.$route.name
+      if (this.routeName !== this.$route.name) {
+        this.routeName = this.$route.name
+        this.items = []
+      }
       if (!this.routeName) {
         this.routeName = this.$route.matched[this.$route.matched.length - 1].parent.name
       }
@@ -290,7 +329,8 @@ export default {
       this.actions = []
       this.columns = []
       this.columnKeys = []
-      this.items = []
+      this.treeData = []
+      this.treeSelected = {}
       var params = { listall: true }
       if (Object.keys(this.$route.query).length > 0) {
         Object.assign(params, this.$route.query)
@@ -302,9 +342,12 @@ export default {
         params.keyword = this.searchQuery
       }
 
+      this.treeView = this.$route && this.$route.meta && this.$route.meta.treeView
+
       if (this.$route && this.$route.params && this.$route.params.id) {
         this.resource = {}
         this.dataView = true
+        this.treeView = false
       } else {
         this.dataView = false
       }
@@ -358,8 +401,16 @@ export default {
           params.name = this.$route.params.id
         }
       }
-      params.page = this.page
-      params.pagesize = this.pageSize
+
+      if (!this.treeView) {
+        params.page = this.page
+        params.pagesize = this.pageSize
+      } else {
+        const domainId = this.$store.getters.userInfo.domainid
+        params.id = domainId
+        delete params.treeView
+      }
+
       api(this.apiName, params).then(json => {
         var responseName
         var objectName
@@ -381,31 +432,46 @@ export default {
         if (!this.items || this.items.length === 0) {
           this.items = []
         }
-        for (let idx = 0; idx < this.items.length; idx++) {
-          this.items[idx].key = idx
-          for (const key in customRender) {
-            const func = customRender[key]
-            if (func && typeof func === 'function') {
-              this.items[idx][key] = func(this.items[idx])
+        if (this.treeView) {
+          this.treeData = this.generateTreeData(this.items)
+        } else {
+          for (let idx = 0; idx < this.items.length; idx++) {
+            this.items[idx].key = idx
+            for (const key in customRender) {
+              const func = customRender[key]
+              if (func && typeof func === 'function') {
+                this.items[idx][key] = func(this.items[idx])
+              }
             }
-          }
-          if (this.$route.path.startsWith('/ssh')) {
-            this.items[idx].id = this.items[idx].name
+            if (this.$route.path.startsWith('/ssh')) {
+              this.items[idx].id = this.items[idx].name
+            }
           }
         }
         if (this.items.length > 0) {
           this.resource = this.items[0]
+          this.treeSelected = this.treeView ? this.items[0] : {}
         } else {
           this.resource = {}
+          this.treeSelected = {}
         }
       }).catch(error => {
-        // handle error
         this.$notification.error({
           message: 'Request Failed',
-          description: error.response.headers['x-description']
+          description: error.response.headers['x-description'],
+          duration: 0
         })
-        if (error.response.status === 431) {
+
+        if ([401, 405].includes(error.response.status)) {
+          this.$router.push({ path: '/exception/403' })
+        }
+
+        if ([430, 431, 432].includes(error.response.status)) {
           this.$router.push({ path: '/exception/404' })
+        }
+
+        if ([530, 531, 532, 533, 534, 535, 536, 537].includes(error.response.status)) {
+          this.$router.push({ path: '/exception/500' })
         }
       }).finally(f => {
         this.loading = false
@@ -421,6 +487,7 @@ export default {
       this.currentAction = {}
     },
     execAction (action) {
+      this.actionData = []
       if (action.component && action.api && !action.popup) {
         this.$router.push({ name: action.api })
         return
@@ -451,7 +518,6 @@ export default {
           this.listUuidOpts(param)
         }
       }
-      console.log(this.currentAction.paramFields)
       this.currentAction.loading = false
     },
     listUuidOpts (param) {
@@ -514,7 +580,7 @@ export default {
           this.fetchData()
         } else if (result.jobstatus === 2) {
           this.fetchData()
-        } else {
+        } else if (result.jobstatus === 0) {
           this.$message
             .loading(this.$t(action.label) + ' in progress for ' + this.resource.name, 3)
             .then(() => this.pollActionCompletion(jobId, action))
@@ -565,21 +631,26 @@ export default {
             }
           }
 
-          console.log(this.currentAction)
-
           if (this.currentAction.mapping) {
             for (const key in this.currentAction.mapping) {
               if (!this.currentAction.mapping[key].value) {
                 continue
               }
-              var keyName = this.currentAction.mapping[key].rename ? this.currentAction.mapping[key].rename : key
-              params[keyName] = this.currentAction.mapping[key].value(this.resource, params)
+              params[key] = this.currentAction.mapping[key].value(this.resource, params)
             }
           }
+
+          console.log(this.currentAction)
+          console.log(this.resource)
           console.log(params)
 
           var hasJobId = false
           api(this.currentAction.api, params).then(json => {
+            // set action data for reload tree-view
+            if (this.treeView) {
+              this.actionData.push(json)
+            }
+
             for (const obj in json) {
               if (obj.includes('response')) {
                 for (const res in json[obj]) {
@@ -629,6 +700,24 @@ export default {
         this.loading = false
         this.selectedRowKeys = []
       }, 1000)
+    },
+    generateTreeData (treeData) {
+      const result = []
+      const rootItem = treeData
+
+      rootItem[0].title = rootItem[0].title ? rootItem[0].title : rootItem[0].name
+      rootItem[0].key = rootItem[0].id ? rootItem[0].id : 0
+
+      if (!rootItem[0].haschild) {
+        rootItem[0].isLeaf = true
+      }
+
+      result.push(rootItem[0])
+      return result
+    },
+    changeResource (resource) {
+      this.treeSelected = resource
+      this.resource = this.treeSelected
     }
   }
 }
@@ -636,7 +725,7 @@ export default {
 
 <style scoped>
 
-.mobile-breadcrumb {
+.breadcrumb-card {
   margin-left: -24px;
   margin-right: -24px;
   margin-top: -16px;

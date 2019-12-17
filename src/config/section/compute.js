@@ -184,19 +184,14 @@ export default {
           label: 'label.migrate.instance.to.host',
           dataView: true,
           show: (record) => { return ['Running'].includes(record.state) },
+          component: () => import('@/views/compute/MigrateWizard'),
+          popup: true,
           args: ['hostid', 'virtualmachineid'],
           mapping: {
             virtualmachineid: {
               value: (record) => { return record.id }
             }
           }
-        },
-        {
-          api: 'migrateVirtualMachineWithVolume',
-          icon: 'export',
-          label: 'Migrate VM with Volume(s)',
-          dataView: true,
-          show: (record) => { return ['Running'].includes(record.state) }
         },
         {
           api: 'migrateVirtualMachine',
@@ -239,6 +234,8 @@ export default {
           icon: 'user-add',
           label: 'Assign Instance to Another Account',
           dataView: true,
+          component: () => import('@/views/compute/AssignInstance'),
+          popup: true,
           show: (record) => { return ['Stopped'].includes(record.state) },
           args: ['virtualmachineid', 'account', 'domainid'],
           mapping: {
