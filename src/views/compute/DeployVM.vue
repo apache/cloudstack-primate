@@ -245,7 +245,10 @@ export default {
     this.form = this.$form.createForm(this, {
       onValuesChange: (props, fields) => {
         if (fields.isoid) {
-          this.form.setFieldsValue({ templateid: null })
+          this.form.setFieldsValue({
+            templateid: null,
+            rootdisksize: 0
+          })
         } else if (fields.templateid) {
           this.form.setFieldsValue({ isoid: null })
         }
