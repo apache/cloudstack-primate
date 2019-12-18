@@ -35,13 +35,13 @@
             <a-form-item :label="this.$t('zoneid')">
               <a-select
                 v-decorator="['zoneid', {
-                  rules: [{ required: zoneId.required, message: 'Please select option' }]
+                  rules: [{ required: true, message: 'Please select option' }]
                 }]"
                 :placeholder="this.$t('vm.zone.description')"
                 @change="onSelectZoneId"
               >
                 <a-select-option
-                  v-for="(opt, optIndex) in zoneId.opts"
+                  v-for="(opt, optIndex) in options.zoneid"
                   :key="optIndex"
                   :value="opt.id"
                 >
@@ -58,7 +58,7 @@
               <a-collapse-panel :header="this.$t('Templates')" key="templates">
                 <template-iso-selection
                   input-decorator="templateid"
-                  :items="templateId.opts"
+                  :items="options.templateid"
                 ></template-iso-selection>
                 <disk-size-selection
                   input-decorator="rootdisksize"
@@ -68,19 +68,19 @@
               <a-collapse-panel :header="this.$t('ISOs')" key="isos">
                 <template-iso-selection
                   input-decorator="isoid"
-                  :items="isos"
+                  :items="options.isos"
                 ></template-iso-selection>
               </a-collapse-panel>
             </a-collapse>
 
             <compute-selection
-              :compute-items="serviceOfferingId.opts"
+              :compute-items="options.serviceofferingid"
               :value="serviceOffering ? serviceOffering.id : ''"
               @select-compute-item="($event) => updateComputeOffering($event)"
             ></compute-selection>
 
             <disk-offering-selection
-              :items="diskOfferingId.opts"
+              :items="options.diskofferingid"
               :value="diskOffering ? diskOffering.id : ''"
               @select-disk-offering-item="($event) => updateDiskOffering($event)"
             ></disk-offering-selection>
@@ -115,7 +115,6 @@
 <script>
 import Vue from 'vue'
 import { api } from '@/api'
-import store from '@/store'
 import _ from 'lodash'
 import { mixin, mixinDevice } from '@/utils/mixin.js'
 
@@ -143,14 +142,31 @@ export default {
   data () {
     return {
       vm: {},
-      params: [],
-      visibleParams: [
-        'name',
-        'templateid',
-        'serviceofferingid',
-        'diskofferingid',
-        'zoneid',
-        'rootdisksize'
+      options: {},
+      params: [
+        {
+          name: 'templateid',
+          list: 'listTemplates',
+          options: {
+            templatefilter: 'executable'
+          }
+        },
+        {
+          name: 'serviceofferingid',
+          list: 'listServiceOfferings'
+        },
+        {
+          name: 'diskofferingid',
+          list: 'listDiskOfferings'
+        },
+        {
+          name: 'zoneid',
+          list: 'listZones'
+        },
+        {
+          name: 'affinitygroupids',
+          list: 'listAffinityGroups'
+        }
       ],
       instanceConfig: [],
       template: {},
@@ -158,7 +174,6 @@ export default {
       serviceOffering: {},
       diskOffering: {},
       zone: {},
-      isos: [],
       isoFilter: [
         'executable',
         'selfexecutable',
@@ -167,23 +182,6 @@ export default {
     }
   },
   computed: {
-    filteredParams () {
-      return this.visibleParams.map((fieldName) => {
-        return this.params.find((param) => fieldName === param.name)
-      })
-    },
-    templateId () {
-      return this.getParam('templateid')
-    },
-    serviceOfferingId () {
-      return this.getParam('serviceofferingid')
-    },
-    diskOfferingId () {
-      return this.getParam('diskofferingid')
-    },
-    zoneId () {
-      return this.getParam('zoneid')
-    },
     diskSize () {
       const rootDiskSize = _.get(this.instanceConfig, 'rootdisksize', 0)
       const customDiskSize = _.get(this.instanceConfig, 'size', 0)
@@ -201,11 +199,11 @@ export default {
   },
   watch: {
     instanceConfig (instanceConfig) {
-      this.template = this.templateId.opts.find((option) => option.id === instanceConfig.templateid)
-      this.iso = this.isos.find((option) => option.id === instanceConfig.isoid)
-      this.serviceOffering = this.serviceOfferingId.opts.find((option) => option.id === instanceConfig.computeofferingid)
-      this.diskOffering = this.diskOfferingId.opts.find((option) => option.id === instanceConfig.diskofferingid)
-      this.zone = this.zoneId.opts.find((option) => option.id === instanceConfig.zoneid)
+      this.template = _.find(this.options.templateid, (option) => option.id === instanceConfig.templateid)
+      this.iso = _.find(this.options.isos, (option) => option.id === instanceConfig.isoid)
+      this.serviceOffering = _.find(this.options.serviceofferingid, (option) => option.id === instanceConfig.computeofferingid)
+      this.diskOffering = _.find(this.options.diskofferingid, (option) => option.id === instanceConfig.diskofferingid)
+      this.zone = _.find(this.options.zoneid, (option) => option.id === instanceConfig.zoneid)
 
       if (this.zone) {
         this.vm.zoneid = this.zone.id
@@ -261,8 +259,7 @@ export default {
     this.form.getFieldDecorator('isoid', { initialValue: [], preserve: true })
   },
   created () {
-    this.params = store.getters.apis[this.$route.name].params
-    this.filteredParams.forEach((param) => {
+    this.params.forEach((param) => {
       this.fetchOptions(param)
     })
     Vue.nextTick().then(() => {
@@ -280,9 +277,6 @@ export default {
         diskofferingid: id
       })
     },
-    getParam (paramName) {
-      return this.params.find((param) => param.name === paramName)
-    },
     getText (option) {
       return _.get(option, 'displaytext', _.get(option, 'name'))
     },
@@ -290,29 +284,11 @@ export default {
       console.log('wizard submit')
     },
     fetchOptions (param) {
-      const paramName = param.name
-      const possibleName = `list${paramName.replace('id', '').toLowerCase()}s`
-      let possibleApi
-      if (paramName === 'id') {
-        possibleApi = this.apiName
-      } else {
-        possibleApi = _.filter(Object.keys(store.getters.apis), (api) => {
-          return api.toLowerCase().startsWith(possibleName)
-        })[0]
-      }
-
-      if (!possibleApi) {
-        return
-      }
-
       param.loading = true
       param.opts = []
-      const params = {}
-      params.listall = true
-      if (possibleApi === 'listTemplates') {
-        params.templatefilter = 'executable'
-      }
-      api(possibleApi, params).then((response) => {
+      const options = param.options || {}
+      options.listall = true
+      api(param.list, options).then((response) => {
         param.loading = false
         _.map(response, (responseItem, responseKey) => {
           if (!responseKey.includes('response')) {
@@ -323,6 +299,7 @@ export default {
               return
             }
             param.opts = response
+            this.options[param.name] = response
             this.$forceUpdate()
           })
         })
@@ -337,8 +314,8 @@ export default {
         isofilter: isoFilter,
         bootable: true
       }).then((response) => {
-        const concatedIsos = _.concat(this.isos, _.get(response, 'listisosresponse.iso', []))
-        this.isos = _.uniqWith(concatedIsos, _.isEqual)
+        const concatedIsos = _.concat(this.options.isos, _.get(response, 'listisosresponse.iso', []))
+        this.options.isos = _.uniqWith(concatedIsos, _.isEqual)
       }).catch((reason) => {
         // ToDo: Handle errors
         console.log(reason)
@@ -351,12 +328,12 @@ export default {
       })
     },
     onTemplatesIsosCollapseChange (key) {
-      if (key === 'isos' && this.isos.length === 0) {
+      if (key === 'isos' && _.get(this.options, 'isos.length') === 0) {
         this.fetchAllIsos()
       }
     },
     onSelectZoneId () {
-      if (this.isos.length === 0) {
+      if (_.get(this.options, 'isos.length') === 0) {
         return
       }
       this.fetchAllIsos()
