@@ -316,24 +316,25 @@ export default {
       }).then((response) => {
         const concatedIsos = _.concat(this.options.isos, _.get(response, 'listisosresponse.iso', []))
         this.options.isos = _.uniqWith(concatedIsos, _.isEqual)
+        this.$forceUpdate()
       }).catch((reason) => {
         // ToDo: Handle errors
         console.log(reason)
       })
     },
     fetchAllIsos () {
-      this.isos = []
+      this.options.isos = []
       this.isoFilter.forEach((filter) => {
         this.fetchIsos(filter)
       })
     },
     onTemplatesIsosCollapseChange (key) {
-      if (key === 'isos' && _.get(this.options, 'isos.length') === 0) {
+      if (key === 'isos' && _.get(this.options, 'isos.length', 0) === 0) {
         this.fetchAllIsos()
       }
     },
     onSelectZoneId () {
-      if (_.get(this.options, 'isos.length') === 0) {
+      if (_.get(this.options, 'isos.length', 0) === 0) {
         return
       }
       this.fetchAllIsos()
