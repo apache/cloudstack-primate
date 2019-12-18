@@ -25,11 +25,12 @@
           :columns="columns"
           :dataSource="dataSource"
           :pagination="false"
-          :rowKey="record => record.id || record.account">
+          :rowKey="record => record.id || record.account"
+          @change="onChangeTable">
           <template slot="state" slot-scope="text">
             <status :text="text ? text : ''" displayText />
           </template>
-          <span slot="action" slot-scope="text, record" class="account-button-action">
+          <span slot="action" v-if="record.state===stateAllow" slot-scope="text, record" class="account-button-action">
             <a-tooltip placement="top">
               <template slot="title">
                 {{ $t('label.accept.project.invitation') }}
@@ -72,6 +73,7 @@
 
 <script>
 import { api } from '@/api'
+import store from '@/store'
 import Status from '@/components/widgets/Status'
 
 export default {
@@ -87,7 +89,8 @@ export default {
       page: 1,
       pageSize: 10,
       itemCount: 0,
-      state: 'Pending'
+      state: undefined,
+      stateAllow: 'Pending'
     }
   },
   created () {
@@ -105,12 +108,27 @@ export default {
       {
         title: this.$t('state'),
         dataIndex: 'state',
-        scopedSlots: { customRender: 'state' }
+        width: 130,
+        scopedSlots: { customRender: 'state' },
+        filters: [
+          {
+            text: this.$t('Pending'),
+            value: 'Pending'
+          },
+          {
+            text: this.$t('Completed'),
+            value: 'Completed'
+          },
+          {
+            text: this.$t('Declined'),
+            value: 'Declined'
+          }
+        ],
+        filterMultiple: false
       },
       {
         title: this.$t('action'),
         dataIndex: 'action',
-        fixed: 'right',
         width: 80,
         scopedSlots: { customRender: 'action' }
       }
@@ -125,24 +143,30 @@ export default {
   },
   methods: {
     fetchData () {
+      const userInfo = store.getters.userInfo
       const params = {}
+
       params.page = this.page
       params.pageSize = this.pageSize
+      params.account = userInfo.account
+      params.domainid = userInfo.domainid
       params.state = this.state
+      params.listAll = true
 
       this.loading = true
+      this.dataSource = []
+      this.itemCount = 0
 
       api('listProjectInvitations', params).then(json => {
         const listProjectInvitations = json.listprojectinvitationsresponse.projectinvitation
         const itemCount = json.listprojectinvitationsresponse.count
 
         if (!listProjectInvitations || listProjectInvitations.length === 0) {
-          this.dataSource = []
           return
         }
 
-        this.itemCount = itemCount
         this.dataSource = listProjectInvitations
+        this.itemCount = itemCount
       }).catch(error => {
         this.$notification.error({
           message: 'Request Failed',
@@ -217,6 +241,14 @@ export default {
         }
       })
     },
+    onChangeTable (pagination, filters, sorter) {
+      if (!filters || Object.keys(filters).length === 0) {
+        return
+      }
+
+      this.state = filters.state && filters.state.length > 0 ? filters.state[0] : undefined
+      this.fetchData()
+    },
     checkForAddAsyncJob (json, title, description) {
       let hasJobId = false
 
@@ -250,6 +282,7 @@ export default {
 
   .row-invitation {
     min-width: 500px;
+    max-width: 768px;
   }
 
   .row-element {

@@ -43,33 +43,31 @@
               <template slot="title">
                 {{ $t(action.label) }}
               </template>
-              <template v-if="action.api in $store.getters.apis && action.showBadge">
-                <a-badge
-                  class="button-action-badge"
-                  :overflowCount="9"
-                  :count="action.badge(actionBadge[action.api].badgeNum)">
-                  <a-button
-                    v-if="action.api in $store.getters.apis &&
-                      ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
-                      ('show' in action ? action.show(resource) : true)"
-                    :icon="action.icon"
-                    :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
-                    shape="circle"
-                    style="margin-right: 5px"
-                    @click="execAction(action)" />
-                </a-badge>
-              </template>
-              <template v-else>
+              <a-badge
+                class="button-action-badge"
+                :overflowCount="9"
+                :count="action.badge(actionBadge[action.api].badgeNum)"
+                v-if="action.api in $store.getters.apis &&
+                  action.showBadge &&
+                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
+                  ('show' in action ? action.show(resource) : true)">
                 <a-button
-                  v-if="action.api in $store.getters.apis &&
-                    ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
-                    ('show' in action ? action.show(resource) : true)"
                   :icon="action.icon"
                   :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
                   shape="circle"
                   style="margin-right: 5px"
                   @click="execAction(action)" />
-              </template>
+              </a-badge>
+              <a-button
+                v-if="action.api in $store.getters.apis &&
+                  !action.showBadge &&
+                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
+                  ('show' in action ? action.show(resource) : true)"
+                :icon="action.icon"
+                :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
+                shape="circle"
+                style="margin-right: 5px"
+                @click="execAction(action)" />
             </a-tooltip>
             <a-input-search
               style="width: unset"
@@ -803,5 +801,6 @@ export default {
 
 /deep/.button-action-badge .ant-badge-count {
   right: 10px;
+  z-index: 8;
 }
 </style>

@@ -47,7 +47,7 @@ export default {
     {
       api: 'listProjectInvitations',
       icon: 'team',
-      label: 'Project Invitations',
+      label: 'label.project.invitation',
       listView: true,
       popup: true,
       showBadge: true,

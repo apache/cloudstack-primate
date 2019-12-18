@@ -167,7 +167,22 @@ export const asyncRouterMap = [
       {
         path: '/dashboard',
         name: 'dashboard',
-        meta: { title: 'Dashboard', keepAlive: true, icon: 'dashboard' },
+        meta: {
+          title: 'Dashboard',
+          keepAlive: true,
+          icon: 'dashboard',
+          tabs: [
+            {
+              name: 'Dashboard',
+              component: () => import('@/views/dashboard/UsageDashboardChart')
+            },
+            {
+              name: 'accounts',
+              show: (record) => { return record.owner },
+              component: () => import('@/views/projects/AccountsTab')
+            }
+          ]
+        },
         component: () => import('@/views/dashboard/Dashboard')
       },
 
