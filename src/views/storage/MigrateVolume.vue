@@ -123,7 +123,7 @@ export default {
         volumeid: this.resource.id,
         newdiskofferingid: this.replaceDiskOffering ? this.selectedDiskOffering : null
       }).then(response => {
-        this.$queryAsyncJobResult({
+        this.$pollJob({
           jobId: response.migratevolumeresponse.jobid,
           successMessage: `Successfully migrated volume`,
           successMethod: () => {

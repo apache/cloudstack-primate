@@ -21,7 +21,7 @@ import { message, notification } from 'ant-design-vue'
 export const pollJobPlugin = {
 
   install (Vue) {
-    Vue.prototype.$queryAsyncJobResult = function (options) {
+    Vue.prototype.$pollJob = function (options) {
       /**
        * @param {String} jobId
        * @param {String} [successMessage=Success]
@@ -60,7 +60,7 @@ export const pollJobPlugin = {
         } else if (result.jobstatus === 0) {
           message
             .loading(loadingMessage, loadingDuration)
-            .then(() => this.$queryAsyncJobResult(options))
+            .then(() => this.$pollJob(options))
         }
       }).catch(e => {
         console.error(`${catchMessage} - ${e}`)
