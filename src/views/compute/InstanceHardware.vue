@@ -54,10 +54,10 @@
               </a-avatar>
             </a-list-item-meta>
             <p>
-              Size: {{ (item.size / (1024 * 1024 * 1024.0)).toFixed(4) }} GB<br/>
-              Physical Size: {{ (item.physicalsize / (1024 * 1024 * 1024.0)).toFixed(4) }} GB<br/>
-              Provisioning: {{ item.provisioningtype }}<br/>
-              Storage Pool: {{ item.storage }} ({{ item.storagetype }})<br/>
+              {{ $t('size') }}: {{ (item.size / (1024 * 1024 * 1024.0)).toFixed(4) }} GB<br/>
+              {{ $t('physicalsize') }}: {{ (item.physicalsize / (1024 * 1024 * 1024.0)).toFixed(4) }} GB<br/>
+              {{ $t('provisioning') }}}: {{ item.provisioningtype }}<br/>
+              {{ $t('storagePool') }}: {{ item.storage }} ({{ item.storagetype }})<br/>
             </p>
           </a-list-item>
         </a-list>
@@ -65,7 +65,7 @@
       </a-collapse-panel>
       <a-collapse-panel :header="'Network Adapter(s): ' + (vm && vm.nic ? vm.nic.length : 0)" key="3" >
         <a-button type="primary" style="display: block; margin-left: auto;" @click="showAddModal" :loading="loadingNIC">
-          <a-icon type="plus-circle"></a-icon> Add network to VM
+          <a-icon type="plus-circle"></a-icon> {{ $t('label.network.addVM') }}
         </a-button>
         <a-list
           size="small"
@@ -77,12 +77,12 @@
           <a-list-item slot="renderItem" slot-scope="item" class="list__item">
             <a-list-item-meta>
               <div slot="title">
-                <span v-show="item.isdefault">(Default) </span>
+                <span v-show="item.isdefault">({{ $t('default') }}) </span>
                 <router-link :to="{ path: '/guestnetwork/' + item.networkid }">{{ item.networkname }} </router-link><br/>
-                Mac Address: {{ item.macaddress }}<br/>
-                <span v-if="item.ipaddress">Address: {{ item.ipaddress }} <br/></span>
-                Netmask: {{ item.netmask }}<br/>
-                Gateway: {{ item.gateway }}<br/>
+                {{ $t('macaddress') }}: {{ item.macaddress }}<br/>
+                <span v-if="item.ipaddress">{{ $t('address') }}: {{ item.ipaddress }} <br/></span>
+                {{ $t('netmask') }}: {{ item.netmask }}<br/>
+                {{ $t('gateway') }}: {{ item.gateway }}<br/>
               </div>
               <div slot="description">
                 <a-icon type="barcode"/> {{ item.id }}
@@ -92,9 +92,9 @@
               </a-avatar>
             </a-list-item-meta>
             <p>
-              Type: {{ item.type }}<br/>
-              Broadcast URI: {{ item.broadcasturi }}<br/>
-              Isolation URI: {{ item.isolationuri }}<br/>
+              {{ $t('networkdevicetype') }}: {{ item.type }}<br/>
+              {{ $t('broadcasturi') }}: {{ item.broadcasturi }}<br/>
+              {{ $t('isolationuri') }}: {{ item.isolationuri }}<br/>
             </p>
             <div slot="actions" class="actions">
               <a-tooltip placement="left">
@@ -204,13 +204,13 @@
       <a-divider />
       <a-list itemLayout="vertical">
         <a-list-item v-for="(ip, index) in secondaryIPs" :key="index">
-          <p class="modal-form__label modal-form__label--no-margin">IP Address:</p>
+          <p class="modal-form__label modal-form__label--no-margin">{{ $t('publicip') }}:</p>
           {{ ip.ipaddress }}
-          <p class="modal-form__label modal-form__label--no-margin">ID:</p>
+          <p class="modal-form__label modal-form__label--no-margin">{{ $t('uuid') }}:</p>
           {{ ip.id }}
-          <p class="modal-form__label modal-form__label--no-margin">VM Name:</p>
+          <p class="modal-form__label modal-form__label--no-margin">{{ $t('vmname') }}:</p>
           {{ vm.name }}
-          <p class="modal-form__label modal-form__label--no-margin">Zone Name:</p>
+          <p class="modal-form__label modal-form__label--no-margin">{{ $t('zonenamelabel') }}:</p>
           {{ vm.zonename }}
 
           <a-popconfirm
@@ -351,7 +351,7 @@ export default {
         networkid: this.addNetworkData.network,
         ipaddress: this.addNetworkData.ip
       }).then(response => {
-        this.queryAsyncJobResult({
+        this.$pollJob({
           jobId: response.addnictovirtualmachineresponse.jobid,
           successMessage: `Successfully added network`,
           successMethod: () => {
@@ -388,7 +388,7 @@ export default {
         virtualmachineid: this.vm.id,
         nicid: item.id
       }).then(response => {
-        this.queryAsyncJobResult({
+        this.$pollJob({
           jobId: response.updatedefaultnicforvirtualmachineresponse.jobid,
           successMessage: `Successfully set ${item.networkname} to default. Please manually update the default NIC on the VM now.`,
           successMethod: () => {
@@ -423,7 +423,7 @@ export default {
         nicId: this.editIpAddressNIC,
         ipaddress: this.editIPAddressValue
       }).then(response => {
-        this.queryAsyncJobResult({
+        this.$pollJob({
           jobId: response.updatevmnicipresponse.jobid,
           successMessage: `Successfully updated IP Address`,
           successMethod: () => {
@@ -462,7 +462,7 @@ export default {
         nicid: item.id,
         virtualmachineid: this.vm.id
       }).then(response => {
-        this.queryAsyncJobResult({
+        this.$pollJob({
           jobId: response.removenicfromvirtualmachineresponse.jobid,
           successMessage: `Successfully removed`,
           successMethod: () => {
@@ -498,7 +498,7 @@ export default {
         nicid: this.selectedSecondaryIPNIC,
         ipaddress: this.newSecondaryIP
       }).then(response => {
-        this.queryAsyncJobResult({
+        this.$pollJob({
           jobId: response.addiptovmnicresponse.jobid,
           successMessage: `Successfully added secondary IP Address`,
           successMethod: () => {
@@ -536,7 +536,7 @@ export default {
         response: 'json',
         id
       }).then(response => {
-        this.queryAsyncJobResult({
+        this.$pollJob({
           jobId: response.removeipfromnicresponse.jobid,
           successMessage: `Successfully removed secondary IP Address`,
           successMethod: () => {
