@@ -47,10 +47,10 @@
 
     <div class="actions">
       <a-button @click="closeModal">
-       {{ $t('Cancel') }}
+        {{ $t('Cancel') }}
       </a-button>
       <a-button type="primary" @click="submitMigrateVolume">
-       {{ $t('OK') }}
+        {{ $t('OK') }}
       </a-button>
     </div>
 
@@ -123,7 +123,7 @@ export default {
         volumeid: this.resource.id,
         newdiskofferingid: this.replaceDiskOffering ? this.selectedDiskOffering : null
       }).then(response => {
-        this.queryAsyncJobResult({
+        this.$queryAsyncJobResult({
           jobId: response.migratevolumeresponse.jobid,
           successMessage: `Successfully migrated volume`,
           successMethod: () => {

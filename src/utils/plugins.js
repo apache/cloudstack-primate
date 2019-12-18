@@ -21,36 +21,46 @@ import { message, notification } from 'ant-design-vue'
 export const pollJobPlugin = {
 
   install (Vue) {
-    Vue.prototype.queryAsyncJobResult = function (options) {
+    Vue.prototype.$queryAsyncJobResult = function (options) {
       /**
        * @param {String} jobId
-       * @param {String} successMessage
-       * @param {Function} successMethod
-       * @param {String} errorMessage
-       * @param {Function} errorMethod
-       * @param {String} loadingMessage
-       * @param {String} catchMessage
-       * @param {Function} catchMethod
-       * @param {Number} loadingDuration
+       * @param {String} [successMessage=Success]
+       * @param {Function} [successMethod=() => {}]
+       * @param {String} [errorMessage=Error]
+       * @param {Function} [errorMethod=() => {}]
+       * @param {String} [loadingMessage=Loading...]
+       * @param {String} [catchMessage=Error caught]
+       * @param {Function} [catchMethod=() => {}]
+       * @param {Number} [loadingDuration=3]
        */
-      const { jobId, successMessage, successMethod, errorMessage, errorMethod, loadingMessage, catchMessage, catchMethod, loadingDuration = 3 } = options
+      const {
+        jobId,
+        successMessage = 'Success',
+        successMethod = () => {},
+        errorMessage = 'Error',
+        errorMethod = () => {},
+        loadingMessage = 'Loading...',
+        catchMessage = 'Error caught',
+        catchMethod = () => {},
+        loadingDuration = 3
+      } = options
 
       api('queryAsyncJobResult', { jobId }).then(json => {
         const result = json.queryasyncjobresultresponse
 
         if (result.jobstatus === 1) {
-          message.success(successMessage || 'Success')
-          successMethod && successMethod()
+          message.success(successMessage)
+          successMethod()
         } else if (result.jobstatus === 2) {
           notification.error({
-            message: errorMessage || 'Error',
-            description: result.jobresult.errortext || 'Error'
+            message: errorMessage,
+            description: result.jobresult.errortext
           })
-          errorMethod && errorMethod()
+          errorMethod()
         } else if (result.jobstatus === 0) {
           message
             .loading(loadingMessage, loadingDuration)
-            .then(() => this.queryAsyncJobResult(options))
+            .then(() => this.$queryAsyncJobResult(options))
         }
       }).catch(e => {
         console.error(`${catchMessage} - ${e}`)
