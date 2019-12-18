@@ -41,7 +41,7 @@
                 @change="onSelectZoneId"
               >
                 <a-select-option
-                  v-for="(opt, optIndex) in options.zoneid"
+                  v-for="(opt, optIndex) in options.zones"
                   :key="optIndex"
                   :value="opt.id"
                 >
@@ -58,7 +58,7 @@
               <a-collapse-panel :header="this.$t('Templates')" key="templates">
                 <template-iso-selection
                   input-decorator="templateid"
-                  :items="options.templateid"
+                  :items="options.templates"
                 ></template-iso-selection>
                 <disk-size-selection
                   input-decorator="rootdisksize"
@@ -74,13 +74,13 @@
             </a-collapse>
 
             <compute-selection
-              :compute-items="options.serviceofferingid"
+              :compute-items="options.serviceOfferings"
               :value="serviceOffering ? serviceOffering.id : ''"
               @select-compute-item="($event) => updateComputeOffering($event)"
             ></compute-selection>
 
             <disk-offering-selection
-              :items="options.diskofferingid"
+              :items="options.diskOfferings"
               :value="diskOffering ? diskOffering.id : ''"
               @select-disk-offering-item="($event) => updateDiskOffering($event)"
             ></disk-offering-selection>
@@ -142,32 +142,34 @@ export default {
   data () {
     return {
       vm: {},
-      options: {},
-      params: [
-        {
-          name: 'templateid',
+      options: {
+        templates: [],
+        isos: [],
+        serviceOfferings: [],
+        diskOfferings: [],
+        zones: [],
+        affinityGroups: []
+      },
+      params: {
+        templates: {
           list: 'listTemplates',
           options: {
             templatefilter: 'executable'
           }
         },
-        {
-          name: 'serviceofferingid',
+        serviceOfferings: {
           list: 'listServiceOfferings'
         },
-        {
-          name: 'diskofferingid',
+        diskOfferings: {
           list: 'listDiskOfferings'
         },
-        {
-          name: 'zoneid',
+        zones: {
           list: 'listZones'
         },
-        {
-          name: 'affinitygroupids',
+        affinityGroups: {
           list: 'listAffinityGroups'
         }
-      ],
+      },
       instanceConfig: [],
       template: {},
       iso: {},
@@ -199,11 +201,11 @@ export default {
   },
   watch: {
     instanceConfig (instanceConfig) {
-      this.template = _.find(this.options.templateid, (option) => option.id === instanceConfig.templateid)
+      this.template = _.find(this.options.templates, (option) => option.id === instanceConfig.templateid)
       this.iso = _.find(this.options.isos, (option) => option.id === instanceConfig.isoid)
-      this.serviceOffering = _.find(this.options.serviceofferingid, (option) => option.id === instanceConfig.computeofferingid)
-      this.diskOffering = _.find(this.options.diskofferingid, (option) => option.id === instanceConfig.diskofferingid)
-      this.zone = _.find(this.options.zoneid, (option) => option.id === instanceConfig.zoneid)
+      this.serviceOffering = _.find(this.options.serviceOfferings, (option) => option.id === instanceConfig.computeofferingid)
+      this.diskOffering = _.find(this.options.diskOfferings, (option) => option.id === instanceConfig.diskofferingid)
+      this.zone = _.find(this.options.zones, (option) => option.id === instanceConfig.zoneid)
 
       if (this.zone) {
         this.vm.zoneid = this.zone.id
@@ -259,9 +261,7 @@ export default {
     this.form.getFieldDecorator('isoid', { initialValue: [], preserve: true })
   },
   created () {
-    this.params.forEach((param) => {
-      this.fetchOptions(param)
-    })
+    _.each(this.params, this.fetchOptions)
     Vue.nextTick().then(() => {
       this.instanceConfig = this.form.getFieldsValue() // ToDo: maybe initialize with some other defaults
     })
@@ -283,7 +283,7 @@ export default {
     handleSubmit () {
       console.log('wizard submit')
     },
-    fetchOptions (param) {
+    fetchOptions (param, name) {
       param.loading = true
       param.opts = []
       const options = param.options || {}
@@ -299,7 +299,7 @@ export default {
               return
             }
             param.opts = response
-            this.options[param.name] = response
+            this.options[name] = response
             this.$forceUpdate()
           })
         })
@@ -329,12 +329,12 @@ export default {
       })
     },
     onTemplatesIsosCollapseChange (key) {
-      if (key === 'isos' && _.get(this.options, 'isos.length', 0) === 0) {
+      if (key === 'isos' && this.options.isos.length === 0) {
         this.fetchAllIsos()
       }
     },
     onSelectZoneId () {
-      if (_.get(this.options, 'isos.length', 0) === 0) {
+      if (this.options.isos.length === 0) {
         return
       }
       this.fetchAllIsos()
