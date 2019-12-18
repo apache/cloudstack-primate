@@ -304,7 +304,7 @@ export default {
       treeSelected: {},
       actionData: [],
       actionBadge: [],
-      adminType: 'Admin',
+      adminType: 'Admin'
     }
   },
   computed: {
