@@ -76,7 +76,7 @@
       </a-collapse-panel>
 
       <a-collapse-panel :header="'Network Adapter(s): ' + (vm && vm.nic ? vm.nic.length : 0)" key="3" >
-        <a-button type="primary" @click="showAddModal" :loading="loadingNIC">
+        <a-button type="primary" @click="showAddModal" :loading="loadingNic">
           <a-icon type="plus"></a-icon> {{ $t('label.network.addVM') }}
         </a-button>
         <a-list
@@ -84,7 +84,7 @@
           itemLayout="horizontal"
           :dataSource="vm.nic"
           class="list"
-          :loading="loadingNIC"
+          :loading="loadingNic"
         >
           <a-list-item slot="renderItem" slot-scope="item" class="list__item">
             <a-list-item-meta>
@@ -113,7 +113,7 @@
                     style="margin-top: 10px"
                     icon="swap"
                     shape="circle"
-                    @click="editIpAddressNIC = item.id; showUpdateIPModal = true" />
+                    @click="editIpAddressNic = item.id; showUpdateIpModal = true" />
                 </a-tooltip>
                 <br/>
                 <a-tooltip placement="right" v-if="item.type !== 'L2'">
@@ -205,7 +205,7 @@
     </a-modal>
 
     <a-modal
-      :visible="showUpdateIPModal"
+      :visible="showUpdateIpModal"
       :title="$t('label.change.ipaddress')"
       @cancel="closeModals"
       @ok="submitUpdateIP"
@@ -214,13 +214,13 @@
 
       <div class="modal-form">
         <p class="modal-form__label">{{ $t('publicip') }}:</p>
-        <a-input v-model="editIPAddressValue"></a-input>
+        <a-input v-model="editIpAddressValue"></a-input>
       </div>
 
     </a-modal>
 
     <a-modal
-      :visible="showSecondaryIPModal"
+      :visible="showSecondaryIpModal"
       :title="$t('label.acquire.new.secondary.ip')"
       :footer="null"
       :closable="false"
@@ -230,7 +230,7 @@
         {{ $t('message.network.secondaryIP') }}
       </p>
       <a-divider />
-      <a-input placeholder="Enter new secondary IP address" v-model="newSecondaryIP"></a-input>
+      <a-input placeholder="Enter new secondary IP address" v-model="newSecondaryIp"></a-input>
       <div style="margin-top: 10px; display: flex; justify-content:flex-end;">
         <a-button @click="submitSecondaryIP" type="primary" style="margin-right: 10px;">Add Secondary IP</a-button>
         <a-button @click="closeModals">Cancel</a-button>
@@ -289,19 +289,19 @@ export default {
       totalStorage: 0,
       activeKey: ['1', '2', '3'],
       showAddNetworkModal: false,
-      showUpdateIPModal: false,
-      showSecondaryIPModal: false,
+      showUpdateIpModal: false,
+      showSecondaryIpModal: false,
       addNetworkData: {
         allNetworks: [],
         network: '',
         ip: ''
       },
-      loadingNIC: false,
-      editIpAddressNIC: '',
-      editIPAddressValue: '',
+      loadingNic: false,
+      editIpAddressNic: '',
+      editIpAddressValue: '',
       secondaryIPs: [],
-      selectedSecondaryIPNIC: '',
-      newSecondaryIP: ''
+      selectedNicId: '',
+      newSecondaryIp: ''
     }
   },
   created () {
@@ -333,7 +333,6 @@ export default {
     },
     listNetworks () {
       api('listNetworks', {
-        response: 'json',
         listAll: 'true',
         zoneid: this.vm.zoneid
       }).then(response => {
@@ -342,10 +341,9 @@ export default {
       })
     },
     fetchSecondaryIPs (nicId) {
-      this.showSecondaryIPModal = true
+      this.showSecondaryIpModal = true
       this.selectedNicId = nicId
       api('listNics', {
-        response: 'json',
         nicId: nicId,
         keyword: '',
         virtualmachineid: this.vm.id
@@ -359,20 +357,17 @@ export default {
     },
     closeModals () {
       this.showAddNetworkModal = false
-      this.showUpdateIPModal = false
-      this.showSecondaryIPModal = false
+      this.showUpdateIpModal = false
+      this.showSecondaryIpModal = false
       this.addNetworkData.network = ''
       this.addNetworkData.ip = ''
-
-      this.editIPAddressValue = ''
-
-      this.newSecondaryIP = ''
+      this.editIpAddressValue = ''
+      this.newSecondaryIp = ''
     },
     submitAddNetwork () {
-      this.loadingNIC = true
+      this.loadingNic = true
       this.showAddNetworkModal = false
       api('addNicToVirtualMachine', {
-        response: 'json',
         virtualmachineid: this.vm.id,
         networkid: this.addNetworkData.network,
         ipaddress: this.addNetworkData.ip
@@ -381,20 +376,20 @@ export default {
           jobId: response.addnictovirtualmachineresponse.jobid,
           successMessage: `Successfully added network`,
           successMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.closeModals()
             this.parentFetchData()
           },
           errorMessage: 'Adding network failed',
           errorMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.closeModals()
             this.parentFetchData()
           },
           loadingMessage: `Adding network...`,
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.closeModals()
             this.parentFetchData()
           }
@@ -404,13 +399,12 @@ export default {
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
-        this.loadingNIC = false
+        this.loadingNic = false
       })
     },
     setAsDefault (item) {
-      this.loadingNIC = true
+      this.loadingNic = true
       api('updateDefaultNicForVirtualMachine', {
-        response: 'json',
         virtualmachineid: this.vm.id,
         nicid: item.id
       }).then(response => {
@@ -418,18 +412,18 @@ export default {
           jobId: response.updatedefaultnicforvirtualmachineresponse.jobid,
           successMessage: `Successfully set ${item.networkname} to default. Please manually update the default NIC on the VM now.`,
           successMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.parentFetchData()
           },
           errorMessage: `Error setting ${item.networkname} to default`,
           errorMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.parentFetchData()
           },
           loadingMessage: `Setting ${item.networkname} to default...`,
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.parentFetchData()
           }
         })
@@ -438,35 +432,34 @@ export default {
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
-        this.loadingNIC = false
+        this.loadingNic = false
       })
     },
     submitUpdateIP () {
-      this.loadingNIC = true
-      this.showUpdateIPModal = false
+      this.loadingNic = true
+      this.showUpdateIpModal = false
       api('updateVmNicIp', {
-        response: 'json',
-        nicId: this.editIpAddressNIC,
-        ipaddress: this.editIPAddressValue
+        nicId: this.editIpAddressNic,
+        ipaddress: this.editIpAddressValue
       }).then(response => {
         this.$pollJob({
           jobId: response.updatevmnicipresponse.jobid,
           successMessage: `Successfully updated IP Address`,
           successMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.closeModals()
             this.parentFetchData()
           },
           errorMessage: `Error`,
           errorMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.closeModals()
             this.parentFetchData()
           },
           loadingMessage: `Updating IP Address...`,
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.closeModals()
             this.parentFetchData()
           }
@@ -477,14 +470,13 @@ export default {
             message: `Error ${error.response.status}`,
             description: error.response.data.errorresponse.errortext
           })
-          this.loadingNIC = false
+          this.loadingNic = false
         })
     },
     removeNIC (item) {
-      this.loadingNIC = true
+      this.loadingNic = true
 
       api('removeNicFromVirtualMachine', {
-        response: 'json',
         nicid: item.id,
         virtualmachineid: this.vm.id
       }).then(response => {
@@ -492,18 +484,18 @@ export default {
           jobId: response.removenicfromvirtualmachineresponse.jobid,
           successMessage: `Successfully removed`,
           successMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.parentFetchData()
           },
           errorMessage: `There was an error`,
           errorMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.parentFetchData()
           },
           loadingMessage: `Removing NIC...`,
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.parentFetchData()
           }
         })
@@ -513,16 +505,16 @@ export default {
             message: `Error ${error.response.status}`,
             description: error.response.data.errorresponse.errortext
           })
-          this.loadingNIC = false
+          this.loadingNic = false
         })
     },
     submitSecondaryIP () {
-      this.loadingNIC = true
+      this.loadingNic = true
 
       const params = {}
       params.nicid = this.selectedNicId
-      if (this.newSecondaryIP) {
-        params.ipaddress = this.newSecondaryIP
+      if (this.newSecondaryIp) {
+        params.ipaddress = this.newSecondaryIp
       }
 
       api('addIpToNic', params).then(response => {
@@ -530,20 +522,20 @@ export default {
           jobId: response.addiptovmnicresponse.jobid,
           successMessage: `Successfully added secondary IP Address`,
           successMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.fetchSecondaryIPs(this.selectedNicId)
             this.parentFetchData()
           },
           errorMessage: `There was an error adding the secondary IP Address`,
           errorMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.fetchSecondaryIPs(this.selectedNicId)
             this.parentFetchData()
           },
           loadingMessage: `Add Secondary IP address...`,
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.fetchSecondaryIPs(this.selectedNicId)
             this.parentFetchData()
           }
@@ -553,31 +545,31 @@ export default {
           message: `Error ${error.response.status}`,
           description: error.response.data.addiptovmnicresponse.errortext
         })
-        this.loadingNIC = false
+        this.loadingNic = false
       })
     },
     removeSecondaryIP (id) {
-      this.loadingNIC = true
+      this.loadingNic = true
 
       api('removeIpFromNic', { id }).then(response => {
         this.$pollJob({
           jobId: response.removeipfromnicresponse.jobid,
           successMessage: `Successfully removed secondary IP Address`,
           successMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.fetchSecondaryIPs(this.selectedNicId)
             this.parentFetchData()
           },
           errorMessage: `There was an error removing the secondary IP Address`,
           errorMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.fetchSecondaryIPs(this.selectedNicId)
             this.parentFetchData()
           },
           loadingMessage: `Removing Secondary IP address...`,
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
-            this.loadingNIC = false
+            this.loadingNic = false
             this.fetchSecondaryIPs(this.selectedNicId)
             this.parentFetchData()
           }
@@ -587,7 +579,7 @@ export default {
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
-        this.loadingNIC = false
+        this.loadingNic = false
         this.fetchSecondaryIPs(this.selectedNicId)
       })
     }
@@ -596,22 +588,22 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.page-header-wrapper-grid-content-main {
-  width: 100%;
-  height: 100%;
-  min-height: 100%;
-  transition: 0.3s;
-  .vm-detail {
-    .svg-inline--fa {
-      margin-left: -1px;
-      margin-right: 8px;
+  .page-header-wrapper-grid-content-main {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    transition: 0.3s;
+    .vm-detail {
+      .svg-inline--fa {
+        margin-left: -1px;
+        margin-right: 8px;
+      }
+      span {
+        margin-left: 10px;
+      }
+      margin-bottom: 8px;
     }
-    span {
-      margin-left: 10px;
-    }
-    margin-bottom: 8px;
   }
-}
 
   .list {
     margin-top: 20px;
@@ -625,9 +617,7 @@ export default {
         flex-direction: row;
         align-items: center;
       }
-
     }
-
   }
 
   .modal-form {
@@ -642,9 +632,7 @@ export default {
       &--no-margin {
         margin-top: 0;
       }
-
     }
-
   }
 
   .actions {
@@ -652,11 +640,9 @@ export default {
     margin-left: -24px;
 
     button {
-
       &:not(:last-child) {
         margin-right: 10px;
       }
-
     }
 
     @media (min-width: 760px) {
@@ -664,16 +650,12 @@ export default {
       margin-left: 24px;
 
       button {
-
         &:not(:last-child) {
           margin-bottom: 10px;
           margin-right: 0;
         }
-
       }
-
     }
-
   }
 </style>
 
