@@ -102,7 +102,8 @@
                   <a-button
                     style="margin-top: 10px"
                     icon="arrow-right"
-                    shape="circle" />
+                    size="small"
+                    shape="round" />
                 </a-popconfirm>
                 <br/>
                 <a-tooltip placement="right" v-if="item.type !== 'L2'">
@@ -112,7 +113,8 @@
                   <a-button
                     style="margin-top: 10px"
                     icon="swap"
-                    shape="circle"
+                    size="small"
+                    shape="round"
                     @click="editIpAddressNic = item.id; showUpdateIpModal = true" />
                 </a-tooltip>
                 <br/>
@@ -123,7 +125,8 @@
                   <a-button
                     style="margin-top: 10px"
                     icon="environment"
-                    shape="circle"
+                    size="small"
+                    shape="round"
                     @click="fetchSecondaryIPs(item.id)" />
                 </a-tooltip>
                 <br/>
@@ -138,7 +141,8 @@
                     style="margin-top: 10px"
                     type="danger"
                     icon="delete"
-                    shape="circle" />
+                    size="small"
+                    shape="round" />
                 </a-popconfirm>
               </div>
               <div slot="title">
@@ -233,7 +237,7 @@
       <a-input placeholder="Enter new secondary IP address" v-model="newSecondaryIp"></a-input>
       <div style="margin-top: 10px; display: flex; justify-content:flex-end;">
         <a-button @click="submitSecondaryIP" type="primary" style="margin-right: 10px;">Add Secondary IP</a-button>
-        <a-button @click="closeModals">Cancel</a-button>
+        <a-button @click="closeModals">Close</a-button>
       </div>
 
       <a-divider />
@@ -365,13 +369,15 @@ export default {
       this.newSecondaryIp = ''
     },
     submitAddNetwork () {
-      this.loadingNic = true
+      const params = {}
+      params.virtualmachineid = this.vm.id
+      params.networkid = this.addNetworkData.network
+      if (this.addNetworkData.ip) {
+        params.ipaddress = this.addNetworkData.ip
+      }
       this.showAddNetworkModal = false
-      api('addNicToVirtualMachine', {
-        virtualmachineid: this.vm.id,
-        networkid: this.addNetworkData.network,
-        ipaddress: this.addNetworkData.ip
-      }).then(response => {
+      this.loadingNic = true
+      api('addNicToVirtualMachine', params).then(response => {
         this.$pollJob({
           jobId: response.addnictovirtualmachineresponse.jobid,
           successMessage: `Successfully added network`,
