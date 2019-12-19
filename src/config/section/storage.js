@@ -133,6 +133,7 @@ export default {
           icon: 'cloud-download',
           label: 'Download Volume',
           dataView: true,
+          show: (record) => { return record && record.state === 'Ready' },
           args: ['zoneid', 'mode'],
           mapping: {
             zoneid: {
@@ -142,9 +143,7 @@ export default {
               value: (record) => { return 'HTTP_DOWNLOAD' }
             }
           },
-          response: {
-            downloadUrl: result => result.jobresult.volume.url
-          }
+          response: (result) => { return `Please click <a href="${result.volume.url}" target="_blank">${result.volume.url}</a> to download.` }
         },
         {
           api: 'createTemplate',

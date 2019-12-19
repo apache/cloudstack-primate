@@ -243,6 +243,7 @@
 <script>
 import { api } from '@/api'
 import { mixinDevice } from '@/utils/mixin.js'
+import { genericCompare } from '@/utils/sort.js'
 import config from '@/config/settings'
 import store from '@/store'
 
@@ -252,7 +253,6 @@ import Status from '@/components/widgets/Status'
 import ListView from '@/components/view/ListView'
 import ResourceView from '@/components/view/ResourceView'
 import TreeView from '@/components/view/TreeView'
-import { genericCompare } from '@/utils/sort.js'
 
 export default {
   name: 'Resource',
@@ -581,13 +581,12 @@ export default {
         jobId,
         successMethod: result => {
           this.fetchData()
-
-          if (action.response && action.response.downloadUrl) {
-            const downloadUrl = action.response.downloadUrl(result)
-            if (downloadUrl) {
+          if (action.response) {
+            const description = action.response(result.jobresult)
+            if (description) {
               this.$notification.info({
                 message: action.label,
-                description: (<div> Click <a href={downloadUrl} target="_blank">{downloadUrl}</a> to download </div>),
+                description: (<span domPropsInnerHTML={description}></span>),
                 duration: 0
               })
             }
