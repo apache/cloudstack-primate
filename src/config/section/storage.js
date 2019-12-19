@@ -141,6 +141,9 @@ export default {
             mode: {
               value: (record) => { return 'HTTP_DOWNLOAD' }
             }
+          },
+          response: {
+            downloadUrl: result => result.jobresult.volume.url
           }
         },
         {

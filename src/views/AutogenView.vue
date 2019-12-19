@@ -577,19 +577,26 @@ export default {
       })
     },
     pollActionCompletion (jobId, action) {
-      api('queryAsyncJobResult', { jobid: jobId }).then(json => {
-        var result = json.queryasyncjobresultresponse
-        if (result.jobstatus === 1) {
+      this.$pollJob({
+        jobId,
+        successMethod: result => {
           this.fetchData()
-        } else if (result.jobstatus === 2) {
-          this.fetchData()
-        } else if (result.jobstatus === 0) {
-          this.$message
-            .loading(this.$t(action.label) + ' in progress for ' + this.resource.name, 3)
-            .then(() => this.pollActionCompletion(jobId, action))
-        }
-      }).catch(function (e) {
-        console.log('Error encountered while fetching async job result' + e)
+
+          if (action.response && action.response.downloadUrl) {
+            const downloadUrl = action.response.downloadUrl(result)
+            if (downloadUrl) {
+              this.$notification.info({
+                message: action.label,
+                description: (<div> Click <a href={downloadUrl} target="_blank">{downloadUrl}</a> to download </div>),
+                duration: 0
+              })
+            }
+          }
+        },
+        errorMethod: () => this.fetchData(),
+        loadingMessage: `${this.$t(action.label)} in progress for ${this.resource.name}`,
+        catchMessage: 'Error encountered while fetching async job result',
+        action
       })
     },
     handleSubmit (e) {

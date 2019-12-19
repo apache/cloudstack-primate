@@ -72,7 +72,18 @@ export default {
           icon: 'cloud-download',
           label: 'Download Template',
           dataView: true,
-          args: ['zoneid', 'mode']
+          args: ['zoneid', 'mode'],
+          mapping: {
+            zoneid: {
+              value: (record) => { return record.zoneid }
+            },
+            mode: {
+              value: (record) => { return 'HTTP_DOWNLOAD' }
+            }
+          },
+          response: {
+            downloadUrl: result => result.jobresult.template.url
+          }
         },
         {
           api: 'updateTemplatePermissions',
@@ -145,6 +156,9 @@ export default {
             mode: {
               value: (record) => { return 'HTTP_DOWNLOAD' }
             }
+          },
+          response: {
+            downloadUrl: result => result.jobresult.iso.url
           }
         },
         {
