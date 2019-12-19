@@ -17,18 +17,22 @@
 
 <template>
   <div>
-    <a-collapse v-model="activeKey">
+    <a-collapse v-model="activeKey" :bordered="false">
+
       <a-collapse-panel :header="'ISO: ' + vm.isoname" v-if="vm.isoid" key="1">
         <a-list
           itemLayout="horizontal">
           <a-list-item>
-            <a-list-item-meta :description="vm.isoid">
-              <a slot="title" href="">
-                <router-link :to="{ path: '/iso/' + vm.isoid }">{{ vm.isoname }}</router-link>
-              </a> ({{ vm.isoname }})
-              <a-avatar slot="avatar">
-                <a-icon type="usb" />
-              </a-avatar>
+            <a-list-item-meta>
+              <div slot="avatar">
+                <a-avatar>
+                  <a-icon type="usb" />
+                </a-avatar>
+              </div>
+              <div slot="title">
+                <router-link :to="{ path: '/iso/' + vm.isoid }">{{ vm.isoname }}</router-link> <br/>
+                <a-icon type="barcode"/> {{ vm.isoid }}
+              </div>
             </a-list-item-meta>
           </a-list-item>
         </a-list>
@@ -42,30 +46,38 @@
         >
           <a-list-item slot="renderItem" slot-scope="item">
             <a-list-item-meta>
+              <div slot="avatar">
+                <a-avatar>
+                  <a-icon type="hdd" />
+                </a-avatar>
+              </div>
               <div slot="title">
-                <router-link :to="{ path: '/volume/' + item.id }">{{ item.name }}</router-link> ({{ item.type }}) <br/>
-                <status :text="item.state" displayText /><br/>
+                <router-link :to="{ path: '/volume/' + item.id }">{{ item.name }} </router-link>
+                <a-tag v-if="item.type">
+                  {{ item.type }}
+                </a-tag>
+                <a-tag v-if="item.state">
+                  {{ item.state }}
+                </a-tag>
+                <a-tag v-if="item.provisioningtype">
+                  {{ item.provisioningtype }}
+                </a-tag>
+                <br/>
+                {{ $t('size') }}: {{ (item.size / (1024 * 1024 * 1024.0)).toFixed(2) }} GB<br/>
+                {{ $t('physicalsize') }}: {{ (item.physicalsize / (1024 * 1024 * 1024.0)).toFixed(4) }} GB<br/>
+                {{ $t('storagePool') }}: {{ item.storage }} ({{ item.storagetype }})<br/>
+                <a-icon type="barcode"/> {{ item.id }} <br/>
               </div>
-              <div slot="description">
-                <a-icon type="barcode"/> {{ item.id }}
-              </div>
-              <a-avatar slot="avatar">
-                <a-icon type="hdd" />
-              </a-avatar>
             </a-list-item-meta>
-            <p>
-              {{ $t('size') }}: {{ (item.size / (1024 * 1024 * 1024.0)).toFixed(4) }} GB<br/>
-              {{ $t('physicalsize') }}: {{ (item.physicalsize / (1024 * 1024 * 1024.0)).toFixed(4) }} GB<br/>
-              {{ $t('provisioning') }}}: {{ item.provisioningtype }}<br/>
-              {{ $t('storagePool') }}: {{ item.storage }} ({{ item.storagetype }})<br/>
-            </p>
+            <div slot="actions" class="actions">
+            </div>
           </a-list-item>
         </a-list>
-
       </a-collapse-panel>
+
       <a-collapse-panel :header="'Network Adapter(s): ' + (vm && vm.nic ? vm.nic.length : 0)" key="3" >
-        <a-button type="primary" style="display: block; margin-left: auto;" @click="showAddModal" :loading="loadingNIC">
-          <a-icon type="plus-circle"></a-icon> {{ $t('label.network.addVM') }}
+        <a-button type="primary" @click="showAddModal" :loading="loadingNIC">
+          <a-icon type="plus"></a-icon> {{ $t('label.network.addVM') }}
         </a-button>
         <a-list
           size="small"
@@ -76,70 +88,94 @@
         >
           <a-list-item slot="renderItem" slot-scope="item" class="list__item">
             <a-list-item-meta>
-              <div slot="title">
-                <span v-show="item.isdefault">({{ $t('default') }}) </span>
-                <router-link :to="{ path: '/guestnetwork/' + item.networkid }">{{ item.networkname }} </router-link><br/>
-                {{ $t('macaddress') }}: {{ item.macaddress }}<br/>
-                <span v-if="item.ipaddress">{{ $t('address') }}: {{ item.ipaddress }} <br/></span>
-                {{ $t('netmask') }}: {{ item.netmask }}<br/>
-                {{ $t('gateway') }}: {{ item.gateway }}<br/>
-              </div>
-              <div slot="description">
-                <a-icon type="barcode"/> {{ item.id }}
-              </div>
-              <a-avatar slot="avatar">
-                <a-icon type="wifi" />
-              </a-avatar>
-            </a-list-item-meta>
-            <p>
-              {{ $t('networkdevicetype') }}: {{ item.type }}<br/>
-              {{ $t('broadcasturi') }}: {{ item.broadcasturi }}<br/>
-              {{ $t('isolationuri') }}: {{ item.isolationuri }}<br/>
-            </p>
-            <div slot="actions" class="actions">
-              <a-tooltip placement="left">
-                <template slot="title">
-                  {{ "Edit IP Address" }}
-                </template>
-                <a-button
-                  type="primary"
-                  icon="edit"
-                  shape="circle"
-                  @click="editIpAddressNIC = item.id; showUpdateIPModal = true" />
-              </a-tooltip>
-              <a-tooltip placement="left">
-                <template slot="title">
-                  {{ "Edit/Add secondary IP Address" }}
-                </template>
-                <a-button icon="edit" shape="circle" @click="fetchSecondaryIPs(item)" />
-              </a-tooltip>
-              <a-tooltip placement="left" v-if="!item.isdefault">
-                <template slot="title">
-                  {{ "Set as default" }}
-                </template>
+              <div slot="avatar">
+                <a-avatar slot="avatar">
+                  <a-icon type="wifi" />
+                </a-avatar>
+                <br/>
                 <a-popconfirm
-                  title="Confirm set as default?"
+                  title="Please confirm that you would like to make this NIC the default for this VM."
                   @confirm="setAsDefault(item)"
                   okText="Yes"
                   cancelText="No"
                 >
-                  <a-button icon="form" shape="circle" />
+                  <a-button
+                    style="margin-top: 10px"
+                    icon="arrow-right"
+                    shape="circle" />
                 </a-popconfirm>
-              </a-tooltip>
-              <a-tooltip placement="left" v-if="!item.isdefault">
-                <template slot="title">
-                  {{ "Remove" }}
-                </template>
+                <br/>
+                <a-tooltip placement="right" v-if="item.type !== 'L2'">
+                  <template slot="title">
+                    {{ "Change IP Address" }}
+                  </template>
+                  <a-button
+                    style="margin-top: 10px"
+                    icon="swap"
+                    shape="circle"
+                    @click="editIpAddressNIC = item.id; showUpdateIPModal = true" />
+                </a-tooltip>
+                <br/>
+                <a-tooltip placement="right" v-if="item.type !== 'L2'">
+                  <template slot="title">
+                    {{ "Manage Secondary IP Addresses" }}
+                  </template>
+                  <a-button
+                    style="margin-top: 10px"
+                    icon="environment"
+                    shape="circle"
+                    @click="fetchSecondaryIPs(item.id)" />
+                </a-tooltip>
+                <br/>
                 <a-popconfirm
                   :title="$t('message.network.removeNIC')"
                   @confirm="removeNIC(item)"
                   okText="Yes"
                   cancelText="No"
+                  v-if="!item.isdefault"
                 >
-                  <a-button type="danger" icon="delete" shape="circle" />
+                  <a-button
+                    style="margin-top: 10px"
+                    type="danger"
+                    icon="delete"
+                    shape="circle" />
                 </a-popconfirm>
-              </a-tooltip>
-            </div>
+              </div>
+              <div slot="title">
+                <router-link :to="{ path: '/guestnetwork/' + item.networkid }">{{ item.networkname }} </router-link>
+                <a-tag v-if="item.isdefault">
+                  {{ $t('default') }}
+                </a-tag>
+                <a-tag v-if="item.type">
+                  {{ item.type }}
+                </a-tag>
+                <a-tag v-if="item.broadcasturi">
+                  {{ item.broadcasturi }}
+                </a-tag>
+                <a-tag v-if="item.isolationuri">
+                  {{ item.isolationuri }}
+                </a-tag>
+                <br />
+                {{ $t('macaddress') }}: {{ item.macaddress }}<br/>
+                <span v-if="item.ipaddress">
+                  {{ $t('IP Address') }}: {{ item.ipaddress }}
+                  <br/>
+                </span>
+                <span v-if="item.secondaryip && item.type !== 'L2'">
+                  {{ $t('Secondary IPs') }}: {{ item.secondaryip.map(x => x.ipaddress).join(', ') }}
+                  <br/>
+                </span>
+                <span v-if="item.netmask">
+                  {{ $t('netmask') }}: {{ item.netmask }}
+                  <br/>
+                </span>
+                <span v-if="item.gateway">
+                  {{ $t('gateway') }}: {{ item.gateway }}
+                  <br/>
+                </span>
+                <a-icon type="barcode"/> {{ item.id }}
+              </div>
+            </a-list-item-meta>
           </a-list-item>
         </a-list>
       </a-collapse-panel>
@@ -187,32 +223,22 @@
       :visible="showSecondaryIPModal"
       :title="$t('label.acquire.new.secondary.ip')"
       :footer="null"
+      :closable="false"
       class="wide-modal"
     >
       <p>
         {{ $t('message.network.secondaryIP') }}
       </p>
       <a-divider />
-      <p class="modal-form__label">Add new secondary {{ $t('publicip') }}:</p>
-      <a-input placeholder="Enter new secondary IP Address" v-model="newSecondaryIP"></a-input>
-
+      <a-input placeholder="Enter new secondary IP address" v-model="newSecondaryIP"></a-input>
       <div style="margin-top: 10px; display: flex; justify-content:flex-end;">
-        <a-button @click="submitSecondaryIP" type="primary" style="margin-right: 10px;">Add</a-button>
+        <a-button @click="submitSecondaryIP" type="primary" style="margin-right: 10px;">Add Secondary IP</a-button>
         <a-button @click="closeModals">Cancel</a-button>
       </div>
 
       <a-divider />
       <a-list itemLayout="vertical">
         <a-list-item v-for="(ip, index) in secondaryIPs" :key="index">
-          <p class="modal-form__label modal-form__label--no-margin">{{ $t('publicip') }}:</p>
-          {{ ip.ipaddress }}
-          <p class="modal-form__label modal-form__label--no-margin">{{ $t('uuid') }}:</p>
-          {{ ip.id }}
-          <p class="modal-form__label modal-form__label--no-margin">{{ $t('vmname') }}:</p>
-          {{ vm.name }}
-          <p class="modal-form__label modal-form__label--no-margin">{{ $t('zonenamelabel') }}:</p>
-          {{ vm.zonename }}
-
           <a-popconfirm
             title="Release IP?"
             @confirm="removeSecondaryIP(ip.id)"
@@ -220,12 +246,12 @@
             cancelText="No"
           >
             <a-button
-              style="display: block; margin-top: 10px; margin-bottom: -10px;"
               type="danger"
               shape="circle"
+              size="small"
               icon="delete" />
+            {{ ip.ipaddress }}
           </a-popconfirm>
-
         </a-list-item>
       </a-list>
     </a-modal>
@@ -311,16 +337,16 @@ export default {
         listAll: 'true',
         zoneid: this.vm.zoneid
       }).then(response => {
-        this.addNetworkData.allNetworks = response.listnetworksresponse.network
+        this.addNetworkData.allNetworks = response.listnetworksresponse.network.filter(network => !this.vm.nic.map(nic => nic.networkid).includes(network.id))
         this.addNetworkData.network = this.addNetworkData.allNetworks[0].id
       })
     },
-    fetchSecondaryIPs (item) {
+    fetchSecondaryIPs (nicId) {
       this.showSecondaryIPModal = true
-      this.selectedSecondaryIPNIC = item.id
+      this.selectedNicId = nicId
       api('listNics', {
         response: 'json',
-        nicId: item.id,
+        nicId: nicId,
         keyword: '',
         virtualmachineid: this.vm.id
       }).then(response => {
@@ -493,79 +519,77 @@ export default {
     submitSecondaryIP () {
       this.loadingNIC = true
 
-      api('addIpToNic', {
-        response: 'json',
-        nicid: this.selectedSecondaryIPNIC,
-        ipaddress: this.newSecondaryIP
-      }).then(response => {
+      const params = {}
+      params.nicid = this.selectedNicId
+      if (this.newSecondaryIP) {
+        params.ipaddress = this.newSecondaryIP
+      }
+
+      api('addIpToNic', params).then(response => {
         this.$pollJob({
           jobId: response.addiptovmnicresponse.jobid,
           successMessage: `Successfully added secondary IP Address`,
           successMethod: () => {
             this.loadingNIC = false
-            this.closeModals()
+            this.fetchSecondaryIPs(this.selectedNicId)
             this.parentFetchData()
           },
           errorMessage: `There was an error adding the secondary IP Address`,
           errorMethod: () => {
             this.loadingNIC = false
-            this.closeModals()
+            this.fetchSecondaryIPs(this.selectedNicId)
             this.parentFetchData()
           },
           loadingMessage: `Add Secondary IP address...`,
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
             this.loadingNIC = false
-            this.closeModals()
+            this.fetchSecondaryIPs(this.selectedNicId)
             this.parentFetchData()
           }
         })
-      })
-        .catch(error => {
-          this.$notification.error({
-            message: `Error ${error.response.status}`,
-            description: error.response.data.addiptovmnicresponse.errortext
-          })
-          this.loadingNIC = false
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.addiptovmnicresponse.errortext
         })
+        this.loadingNIC = false
+      })
     },
     removeSecondaryIP (id) {
       this.loadingNIC = true
 
-      api('removeIpFromNic', {
-        response: 'json',
-        id
-      }).then(response => {
+      api('removeIpFromNic', { id }).then(response => {
         this.$pollJob({
           jobId: response.removeipfromnicresponse.jobid,
           successMessage: `Successfully removed secondary IP Address`,
           successMethod: () => {
             this.loadingNIC = false
-            this.closeModals()
+            this.fetchSecondaryIPs(this.selectedNicId)
             this.parentFetchData()
           },
           errorMessage: `There was an error removing the secondary IP Address`,
           errorMethod: () => {
             this.loadingNIC = false
-            this.closeModals()
+            this.fetchSecondaryIPs(this.selectedNicId)
             this.parentFetchData()
           },
           loadingMessage: `Removing Secondary IP address...`,
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
             this.loadingNIC = false
-            this.closeModals()
+            this.fetchSecondaryIPs(this.selectedNicId)
             this.parentFetchData()
           }
         })
-      })
-        .catch(error => {
-          this.$notification.error({
-            message: `Error ${error.response.status}`,
-            description: error.response.data.errorresponse.errortext
-          })
-          this.loadingNIC = false
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.errorresponse.errortext
         })
+        this.loadingNIC = false
+        this.fetchSecondaryIPs(this.selectedNicId)
+      })
     }
   }
 }
@@ -655,6 +679,6 @@ export default {
 
 <style lang="scss">
   .wide-modal {
-    min-width: 60vw;
+    min-width: 50vw;
   }
 </style>

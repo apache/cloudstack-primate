@@ -41,7 +41,7 @@
     <a-list size="large">
       <a-list-item :key="index" v-for="(item, index) in details">
         <a-list-item-meta>
-          <span slot="title"><strong>{{ item.name }}</strong></span>
+          <span slot="title">{{ item.name }}</span>
           <span slot="description" style="word-break: break-all">
             <span v-if="item.edit" style="display: flex">
               <a-auto-complete
