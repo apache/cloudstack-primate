@@ -77,6 +77,11 @@ export default {
   mounted () {
     this.fetchData()
   },
+  watch: {
+    resource () {
+      this.fetchData()
+    }
+  },
   methods: {
     fetchData () {
       const params = {}

@@ -21,7 +21,7 @@
       <capacity-dashboard/>
     </div>
     <div v-else>
-      <usage-dashboard :showProject="project" />
+      <usage-dashboard :resource="$store.getters.project" :showProject="project" />
     </div>
   </div>
 </template>

@@ -95,7 +95,14 @@
           centered
           width="auto"
         >
-          <component :is="currentAction.component" :resource="resource" :loading="loading" v-bind="{currentAction}" @refresh-data="fetchData" />
+          <component
+            :is="currentAction.component"
+            :resource="resource"
+            :loading="loading"
+            v-bind="{currentAction}"
+            @refresh-data="fetchData"
+            @poll-action="pollActionCompletion"
+            @close-action="closeAction"/>
         </a-modal>
       </keep-alive>
       <a-modal
@@ -134,14 +141,6 @@
                 <a-switch
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: 'Please provide input' }]
-                  }]"
-                  :placeholder="field.description"
-                />
-              </span>
-              <span v-else-if="currentAction.mapping && field.name in currentAction.mapping && currentAction.mapping[field.name].input">
-                <a-input
-                  v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please enter input' }]
                   }]"
                   :placeholder="field.description"
                 />
@@ -649,8 +648,6 @@ export default {
                 }
                 if (this.currentAction.mapping && key in this.currentAction.mapping && this.currentAction.mapping[key].options) {
                   params[key] = this.currentAction.mapping[key].options[input]
-                } else if (this.currentAction.mapping && key in this.currentAction.mapping && this.currentAction.mapping[key].input) {
-                  params[key] = input
                 } else if (param.type === 'uuid') {
                   params[key] = param.opts[input].id
                 } else if (param.type === 'list') {

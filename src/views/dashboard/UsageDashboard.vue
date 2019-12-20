@@ -39,6 +39,22 @@
                 :stats="stats" />
             </a-tab-pane>
           </a-tabs>
+          <a-col
+            v-else
+            class="usage-dashboard-chart-tile"
+            :xs="12"
+            :md="8"
+            v-for="stat in stats"
+            :key="stat.type">
+            <chart-card class="usage-dashboard-chart-card" :loading="loading">
+              <router-link :to="{ name: stat.path }">
+                <div class="usage-dashboard-chart-card-inner">
+                  <h4>{{ stat.name }}</h4>
+                  <h1>{{ stat.count == undefined ? 0 : stat.count }}</h1>
+                </div>
+              </router-link>
+            </chart-card>
+          </a-col>
         </a-card>
       </a-row>
     </a-col>
@@ -81,6 +97,12 @@ export default {
     UsageDashboardChart
   },
   props: {
+    resource: {
+      type: Object,
+      default () {
+        return []
+      }
+    },
     showProject: {
       type: Boolean,
       default: false
@@ -108,6 +130,9 @@ export default {
       if (to.name === 'dashboard') {
         this.fetchData()
       }
+    },
+    resource (newData, oldData) {
+      this.project = newData
     }
   },
   methods: {

@@ -54,12 +54,8 @@ export default {
       icon: 'key',
       label: 'label.enter.token',
       listView: true,
-      args: ['projectid', 'token'],
-      mapping: {
-        projectid: {
-          input: true
-        }
-      }
+      popup: true,
+      component: () => import('@/views/projects/InvitationTokenTemplate.vue')
     },
     {
       api: 'listProjectInvitations',
