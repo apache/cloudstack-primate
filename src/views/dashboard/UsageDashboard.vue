@@ -16,7 +16,7 @@
 // under the License.
 
 <template>
-  <a-row class="usage-dashboard" :gutter="24">
+  <a-row class="usage-dashboard" :gutter="12">
     <a-col :xl="16">
       <a-row>
         <a-card>
@@ -218,7 +218,6 @@ export default {
 
 <style lang="less" scoped>
   .usage-dashboard {
-    margin-top: 12px;
 
     &-chart-tile {
       margin-bottom: 12px;

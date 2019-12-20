@@ -44,7 +44,6 @@ export default {
 
 <style type="less" scoped>
 .logo {
-  padding-left: 12px;
   height: 64px;
   position: relative;
   line-height: 64px;
@@ -60,7 +59,7 @@ export default {
 }
 
 .logo-image {
-  width: 220px;
+  width: 256px;
   display: inline-block;
   vertical-align: middle;
 }
