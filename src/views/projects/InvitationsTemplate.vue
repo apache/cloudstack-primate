@@ -19,6 +19,14 @@
   <div class="row-invitation">
     <a-row :gutter="12">
       <a-col :md="24" :lg="24">
+        <a-input-search
+          class="input-search-invitation"
+          style="width: unset"
+          placeholder="Search"
+          v-model="searchQuery"
+          @search="onSearch" />
+      </a-col>
+      <a-col :md="24" :lg="24">
         <a-table
           size="small"
           :loading="loading"
@@ -73,7 +81,6 @@
 
 <script>
 import { api } from '@/api'
-import store from '@/store'
 import Status from '@/components/widgets/Status'
 
 export default {
@@ -85,11 +92,15 @@ export default {
     return {
       columns: [],
       dataSource: [],
+      listDomains: [],
       loading: false,
       page: 1,
       pageSize: 10,
       itemCount: 0,
       state: undefined,
+      domainid: undefined,
+      projectid: undefined,
+      searchQuery: undefined,
       stateAllow: 'Pending'
     }
   },
@@ -143,14 +154,14 @@ export default {
   },
   methods: {
     fetchData () {
-      const userInfo = store.getters.userInfo
       const params = {}
 
       params.page = this.page
       params.pageSize = this.pageSize
-      params.account = userInfo.account
-      params.domainid = userInfo.domainid
       params.state = this.state
+      params.domainid = this.domainid
+      params.projectid = this.projectid
+      params.keyword = this.searchQuery
       params.listAll = true
 
       this.loading = true
@@ -201,7 +212,14 @@ export default {
       })
     },
     updateProjectInvitation (record, state) {
-      const title = this.$t('label.accept.project.invitation')
+      let title = ''
+
+      if (state) {
+        title = this.$t('label.accept.project.invitation')
+      } else {
+        title = this.$t('label.decline.invitation')
+      }
+
       const loading = this.$message.loading(title + 'in progress for ' + record.project, 0)
       const params = {}
 
@@ -247,6 +265,13 @@ export default {
       }
 
       this.state = filters.state && filters.state.length > 0 ? filters.state[0] : undefined
+      this.domainid = filters.domain && filters.domain.length > 0 ? filters.domain[0] : undefined
+      this.projectid = filters.project && filters.project.length > 0 ? filters.project[0] : undefined
+
+      this.fetchData()
+    },
+    onSearch (value) {
+      this.searchQuery = value
       this.fetchData()
     },
     checkForAddAsyncJob (json, title, description) {
@@ -292,5 +317,10 @@ export default {
 
   .account-button-action button {
     margin-right: 5px;
+  }
+
+  .input-search-invitation {
+    float: right;
+    margin-bottom: 10px;
   }
 </style>

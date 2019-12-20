@@ -178,8 +178,15 @@ export const asyncRouterMap = [
             },
             {
               name: 'accounts',
-              show: (record) => { return record.owner },
+              show: (record, route, user) => { return record.account === user.account || ['Admin', 'DomainAdmin'].includes(user.roletype) },
               component: () => import('@/views/projects/AccountsTab')
+            },
+            {
+              name: 'resources',
+              permission: ['updateResourceLimit'],
+              args: ['network', 'volume', 'public_ip', 'template', 'user_vm', 'snapshot', 'vpc', 'cpu', 'memory', 'primary_storage', 'secondary_storage'],
+              show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
+              component: () => import('@/views/projects/ResourcesTab.vue')
             }
           ]
         },

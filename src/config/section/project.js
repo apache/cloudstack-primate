@@ -32,6 +32,13 @@ export default {
       name: 'accounts',
       show: (record, route, user) => { return record.account === user.account || ['Admin', 'DomainAdmin'].includes(user.roletype) },
       component: () => import('@/views/projects/AccountsTab.vue')
+    },
+    {
+      name: 'resources',
+      permission: ['updateResourceLimit'],
+      args: ['network', 'volume', 'public_ip', 'template', 'user_vm', 'snapshot', 'vpc', 'cpu', 'memory', 'primary_storage', 'secondary_storage'],
+      show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
+      component: () => import('@/views/projects/ResourcesTab.vue')
     }
   ],
   actions: [
@@ -41,6 +48,18 @@ export default {
       label: 'New Project',
       listView: true,
       args: ['name', 'displaytext']
+    },
+    {
+      api: 'updateProjectInvitation',
+      icon: 'key',
+      label: 'label.enter.token',
+      listView: true,
+      args: ['projectid', 'token'],
+      mapping: {
+        projectid: {
+          input: true
+        }
+      }
     },
     {
       api: 'listProjectInvitations',
@@ -53,7 +72,6 @@ export default {
       param: {
         state: 'Pending'
       },
-      badge: (badgeNumber) => { return badgeNumber },
       component: () => import('@/views/projects/InvitationsTemplate.vue')
     },
     {

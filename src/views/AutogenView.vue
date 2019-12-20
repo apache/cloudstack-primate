@@ -48,7 +48,7 @@
               <a-badge
                 class="button-action-badge"
                 :overflowCount="9"
-                :count="action.badge(actionBadge[action.api].badgeNum)"
+                :count="actionBadge[action.api] ? actionBadge[action.api].badgeNum : 0"
                 v-if="action.api in $store.getters.apis &&
                   action.showBadge &&
                   ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
@@ -134,6 +134,14 @@
                 <a-switch
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: 'Please provide input' }]
+                  }]"
+                  :placeholder="field.description"
+                />
+              </span>
+              <span v-else-if="currentAction.mapping && field.name in currentAction.mapping && currentAction.mapping[field.name].input">
+                <a-input
+                  v-decorator="[field.name, {
+                    rules: [{ required: field.required, message: 'Please enter input' }]
                   }]"
                   :placeholder="field.description"
                 />
@@ -379,35 +387,6 @@ export default {
 
         if (this.$route.meta.actions) {
           this.actions = this.$route.meta.actions
-          const arrShowBadge = this.actions.filter(action => action.showBadge === true)
-
-          if (arrShowBadge && arrShowBadge.length > 0) {
-            arrShowBadge.forEach(action => {
-              if (action.showBadge) {
-                this.actionBadge[action.api] = action
-              }
-            })
-          }
-
-          if (Object.keys(this.actionBadge).length > 0) {
-            Object.keys(this.actionBadge).forEach((apiName, index) => {
-              api(apiName, this.actionBadge[apiName].param).then(json => {
-                let responseJsonName
-                for (const key in json) {
-                  if (key.includes('response')) {
-                    responseJsonName = key
-                    break
-                  }
-                }
-
-                this.actionBadge[apiName].badgeNum = 0
-
-                if (json[responseJsonName].count && json[responseJsonName].count > 0) {
-                  this.actionBadge[apiName].badgeNum = json[responseJsonName].count
-                }
-              })
-            })
-          }
         }
 
         if (this.$route.meta.filters) {
@@ -670,6 +649,8 @@ export default {
                 }
                 if (this.currentAction.mapping && key in this.currentAction.mapping && this.currentAction.mapping[key].options) {
                   params[key] = this.currentAction.mapping[key].options[input]
+                } else if (this.currentAction.mapping && key in this.currentAction.mapping && this.currentAction.mapping[key].input) {
+                  params[key] = input
                 } else if (param.type === 'uuid') {
                   params[key] = param.opts[input].id
                 } else if (param.type === 'list') {
