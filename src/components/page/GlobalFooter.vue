@@ -20,7 +20,7 @@
     <div class="links">
       CloudStack Server {{ $store.getters.features.cloudstackversion }}
       <a-divider type="vertical" />
-      <a href="https://github.com/apache/cloudstack-primate/issues/new" target="_blank">
+      <a href="https://github.com/apache/cloudstack-primate/issues/new/choose" target="_blank">
         <a-icon type="github"/>
         Report Bug
       </a>
