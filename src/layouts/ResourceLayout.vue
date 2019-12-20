@@ -17,8 +17,8 @@
 
 <template>
   <div class="page-header-index-wide page-header-wrapper-grid-content-main">
-    <a-row :gutter="12">
-      <a-col :md="24" :lg="8" style="margin-bottom: 12px">
+    <a-row :gutter="24">
+      <a-col :md="24" :lg="8" style="margin-bottom: 24px">
         <slot name="left">
         </slot>
       </a-col>

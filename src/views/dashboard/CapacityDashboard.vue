@@ -16,7 +16,7 @@
 // under the License.
 
 <template>
-  <a-row class="capacity-dashboard" :gutter="12">
+  <a-row class="capacity-dashboard" :gutter="24">
     <a-col :xl="18">
       <div class="capacity-dashboard-wrapper">
         <div class="capacity-dashboard-select">
@@ -44,12 +44,11 @@
           </a-tooltip>
         </div>
       </div>
-      <a-row :gutter="12">
+      <a-row :gutter="24">
         <a-col
-          :xs="12"
           :sm="8"
           :md="6"
-          :style="{ marginBottom: '12px' }"
+          :style="{ marginBottom: '24px' }"
           v-for="stat in stats"
           :key="stat.type">
           <chart-card :loading="loading">
@@ -248,7 +247,8 @@ export default {
 .capacity-dashboard {
   &-wrapper {
     display: flex;
-    margin-bottom: 12px;
+    margin-top: 12px;
+    margin-bottom: 24px;
   }
 
   &-chart-card-inner {

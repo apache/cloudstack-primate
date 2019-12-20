@@ -766,10 +766,10 @@ export default {
 <style scoped>
 
 .breadcrumb-card {
-  margin-left: -24px;
-  margin-right: -24px;
+  margin-left: -32px;
+  margin-right: -32px;
   margin-top: -16px;
-  margin-bottom: 12px;
+  margin-bottom: 24px;
 }
 
 .row-element {
