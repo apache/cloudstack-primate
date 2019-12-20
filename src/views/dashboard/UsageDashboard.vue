@@ -17,9 +17,8 @@
 
 <template>
   <a-row class="usage-dashboard" :gutter="12">
-    <a-col
-      :xl="16">
-      <a-row :gutter="12">
+    <a-col :xl="16">
+      <a-row>
         <a-card>
           <a-tabs
             v-if="showProject"
