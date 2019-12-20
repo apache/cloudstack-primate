@@ -30,9 +30,7 @@ export default {
     },
     {
       name: 'accounts',
-      show: (record) => {
-        return record.owner
-      },
+      show: (record, route, user) => { return record.account === user.account || ['Admin', 'DomainAdmin'].includes(user.roletype) },
       component: () => import('@/views/projects/AccountsTab.vue')
     }
   ],
@@ -85,7 +83,7 @@ export default {
       label: 'Add Account to Project',
       dataView: true,
       args: ['projectid', 'account', 'email'],
-      show: (record) => { return record.owner },
+      show: (record, user) => { return record.account === user.account || ['Admin', 'DomainAdmin'].includes(user.roletype) },
       mapping: {
         projectid: {
           value: (record) => { return record.id }

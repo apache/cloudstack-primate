@@ -52,7 +52,7 @@
                 v-if="action.api in $store.getters.apis &&
                   action.showBadge &&
                   ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
-                  ('show' in action ? action.show(resource) : true)">
+                  ('show' in action ? action.show(resource, $store.getters.userInfo) : true)">
                 <a-button
                   :icon="action.icon"
                   :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
@@ -64,7 +64,7 @@
                 v-if="action.api in $store.getters.apis &&
                   !action.showBadge &&
                   ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
-                  ('show' in action ? action.show(resource) : true)"
+                  ('show' in action ? action.show(resource, $store.getters.userInfo) : true)"
                 :icon="action.icon"
                 :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
                 shape="circle"
