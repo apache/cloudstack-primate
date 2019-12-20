@@ -37,7 +37,7 @@
             :tab="$t(tab.name)"
             :key="tab.name"
             v-if="'show' in tab ? tab.show(resource, $route, $store.getters.userInfo) : true">
-            <component :is="tab.component" :resource="resource" :loading="loading" :tab="activeTab" />
+            <component :is="tab.component" :resource="resource" :loading="loading" :tab="activeTab" :dataSource="tab.args" />
           </a-tab-pane>
         </a-tabs>
       </a-card>
