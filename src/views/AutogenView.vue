@@ -36,8 +36,8 @@
             </a-button>
           </a-tooltip>
         </a-col>
-        <a-col :span="24" style="padding-top: 12px; margin-bottom: -6px">
-          <span style="padding-left: 5px">
+        <a-col :span="24" style="padding-top: 12px">
+          <span>
             <a-tooltip
               v-for="(action, actionIndex) in actions"
               :key="actionIndex"
@@ -243,6 +243,7 @@
 <script>
 import { api } from '@/api'
 import { mixinDevice } from '@/utils/mixin.js'
+import { genericCompare } from '@/utils/sort.js'
 import config from '@/config/settings'
 import store from '@/store'
 
@@ -252,7 +253,6 @@ import Status from '@/components/widgets/Status'
 import ListView from '@/components/view/ListView'
 import ResourceView from '@/components/view/ResourceView'
 import TreeView from '@/components/view/TreeView'
-import { genericCompare } from '@/utils/sort.js'
 
 export default {
   name: 'Resource',
@@ -577,19 +577,25 @@ export default {
       })
     },
     pollActionCompletion (jobId, action) {
-      api('queryAsyncJobResult', { jobid: jobId }).then(json => {
-        var result = json.queryasyncjobresultresponse
-        if (result.jobstatus === 1) {
+      this.$pollJob({
+        jobId,
+        successMethod: result => {
           this.fetchData()
-        } else if (result.jobstatus === 2) {
-          this.fetchData()
-        } else if (result.jobstatus === 0) {
-          this.$message
-            .loading(this.$t(action.label) + ' in progress for ' + this.resource.name, 3)
-            .then(() => this.pollActionCompletion(jobId, action))
-        }
-      }).catch(function (e) {
-        console.log('Error encountered while fetching async job result' + e)
+          if (action.response) {
+            const description = action.response(result.jobresult)
+            if (description) {
+              this.$notification.info({
+                message: action.label,
+                description: (<span domPropsInnerHTML={description}></span>),
+                duration: 0
+              })
+            }
+          }
+        },
+        errorMethod: () => this.fetchData(),
+        loadingMessage: `${this.$t(action.label)} in progress for ${this.resource.name}`,
+        catchMessage: 'Error encountered while fetching async job result',
+        action
       })
     },
     handleSubmit (e) {
@@ -678,7 +684,7 @@ export default {
             console.log(error)
             this.$notification.error({
               message: 'Request Failed',
-              description: error.response.headers['x-description']
+              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
             })
           }).finally(f => {
             this.closeAction()

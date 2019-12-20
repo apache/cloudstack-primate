@@ -47,7 +47,7 @@ export default {
       }, {
         name: 'Egress Rules',
         component: () => import('@/views/network/EgressConfigure.vue'),
-        show: record => record.service && record.service.filter(x => x.name === 'Firewall')
+        show: record => record.service && record.service.filter(x => x.name === 'Firewall').length > 0
       }],
       actions: [
         {
