@@ -31,14 +31,14 @@
       <span v-else>
         {{ $t(item.meta.title) }}
       </span>
-      <span v-if="index === (breadList.length - 1)">
+      <span v-if="index === (breadList.length - 1)" style="margin-left: 5px">
         <a-tooltip placement="bottom">
           <template slot="title">
             {{ "Open Documentation" }}
           </template>
           <a
             v-if="item.meta.docHelp"
-            style="margin-left: 5px; margin-right: 10px"
+            style="margin-right: 10px"
             :href="docBase + '/' + $route.meta.docHelp"
             target="_blank">
             <a-icon type="question-circle-o"></a-icon>
@@ -76,6 +76,9 @@ export default {
       this.name = this.$route.name
       this.breadList = []
       this.$route.matched.forEach((item) => {
+        if (item && item.parent && item.parent.name !== 'index' && !item.path.endsWith(':id')) {
+          this.breadList.pop()
+        }
         this.breadList.push(item)
       })
     },

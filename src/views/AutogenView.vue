@@ -41,7 +41,8 @@
             <a-tooltip
               v-for="(action, actionIndex) in actions"
               :key="actionIndex"
-              placement="bottom">
+              arrowPointAtCenter
+              placement="bottomRight">
               <template slot="title">
                 {{ $t(action.label) }}
               </template>
@@ -701,7 +702,7 @@ export default {
                 break
               }
             }
-            if (this.currentAction.icon === 'delete') {
+            if (this.currentAction.icon === 'delete' && this.dataView) {
               this.$router.go(-1)
             } else {
               if (!hasJobId) {
