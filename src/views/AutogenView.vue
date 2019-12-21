@@ -19,21 +19,21 @@
   <div>
     <a-card class="breadcrumb-card">
       <a-row>
-        <a-col :span="14">
+        <a-col :span="14" style="padding-left: 6px">
           <breadcrumb>
-          <a-tooltip placement="bottom" slot="end">
-            <template slot="title">
-              {{ "Refresh" }}
-            </template>
-            <a-button
-              style="margin-top: 4px"
-              :loading="loading"
-              shape="round"
-              size="small"
-              icon="sync"
-              @click="fetchData()">
-            </a-button>
-          </a-tooltip>
+            <a-tooltip placement="bottom" slot="end">
+              <template slot="title">
+                {{ "Refresh" }}
+              </template>
+              <a-button
+                style="margin-top: 4px"
+                :loading="loading"
+                shape="round"
+                size="small"
+                icon="sync"
+                @click="fetchData()">
+              </a-button>
+            </a-tooltip>
           </breadcrumb>
         </a-col>
         <a-col :span="10">
