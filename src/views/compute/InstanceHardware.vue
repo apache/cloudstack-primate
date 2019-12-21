@@ -671,7 +671,7 @@ export default {
 }
 
 /deep/ .ant-list-item {
-  padding-top: 24px;
-  padding-bottom: 24px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 </style>

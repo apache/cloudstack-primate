@@ -430,6 +430,7 @@
               :value="annotation"
               placeholder="Add Note" />
             <a-button
+              style="margin-top: 10px"
               @click="saveNote"
               type="primary"
             >
@@ -644,7 +645,7 @@ export default {
 <style lang="less" scoped>
 
 /deep/ .ant-card-body {
-  padding: 60px;
+  padding: 36px;
 }
 
 .resource-details {
@@ -652,6 +653,7 @@ export default {
   margin-bottom: 24px;
   & > .avatar {
     margin: 0 auto;
+    padding-top: 20px;
     width: 104px;
     //height: 104px;
     margin-bottom: 20px;

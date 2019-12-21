@@ -20,7 +20,7 @@
     <a-col :md="24">
       <a-card class="breadcrumb-card">
         <a-col :md="24" style="display: flex">
-          <breadcrumb style="padding-top: 6px" />
+          <breadcrumb style="padding-top: 6px; padding-left: 8px" />
           <a-button
             style="margin-left: 12px; margin-top: 4px"
             :loading="loading"

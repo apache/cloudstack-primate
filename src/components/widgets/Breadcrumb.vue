@@ -31,18 +31,22 @@
       <span v-else>
         {{ $t(item.meta.title) }}
       </span>
-      <a-tooltip v-if="index === (breadList.length - 1)" placement="bottom">
-        <template slot="title">
-          {{ "Open Documentation" }}
-        </template>
-        <a
-          v-if="item.meta.docHelp"
-          style="margin-right: 5px"
-          :href="docBase + '/' + $route.meta.docHelp"
-          target="_blank">
-          <a-icon type="question-circle-o"></a-icon>
-        </a>
-      </a-tooltip>
+      <span v-if="index === (breadList.length - 1)">
+        <a-tooltip placement="bottom">
+          <template slot="title">
+            {{ "Open Documentation" }}
+          </template>
+          <a
+            v-if="item.meta.docHelp"
+            style="margin-left: 5px; margin-right: 10px"
+            :href="docBase + '/' + $route.meta.docHelp"
+            target="_blank">
+            <a-icon type="question-circle-o"></a-icon>
+          </a>
+        </a-tooltip>
+        <slot name="end">
+        </slot>
+      </span>
     </a-breadcrumb-item>
   </a-breadcrumb>
 </template>
@@ -90,7 +94,6 @@ export default {
 }
 
 .ant-breadcrumb .anticon {
-  margin-left: 8px;
   vertical-align: text-bottom;
 }
 </style>
