@@ -57,12 +57,6 @@ export default {
     loading: {
       type: Boolean,
       default: false
-    },
-    dataSource: {
-      type: Array,
-      default () {
-        return []
-      }
     }
   },
   beforeCreate () {
@@ -71,17 +65,34 @@ export default {
   data () {
     return {
       formLoading: false,
-      dataResource: []
+      dataResource: [],
+      dataSource: []
     }
+  },
+  created () {
+    this.dataSource = [
+      'network',
+      'volume',
+      'public_ip',
+      'template',
+      'user_vm',
+      'snapshot',
+      'vpc', 'cpu',
+      'memory',
+      'primary_storage',
+      'secondary_storage'
+    ]
   },
   mounted () {
     this.fetchData()
   },
   watch: {
-    resource (newItem, oldItem) {
-      if (!newItem || !newItem.id) {
+    resource (newData, oldData) {
+      if (!newData || !newData.id) {
         return
       }
+
+      this.resource = newData
       this.fetchData()
     }
   },

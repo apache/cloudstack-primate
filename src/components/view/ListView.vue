@@ -182,11 +182,6 @@ export default {
       editableValue: ''
     }
   },
-  watch: {
-    items (newData, oldData) {
-      this.handleShowBadge()
-    }
-  },
   computed: {
     hasSelected () {
       return this.selectedRowKeys.length > 0
@@ -232,54 +227,6 @@ export default {
     editValue (record) {
       this.editableValueKey = record.key
       this.editableValue = record.value
-    },
-    handleShowBadge () {
-      const dataBadge = {}
-      const arrAsync = []
-      const actions = this.$parent.actions
-      const actionBadge = actions.filter(action => action.showBadge === true)
-
-      if (actionBadge && actionBadge.length > 0) {
-        const dataLength = actionBadge.length
-
-        for (let i = 0; i < dataLength; i++) {
-          const action = actionBadge[i]
-
-          arrAsync.push(new Promise((resolve, reject) => {
-            api(action.api, action.param).then(json => {
-              let responseJsonName
-              const response = {}
-
-              response.api = action.api
-              response.count = 0
-
-              for (const key in json) {
-                if (key.includes('response')) {
-                  responseJsonName = key
-                  break
-                }
-              }
-
-              if (json[responseJsonName].count && json[responseJsonName].count > 0) {
-                response.count = json[responseJsonName].count
-              }
-
-              resolve(response)
-            }).catch(error => {
-              reject(error)
-            })
-          }))
-        }
-
-        Promise.all(arrAsync).then(response => {
-          for (let j = 0; j < response.length; j++) {
-            this.$set(dataBadge, response[j].api, {})
-            this.$set(dataBadge[response[j].api], 'badgeNum', response[j].count)
-          }
-        })
-
-        this.$parent.actionBadge = dataBadge
-      }
     }
   }
 }

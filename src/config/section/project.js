@@ -35,8 +35,6 @@ export default {
     },
     {
       name: 'resources',
-      permission: ['updateResourceLimit'],
-      args: ['network', 'volume', 'public_ip', 'template', 'user_vm', 'snapshot', 'vpc', 'cpu', 'memory', 'primary_storage', 'secondary_storage'],
       show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
       component: () => import('@/views/projects/ResourcesTab.vue')
     }

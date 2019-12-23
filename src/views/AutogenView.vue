@@ -38,40 +38,13 @@
         </a-col>
         <a-col :span="10">
           <span style="float: right">
-            <a-tooltip
-              v-for="(action, actionIndex) in actions"
-              :key="actionIndex"
-              arrowPointAtCenter
-              placement="bottomRight">
-              <template slot="title">
-                {{ $t(action.label) }}
-              </template>
-              <a-badge
-                class="button-action-badge"
-                :overflowCount="9"
-                :count="actionBadge[action.api] ? actionBadge[action.api].badgeNum : 0"
-                v-if="action.api in $store.getters.apis &&
-                  action.showBadge &&
-                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
-                  ('show' in action ? action.show(resource, $store.getters.userInfo) : true)">
-                <a-button
-                  :icon="action.icon"
-                  :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
-                  shape="circle"
-                  style="margin-right: 5px"
-                  @click="execAction(action)" />
-              </a-badge>
-              <a-button
-                v-if="action.api in $store.getters.apis &&
-                  !action.showBadge &&
-                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
-                  ('show' in action ? action.show(resource, $store.getters.userInfo) : true)"
-                :icon="action.icon"
-                :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
-                shape="circle"
-                style="margin-left: 5px"
-                @click="execAction(action)" />
-            </a-tooltip>
+            <action-button
+              :loading="loading"
+              :actions="actions"
+              :selectedRowKeys="selectedRowKeys"
+              :dataView="dataView"
+              :resource="resource"
+              @exec-action="execAction"/>
             <a-input-search
               style="width: 25vw; padding-left: 10px"
               placeholder="Search"
@@ -275,6 +248,7 @@ import Status from '@/components/widgets/Status'
 import ListView from '@/components/view/ListView'
 import ResourceView from '@/components/view/ResourceView'
 import TreeView from '@/components/view/TreeView'
+import ActionButton from '@/components/view/ActionButton'
 
 export default {
   name: 'Resource',
@@ -284,7 +258,8 @@ export default {
     ResourceView,
     ListView,
     TreeView,
-    Status
+    Status,
+    ActionButton
   },
   mixins: [mixinDevice],
   provide: function () {
@@ -313,9 +288,7 @@ export default {
       actions: [],
       treeData: [],
       treeSelected: {},
-      actionData: [],
-      actionBadge: [],
-      adminType: 'Admin'
+      actionData: []
     }
   },
   computed: {
@@ -784,14 +757,5 @@ export default {
 
 .ant-breadcrumb .anticon {
   margin-left: 8px;
-}
-
-.button-action-badge {
-  margin-right: 5px;
-}
-
-/deep/.button-action-badge .ant-badge-count {
-  right: 10px;
-  z-index: 8;
 }
 </style>

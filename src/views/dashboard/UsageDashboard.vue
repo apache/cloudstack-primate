@@ -31,7 +31,6 @@
               v-if="'show' in tab ? tab.show(project, $route, $store.getters.userInfo) : true">
               <component
                 :is="tab.component"
-                :dataSource="tab.args"
                 :resource="project"
                 :loading="loading"
                 :bordered="false"
