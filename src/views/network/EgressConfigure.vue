@@ -264,9 +264,12 @@ export default {
   .add-actions {
     display: flex;
     justify-content: flex-end;
-    margin-top: 20px;
     margin-right: -20px;
     margin-bottom: 20px;
+
+    @media (min-width: 760px) {
+      margin-top: 20px;
+    }
 
     button {
       margin-right: 20px;
@@ -277,10 +280,28 @@ export default {
   .form {
     display: flex;
     margin-right: -20px;
+    flex-direction: column;
+
+    @media (min-width: 760px) {
+      flex-direction: row;
+    }
 
     &__item {
+      display: flex;
+      flex-direction: column;
       flex: 1;
       padding-right: 20px;
+      margin-bottom: 20px;
+
+      @media (min-width: 760px) {
+        margin-bottom: 0;
+      }
+
+      input,
+      .ant-select {
+        margin-top: auto;
+      }
+
     }
 
     &__label {
