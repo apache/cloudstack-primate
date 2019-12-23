@@ -115,7 +115,11 @@ export default {
     this.fetchData()
   },
   watch: {
-    resource () {
+    resource (newItem, oldItem) {
+      if (!newItem || !newItem.id) {
+        return
+      }
+      this.resource = newItem
       this.fetchData()
     }
   },

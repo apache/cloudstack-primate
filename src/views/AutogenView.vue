@@ -159,7 +159,7 @@
                   </a-select-option>
                 </a-select>
               </span>
-              <span v-else-if="field.type==='uuid' || field.name==='account' || field.name==='keypair'">
+              <span v-else-if="field.type==='uuid' || (field.name==='account' && !['addAccountToProject'].includes(currentAction.api)) || field.name==='keypair'">
                 <a-select
                   :loading="field.loading"
                   v-decorator="[field.name, {
