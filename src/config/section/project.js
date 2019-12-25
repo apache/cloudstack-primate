@@ -31,12 +31,12 @@ export default {
     {
       name: 'accounts',
       show: (record, route, user) => { return record.account === user.account || ['Admin', 'DomainAdmin'].includes(user.roletype) },
-      component: () => import('@/views/projects/AccountsTab.vue')
+      component: () => import('@/views/project/AccountsTab.vue')
     },
     {
       name: 'resources',
       show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
-      component: () => import('@/views/projects/ResourcesTab.vue')
+      component: () => import('@/views/project/ResourcesTab.vue')
     }
   ],
   actions: [
@@ -53,7 +53,7 @@ export default {
       label: 'label.enter.token',
       listView: true,
       popup: true,
-      component: () => import('@/views/projects/InvitationTokenTemplate.vue')
+      component: () => import('@/views/project/InvitationTokenTemplate.vue')
     },
     {
       api: 'listProjectInvitations',
@@ -66,7 +66,7 @@ export default {
       param: {
         state: 'Pending'
       },
-      component: () => import('@/views/projects/InvitationsTemplate.vue')
+      component: () => import('@/views/project/InvitationsTemplate.vue')
     },
     {
       api: 'updateProject',

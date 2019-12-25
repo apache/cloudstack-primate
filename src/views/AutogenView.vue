@@ -28,9 +28,10 @@
               <a-button
                 style="margin-top: 4px"
                 :loading="loading"
-                shape="round"
+                shape="circle"
                 size="small"
-                icon="sync"
+                type="dashed"
+                icon="reload"
                 @click="fetchData()">
               </a-button>
             </a-tooltip>
@@ -39,6 +40,7 @@
         <a-col :span="10">
           <span style="float: right">
             <action-button
+              style="margin-bottom: 5px"
               :loading="loading"
               :actions="actions"
               :selectedRowKeys="selectedRowKeys"
@@ -46,7 +48,7 @@
               :resource="resource"
               @exec-action="execAction"/>
             <a-input-search
-              style="width: 25vw; padding-left: 10px"
+              style="width: 25vw; margin-left: 10px"
               placeholder="Search"
               v-model="searchQuery"
               v-if="!dataView && !treeView"
@@ -134,11 +136,16 @@
               </span>
               <span v-else-if="field.type==='uuid' || (field.name==='account' && !['addAccountToProject'].includes(currentAction.api)) || field.name==='keypair'">
                 <a-select
-                  :loading="field.loading"
+                  showSearch
+                  optionFilterProp="children"
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: 'Please select option' }]
                   }]"
+                  :loading="field.loading"
                   :placeholder="field.description"
+                  :filterOption="(input, option) => {
+                    return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }"
                 >
                   <a-select-option v-for="(opt, optIndex) in field.opts" :key="optIndex">
                     {{ opt.name || opt.description }}
@@ -360,10 +367,6 @@ export default {
 
         if (this.$route.meta.actions) {
           this.actions = this.$route.meta.actions
-        }
-
-        if (this.$route.meta.filters) {
-          this.filters = this.$route.meta.filters
         }
       }
 
@@ -627,7 +630,11 @@ export default {
                 } else if (param.type === 'list') {
                   params[key] = input.map(e => { return param.opts[e].id }).reduce((str, name) => { return str + ',' + name })
                 } else if (param.name === 'account' || param.name === 'keypair') {
-                  params[key] = param.opts[input].name
+                  if (['addAccountToProject'].includes(this.currentAction.api)) {
+                    params[key] = input
+                  } else {
+                    params[key] = param.opts[input].name
+                  }
                 } else {
                   params[key] = input
                 }

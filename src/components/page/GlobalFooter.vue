@@ -24,11 +24,6 @@
         <a-icon type="github"/>
         Report Bug
       </a>
-      <a-divider type="vertical" />
-      <a :href="'http://docs.cloudstack.apache.org/en/' + $store.getters.features.cloudstackversion">
-        <a-icon type="question-circle"/>
-        Official Documentation
-      </a>
     </div>
   </div>
 </template>

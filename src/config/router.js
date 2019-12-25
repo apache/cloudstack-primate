@@ -179,12 +179,12 @@ export const asyncRouterMap = [
             {
               name: 'accounts',
               show: (record, route, user) => { return record.account === user.account || ['Admin', 'DomainAdmin'].includes(user.roletype) },
-              component: () => import('@/views/projects/AccountsTab')
+              component: () => import('@/views/project/AccountsTab')
             },
             {
               name: 'resources',
               show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
-              component: () => import('@/views/projects/ResourcesTab.vue')
+              component: () => import('@/views/project/ResourcesTab.vue')
             }
           ]
         },

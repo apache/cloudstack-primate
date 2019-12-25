@@ -90,7 +90,6 @@ const user = {
 
     GetInfo ({ commit }) {
       return new Promise((resolve, reject) => {
-        // Discover allowed APIs
         api('listApis').then(response => {
           const apis = {}
           const apiList = response.listapisresponse.api
@@ -108,7 +107,6 @@ const user = {
           reject(error)
         })
 
-        // Find user info
         api('listUsers').then(response => {
           const result = response.listusersresponse.user[0]
           commit('SET_INFO', result)
@@ -122,7 +120,6 @@ const user = {
           reject(error)
         })
 
-        // Find capabilities
         api('listCapabilities').then(response => {
           const result = response.listcapabilitiesresponse.capability
           commit('SET_FEATURES', result)

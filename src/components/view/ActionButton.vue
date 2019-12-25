@@ -96,7 +96,10 @@ export default {
     }
   },
   watch: {
-    resource () {
+    resource (newItem, oldItem) {
+      if (!newItem || !newItem.id) {
+        return
+      }
       this.handleShowBadge()
     }
   },
