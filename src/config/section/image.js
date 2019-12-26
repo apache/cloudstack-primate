@@ -128,7 +128,11 @@ export default {
           icon: 'plus',
           label: 'Register ISO',
           listView: true,
-          args: ['url', 'name', 'displaytext', 'directdownload', 'zoneid', 'bootable', 'ostypeid', 'isextractable', 'ispublic', 'isfeatured']
+          popup: true,
+          show: (record, user, apis) => {
+            return Object.prototype.hasOwnProperty.call(apis, 'registerIso')
+          },
+          component: () => import('@/views/image/RegisterIso.vue')
         },
         {
           api: 'getUploadParamsForIso',
