@@ -74,7 +74,6 @@
 
 <script>
 import { api } from '@/api'
-import { pollActionCompletion } from '@/utils/methods'
 
 export default {
   name: 'VMMigrateWizard',
@@ -123,7 +122,7 @@ export default {
           description: this.resource.name,
           status: 'progress'
         })
-        pollActionCompletion({
+        this.$pollJob({
           jobId: response.migratevirtualmachineresponse.jobid,
           successMessage: `Migration completed successfully for ${this.resource.name}`,
           successMethod: () => {
@@ -179,7 +178,6 @@ export default {
       display: flex;
       justify-content: flex-end;
     }
-
   }
 
   .host-item {
@@ -199,7 +197,6 @@ export default {
       @media (min-width: 760px) {
         flex-direction: row;
       }
-
     }
 
     &__value {
@@ -216,9 +213,7 @@ export default {
           margin-right: 40px;
           margin-left: 40px;
         }
-
       }
-
     }
 
     &__title {
