@@ -106,7 +106,7 @@
       </a-col>
       <a-col :md="24" :lg="7" v-if="!isMobile()">
         <a-affix :offsetTop="75">
-          <info-card :resource="vm" :title="this.$t('yourInstance')" >
+          <info-card :resource="vm" :title="this.$t('yourInstance')">
             <div slot="details" v-if="diskSize">
               <a-icon type="hdd"></a-icon>
               <span style="margin-left: 10px">{{ diskSize }}</span>
@@ -251,6 +251,10 @@ export default {
         this.vm.diskofferingid = this.diskOffering.id
         this.vm.diskofferingname = this.diskOffering.displaytext
         this.vm.diskofferingsize = this.diskOffering.disksize
+      }
+
+      if (this.affinityGroups) {
+        this.vm.affinitygroup = this.affinityGroups
       }
     }
   },
