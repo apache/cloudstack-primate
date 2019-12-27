@@ -35,13 +35,15 @@
         :dataSource="detailOptions[newKey]"
         placeholder="Value"
         @change="e => onAddInputChange(e, 'newValue')" />
-      <a-button type="dashed" style="width: 50%" icon="close" @click="showAddDetail = false">Cancel</a-button>
-      <a-button type="primary" style="width: 50%" icon="plus" @click="addDetail">Add Setting</a-button>
+      <a-button type="primary" style="width: 25%" icon="plus" @click="addDetail">Add Setting</a-button>
+      <a-button type="dashed" style="width: 25%" icon="close" @click="showAddDetail = false">Cancel</a-button>
     </div>
     <a-list size="large">
       <a-list-item :key="index" v-for="(item, index) in details">
         <a-list-item-meta>
-          <span slot="title"><strong>{{ item.name }}</strong></span>
+          <span slot="title">
+            {{ item.name }}
+          </span>
           <span slot="description" style="word-break: break-all">
             <span v-if="item.edit" style="display: flex">
               <a-auto-complete

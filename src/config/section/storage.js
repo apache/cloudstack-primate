@@ -116,7 +116,9 @@ export default {
           label: 'Migrate Volume',
           args: ['volumeid', 'storageid', 'livemigrate'],
           dataView: true,
-          show: (record) => { return 'virtualmachineid' in record && record.virtualmachineid },
+          show: (record) => { return record && record.state === 'Ready' },
+          popup: true,
+          component: () => import('@/views/storage/MigrateVolume.vue'),
           mapping: {
             volumeid: {
               value: (record) => { return record.id }
@@ -131,6 +133,7 @@ export default {
           icon: 'cloud-download',
           label: 'Download Volume',
           dataView: true,
+          show: (record) => { return record && record.state === 'Ready' },
           args: ['zoneid', 'mode'],
           mapping: {
             zoneid: {
@@ -139,7 +142,8 @@ export default {
             mode: {
               value: (record) => { return 'HTTP_DOWNLOAD' }
             }
-          }
+          },
+          response: (result) => { return `Please click <a href="${result.volume.url}" target="_blank">${result.volume.url}</a> to download.` }
         },
         {
           api: 'createTemplate',

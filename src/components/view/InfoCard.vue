@@ -51,6 +51,8 @@
                 {{ $t('isdynamicallyscalable') }}
               </a-tag>
             </slot>
+            <slot name="actions">
+            </slot>
           </div>
         </div>
         <div class="resource-detail-item" style="margin-bottom: 4px" v-if="resource.state || resource.status">
@@ -428,6 +430,7 @@
               :value="annotation"
               placeholder="Add Note" />
             <a-button
+              style="margin-top: 10px"
               @click="saveNote"
               type="primary"
             >
@@ -641,14 +644,18 @@ export default {
 
 <style lang="less" scoped>
 
+/deep/ .ant-card-body {
+  padding: 48px;
+}
+
 .resource-details {
   text-align: center;
   margin-bottom: 24px;
   & > .avatar {
     margin: 0 auto;
-    padding-top: 20px;
     width: 104px;
     //height: 104px;
+    margin-top: 20px;
     margin-bottom: 20px;
     border-radius: 50%;
     overflow: hidden;
