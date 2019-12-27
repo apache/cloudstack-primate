@@ -90,6 +90,12 @@
               input-decorator="size"
             ></disk-size-selection>
 
+            <affinity-group-selection
+              :items="options.affinityGroups"
+              :value="affinityGroupIds"
+              @select-affinity-group-item="($event) => updateAffinityGroups($event)"
+            ></affinity-group-selection>
+
             <div class="card-footer">
               <!-- ToDo extract as component -->
               <a-button @click="() => this.$router.back()">{{ this.$t('cancel') }}</a-button>
@@ -123,10 +129,12 @@ import ComputeSelection from './wizard/ComputeSelection'
 import DiskOfferingSelection from '@views/compute/wizard/DiskOfferingSelection'
 import DiskSizeSelection from '@views/compute/wizard/DiskSizeSelection'
 import TemplateIsoSelection from '@views/compute/wizard/TemplateIsoSelection'
+import AffinityGroupSelection from '@views/compute/wizard/AffinityGroupSelection'
 
 export default {
   name: 'Wizard',
   components: {
+    AffinityGroupSelection,
     TemplateIsoSelection,
     DiskSizeSelection,
     DiskOfferingSelection,
@@ -175,6 +183,7 @@ export default {
       iso: {},
       serviceOffering: {},
       diskOffering: {},
+      affinityGroups: [],
       zone: {},
       isoFilter: [
         'executable',
@@ -197,6 +206,9 @@ export default {
         size.push(`${dataDiskSize} GB (Data)`)
       }
       return size.join(' | ')
+    },
+    affinityGroupIds () {
+      return _.map(this.affinityGroups, 'id')
     }
   },
   watch: {
@@ -206,6 +218,7 @@ export default {
       this.serviceOffering = _.find(this.options.serviceOfferings, (option) => option.id === instanceConfig.computeofferingid)
       this.diskOffering = _.find(this.options.diskOfferings, (option) => option.id === instanceConfig.diskofferingid)
       this.zone = _.find(this.options.zones, (option) => option.id === instanceConfig.zoneid)
+      this.affinityGroups = _.filter(this.options.affinityGroups, (option) => _.includes(instanceConfig.affinitygroupids, option.id))
 
       if (this.zone) {
         this.vm.zoneid = this.zone.id
@@ -258,6 +271,7 @@ export default {
     })
     this.form.getFieldDecorator('computeofferingid', { initialValue: [], preserve: true })
     this.form.getFieldDecorator('diskofferingid', { initialValue: [], preserve: true })
+    this.form.getFieldDecorator('affinitygroupids', { initialValue: [], preserve: true })
     this.form.getFieldDecorator('isoid', { initialValue: [], preserve: true })
   },
   created () {
@@ -275,6 +289,11 @@ export default {
     updateDiskOffering (id) {
       this.form.setFieldsValue({
         diskofferingid: id
+      })
+    },
+    updateAffinityGroups (ids) {
+      this.form.setFieldsValue({
+        affinitygroupids: ids
       })
     },
     getText (option) {
