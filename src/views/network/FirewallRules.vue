@@ -33,16 +33,11 @@
           <a-input v-model="newRule.cidrlist"></a-input>
         </div>
         <div class="form__item">
-          <div class="form__label">Destination CIDR</div>
-          <a-input v-model="newRule.destcidrlist"></a-input>
-        </div>
-        <div class="form__item">
           <div class="form__label">Protocol</div>
           <a-select v-model="newRule.protocol" style="width: 100%;" @change="resetRulePorts">
             <a-select-option value="tcp">TCP</a-select-option>
             <a-select-option value="udp">UDP</a-select-option>
             <a-select-option value="icmp">ICMP</a-select-option>
-            <a-select-option value="all">All</a-select-option>
           </a-select>
         </div>
         <div v-show="newRule.protocol === 'tcp' || newRule.protocol === 'udp'" class="form__item">
@@ -70,15 +65,11 @@
     </div>
 
     <a-list :loading="loading">
-      <a-list-item v-for="rule in egressRules" :key="rule.id" class="rule">
+      <a-list-item v-for="rule in firewallRules" :key="rule.id" class="rule">
         <div class="rule-container">
           <div class="rule__item">
             <div class="rule__title">Source CIDR</div>
             <div>{{ rule.cidrlist }}</div>
-          </div>
-          <div class="rule__item">
-            <div class="rule__title">Destination CIDR</div>
-            <div>{{ rule.destcidrlist }}</div>
           </div>
           <div class="rule__item">
             <div class="rule__title">Protocol</div>
@@ -92,19 +83,51 @@
             <div class="rule__title">{{ rule.protocol === 'icmp' ? 'ICMP Code' : 'End Port' }}</div>
             <div>{{ rule.icmpcode || rule.endport >= 0 ? rule.icmpcode || rule.endport : 'All' }}</div>
           </div>
+          <div class="rule__item">
+            <div class="rule__title">State</div>
+            <div>{{ rule.state }}</div>
+          </div>
           <div slot="actions">
+            <a-button shape="round" icon="tag" class="rule-action" @click="() => openTagsModal(rule.id)" />
             <a-popconfirm
               :title="$t('label.delete') + '?'"
               @confirm="deleteRule(rule)"
               okText="Yes"
               cancelText="No"
             >
-              <a-button shape="round" type="danger" icon="close-circle"></a-button>
+              <a-button shape="round" type="danger" icon="close-circle" class="rule-action" />
             </a-popconfirm>
           </div>
         </div>
       </a-list-item>
     </a-list>
+
+    <a-modal title="Edit Tags" v-model="tagsModalVisible" :footer="null" :afterClose="closeModal">
+      <div class="add-tags">
+        <div class="add-tags__input">
+          <p class="add-tags__label">Key</p>
+          <a-input v-model="newTag.key"></a-input>
+        </div>
+        <div class="add-tags__input">
+          <p class="add-tags__label">Value</p>
+          <a-input v-model="newTag.value"></a-input>
+        </div>
+        <a-button type="primary" @click="() => handleAddTag()">Add</a-button>
+      </div>
+
+      <a-divider></a-divider>
+
+      <div class="tags-container">
+        <div class="tags" v-for="(tag, index) in tags" :key="index">
+          <a-tag :key="index" :closable="true" :afterClose="() => handleDeleteTag(tag)">
+            {{ tag.key }} = {{ tag.value }}
+          </a-tag>
+        </div>
+      </div>
+
+      <a-button class="add-tags-done" @click="tagsModalVisible = false" type="primary">Done</a-button>
+    </a-modal>
+
   </div>
 </template>
 
@@ -118,20 +141,27 @@ export default {
       required: true
     }
   },
+  inject: ['parentFetchData', 'parentToggleLoading'],
   data () {
     return {
       loading: true,
-      egressRules: [],
+      firewallRules: [],
       showAddDetail: false,
       newRule: {
         protocol: 'tcp',
         cidrlist: null,
-        destcidrlist: null,
-        networkid: this.resource.id,
+        ipaddressid: this.resource.id,
         icmptype: null,
         icmpcode: null,
         startport: null,
         endport: null
+      },
+      tagsModalVisible: false,
+      selectedRule: null,
+      tags: [],
+      newTag: {
+        key: null,
+        value: null
       }
     }
   },
@@ -147,24 +177,25 @@ export default {
   methods: {
     fetchData () {
       this.loading = true
-      api('listEgressFirewallRules', {
+      this.showAddDetail = false
+      api('listFirewallRules', {
         listAll: true,
-        networkid: this.resource.id
+        ipaddressid: this.resource.id
       }).then(response => {
-        this.egressRules = response.listegressfirewallrulesresponse.firewallrule
+        this.firewallRules = response.listfirewallrulesresponse.firewallrule
         this.loading = false
       })
     },
     deleteRule (rule) {
       this.loading = true
-      api('deleteEgressFirewallRule', { id: rule.id }).then(response => {
+      api('deleteFirewallRule', { id: rule.id }).then(response => {
         this.$pollJob({
-          jobId: response.deleteegressfirewallruleresponse.jobid,
-          successMessage: `Successfully removed Egress rule`,
+          jobId: response.deletefirewallruleresponse.jobid,
+          successMessage: `Successfully removed Firewall rule`,
           successMethod: () => this.fetchData(),
-          errorMessage: 'Removing Egress rule failed',
+          errorMessage: 'Removing Firewall rule failed',
           errorMethod: () => this.fetchData(),
-          loadingMessage: `Deleting Egress rule...`,
+          loadingMessage: `Deleting Firewall rule...`,
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => this.fetchData()
         })
@@ -178,20 +209,20 @@ export default {
     },
     addRule () {
       this.loading = true
-      api('createEgressFirewallRule', { ...this.newRule }).then(response => {
+      api('createFirewallRule', { ...this.newRule }).then(response => {
         this.$pollJob({
-          jobId: response.createegressfirewallruleresponse.jobid,
-          successMessage: `Successfully added new Egress rule`,
+          jobId: response.createfirewallruleresponse.jobid,
+          successMessage: `Successfully added new Firewall rule`,
           successMethod: () => {
             this.resetAllRules()
             this.fetchData()
           },
-          errorMessage: 'Adding new Egress rule failed',
+          errorMessage: 'Adding new Firewall rule failed',
           errorMethod: () => {
             this.resetAllRules()
             this.fetchData()
           },
-          loadingMessage: `Adding new Egress rule...`,
+          loadingMessage: `Adding new Firewall rule...`,
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
             this.resetAllRules()
@@ -201,7 +232,7 @@ export default {
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
-          description: error.response.data.createegressfirewallruleresponse.errortext
+          description: error.response.data.createfirewallruleresponse.errortext
         })
         this.resetAllRules()
         this.fetchData()
@@ -210,7 +241,6 @@ export default {
     resetAllRules () {
       this.newRule.protocol = 'tcp'
       this.newRule.cidrlist = null
-      this.newRule.destcidrlist = null
       this.newRule.networkid = this.resource.id
       this.resetRulePorts()
     },
@@ -219,6 +249,103 @@ export default {
       this.newRule.icmpcode = null
       this.newRule.startport = null
       this.newRule.endport = null
+    },
+    closeModal () {
+      this.selectedRule = null
+      this.tagsModalVisible = false
+      this.newTag.key = null
+      this.newTag.value = null
+    },
+    openTagsModal (id) {
+      this.selectedRule = id
+      this.tagsModalVisible = true
+      api('listTags', {
+        resourceId: id,
+        resourceType: 'FirewallRule',
+        listAll: true
+      }).then(response => {
+        this.tags = response.listtagsresponse.tag
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.errorresponse.errortext
+        })
+        this.closeModal()
+      })
+    },
+    handleAddTag () {
+      api('createTags', {
+        'tags[0].key': this.newTag.key,
+        'tags[0].value': this.newTag.value,
+        resourceIds: this.selectedRule,
+        resourceType: 'FirewallRule'
+      }).then(response => {
+        this.$pollJob({
+          jobId: response.createtagsresponse.jobid,
+          successMessage: `Successfully added tag`,
+          successMethod: () => {
+            this.parentFetchData()
+            this.parentToggleLoading()
+            this.openTagsModal(this.selectedRule)
+          },
+          errorMessage: 'Failed to add new tag',
+          errorMethod: () => {
+            this.parentFetchData()
+            this.parentToggleLoading()
+            this.closeModal()
+          },
+          loadingMessage: `Adding tag...`,
+          catchMessage: 'Error encountered while fetching async job result',
+          catchMethod: () => {
+            this.parentFetchData()
+            this.parentToggleLoading()
+            this.closeModal()
+          }
+        })
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.errorresponse.errortext
+        })
+        this.closeModal()
+      })
+    },
+    handleDeleteTag (tag) {
+      api('deleteTags', {
+        'tags[0].key': tag.key,
+        'tags[0].value': tag.value,
+        resourceIds: this.selectedRule,
+        resourceType: 'FirewallRule'
+      }).then(response => {
+        this.$pollJob({
+          jobId: response.deletetagsresponse.jobid,
+          successMessage: `Successfully removed tag`,
+          successMethod: () => {
+            this.parentFetchData()
+            this.parentToggleLoading()
+            this.openTagsModal(this.selectedRule)
+          },
+          errorMessage: 'Failed to remove tag',
+          errorMethod: () => {
+            this.parentFetchData()
+            this.parentToggleLoading()
+            this.closeModal()
+          },
+          loadingMessage: `Removing tag...`,
+          catchMessage: 'Error encountered while fetching async job result',
+          catchMethod: () => {
+            this.parentFetchData()
+            this.parentToggleLoading()
+            this.closeModal()
+          }
+        })
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.errorresponse.errortext
+        })
+        this.closeModal()
+      })
     }
   }
 }
@@ -306,4 +433,45 @@ export default {
     }
 
   }
+
+  .rule-action {
+    margin-bottom: 20px;
+
+    &:not(:last-of-type) {
+      margin-right: 10px;
+    }
+
+  }
+
+  .tags {
+    margin-bottom: 10px;
+  }
+
+  .add-tags {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    &__input {
+      margin-right: 10px;
+    }
+
+    &__label {
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+  }
+
+  .tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+
+  .add-tags-done {
+    display: block;
+    margin-left: auto;
+  }
+
 </style>

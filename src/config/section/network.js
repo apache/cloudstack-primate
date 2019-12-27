@@ -187,14 +187,17 @@ export default {
       columns: ['ipaddress', 'state', 'associatednetworkname', 'virtualmachinename', 'allocated', 'account', 'zonename'],
       details: ['ipaddress', 'id', 'associatednetworkname', 'virtualmachinename', 'networkid', 'issourcenat', 'isstaticnat', 'virtualmachinename', 'vmipaddress', 'vlan', 'allocated', 'account', 'zonename'],
       tabs: [{
+        name: 'details',
+        component: () => import('@/components/view/DetailsTab.vue')
+      }, {
         name: 'configure',
         component: () => import('@/views/network/IpConfigure.vue')
       }, {
+        name: 'Firewall',
+        component: () => import('@/views/network/FirewallRules.vue')
+      }, {
         name: 'vpn',
         component: () => import('@/views/network/VpnDetails.vue')
-      }, {
-        name: 'details',
-        component: () => import('@/components/view/DetailsTab.vue')
       }],
       actions: [
         {
