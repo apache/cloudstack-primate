@@ -51,6 +51,7 @@ export default {
       columns: [
         {
           dataIndex: 'name',
+          title: this.$t('diskOffering'),
           width: '40%'
         },
         {

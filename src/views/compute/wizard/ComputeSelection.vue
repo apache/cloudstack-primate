@@ -47,6 +47,7 @@ export default {
       columns: [
         {
           dataIndex: 'name',
+          title: this.$t('serviceOfferingId'),
           width: '40%'
         },
         {
