@@ -190,11 +190,11 @@ export default {
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
-        name: 'configure',
-        component: () => import('@/views/network/IpConfigure.vue')
-      }, {
         name: 'Firewall',
         component: () => import('@/views/network/FirewallRules.vue')
+      }, {
+        name: 'Port Forwarding',
+        component: () => import('@/views/network/PortForwarding.vue')
       }, {
         name: 'vpn',
         component: () => import('@/views/network/VpnDetails.vue')

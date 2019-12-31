@@ -29,63 +29,61 @@
     <div v-show="showAddDetail">
       <div class="form">
         <div class="form__item">
-          <div class="form__label">{{ $t('sourcecidr') }}</div>
-          <a-input v-model="newRule.cidrlist"></a-input>
+          <div class="form__label">{{ $t('privateport') }}</div>
+          <div class="form__item__input-container">
+            <a-input v-model="newRule.privateport"></a-input>
+            <a-input v-model="newRule.privateendport"></a-input>
+          </div>
+        </div>
+        <div class="form__item">
+          <div class="form__label">{{ $t('publicport') }}</div>
+          <div class="form__item__input-container">
+            <a-input v-model="newRule.publicport"></a-input>
+            <a-input v-model="newRule.publicendport"></a-input>
+          </div>
         </div>
         <div class="form__item">
           <div class="form__label">{{ $t('protocol') }}</div>
-          <a-select v-model="newRule.protocol" style="width: 100%;" @change="resetRulePorts">
+          <a-select v-model="newRule.protocol" style="width: 100%;">
             <a-select-option value="tcp">{{ $t('tcp') }}</a-select-option>
             <a-select-option value="udp">{{ $t('udp') }}</a-select-option>
-            <a-select-option value="icmp">{{ $t('icmp') }}</a-select-option>
           </a-select>
         </div>
-        <div v-show="newRule.protocol === 'tcp' || newRule.protocol === 'udp'" class="form__item">
-          <div class="form__label">{{ $t('startport') }}</div>
-          <a-input v-model="newRule.startport"></a-input>
+        <div class="form__item">
+          <div class="form__label">{{ $t('label.add.VM') }}</div>
+          <a-button type="primary" @click="openAddVMModal">{{ $t('label.add') }}</a-button>
         </div>
-        <div v-show="newRule.protocol === 'tcp' || newRule.protocol === 'udp'" class="form__item">
-          <div class="form__label">{{ $t('endport') }}</div>
-          <a-input v-model="newRule.endport"></a-input>
-        </div>
-        <div v-show="newRule.protocol === 'icmp'" class="form__item">
-          <div class="form__label">{{ $t('icmptype') }}</div>
-          <a-input v-model="newRule.icmptype"></a-input>
-        </div>
-        <div v-show="newRule.protocol === 'icmp'" class="form__item">
-          <div class="form__label">{{ $t('icmpcode') }}</div>
-          <a-input v-model="newRule.icmpcode"></a-input>
-        </div>
+
       </div>
 
       <div class="add-actions">
         <a-button type="dashed" icon="close" @click="showAddDetail = false">{{ $t('cancel') }}</a-button>
-        <a-button type="primary" icon="plus" @click="addRule">{{ $t('label.add.setting') }}</a-button>
       </div>
     </div>
 
     <a-list :loading="loading">
-      <a-list-item v-for="rule in firewallRules" :key="rule.id" class="rule">
+      <a-list-item v-for="rule in portForwardRules" :key="rule.id" class="rule">
         <div class="rule-container">
           <div class="rule__item">
-            <div class="rule__title">{{ $t('sourcecidr') }}</div>
-            <div>{{ rule.cidrlist }}</div>
+            <div class="rule__title">{{ $t('privateport') }}</div>
+            <div>{{ rule.privateport }} - {{ rule.privateendport }}</div>
+          </div>
+          <div class="rule__item">
+            <div class="rule__title">{{ $t('publicport') }}</div>
+            <div>{{ rule.publicport }} - {{ rule.publicendport }}</div>
           </div>
           <div class="rule__item">
             <div class="rule__title">{{ $t('protocol') }}</div>
             <div>{{ rule.protocol | capitalise }}</div>
           </div>
           <div class="rule__item">
-            <div class="rule__title">{{ rule.protocol === 'icmp' ? $t('icmptype') : $t('startport') }}</div>
-            <div>{{ rule.icmptype || rule.startport >= 0 ? rule.icmptype || rule.startport : $t('all') }}</div>
-          </div>
-          <div class="rule__item">
-            <div class="rule__title">{{ rule.protocol === 'icmp' ? 'ICMP Code' : 'End Port' }}</div>
-            <div>{{ rule.icmpcode || rule.endport >= 0 ? rule.icmpcode || rule.endport : $t('all') }}</div>
-          </div>
-          <div class="rule__item">
             <div class="rule__title">{{ $t('state') }}</div>
             <div>{{ rule.state }}</div>
+          </div>
+          <div class="rule__item">
+            <div class="rule__title">{{ $t('vm') }} / {{ $t('IP') }}</div>
+            <div class="rule__title"></div>
+            <div>{{ rule.virtualmachinename }} / {{ rule.vmguestip }}</div>
           </div>
           <div slot="actions">
             <a-button shape="round" icon="tag" class="rule-action" @click="() => openTagsModal(rule.id)" />
@@ -103,6 +101,10 @@
     </a-list>
 
     <a-modal title="Edit Tags" v-model="tagsModalVisible" :footer="null" :afterClose="closeModal">
+      <span v-show="tagsModalLoading" class="tags-modal-loading">
+        <a-icon type="loading"></a-icon>
+      </span>
+
       <div class="add-tags">
         <div class="add-tags__input">
           <p class="add-tags__label">{{ $t('key') }}</p>
@@ -117,7 +119,7 @@
 
       <a-divider></a-divider>
 
-      <div class="tags-container">
+      <div v-show="!tagsModalLoading" class="tags-container">
         <div class="tags" v-for="(tag, index) in tags" :key="index">
           <a-tag :key="index" :closable="true" :afterClose="() => handleDeleteTag(tag)">
             {{ tag.key }} = {{ tag.value }}
@@ -126,6 +128,60 @@
       </div>
 
       <a-button class="add-tags-done" @click="tagsModalVisible = false" type="primary">{{ $t('done') }}</a-button>
+    </a-modal>
+
+    <a-modal
+      title="Add VMs"
+      v-model="addVmModalVisible"
+      class="vm-modal"
+      width="80vw"
+      @ok="addRule"
+      :okButtonProps="{ props:
+        {disabled: newRule.virtualmachineid === null } }"
+      @cancel="closeModal"
+    >
+
+      <a-icon v-if="addVmModalLoading" type="loading"></a-icon>
+
+      <div v-else>
+        <div class="vm-modal__header">
+          <span style="min-width: 200px;">{{ $t('name') }}</span>
+          <span>{{ $t('instancename') }}</span>
+          <span>{{ $t('displayname') }}</span>
+          <span>{{ $t('ip') }}</span>
+          <span>{{ $t('account') }}</span>
+          <span>{{ $t('zonenamelabel') }}</span>
+          <span>{{ $t('state') }}</span>
+          <span>{{ $t('select') }}</span>
+        </div>
+
+        <a-radio-group v-model="newRule.virtualmachineid" style="width: 100%;" @change="fetchNics">
+          <div v-for="(vm, index) in vms" :key="index" class="vm-modal__item">
+
+            <span style="min-width: 200px;">
+              <span>
+                {{ vm.name }}
+              </span>
+              <a-icon v-if="addVmModalNicLoading" type="loading"></a-icon>
+              <a-select
+                v-else-if="!addVmModalNicLoading && newRule.virtualmachineid === vm.id"
+                v-model="newRule.vmguestip">
+                <a-select-option v-for="(nic, index) in nics" :key="nic" :value="nic">
+                  {{ nic }}{{ index === 0 ? ' (Primary)' : null }}
+                </a-select-option>
+              </a-select>
+            </span>
+            <span>{{ vm.instancename }}</span>
+            <span>{{ vm.displayname }}</span>
+            <span></span>
+            <span>{{ vm.account }}</span>
+            <span>{{ vm.zonename }}</span>
+            <span>{{ vm.state }}</span>
+            <a-radio :value="vm.id" />
+          </div>
+        </a-radio-group>
+      </div>
+
     </a-modal>
 
   </div>
@@ -145,16 +201,17 @@ export default {
   data () {
     return {
       loading: true,
-      firewallRules: [],
+      portForwardRules: [],
       showAddDetail: false,
       newRule: {
         protocol: 'tcp',
-        cidrlist: null,
-        ipaddressid: this.resource.id,
-        icmptype: null,
-        icmpcode: null,
-        startport: null,
-        endport: null
+        privateport: null,
+        privateendport: null,
+        publicport: null,
+        publicendport: null,
+        openfirewall: false,
+        vmguestip: null,
+        virtualmachineid: null
       },
       tagsModalVisible: false,
       selectedRule: null,
@@ -162,7 +219,13 @@ export default {
       newTag: {
         key: null,
         value: null
-      }
+      },
+      tagsModalLoading: false,
+      addVmModalVisible: false,
+      addVmModalLoading: false,
+      addVmModalNicLoading: false,
+      vms: [],
+      nics: []
     }
   },
   mounted () {
@@ -178,24 +241,24 @@ export default {
     fetchData () {
       this.loading = true
       this.showAddDetail = false
-      api('listFirewallRules', {
+      api('listPortForwardingRules', {
         listAll: true,
         ipaddressid: this.resource.id
       }).then(response => {
-        this.firewallRules = response.listfirewallrulesresponse.firewallrule
+        this.portForwardRules = response.listportforwardingrulesresponse.portforwardingrule
         this.loading = false
       })
     },
     deleteRule (rule) {
       this.loading = true
-      api('deleteFirewallRule', { id: rule.id }).then(response => {
+      api('deletePortForwardingRule', { id: rule.id }).then(response => {
         this.$pollJob({
-          jobId: response.deletefirewallruleresponse.jobid,
-          successMessage: `Successfully removed Firewall rule`,
+          jobId: response.deleteportforwardingruleresponse.jobid,
+          successMessage: `Successfully removed Port Forwarding rule`,
           successMethod: () => this.fetchData(),
-          errorMessage: 'Removing Firewall rule failed',
+          errorMessage: 'Removing Port Forwarding rule failed',
           errorMethod: () => this.fetchData(),
-          loadingMessage: `Deleting Firewall rule...`,
+          loadingMessage: `Deleting Port Forwarding rule...`,
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => this.fetchData()
         })
@@ -209,62 +272,79 @@ export default {
     },
     addRule () {
       this.loading = true
-      api('createFirewallRule', { ...this.newRule }).then(response => {
+      this.addVmModalVisible = false
+      this.showAddDetail = false
+      api('createPortForwardingRule', {
+        ...this.newRule,
+        ipaddressid: this.resource.id,
+        networkid: this.resource.associatednetworkid
+      }).then(response => {
         this.$pollJob({
-          jobId: response.createfirewallruleresponse.jobid,
-          successMessage: `Successfully added new Firewall rule`,
+          jobId: response.createportforwardingruleresponse.jobid,
+          successMessage: `Successfully added new Port Forwarding rule`,
           successMethod: () => {
-            this.resetAllRules()
+            this.closeModal()
             this.fetchData()
           },
-          errorMessage: 'Adding new Firewall rule failed',
+          errorMessage: 'Adding new Port Forwarding rule failed',
           errorMethod: () => {
-            this.resetAllRules()
+            this.closeModal()
             this.fetchData()
           },
-          loadingMessage: `Adding new Firewall rule...`,
+          loadingMessage: `Adding new Port Forwarding rule...`,
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
-            this.resetAllRules()
+            this.closeModal()
             this.fetchData()
           }
         })
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
-          description: error.response.data.createfirewallruleresponse.errortext
+          description: error.response.data.createportforwardingruleresponse.errortext
         })
-        this.resetAllRules()
+        this.closeModal()
         this.fetchData()
       })
     },
     resetAllRules () {
       this.newRule.protocol = 'tcp'
-      this.newRule.cidrlist = null
-      this.newRule.networkid = this.resource.id
-      this.resetRulePorts()
+      this.newRule.privateport = null
+      this.newRule.privateendport = null
+      this.newRule.publicport = null
+      this.newRule.publicendport = null
+      this.newRule.openfirewall = false
+      this.newRule.vmguestip = null
+      this.newRule.virtualmachineid = null
     },
-    resetRulePorts () {
-      this.newRule.icmptype = null
-      this.newRule.icmpcode = null
-      this.newRule.startport = null
-      this.newRule.endport = null
+    resetTagInputs () {
+      this.newTag.key = null
+      this.newTag.value = null
     },
     closeModal () {
       this.selectedRule = null
       this.tagsModalVisible = false
-      this.newTag.key = null
-      this.newTag.value = null
+      this.addVmModalVisible = false
+      this.newRule.virtualmachineid = null
+      this.addVmModalLoading = false
+      this.addVmModalNicLoading = false
+      this.nics = []
+      this.resetTagInputs()
+      this.resetAllRules()
     },
     openTagsModal (id) {
+      this.tagsModalLoading = true
       this.selectedRule = id
       this.tagsModalVisible = true
+      this.tags = []
+      this.resetTagInputs()
       api('listTags', {
         resourceId: id,
-        resourceType: 'FirewallRule',
+        resourceType: 'PortForwardingRule',
         listAll: true
       }).then(response => {
         this.tags = response.listtagsresponse.tag
+        this.tagsModalLoading = false
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
@@ -274,11 +354,12 @@ export default {
       })
     },
     handleAddTag () {
+      this.tagsModalLoading = true
       api('createTags', {
         'tags[0].key': this.newTag.key,
         'tags[0].value': this.newTag.value,
         resourceIds: this.selectedRule,
-        resourceType: 'FirewallRule'
+        resourceType: 'PortForwardingRule'
       }).then(response => {
         this.$pollJob({
           jobId: response.createtagsresponse.jobid,
@@ -311,11 +392,12 @@ export default {
       })
     },
     handleDeleteTag (tag) {
+      this.tagsModalLoading = true
       api('deleteTags', {
         'tags[0].key': tag.key,
         'tags[0].value': tag.value,
         resourceIds: this.selectedRule,
-        resourceType: 'FirewallRule'
+        resourceType: 'PortForwardingRule'
       }).then(response => {
         this.$pollJob({
           jobId: response.deletetagsresponse.jobid,
@@ -339,6 +421,45 @@ export default {
             this.closeModal()
           }
         })
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.errorresponse.errortext
+        })
+        this.closeModal()
+      })
+    },
+    openAddVMModal () {
+      this.addVmModalVisible = true
+      this.addVmModalLoading = true
+      api('listVirtualMachines', {
+        listAll: true,
+        page: 1,
+        pagesize: 500,
+        networkid: this.resource.associatednetworkid,
+        account: this.resource.account,
+        domainid: this.resource.domainid
+      }).then(response => {
+        this.vms = response.listvirtualmachinesresponse.virtualmachine
+        this.addVmModalLoading = false
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.errorresponse.errortext
+        })
+        this.closeModal()
+      })
+    },
+    fetchNics (e) {
+      this.addVmModalNicLoading = true
+      api('listNics', {
+        virtualmachineid: e.target.value,
+        networkid: this.resource.associatednetworkid
+      }).then(response => {
+        if (!response.listnicsresponse.nic[0]) return
+        this.nics.push(response.listnicsresponse.nic[0].ipaddress, ...response.listnicsresponse.nic[0].secondaryip.map(ip => ip.ipaddress))
+        this.newRule.vmguestip = this.nics[0]
+        this.addVmModalNicLoading = false
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
@@ -426,6 +547,19 @@ export default {
         margin-top: auto;
       }
 
+      &__input-container {
+        display: flex;
+
+        input {
+
+          &:not(:last-child) {
+            margin-right: 10px;
+          }
+
+        }
+
+      }
+
     }
 
     &__label {
@@ -472,6 +606,49 @@ export default {
   .add-tags-done {
     display: block;
     margin-left: auto;
+  }
+
+  .tags-modal-loading {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 1;
+    color: #1890ff;
+    font-size: 2rem;
+  }
+
+  .vm-modal {
+
+    &__header {
+      display: flex;
+
+      span {
+        flex: 1;
+        font-weight: bold;
+        margin-right: 10px;
+      }
+
+    }
+
+    &__item {
+      display: flex;
+      margin-top: 10px;
+
+      span,
+      label {
+        display: block;
+        flex: 1;
+        margin-right: 10px;
+      }
+
+    }
+
   }
 
 </style>
