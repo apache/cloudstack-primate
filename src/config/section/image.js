@@ -50,7 +50,11 @@ export default {
           icon: 'plus',
           label: 'Create template',
           listView: true,
-          args: ['url', 'name', 'displaytext', 'directdownload', 'zoneids', 'hypervisor', 'format', 'ostypeid', 'checksum', 'isextractable', 'passwordenabled', 'sshkeyenabled', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'isrouting', 'requireshvm']
+          popup: true,
+          show: (record, user, apis) => {
+            return Object.prototype.hasOwnProperty.call(apis, 'registerTemplate')
+          },
+          component: () => import('@/views/image/RegisterTemplate.vue')
         },
         {
           api: 'getUploadParamsForTemplate',
