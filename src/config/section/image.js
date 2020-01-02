@@ -51,6 +51,12 @@ export default {
           label: 'Create template',
           listView: true,
           popup: true,
+<<<<<<< HEAD
+=======
+          show: (record, user, apis) => {
+            return Object.prototype.hasOwnProperty.call(apis, 'registerTemplate')
+          },
+>>>>>>> #86: custom register template action
           component: () => import('@/views/image/RegisterTemplate.vue')
         },
         {
