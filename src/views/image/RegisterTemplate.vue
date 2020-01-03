@@ -626,6 +626,10 @@ export default {
 
         api('registerTemplate', params).then(json => {
           this.$emit('refresh-data')
+          this.$notification.success({
+            message: 'Register Template',
+            description: 'Sucessfully registered template ' + params.name
+          })
         }).catch(error => {
           this.$notification.error({
             message: 'Request Failed',

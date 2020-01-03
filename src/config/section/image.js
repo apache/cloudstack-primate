@@ -51,9 +51,6 @@ export default {
           label: 'Create template',
           listView: true,
           popup: true,
-          show: (record, user, apis) => {
-            return Object.prototype.hasOwnProperty.call(apis, 'registerTemplate')
-          },
           component: () => import('@/views/image/RegisterTemplate.vue')
         },
         {
@@ -133,7 +130,6 @@ export default {
           label: 'Register ISO',
           listView: true,
           popup: true,
-          show: (record, user, apis) => { return 'registerIso' in apis },
           component: () => import('@/views/image/RegisterIso.vue')
         },
         {
