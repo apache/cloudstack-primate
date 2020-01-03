@@ -21,17 +21,39 @@
       <div class="form">
         <div class="form__item">
           <div class="form__label">{{ $t('privateport') }}</div>
-          <div class="form__item__input-container">
-            <a-input v-model="newRule.privateport"></a-input>
-            <a-input v-model="newRule.privateendport"></a-input>
-          </div>
+          <a-input-group class="form__item__input-container" compact>
+            <a-input
+              v-model="newRule.privateport"
+              placeholder="Start"
+              style="border-right: 0; width: 60px; margin-right: 0;"></a-input>
+            <a-input
+              placeholder="-"
+              disabled
+              style="width: 30px; border-left: 0; border-right: 0; pointer-events: none; backgroundColor: #fff; text-align:
+              center; margin-right: 0;"></a-input>
+            <a-input
+              v-model="newRule.privateendport"
+              placeholder="End"
+              style="border-left: 0; width: 60px; text-align: right; margin-right: 0;"></a-input>
+          </a-input-group>
         </div>
         <div class="form__item">
           <div class="form__label">{{ $t('publicport') }}</div>
-          <div class="form__item__input-container">
-            <a-input v-model="newRule.publicport"></a-input>
-            <a-input v-model="newRule.publicendport"></a-input>
-          </div>
+          <a-input-group class="form__item__input-container" compact>
+            <a-input
+              v-model="newRule.publicport"
+              placeholder="Start"
+              style="border-right: 0; width: 60px; margin-right: 0;"></a-input>
+            <a-input
+              placeholder="-"
+              disabled
+              style="width: 30px; border-left: 0; border-right: 0; pointer-events: none; backgroundColor: #fff;
+              text-align: center; margin-right: 0;"></a-input>
+            <a-input
+              v-model="newRule.publicendport"
+              placeholder="End"
+              style="border-left: 0; width: 60px; text-align: right; margin-right: 0;"></a-input>
+          </a-input-group>
         </div>
         <div class="form__item">
           <div class="form__label">{{ $t('protocol') }}</div>
