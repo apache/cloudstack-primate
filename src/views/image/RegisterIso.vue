@@ -60,6 +60,11 @@
                 }
               ]
             }]"
+            showSearch
+            optionFilterProp="children"
+            :filterOption="(input, option) => {
+              return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }"
             :loading="zoneLoading"
             :placeholder="$t('iso.zoneid.description')">
             <a-select-option v-for="(opt, optIndex) in zones" :key="optIndex">
@@ -77,6 +82,11 @@
             v-decorator="['ostypeid', {
               rules: [{ required: true, message: 'Please select option' }]
             }]"
+            showSearch
+            optionFilterProp="children"
+            :filterOption="(input, option) => {
+              return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }"
             :loading="osTypeLoading"
             :placeholder="$t('iso.ostypeid.description')">
             <a-select-option v-for="(opt, optIndex) in osTypes" :key="optIndex">
@@ -175,11 +185,9 @@ export default {
         const params = {}
         for (const key in values) {
           const input = values[key]
-
           if (input === undefined) {
             continue
           }
-
           switch (key) {
             case 'zoneid':
               params[key] = this.zones[input].id
@@ -194,10 +202,12 @@ export default {
         }
 
         this.loading = true
-
         api('registerIso', params).then(json => {
-          console.log(json)
           this.$emit('refresh-data')
+          this.$notification.success({
+            message: 'Register ISO',
+            description: 'Sucessfully registered ISO'
+          })
         }).catch(error => {
           this.$notification.error({
             message: 'Request Failed',
