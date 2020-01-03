@@ -79,7 +79,8 @@ export default {
   data () {
     return {
       activeTab: '',
-      networkService: null
+      networkService: null,
+      vpnEnabled: false
     }
   },
   watch: {
@@ -87,6 +88,14 @@ export default {
       if (this.resource.associatednetworkid) {
         api('listNetworks', { id: this.resource.associatednetworkid }).then(response => {
           this.networkService = response.listnetworksresponse.network[0]
+        })
+      }
+      if (this.resource.id) {
+        api('listRemoteAccessVpns', {
+          publicipid: this.resource.id,
+          listAll: true
+        }).then(response => {
+          this.vpnEnabled = response.listremoteaccessvpnsresponse.remoteaccessvpn && response.listremoteaccessvpnsresponse.remoteaccessvpn.length > 0
         })
       }
     }
@@ -99,6 +108,8 @@ export default {
       if ('networkServiceFilter' in tab) {
         return this.networkService && this.networkService.service &&
           tab.networkServiceFilter(this.networkService.service)
+      } else if ('vpnEnabledFilter' in tab) {
+        return this.vpnEnabled
       } else if ('show' in tab) {
         return tab.show(this.resource, this.$route)
       } else {

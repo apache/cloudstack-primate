@@ -16,22 +16,54 @@
 // under the License.
 
 <template>
-  <div>
-    TODO: VPN configure/detail tab view
+  <div v-if="remoteAccessVpn">
+    <div>
+      <p>Your Remote Access VPN is currently enabled and can be accessed via the IP {{ remoteAccessVpn.publicip }}</p>
+      <p>Your IPSec pre-shared key is {{ remoteAccessVpn.presharedkey }}</p>
+      <p>Note: VPN users are now accessed by changing views at the networks tab.</p>
+    </div>
   </div>
 </template>
 
 <script>
+import { api } from '@/api'
 
 export default {
-  name: '',
-  components: {
+  props: {
+    resource: {
+      type: Object,
+      required: true
+    }
   },
   data () {
     return {
+      remoteAccessVpn: null
     }
   },
+  inject: ['parentFetchData', 'parentToggleLoading'],
+  mounted () {
+    this.fetchData()
+  },
   methods: {
+    fetchData () {
+      this.parentToggleLoading()
+      api('listRemoteAccessVpns', {
+        publicipid: this.resource.id,
+        listAll: true
+      }).then(response => {
+        this.remoteAccessVpn = response.listremoteaccessvpnsresponse.remoteaccessvpn
+          ? response.listremoteaccessvpnsresponse.remoteaccessvpn[0] : null
+      }).catch(error => {
+        console.log(error)
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.errorresponse.errortext
+        })
+      })
+        .finally(() => {
+          this.parentToggleLoading()
+        })
+    }
   }
 }
 </script>

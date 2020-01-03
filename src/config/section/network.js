@@ -203,7 +203,8 @@ export default {
         networkServiceFilter: networkService => networkService.filter(x => x.name === 'Lb').length > 0
       }, {
         name: 'VPN',
-        component: () => import('@/views/network/VpnDetails.vue')
+        component: () => import('@/views/network/VpnDetails.vue'),
+        vpnEnabledFilter: () => true
       }],
       actions: [
         {
@@ -218,33 +219,18 @@ export default {
           icon: 'link',
           label: 'Enable Remote Access VPN',
           dataView: true,
-          args: ['publicipid', 'domainid', 'account'],
-          mapping: {
-            publicipid: {
-              value: (record) => { return record.id }
-            },
-            domainid: {
-              value: (record) => { return record.domainid }
-            },
-            account: {
-              value: (record) => { return record.account }
-            }
-          }
+          show: () => true,
+          popup: true,
+          component: () => import('@/views/network/VpnEnable.vue')
         },
         {
           api: 'deleteRemoteAccessVpn',
           icon: 'disconnect',
           label: 'Disable Remove Access VPN',
           dataView: true,
-          args: ['publicipid', 'domainid'],
-          mapping: {
-            publicipid: {
-              value: (record) => { return record.id }
-            },
-            domainid: {
-              value: (record) => { return record.domainid }
-            }
-          }
+          show: () => true,
+          popup: true,
+          component: () => import('@/views/network/VpnDisable.vue')
         },
         {
           api: 'enableStaticNat',
