@@ -183,6 +183,12 @@ export default {
         ipaddressid: this.resource.id
       }).then(response => {
         this.firewallRules = response.listfirewallrulesresponse.firewallrule
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.errorresponse.errortext
+        })
+      }).finally(() => {
         this.loading = false
       })
     },
@@ -305,7 +311,7 @@ export default {
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
+          description: error.response.data.createtagsresponse.errortext
         })
         this.closeModal()
       })
@@ -342,7 +348,7 @@ export default {
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
+          description: error.response.data.deletetagsresponse.errortext
         })
         this.closeModal()
       })

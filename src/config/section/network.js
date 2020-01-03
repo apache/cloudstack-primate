@@ -196,6 +196,9 @@ export default {
         name: 'Port Forwarding',
         component: () => import('@/views/network/PortForwarding.vue')
       }, {
+        name: 'Load Balancing',
+        component: () => import('@/views/network/LoadBalancing.vue')
+      }, {
         name: 'vpn',
         component: () => import('@/views/network/VpnDetails.vue')
       }],
