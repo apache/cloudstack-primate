@@ -19,46 +19,36 @@
   <div>
     <a-card class="breadcrumb-card">
       <a-row>
-        <a-col :span="24" style="display: flex">
-          <breadcrumb />
-          <a-tooltip placement="bottom">
-            <template slot="title">
-              {{ "Refresh" }}
-            </template>
-            <a-button
-              style="margin-left: 8px"
-              :loading="loading"
-              shape="round"
-              size="small"
-              icon="sync"
-              @click="fetchData()">
-              {{ $t('refresh') }}
-            </a-button>
-          </a-tooltip>
-        </a-col>
-        <a-col :span="24" style="padding-top: 12px; margin-bottom: -6px">
-          <span style="padding-left: 5px">
-            <a-tooltip
-              v-for="(action, actionIndex) in actions"
-              :key="actionIndex"
-              placement="bottom">
+        <a-col :span="14" style="padding-left: 6px">
+          <breadcrumb>
+            <a-tooltip placement="bottom" slot="end">
               <template slot="title">
-                {{ $t(action.label) }}
+                {{ "Refresh" }}
               </template>
               <a-button
-                v-if="action.api in $store.getters.apis &&
-                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
-                  ('show' in action ? action.show(resource) : true)"
-                :icon="action.icon"
-                :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
+                style="margin-top: 4px"
+                :loading="loading"
                 shape="circle"
-                style="margin-right: 5px"
-                @click="execAction(action)"
-              >
+                size="small"
+                type="dashed"
+                icon="reload"
+                @click="fetchData()">
               </a-button>
             </a-tooltip>
+          </breadcrumb>
+        </a-col>
+        <a-col :span="10">
+          <span style="float: right">
+            <action-button
+              style="margin-bottom: 5px"
+              :loading="loading"
+              :actions="actions"
+              :selectedRowKeys="selectedRowKeys"
+              :dataView="dataView"
+              :resource="resource"
+              @exec-action="execAction"/>
             <a-input-search
-              style="width: 50%; padding-left: 6px"
+              style="width: 25vw; margin-left: 10px"
               placeholder="Search"
               v-model="searchQuery"
               v-if="!dataView && !treeView"
@@ -81,7 +71,14 @@
           centered
           width="auto"
         >
-          <component :is="currentAction.component" :resource="resource" :loading="loading" v-bind="{currentAction}" />
+          <component
+            :is="currentAction.component"
+            :resource="resource"
+            :loading="loading"
+            v-bind="{currentAction}"
+            @refresh-data="fetchData"
+            @poll-action="pollActionCompletion"
+            @close-action="closeAction"/>
         </a-modal>
       </keep-alive>
       <a-modal
@@ -137,13 +134,18 @@
                   </a-select-option>
                 </a-select>
               </span>
-              <span v-else-if="field.type==='uuid' || field.name==='account' || field.name==='keypair'">
+              <span v-else-if="field.type==='uuid' || (field.name==='account' && !['addAccountToProject'].includes(currentAction.api)) || field.name==='keypair'">
                 <a-select
-                  :loading="field.loading"
+                  showSearch
+                  optionFilterProp="children"
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: 'Please select option' }]
                   }]"
+                  :loading="field.loading"
                   :placeholder="field.description"
+                  :filterOption="(input, option) => {
+                    return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }"
                 >
                   <a-select-option v-for="(opt, optIndex) in field.opts" :key="optIndex">
                     {{ opt.name || opt.description }}
@@ -243,6 +245,7 @@
 <script>
 import { api } from '@/api'
 import { mixinDevice } from '@/utils/mixin.js'
+import { genericCompare } from '@/utils/sort.js'
 import config from '@/config/settings'
 import store from '@/store'
 
@@ -252,7 +255,7 @@ import Status from '@/components/widgets/Status'
 import ListView from '@/components/view/ListView'
 import ResourceView from '@/components/view/ResourceView'
 import TreeView from '@/components/view/TreeView'
-import { genericCompare } from '@/utils/sort.js'
+import ActionButton from '@/components/view/ActionButton'
 
 export default {
   name: 'Resource',
@@ -262,7 +265,8 @@ export default {
     ResourceView,
     ListView,
     TreeView,
-    Status
+    Status,
+    ActionButton
   },
   mixins: [mixinDevice],
   provide: function () {
@@ -360,6 +364,7 @@ export default {
         if (this.$route.meta.columns) {
           this.columnKeys = this.$route.meta.columns
         }
+
         if (this.$route.meta.actions) {
           this.actions = this.$route.meta.actions
         }
@@ -577,19 +582,25 @@ export default {
       })
     },
     pollActionCompletion (jobId, action) {
-      api('queryAsyncJobResult', { jobid: jobId }).then(json => {
-        var result = json.queryasyncjobresultresponse
-        if (result.jobstatus === 1) {
+      this.$pollJob({
+        jobId,
+        successMethod: result => {
           this.fetchData()
-        } else if (result.jobstatus === 2) {
-          this.fetchData()
-        } else if (result.jobstatus === 0) {
-          this.$message
-            .loading(this.$t(action.label) + ' in progress for ' + this.resource.name, 3)
-            .then(() => this.pollActionCompletion(jobId, action))
-        }
-      }).catch(function (e) {
-        console.log('Error encountered while fetching async job result' + e)
+          if (action.response) {
+            const description = action.response(result.jobresult)
+            if (description) {
+              this.$notification.info({
+                message: action.label,
+                description: (<span domPropsInnerHTML={description}></span>),
+                duration: 0
+              })
+            }
+          }
+        },
+        errorMethod: () => this.fetchData(),
+        loadingMessage: `${this.$t(action.label)} in progress for ${this.resource.name}`,
+        catchMessage: 'Error encountered while fetching async job result',
+        action
       })
     },
     handleSubmit (e) {
@@ -619,7 +630,11 @@ export default {
                 } else if (param.type === 'list') {
                   params[key] = input.map(e => { return param.opts[e].id }).reduce((str, name) => { return str + ',' + name })
                 } else if (param.name === 'account' || param.name === 'keypair') {
-                  params[key] = param.opts[input].name
+                  if (['addAccountToProject'].includes(this.currentAction.api)) {
+                    params[key] = input
+                  } else {
+                    params[key] = param.opts[input].name
+                  }
                 } else {
                   params[key] = input
                 }
@@ -667,7 +682,7 @@ export default {
                 break
               }
             }
-            if (this.currentAction.icon === 'delete') {
+            if (this.currentAction.icon === 'delete' && this.dataView) {
               this.$router.go(-1)
             } else {
               if (!hasJobId) {
@@ -678,7 +693,7 @@ export default {
             console.log(error)
             this.$notification.error({
               message: 'Request Failed',
-              description: error.response.headers['x-description']
+              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
             })
           }).finally(f => {
             this.closeAction()
