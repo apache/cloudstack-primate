@@ -36,7 +36,7 @@
             v-for="tab in tabs"
             :tab="$t(tab.name)"
             :key="tab.name"
-            v-if="'show' in tab ? tab.show(resource, $route) : true">
+            v-if="showHideTab(tab)">
             <component :is="tab.component" :resource="resource" :loading="loading" :tab="activeTab" />
           </a-tab-pane>
         </a-tabs>
@@ -50,6 +50,7 @@
 import DetailsTab from '@/components/view/DetailsTab'
 import InfoCard from '@/components/view/InfoCard'
 import ResourceLayout from '@/layouts/ResourceLayout'
+import { api } from '@/api'
 
 export default {
   name: 'ResourceView',
@@ -78,12 +79,31 @@ export default {
   },
   data () {
     return {
-      activeTab: ''
+      activeTab: '',
+      networkService: null
+    }
+  },
+  watch: {
+    resource: function () {
+      if (this.resource.associatednetworkid) {
+        api('listNetworks', { id: this.resource.associatednetworkid }).then(response => {
+          this.networkService = response.listnetworksresponse.network[0].service
+        })
+      }
     }
   },
   methods: {
     onTabChange (key) {
       this.activeTab = key
+    },
+    showHideTab (tab) {
+      if ('associatedNetworkFilter' in tab) {
+        return this.networkService && this.networkService.filter(x => tab.associatedNetworkFilter(x)).length > 0
+      } else if ('show' in tab) {
+        return tab.show(this.resource, this.$route)
+      } else {
+        return true
+      }
     }
   }
 }

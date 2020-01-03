@@ -191,13 +191,16 @@ export default {
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
         name: 'Firewall',
-        component: () => import('@/views/network/FirewallRules.vue')
+        component: () => import('@/views/network/FirewallRules.vue'),
+        associatedNetworkFilter: x => x.name === 'Firewall'
       }, {
         name: 'Port Forwarding',
-        component: () => import('@/views/network/PortForwarding.vue')
+        component: () => import('@/views/network/PortForwarding.vue'),
+        associatedNetworkFilter: x => x.name === 'PortForwarding'
       }, {
         name: 'Load Balancing',
-        component: () => import('@/views/network/LoadBalancing.vue')
+        component: () => import('@/views/network/LoadBalancing.vue'),
+        associatedNetworkFilter: x => x.name === 'Lb'
       }, {
         name: 'vpn',
         component: () => import('@/views/network/VpnDetails.vue')
