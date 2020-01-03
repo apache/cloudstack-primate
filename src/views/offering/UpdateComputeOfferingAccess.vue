@@ -24,10 +24,10 @@
         layout="vertical">
 
         <a-form-item :label="$t('ispublic')" v-show="this.isAdmin()">
-          <a-switch v-decorator="['ispublic']" />
+          <a-switch v-decorator="['ispublic']" :checked="this.offeringIsPublic" />
         </a-form-item>
 
-        <a-form-item :label="$t('domainid')" v-show="ispublic !== true">
+        <a-form-item :label="$t('domainid')" v-show="!this.offeringIsPublic">
           <a-select
             mode="multiple"
             v-decorator="['domainid', {
@@ -99,6 +99,7 @@ export default {
   data () {
     return {
       formOffering: {},
+      offeringIsPublic: false,
       domains: [],
       domainLoading: false,
       zones: [],
@@ -126,12 +127,16 @@ export default {
       this.fetchOfferingData()
       this.fetchDomainData()
       this.fetchZoneData()
+      this.setExistingValues()
       this.updateDomainSelection()
       this.updateZoneSelection()
     },
     isAdmin () {
       return true
       // return ['Admin'].includes(user.roletype)
+    },
+    onSChange (checked) {
+      this.offeringIsPublic = checked
     },
     setupUserAccess () {
       if (this.isAdmin()) {
@@ -178,8 +183,25 @@ export default {
       })
     },
     updateDomainSelection () {
+      var offeringDomainIds = this.formOffering.domainid
+      if (offeringDomainIds) {
+        this.offeringIsPublic = false
+        offeringDomainIds = offeringDomainIds.indexOf(',') !== -1 ? offeringDomainIds.split(',') : [offeringDomainIds]
+        for (var i = 0; i < offeringDomainIds.length; i++) {
+        }
+      } else {
+        if (this.isAdmin()) {
+          this.offeringIsPublic = true
+        }
+      }
     },
     updateZoneSelection () {
+      var offeringZoneIds = this.formOffering.zoneid
+      if (offeringZoneIds) {
+        offeringZoneIds = offeringZoneIds.indexOf(',') !== -1 ? offeringZoneIds.split(',') : [offeringZoneIds]
+        for (var j = 0; j < offeringZoneIds.length; j++) {
+        }
+      }
     },
     handleSubmit (e) {
       e.preventDefault()
