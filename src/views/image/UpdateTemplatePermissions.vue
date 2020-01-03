@@ -6,7 +6,7 @@
 
     <div class="form__item">
       <p class="form__label">{{ $t('operation') }}</p>
-      <a-select v-model="selectedOperation" defaultValue="Add">
+      <a-select v-model="selectedOperation" defaultValue="Add" @change="fetchData">
         <a-select-option :value="$t('Add')">{{ $t('Add') }}</a-select-option>
         <a-select-option :value="$t('Remove')">{{ $t('Remove') }}</a-select-option>
         <a-select-option :value="$t('Reset')">{{ $t('Reset') }}</a-select-option>
@@ -19,25 +19,24 @@
           <span class="required">*</span>
           {{ $t('shareWith') }}
         </p>
-        <a-select v-model="selectedShareWith" defaultValue="account">
-          <a-select-option :value="account">{{ $t('account') }}</a-select-option>
-          <a-select-option :value="project">{{ $t('project') }}</a-select-option>
+        <a-select v-model="selectedShareWith" defaultValue="Account" @change="fetchData">
+          <a-select-option :value="$t('account')">{{ $t('account') }}</a-select-option>
+          <a-select-option :value="$t('project')">{{ $t('project') }}</a-select-option>
         </a-select>
       </div>
 
       <template v-if="selectedShareWith === 'Account'">
         <div class="form__item">
           <p class="form__label">
-            <span class="required">*</span>
             {{ $t('account') }}
           </p>
           <a-select
-            :value="accounts.filter(a => (selectedOperation === 'Add' ? !permittedAccounts.includes(a.name) : permittedAccounts.includes(a.name))).map(k => k.name)"
-            @change="val => permittedAccounts.push(val)"
             mode="multiple"
-            style="width: 100%"
-            placeholder="Select Accounts">
-            <a-select-option v-for="account in accounts" :key="account.id">
+            placeholder="Select Accounts"
+            :value="selectedAccounts"
+            @change="handleChange"
+            style="width: 100%">
+            <a-select-option v-for="account in accountsList" :key="account.name">
               {{ account.name }}</a-select-option>
           </a-select>
         </div>
@@ -46,32 +45,17 @@
       <template v-else>
         <div class="form__item">
           <p class="form__label">
-            <span class="required">*</span>
             {{ $t('project') }}
           </p>
           <a-select
-            v-model="selectedProjects"
             mode="multiple"
-            style="width: 100%"
-            placeholder="Select Projects">
-            <a-select-option v-for="project in projectObjs" :key="project.id">
+            placeholder="Select Projects"
+            :value="selectedProjects"
+            @change="handleChange"
+            style="width: 100%">
+            <a-select-option v-for="project in projectsList" :key="project.name">
               {{ project.name }}</a-select-option>
           </a-select>
-        </div>
-
-        <div class="form__item">
-          <p class="form__label">
-            <span class="required">*</span>
-            {{ $t('project') }}
-          </p>
-          <a-select v-model="selectedProject">
-            <a-select-option
-              v-for="project in projects"
-              :key="project.id"
-              :value="project.id"
-            >{{ project.name }}</a-select-option>
-          </a-select>
-          <span v-if="projectError" class="required">{{ $t('required') }}</span>
         </div>
       </template>
     </template>
@@ -103,21 +87,41 @@ export default {
       role: null,
       projects: [],
       accounts: [],
-      accountObjs: [],
-      projectObjs: [],
-      accountByName: {},
-      projectByIds: {},
       accountType: undefined,
       allowUserViewAllDomainAccounts: null,
       selectedOperation: 'Add',
       selectedShareWith: this.$t('account'),
-      selectedAccounts: [],
-      selectedProjects: [],
       accountError: false,
       projectError: false,
       permittedAccounts: [],
+      selectedAccounts: [],
       permittedProjects: [],
+      selectedProjects: [],
       loading: false
+    }
+  },
+  computed: {
+    accountsList () {
+      return this.accounts
+        .filter(a =>
+          this.selectedOperation === 'Add'
+            ? !this.permittedAccounts.includes(a.name)
+            : this.permittedAccounts.includes(a.name)
+        )
+    },
+    projectsList () {
+      console.log('Projects list = ', this.projects
+        .filter(p =>
+          this.selectedOperation === 'Add'
+            ? !this.permittedProjects.includes(p.id)
+            : this.permittedProjects.includes(p.id)
+        ))
+      return this.projects
+        .filter(p =>
+          this.selectedOperation === 'Add'
+            ? !this.permittedProjects.includes(p.id)
+            : this.permittedProjects.includes(p.id)
+        )
     }
   },
   mounted () {
@@ -127,8 +131,10 @@ export default {
     fetchData () {
       this.fetchTemplatePermissions()
       if (this.selectedShareWith === 'Account') {
+        this.selectedAccounts = []
         this.fetchAccounts()
       } else {
+        this.selectedProjects = []
         this.fetchProjects()
       }
       this.allowUserViewAllDomainAccounts = this.$store.getters.features.allowuserviewalldomainaccounts
@@ -139,7 +145,6 @@ export default {
         listall: true
       }).then(response => {
         this.accounts = response.listaccountsresponse.account
-        console.log(this.accounts)
       }).then(() => {
         // FIXME? user is admin vs non-admin?
         const that = this
@@ -173,28 +178,68 @@ export default {
         }
         if (permission && permission.projectids) {
           this.permittedProjects = permission.projectids
+          console.log('permitted projects == ', this.permittedProjects)
         }
       }).finally(e => {
         this.loading = false
       })
     },
+    handleChange (selectedItems) {
+      if (this.selectedOperation === 'Add') {
+        if (this.selectedShareWith === 'Account') {
+          this.selectedAccounts = selectedItems
+        } else {
+          this.selectedProjects = selectedItems
+        }
+      } else {
+        if (this.selectedShareWith === 'Account') {
+          this.selectedAccounts = selectedItems
+        } else {
+          this.selectedProjects = selectedItems
+        }
+      }
+    },
     closeModal () {
       this.$parent.$parent.close()
     },
     submitData () {
-      // let variableKey = ''
-      // let variableValue = ''
-      // if (this.selectedShareWith === 'Account') {
-      //   if (!this.selectedAccount) {
-      //     this.accountError = true
-      //     return
-      //   }
-      // }
-      this.closeModal()
-      // api('updateTemplatePermissions',{
-      //   response: 'json',
-      //   accountNames: this.accountNames,
-      // })
+      let variableKey = ''
+      let variableValue = ''
+      if (this.selectedShareWith === 'Account') {
+        variableKey = 'accounts'
+        console.log('selected acc == ', this.selectedAccounts)
+        variableValue = this.selectedAccounts.map(account => account).join(',')
+      } else {
+        variableKey = 'projectids'
+        console.log('PROJECTS = ', this.selectedProjects)
+        variableValue = this.projects.filter(p => this.selectedProjects.includes(p.name)).map(p => p.id).join(',')
+        console.log('projects =', variableValue)
+      }
+      this.loading = true
+      api('updateTemplatePermissions', {
+        [variableKey]: variableValue,
+        id: this.resource.id,
+        ispublic: this.resource.isPublic,
+        isextractable: this.resource.isExtractable,
+        featured: this.resource.featured,
+        op: this.selectedOperation.toLowerCase()
+      })
+        .then(response => {
+          this.$notification.success({
+            message: 'Successfully updated template permissions'
+          })
+        })
+        .catch(error => {
+          this.$notification.error({
+            message: 'Failed to update template permissions',
+            description: error.response.data.updatetemplatepermissions.errortext
+          })
+        })
+        .finally(e => {
+          this.loading = false
+          this.closeModal()
+          this.parentFetchData()
+        })
     }
   }
 }
