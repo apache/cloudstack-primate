@@ -86,7 +86,7 @@ export default {
     resource: function () {
       if (this.resource.associatednetworkid) {
         api('listNetworks', { id: this.resource.associatednetworkid }).then(response => {
-          this.networkService = response.listnetworksresponse.network[0].service
+          this.networkService = response.listnetworksresponse.network[0]
         })
       }
     }
@@ -96,8 +96,9 @@ export default {
       this.activeTab = key
     },
     showHideTab (tab) {
-      if ('associatedNetworkFilter' in tab) {
-        return this.networkService && this.networkService.filter(x => tab.associatedNetworkFilter(x)).length > 0
+      if ('networkServiceFilter' in tab) {
+        return this.networkService && this.networkService.service &&
+          tab.networkServiceFilter(this.networkService.service)
       } else if ('show' in tab) {
         return tab.show(this.resource, this.$route)
       } else {
