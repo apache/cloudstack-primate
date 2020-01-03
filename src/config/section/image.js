@@ -52,11 +52,14 @@ export default {
           listView: true,
           popup: true,
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
           show: (record, user, apis) => {
             return Object.prototype.hasOwnProperty.call(apis, 'registerTemplate')
           },
 >>>>>>> #86: custom register template action
+=======
+>>>>>>> make minor changes
           component: () => import('@/views/image/RegisterTemplate.vue')
         },
         {
