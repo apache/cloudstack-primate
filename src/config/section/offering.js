@@ -51,6 +51,13 @@ export default {
         icon: 'delete',
         label: 'Delete Offering',
         dataView: true
+      }, {
+        api: 'updateServiceOffering',
+        icon: 'edit',
+        label: 'Update Offering Access',
+        dataView: true,
+        popup: true,
+        component: () => import('@/views/offering/UpdateComputeOfferingAccess.vue')
       }]
     },
     {
