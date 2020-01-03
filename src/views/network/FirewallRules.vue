@@ -17,16 +17,7 @@
 
 <template>
   <div>
-    <a-button
-      v-show="!showAddDetail"
-      type="dashed"
-      class="add-btn"
-      icon="plus"
-      @click="showAddDetail = true">
-      {{ $t('label.add.rule') }}
-    </a-button>
-
-    <div v-show="showAddDetail">
+    <div>
       <div class="form">
         <div class="form__item">
           <div class="form__label">{{ $t('sourcecidr') }}</div>
@@ -56,11 +47,9 @@
           <div class="form__label">{{ $t('icmpcode') }}</div>
           <a-input v-model="newRule.icmpcode"></a-input>
         </div>
-      </div>
-
-      <div class="add-actions">
-        <a-button type="dashed" icon="close" @click="showAddDetail = false">{{ $t('cancel') }}</a-button>
-        <a-button type="primary" icon="plus" @click="addRule">{{ $t('label.add.setting') }}</a-button>
+        <div class="form__item">
+          <a-button type="primary" @click="addRule">{{ $t('label.add.setting') }}</a-button>
+        </div>
       </div>
     </div>
 
@@ -146,7 +135,6 @@ export default {
     return {
       loading: true,
       firewallRules: [],
-      showAddDetail: false,
       newRule: {
         protocol: 'tcp',
         cidrlist: null,
@@ -177,7 +165,6 @@ export default {
   methods: {
     fetchData () {
       this.loading = true
-      this.showAddDetail = false
       api('listFirewallRules', {
         listAll: true,
         ipaddressid: this.resource.id
@@ -409,8 +396,10 @@ export default {
 
   .form {
     display: flex;
+    align-items: flex-end;
     margin-right: -20px;
     flex-direction: column;
+    margin-bottom: 20px;
 
     @media (min-width: 760px) {
       flex-direction: row;

@@ -17,16 +17,7 @@
 
 <template>
   <div>
-    <a-button
-      v-show="!showAddDetail"
-      type="dashed"
-      class="add-btn"
-      icon="plus"
-      @click="showAddDetail = true">
-      Add Setting
-    </a-button>
-
-    <div v-show="showAddDetail">
+    <div>
       <div class="form">
         <div class="form__item">
           <div class="form__label">Source CIDR</div>
@@ -61,11 +52,9 @@
           <div class="form__label">ICMP Code</div>
           <a-input v-model="newRule.icmpcode"></a-input>
         </div>
-      </div>
-
-      <div class="add-actions">
-        <a-button type="dashed" icon="close" @click="showAddDetail = false">Cancel</a-button>
-        <a-button type="primary" icon="plus" @click="addRule">Add Setting</a-button>
+        <div class="form__item">
+          <a-button type="primary" icon="plus" @click="addRule">Add Setting</a-button>
+        </div>
       </div>
     </div>
 
@@ -122,7 +111,6 @@ export default {
     return {
       loading: true,
       egressRules: [],
-      showAddDetail: false,
       newRule: {
         protocol: 'tcp',
         cidrlist: null,
@@ -277,7 +265,9 @@ export default {
   .form {
     display: flex;
     margin-right: -20px;
+    margin-bottom: 20px;
     flex-direction: column;
+    align-items: flex-end;
 
     @media (min-width: 760px) {
       flex-direction: row;

@@ -17,16 +17,7 @@
 
 <template>
   <div>
-    <a-button
-      v-show="!showAddDetail"
-      type="dashed"
-      class="add-btn"
-      icon="plus"
-      @click="showAddDetail = true">
-      {{ $t('label.add.rule') }}
-    </a-button>
-
-    <div v-show="showAddDetail">
+    <div>
       <div class="form">
         <div class="form__item">
           <div class="form__label">{{ $t('privateport') }}</div>
@@ -54,10 +45,6 @@
           <a-button type="primary" @click="openAddVMModal">{{ $t('label.add') }}</a-button>
         </div>
 
-      </div>
-
-      <div class="add-actions">
-        <a-button type="dashed" icon="close" @click="showAddDetail = false">{{ $t('cancel') }}</a-button>
       </div>
     </div>
 
@@ -202,7 +189,6 @@ export default {
     return {
       loading: true,
       portForwardRules: [],
-      showAddDetail: false,
       newRule: {
         protocol: 'tcp',
         privateport: null,
@@ -240,7 +226,6 @@ export default {
   methods: {
     fetchData () {
       this.loading = true
-      this.showAddDetail = false
       api('listPortForwardingRules', {
         listAll: true,
         ipaddressid: this.resource.id
@@ -279,7 +264,6 @@ export default {
     addRule () {
       this.loading = true
       this.addVmModalVisible = false
-      this.showAddDetail = false
       api('createPortForwardingRule', {
         ...this.newRule,
         ipaddressid: this.resource.id,
@@ -531,6 +515,7 @@ export default {
   .form {
     display: flex;
     margin-right: -20px;
+    margin-bottom: 20px;
     flex-direction: column;
 
     @media (min-width: 760px) {

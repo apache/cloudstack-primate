@@ -17,16 +17,7 @@
 
 <template>
   <div>
-    <a-button
-      v-show="!showAddDetail"
-      type="dashed"
-      class="add-btn"
-      icon="plus"
-      @click="showAddDetail = true">
-      {{ $t('label.add.rule') }}
-    </a-button>
-
-    <div v-show="showAddDetail">
+    <div>
       <div class="form">
         <div class="form__item">
           <div class="form__label">{{ $t('name') }}</div>
@@ -62,10 +53,6 @@
           <a-button type="primary" @click="handleOpenAddVMModal">Add</a-button>
         </div>
 
-      </div>
-
-      <div class="add-actions">
-        <a-button type="dashed" icon="close" @click="showAddDetail = false">{{ $t('cancel') }}</a-button>
       </div>
     </div>
 
@@ -354,7 +341,6 @@ export default {
     return {
       loading: true,
       lbRules: [],
-      showAddDetail: false,
       newTagsForm: this.$form.createForm(this),
       tagsModalVisible: false,
       tagsModalLoading: false,
@@ -1057,6 +1043,7 @@ export default {
   .form {
     display: flex;
     margin-right: -20px;
+    margin-bottom: 20px;
     flex-direction: column;
 
     @media (min-width: 760px) {
