@@ -18,216 +18,276 @@
 <template>
   <div class="form-layout">
     <a-form layout="vertical" :form="form">
-      <a-form-item :label="$t('url')">
-        <a-input
-          v-decorator="['url', {
-            rules: [{ required: true, message: 'Please enter input' }]
-          }]"
-          :placeholder="$t('template.url.description')" />
-      </a-form-item>
-
-      <a-form-item :label="$t('name')">
-        <a-input
-          v-decorator="['name', {
-            rules: [{ required: true, message: 'Please enter input' }]
-          }]"
-          :placeholder="$t('template.name.description')" />
-      </a-form-item>
-
-      <a-form-item :label="$t('displaytext')">
-        <a-input
-          v-decorator="['displaytext', {
-            rules: [{ required: true, message: 'Please enter input' }]
-          }]"
-          :placeholder="$t('template.displaytext.description')" />
-      </a-form-item>
-
-      <a-form-item
-        :label="$t('zoneids')"
-        :validate-status="zoneError"
-        :help="zoneErrorMessage">
-        <a-select
-          v-decorator="['zoneids', {
-            rules: [
-              {
-                required: false,
-                message: 'Please select option',
-                type: 'array'
-              }
-            ]
-          }]"
-          :loading="zones.loading"
-          mode="multiple"
-          :placeholder="$t('template.zoneids.description')"
-          @change="handlerSelectZone">
-          <a-select-option v-for="opt in zones.opts" :key="opt.name || opt.description">
-            {{ opt.name || opt.description }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <a-form-item :label="$t('hypervisor')">
-        <a-select
-          v-decorator="['hypervisor', {
-            rules: [
-              {
-                required: false,
-                message: 'Please select option'
-              }
-            ]
-          }]"
-          :loading="hyperVisor.loading"
-          :placeholder="$t('template.hypervisor.description')"
-          @change="handlerSelectHyperVisor">
-          <a-select-option v-for="(opt, optIndex) in hyperVisor.opts" :key="optIndex">
-            {{ opt.name || opt.description }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <a-form-item v-if="hyperKVMShow" :label="$t('directdownload')">
-        <a-switch v-decorator="['directdownload']" />
-      </a-form-item>
-
-      <a-form-item v-if="hyperKVMShow || hyperVMWShow" :label="$t('rootDiskControllerTypeKVM')">
-        <a-select
-          v-decorator="['rootDiskControllerTypeKVM', {
-            rules: [
-              {
-                required: false,
-                message: 'Please select option'
-              }
-            ]
-          }]"
-          :loading="rootDisk.loading"
-          :placeholder="$t('template.rootDiskControllerTypeKVM.description')">
-          <a-select-option v-for="opt in rootDisk.opts" :key="opt.id">
-            {{ opt.name || opt.description }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <a-form-item v-if="hyperXenServerShow" :label="$t('xenserverToolsVersion61plus')">
-        <a-switch
-          v-decorator="['xenserverToolsVersion61plus',{
-            initialValue: xenServerProvider
-          }]"
-          :checked="xenServerProvider" />
-      </a-form-item>
-
-      <a-form-item v-if="hyperVMWShow" :label="$t('nicAdapterType')">
-        <a-select
-          v-decorator="['nicAdapterType', {
-            rules: [
-              {
-                required: false,
-                message: 'Please select option'
-              }
-            ]
-          }]"
-          :placeholder="$t('template.nicAdapterType.description')">
-          <a-select-option v-for="opt in nicAdapterType.opts" :key="opt.id">
-            {{ opt.name || opt.description }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <a-form-item v-if="hyperVMWShow" :label="$t('keyboardType')">
-        <a-select
-          v-decorator="['keyboardType', {
-            rules: [
-              {
-                required: false,
-                message: 'Please select option'
-              }
-            ]
-          }]"
-          :placeholder="$t('template.keyboardType.description')">
-          <a-select-option v-for="opt in keyboardType.opts" :key="opt.id">
-            {{ opt.name || opt.description }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <a-form-item :label="$t('format')">
-        <a-select
-          v-decorator="['format', {
-            rules: [
-              {
-                required: false,
-                message: 'Please select option'
-              }
-            ]
-          }]"
-          :placeholder="$t('template.format.description')">
-          <a-select-option v-for="opt in format.opts" :key="opt.id">
-            {{ opt.name || opt.description }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <a-form-item :label="$t('ostypeid')">
-        <a-select
-          showSearch
-          v-decorator="['ostypeid', {
-            rules: [
-              {
-                required: false,
-                message: 'Please select option'
-              }
-            ]
-          }]"
-          :loading="osTypes.loading"
-          :placeholder="$t('template.ostypeid.description')">
-          <a-select-option v-for="opt in osTypes.opts" :key="opt.name || opt.description">
-            {{ opt.name || opt.description }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <a-form-item :label="$t('checksum')">
-        <a-input
-          v-decorator="['checksum', {
-            rules: [{ required: false, message: 'Please enter input' }]
-          }]"
-          :placeholder="$t('template.checksum.description')" />
-      </a-form-item>
-
-      <a-form-item :label="$t('isextractable')">
-        <a-switch v-decorator="['isextractable']" />
-      </a-form-item>
-
-      <a-form-item :label="$t('passwordenabled')">
-        <a-switch v-decorator="['passwordenabled']" />
-      </a-form-item>
-
-      <a-form-item :label="$t('sshkeyenabled')">
-        <a-switch v-decorator="['sshkeyenabled']" />
-      </a-form-item>
-
-      <a-form-item :label="$t('isdynamicallyscalable')">
-        <a-switch v-decorator="['isdynamicallyscalable']" />
-      </a-form-item>
-
-      <a-form-item :label="$t('ispublic')">
-        <a-switch v-decorator="['ispublic']" />
-      </a-form-item>
-
-      <a-form-item :label="$t('isfeatured')">
-        <a-switch v-decorator="['isfeatured']" />
-      </a-form-item>
-
-      <a-form-item :label="$t('isrouting')">
-        <a-switch v-decorator="['isrouting']" />
-      </a-form-item>
-
-      <a-form-item :label="$t('requireshvm')">
-        <a-switch
-          v-decorator="['requireshvm', {
-            initialValue: true
-          }]"
-          defaultChecked />
-      </a-form-item>
+      <a-row :gutter="12">
+        <a-form-item :label="$t('url')">
+          <a-input
+            v-decorator="['url', {
+              rules: [{ required: true, message: 'Please enter input' }]
+            }]"
+            :placeholder="$t('template.url.description')" />
+        </a-form-item>
+      </a-row>
+      <a-row :gutter="12">
+        <a-form-item :label="$t('name')">
+          <a-input
+            v-decorator="['name', {
+              rules: [{ required: true, message: 'Please enter input' }]
+            }]"
+            :placeholder="$t('template.name.description')" />
+        </a-form-item>
+      </a-row>
+      <a-row :gutter="12">
+        <a-form-item :label="$t('displaytext')">
+          <a-input
+            v-decorator="['displaytext', {
+              rules: [{ required: true, message: 'Please enter input' }]
+            }]"
+            :placeholder="$t('template.displaytext.description')" />
+        </a-form-item>
+      </a-row>
+      <a-row :gutter="12">
+        <a-form-item
+          :label="$t('zoneids')"
+          :validate-status="zoneError"
+          :help="zoneErrorMessage">
+          <a-select
+            v-decorator="['zoneids', {
+              rules: [
+                {
+                  required: false,
+                  message: 'Please select option',
+                  type: 'array'
+                }
+              ]
+            }]"
+            :loading="zones.loading"
+            mode="multiple"
+            :placeholder="$t('template.zoneids.description')"
+            @change="handlerSelectZone">
+            <a-select-option v-for="opt in zones.opts" :key="opt.name || opt.description">
+              {{ opt.name || opt.description }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+      </a-row>
+      <a-row :gutter="12">
+        <a-col :md="24" :lg="12">
+          <a-form-item :label="$t('hypervisor')">
+            <a-select
+              v-decorator="['hypervisor', {
+                rules: [
+                  {
+                    required: false,
+                    message: 'Please select option'
+                  }
+                ]
+              }]"
+              :loading="hyperVisor.loading"
+              :placeholder="$t('template.hypervisor.description')"
+              @change="handlerSelectHyperVisor">
+              <a-select-option v-for="(opt, optIndex) in hyperVisor.opts" :key="optIndex">
+                {{ opt.name || opt.description }}
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
+        <a-col :md="24" :lg="12">
+          <a-form-item :label="$t('format')">
+            <a-select
+              v-decorator="['format', {
+                rules: [
+                  {
+                    required: false,
+                    message: 'Please select option'
+                  }
+                ]
+              }]"
+              :placeholder="$t('template.format.description')">
+              <a-select-option v-for="opt in format.opts" :key="opt.id">
+                {{ opt.name || opt.description }}
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
+      </a-row>
+      <a-row :gutter="12" v-if="allowed && hyperKVMShow">
+        <a-col :md="24" :lg="12">
+          <a-form-item :label="$t('directdownload')">
+            <a-switch v-decorator="['directdownload']" @change="handleChangeDirect" />
+          </a-form-item>
+        </a-col>
+        <a-col :md="24" :lg="12" v-if="allowDirectDownload">
+          <a-form-item :label="$t('checksum')">
+            <a-input
+              v-decorator="['checksum', {
+                rules: [{ required: false, message: 'Please enter input' }]
+              }]"
+              :placeholder="$t('template.checksum.description')" />
+          </a-form-item>
+        </a-col>
+      </a-row>
+      <a-row :gutter="12" v-if="allowed && hyperXenServerShow">
+        <a-form-item v-if="hyperXenServerShow" :label="$t('xenserverToolsVersion61plus')">
+          <a-switch
+            v-decorator="['xenserverToolsVersion61plus',{
+              initialValue: xenServerProvider
+            }]"
+            :default-checked="xenServerProvider" />
+        </a-form-item>
+      </a-row>
+      <a-row :gutter="12" v-if="hyperKVMShow || hyperVMWShow">
+        <a-col :md="24" :lg="24" v-if="hyperKVMShow">
+          <a-form-item :label="$t('rootDiskControllerTypeKVM')">
+            <a-select
+              v-decorator="['rootDiskControllerTypeKVM', {
+                rules: [
+                  {
+                    required: false,
+                    message: 'Please select option'
+                  }
+                ]
+              }]"
+              :loading="rootDisk.loading"
+              :placeholder="$t('template.rootDiskControllerTypeKVM.description')">
+              <a-select-option v-for="opt in rootDisk.opts" :key="opt.id">
+                {{ opt.name || opt.description }}
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
+        <a-col :md="24" :lg="12" v-if="hyperVMWShow">
+          <a-form-item :label="$t('rootDiskControllerTypeKVM')">
+            <a-select
+              v-decorator="['rootDiskControllerTypeKVM', {
+                rules: [
+                  {
+                    required: false,
+                    message: 'Please select option'
+                  }
+                ]
+              }]"
+              :loading="rootDisk.loading"
+              :placeholder="$t('template.rootDiskControllerTypeKVM.description')">
+              <a-select-option v-for="opt in rootDisk.opts" :key="opt.id">
+                {{ opt.name || opt.description }}
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
+        <a-col :md="24" :lg="12" v-if="hyperVMWShow">
+          <a-form-item :label="$t('nicAdapterType')">
+            <a-select
+              v-decorator="['nicAdapterType', {
+                rules: [
+                  {
+                    required: false,
+                    message: 'Please select option'
+                  }
+                ]
+              }]"
+              :placeholder="$t('template.nicAdapterType.description')">
+              <a-select-option v-for="opt in nicAdapterType.opts" :key="opt.id">
+                {{ opt.name || opt.description }}
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
+        <a-col :md="24" :lg="24">
+          <a-form-item v-if="hyperVMWShow" :label="$t('keyboardType')">
+            <a-select
+              v-decorator="['keyboardType', {
+                rules: [
+                  {
+                    required: false,
+                    message: 'Please select option'
+                  }
+                ]
+              }]"
+              :placeholder="$t('template.keyboardType.description')">
+              <a-select-option v-for="opt in keyboardType.opts" :key="opt.id">
+                {{ opt.name || opt.description }}
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
+      </a-row>
+      <a-row :gutter="12">
+        <a-form-item :label="$t('ostypeid')">
+          <a-select
+            showSearch
+            v-decorator="['ostypeid', {
+              rules: [
+                {
+                  required: false,
+                  message: 'Please select option'
+                }
+              ]
+            }]"
+            :loading="osTypes.loading"
+            :placeholder="$t('template.ostypeid.description')">
+            <a-select-option v-for="opt in osTypes.opts" :key="opt.name || opt.description">
+              {{ opt.name || opt.description }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+      </a-row>
+      <a-row :gutter="12">
+        <a-form-item>
+          <a-checkbox-group
+            v-decorator="['groupenabled', { initialValue: ['requireshvm'] }]"
+            style="width: 100%;"
+          >
+            <a-row>
+              <a-col :span="12">
+                <a-checkbox value="isextractable">
+                  {{ $t('isextractable') }}
+                </a-checkbox>
+              </a-col>
+              <a-col :span="12">
+                <a-checkbox value="passwordenabled">
+                  {{ $t('passwordenabled') }}
+                </a-checkbox>
+              </a-col>
+            </a-row>
+            <a-row>
+              <a-col :span="12">
+                <a-checkbox value="sshkeyenabled">
+                  {{ $t('sshkeyenabled') }}
+                </a-checkbox>
+              </a-col>
+              <a-col :span="12">
+                <a-checkbox value="isdynamicallyscalable">
+                  {{ $t('isdynamicallyscalable') }}
+                </a-checkbox>
+              </a-col>
+            </a-row>
+            <a-row>
+              <a-col :span="12">
+                <a-checkbox value="ispublic">
+                  {{ $t('ispublic') }}
+                </a-checkbox>
+              </a-col>
+              <a-col :span="12">
+                <a-checkbox value="isfeatured">
+                  {{ $t('isfeatured') }}
+                </a-checkbox>
+              </a-col>
+            </a-row>
+            <a-row>
+              <a-col :span="12">
+                <a-checkbox value="isrouting">
+                  {{ $t('isrouting') }}
+                </a-checkbox>
+              </a-col>
+              <a-col :span="12">
+                <a-checkbox value="requireshvm">
+                  {{ $t('requireshvm') }}
+                </a-checkbox>
+              </a-col>
+            </a-row>
+          </a-checkbox-group>
+        </a-form-item>
+      </a-row>
 
       <div :span="24" class="action-button">
         <a-button @click="closeAction">{{ this.$t('Cancel') }}</a-button>
@@ -239,6 +299,7 @@
 
 <script>
 import { api } from '@/api'
+import store from '@/store'
 
 export default {
   name: 'RegisterTemplate',
@@ -257,7 +318,10 @@ export default {
       hyperVMWShow: false,
       zoneError: '',
       zoneErrorMessage: '',
-      loading: false
+      loading: false,
+      rootAdmin: 'Admin',
+      allowed: false,
+      allowDirectDownload: false
     }
   },
   beforeCreate () {
@@ -286,16 +350,24 @@ export default {
     fetchData () {
       this.fetchZone()
       this.fetchOsTypes()
-      this.fetchXenServerProvider()
+      if (Object.prototype.hasOwnProperty.call(store.getters.apis, 'listConfigurations')) {
+        this.fetchXenServerProvider()
+      }
     },
     fetchZone () {
       const params = {}
       let listZones = []
       params.listAll = true
-      listZones.push({
-        id: this.$t('label.all.zone'),
-        name: this.$t('label.all.zone')
-      })
+
+      this.allowed = false
+
+      if (store.getters.userInfo.roletype === this.rootAdmin) {
+        this.allowed = true
+        listZones.push({
+          id: this.$t('label.all.zone'),
+          name: this.$t('label.all.zone')
+        })
+      }
 
       this.zones.loading = true
       this.zones.opts = []
@@ -315,7 +387,12 @@ export default {
 
       api('listHypervisors', params).then(json => {
         const listResponse = json.listhypervisorsresponse.hypervisor
-        listhyperVisors = listhyperVisors.concat(listResponse)
+        if (listResponse) {
+          listhyperVisors = listhyperVisors.concat(listResponse)
+        }
+        listhyperVisors.push({
+          name: 'Any'
+        })
 
         this.$set(this.hyperVisor, 'opts', listhyperVisors)
       }).finally(() => {
@@ -570,6 +647,7 @@ export default {
       this.hyperXenServerShow = false
       this.hyperVMWShow = false
       this.hyperKVMShow = false
+      this.allowDirectDownload = false
 
       this.resetSelect()
       this.fetchFormat(hyperVisor)
@@ -599,7 +677,6 @@ export default {
               params.zoneid = '-1'
               continue
             }
-
             const zonesSelected = []
             for (const index in input) {
               const name = input[index]
@@ -608,7 +685,6 @@ export default {
                 zonesSelected.push(zone[0].id)
               }
             }
-
             params[key] = zonesSelected.join(',')
           } else if (key === 'ostypeid') {
             const osTypeSelected = this.osTypes.opts.filter(item => item.description === input)
@@ -617,18 +693,22 @@ export default {
             }
           } else if (key === 'hypervisor') {
             params[key] = this.hyperVisor.opts[input].name
+          } else if (key === 'groupenabled') {
+            for (const index in input) {
+              const name = input[index]
+              params[name] = true
+            }
           } else {
             params[key] = input
           }
         }
 
         this.loading = true
-
         api('registerTemplate', params).then(json => {
           this.$emit('refresh-data')
           this.$notification.success({
             message: 'Register Template',
-            description: 'Sucessfully registered template ' + params.name
+            description: 'Successfully registered template ' + params.name
           })
         }).catch(error => {
           this.$notification.error({
@@ -640,6 +720,9 @@ export default {
           this.closeAction()
         })
       })
+    },
+    handleChangeDirect (checked) {
+      this.allowDirectDownload = checked
     },
     validZone (zones) {
       const allZoneExists = zones.filter(zone => zone === this.$t('label.all.zone'))
