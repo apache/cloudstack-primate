@@ -24,10 +24,10 @@
         layout="vertical">
 
         <a-form-item :label="$t('ispublic')" v-show="this.isAdmin()">
-          <a-switch v-decorator="['ispublic']" :checked="this.offeringIsPublic" />
+          <a-switch v-decorator="['ispublic']" :checked="this.offeringIsPublic" @change="val => { this.offeringIsPublic = val }" />
         </a-form-item>
 
-        <a-form-item :label="$t('domainid')" v-show="!this.offeringIsPublic">
+        <a-form-item :label="$t('domainid')" v-if="!this.offeringIsPublic">
           <a-select
             mode="multiple"
             v-decorator="['domainid', {
@@ -59,6 +59,14 @@
                 {
                   required: true,
                   message: 'Please select option'
+                },
+                {
+                  validator: (rule, value, callback) => {
+                    if (value && value.length > 1 && value.indexOf(0) !== -1) {
+                      callback('All Zones cannot be combined with any other zone')
+                    }
+                    callback()
+                  }
                 }
               ]
             }]"
@@ -123,25 +131,15 @@ export default {
   },
   methods: {
     fetchData () {
-      this.setupUserAccess()
       this.fetchOfferingData()
       this.fetchDomainData()
       this.fetchZoneData()
-      this.setExistingValues()
       this.updateDomainSelection()
       this.updateZoneSelection()
     },
     isAdmin () {
       return true
       // return ['Admin'].includes(user.roletype)
-    },
-    onSChange (checked) {
-      this.offeringIsPublic = checked
-    },
-    setupUserAccess () {
-      if (this.isAdmin()) {
-
-      }
     },
     fetchOfferingData () {
       const params = {}
@@ -187,6 +185,7 @@ export default {
       if (offeringDomainIds) {
         this.offeringIsPublic = false
         offeringDomainIds = offeringDomainIds.indexOf(',') !== -1 ? offeringDomainIds.split(',') : [offeringDomainIds]
+        // Todo: Update domain selection
         for (var i = 0; i < offeringDomainIds.length; i++) {
         }
       } else {
@@ -199,6 +198,7 @@ export default {
       var offeringZoneIds = this.formOffering.zoneid
       if (offeringZoneIds) {
         offeringZoneIds = offeringZoneIds.indexOf(',') !== -1 ? offeringZoneIds.split(',') : [offeringZoneIds]
+        // Todo: Update zone selection
         for (var j = 0; j < offeringZoneIds.length; j++) {
         }
       }
@@ -210,14 +210,33 @@ export default {
           return
         }
 
-        // const params = {}
-        for (const key in values) {
-          const input = values[key]
-          if (input === undefined) {
-            continue
+        const params = {}
+        var ispublic = values.ispublic
+        if (ispublic === true) {
+          params.domainid = 'public'
+        } else {
+          var domainIndexes = values.domainid
+          var domainId = 'public'
+          if (domainIndexes) {
+            var domainIds = []
+            for (var i = 0; i < domainIndexes.length; i++) {
+              domainIds = domainIds.concat(this.domains[domainIndexes[i]].id)
+            }
+            domainId = domainIds.join(',')
           }
-          console.log(key, input)
+          params.domainid = domainId
         }
+        var zoneIndexes = values.zoneid
+        var zoneId = 'all'
+        if (zoneIndexes) {
+          var zoneIds = []
+          for (var j = 0; j < zoneIndexes.length; j++) {
+            zoneIds = zoneIds.concat(this.zones[zoneIndexes[j]].id)
+          }
+          zoneId = zoneIds.join(',')
+        }
+        params.zoneid = zoneId
+        // console.log(params)
 
         // this.loading = true
         // api('updateServiceOffering', params).then(json => {
