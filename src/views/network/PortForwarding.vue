@@ -166,8 +166,8 @@
               <a-select
                 v-else-if="!addVmModalNicLoading && newRule.virtualmachineid === vm.id"
                 v-model="newRule.vmguestip">
-                <a-select-option v-for="(nic, index) in nics" :key="nic" :value="nic">
-                  {{ nic }}{{ index === 0 ? ' (Primary)' : null }}
+                <a-select-option v-for="(nic, nicIndex) in nics" :key="nic" :value="nic">
+                  {{ nic }}{{ nicIndex === 0 ? ' (Primary)' : null }}
                 </a-select-option>
               </a-select>
             </span>
