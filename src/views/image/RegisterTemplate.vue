@@ -64,7 +64,11 @@
               }]"
               :loading="zones.loading"
               mode="multiple"
+<<<<<<< HEAD
               :placeholder="apiParams.zoneids.description"
+=======
+              :placeholder="$t('template.zoneids.description')"
+>>>>>>> Fix: align form item
               @change="handlerSelectZone">
               <a-select-option v-for="opt in zones.opts" :key="opt.name || opt.description">
                 {{ opt.name || opt.description }}
@@ -240,7 +244,11 @@
                 ]
               }]"
               :loading="osTypes.loading"
+<<<<<<< HEAD
               :placeholder="apiParams.ostypeid.description">
+=======
+              :placeholder="$t('template.ostypeid.description')">
+>>>>>>> Fix: align form item
               <a-select-option v-for="opt in osTypes.opts" :key="opt.name || opt.description">
                 {{ opt.name || opt.description }}
               </a-select-option>
@@ -269,6 +277,7 @@
               </a-row>
               <a-row>
                 <a-col :span="12">
+<<<<<<< HEAD
                   <a-checkbox value="isdynamicallyscalable">
                     {{ $t('isdynamicallyscalable') }}
                   </a-checkbox>
@@ -276,11 +285,21 @@
                 <a-col :span="12">
                   <a-checkbox value="sshkeyenabled">
                     {{ $t('sshkeyenabled') }}
+=======
+                  <a-checkbox value="sshkeyenabled">
+                    {{ $t('sshkeyenabled') }}
+                  </a-checkbox>
+                </a-col>
+                <a-col :span="12">
+                  <a-checkbox value="isdynamicallyscalable">
+                    {{ $t('isdynamicallyscalable') }}
+>>>>>>> Fix: align form item
                   </a-checkbox>
                 </a-col>
               </a-row>
               <a-row>
                 <a-col :span="12">
+<<<<<<< HEAD
                   <a-checkbox value="isrouting">
                     {{ $t('isrouting') }}
                   </a-checkbox>
@@ -288,11 +307,21 @@
                 <a-col :span="12">
                   <a-checkbox value="ispublic">
                     {{ $t('ispublic') }}
+=======
+                  <a-checkbox value="ispublic">
+                    {{ $t('ispublic') }}
+                  </a-checkbox>
+                </a-col>
+                <a-col :span="12">
+                  <a-checkbox value="isfeatured">
+                    {{ $t('isfeatured') }}
+>>>>>>> Fix: align form item
                   </a-checkbox>
                 </a-col>
               </a-row>
               <a-row>
                 <a-col :span="12">
+<<<<<<< HEAD
                   <a-checkbox value="requireshvm">
                     {{ $t('requireshvm') }}
                   </a-checkbox>
@@ -300,6 +329,15 @@
                 <a-col :span="12">
                   <a-checkbox value="isfeatured">
                     {{ $t('isfeatured') }}
+=======
+                  <a-checkbox value="isrouting">
+                    {{ $t('isrouting') }}
+                  </a-checkbox>
+                </a-col>
+                <a-col :span="12">
+                  <a-checkbox value="requireshvm">
+                    {{ $t('requireshvm') }}
+>>>>>>> Fix: align form item
                   </a-checkbox>
                 </a-col>
               </a-row>
