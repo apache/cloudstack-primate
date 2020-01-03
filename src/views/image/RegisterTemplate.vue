@@ -46,29 +46,31 @@
         </a-form-item>
       </a-row>
       <a-row :gutter="12">
-        <a-form-item
-          :label="$t('zoneids')"
-          :validate-status="zoneError"
-          :help="zoneErrorMessage">
-          <a-select
-            v-decorator="['zoneids', {
-              rules: [
-                {
-                  required: false,
-                  message: 'Please select option',
-                  type: 'array'
-                }
-              ]
-            }]"
-            :loading="zones.loading"
-            mode="multiple"
-            :placeholder="$t('template.zoneids.description')"
-            @change="handlerSelectZone">
-            <a-select-option v-for="opt in zones.opts" :key="opt.name || opt.description">
-              {{ opt.name || opt.description }}
-            </a-select-option>
-          </a-select>
-        </a-form-item>
+        <a-col :md="24" :lg="24">
+          <a-form-item
+            :label="$t('zoneids')"
+            :validate-status="zoneError"
+            :help="zoneErrorMessage">
+            <a-select
+              v-decorator="['zoneids', {
+                rules: [
+                  {
+                    required: false,
+                    message: 'Please select option',
+                    type: 'array'
+                  }
+                ]
+              }]"
+              :loading="zones.loading"
+              mode="multiple"
+              :placeholder="$t('template.zoneids.description')"
+              @change="handlerSelectZone">
+              <a-select-option v-for="opt in zones.opts" :key="opt.name || opt.description">
+                {{ opt.name || opt.description }}
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
       </a-row>
       <a-row :gutter="12">
         <a-col :md="24" :lg="12">
@@ -212,81 +214,85 @@
         </a-col>
       </a-row>
       <a-row :gutter="12">
-        <a-form-item :label="$t('ostypeid')">
-          <a-select
-            showSearch
-            v-decorator="['ostypeid', {
-              rules: [
-                {
-                  required: false,
-                  message: 'Please select option'
-                }
-              ]
-            }]"
-            :loading="osTypes.loading"
-            :placeholder="$t('template.ostypeid.description')">
-            <a-select-option v-for="opt in osTypes.opts" :key="opt.name || opt.description">
-              {{ opt.name || opt.description }}
-            </a-select-option>
-          </a-select>
-        </a-form-item>
+        <a-col :md="24" :lg="24">
+          <a-form-item :label="$t('ostypeid')">
+            <a-select
+              showSearch
+              v-decorator="['ostypeid', {
+                rules: [
+                  {
+                    required: false,
+                    message: 'Please select option'
+                  }
+                ]
+              }]"
+              :loading="osTypes.loading"
+              :placeholder="$t('template.ostypeid.description')">
+              <a-select-option v-for="opt in osTypes.opts" :key="opt.name || opt.description">
+                {{ opt.name || opt.description }}
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
       </a-row>
       <a-row :gutter="12">
-        <a-form-item>
-          <a-checkbox-group
-            v-decorator="['groupenabled', { initialValue: ['requireshvm'] }]"
-            style="width: 100%;"
-          >
-            <a-row>
-              <a-col :span="12">
-                <a-checkbox value="isextractable">
-                  {{ $t('isextractable') }}
-                </a-checkbox>
-              </a-col>
-              <a-col :span="12">
-                <a-checkbox value="passwordenabled">
-                  {{ $t('passwordenabled') }}
-                </a-checkbox>
-              </a-col>
-            </a-row>
-            <a-row>
-              <a-col :span="12">
-                <a-checkbox value="sshkeyenabled">
-                  {{ $t('sshkeyenabled') }}
-                </a-checkbox>
-              </a-col>
-              <a-col :span="12">
-                <a-checkbox value="isdynamicallyscalable">
-                  {{ $t('isdynamicallyscalable') }}
-                </a-checkbox>
-              </a-col>
-            </a-row>
-            <a-row>
-              <a-col :span="12">
-                <a-checkbox value="ispublic">
-                  {{ $t('ispublic') }}
-                </a-checkbox>
-              </a-col>
-              <a-col :span="12">
-                <a-checkbox value="isfeatured">
-                  {{ $t('isfeatured') }}
-                </a-checkbox>
-              </a-col>
-            </a-row>
-            <a-row>
-              <a-col :span="12">
-                <a-checkbox value="isrouting">
-                  {{ $t('isrouting') }}
-                </a-checkbox>
-              </a-col>
-              <a-col :span="12">
-                <a-checkbox value="requireshvm">
-                  {{ $t('requireshvm') }}
-                </a-checkbox>
-              </a-col>
-            </a-row>
-          </a-checkbox-group>
-        </a-form-item>
+        <a-col :md="24" :lg="24">
+          <a-form-item>
+            <a-checkbox-group
+              v-decorator="['groupenabled', { initialValue: ['requireshvm'] }]"
+              style="width: 100%;"
+            >
+              <a-row>
+                <a-col :span="12">
+                  <a-checkbox value="isextractable">
+                    {{ $t('isextractable') }}
+                  </a-checkbox>
+                </a-col>
+                <a-col :span="12">
+                  <a-checkbox value="passwordenabled">
+                    {{ $t('passwordenabled') }}
+                  </a-checkbox>
+                </a-col>
+              </a-row>
+              <a-row>
+                <a-col :span="12">
+                  <a-checkbox value="sshkeyenabled">
+                    {{ $t('sshkeyenabled') }}
+                  </a-checkbox>
+                </a-col>
+                <a-col :span="12">
+                  <a-checkbox value="isdynamicallyscalable">
+                    {{ $t('isdynamicallyscalable') }}
+                  </a-checkbox>
+                </a-col>
+              </a-row>
+              <a-row>
+                <a-col :span="12">
+                  <a-checkbox value="ispublic">
+                    {{ $t('ispublic') }}
+                  </a-checkbox>
+                </a-col>
+                <a-col :span="12">
+                  <a-checkbox value="isfeatured">
+                    {{ $t('isfeatured') }}
+                  </a-checkbox>
+                </a-col>
+              </a-row>
+              <a-row>
+                <a-col :span="12">
+                  <a-checkbox value="isrouting">
+                    {{ $t('isrouting') }}
+                  </a-checkbox>
+                </a-col>
+                <a-col :span="12">
+                  <a-checkbox value="requireshvm">
+                    {{ $t('requireshvm') }}
+                  </a-checkbox>
+                </a-col>
+              </a-row>
+            </a-checkbox-group>
+          </a-form-item>
+        </a-col>
       </a-row>
 
       <div :span="24" class="action-button">
