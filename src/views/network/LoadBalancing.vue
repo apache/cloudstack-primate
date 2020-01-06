@@ -19,9 +19,10 @@
   <div>
     <div>
       <div class="form">
-        <div class="form__item">
-          <div class="form__label">{{ $t('name') }}</div>
+        <div class="form__item" ref="newRuleName">
+          <div class="form__label"><span class="form__required">*</span>{{ $t('name') }}</div>
           <a-input v-model="newRule.name"></a-input>
+          <span class="error-text">Required</span>
         </div>
         <div class="form__item">
           <div class="form__label">{{ $t('publicport') }}</div>
@@ -829,8 +830,13 @@ export default {
       })
     },
     handleOpenAddVMModal () {
+      if (!this.newRule.name) {
+        this.$refs.newRuleName.classList.add('error')
+        return
+      }
       this.addVmModalVisible = true
       this.addVmModalLoading = true
+      this.$refs.newRuleName.classList.remove('error')
       api('listVirtualMachines', {
         listAll: true,
         page: 1,
@@ -1043,9 +1049,33 @@ export default {
     margin-right: -20px;
     margin-bottom: 20px;
     flex-direction: column;
+    align-items: flex-start;
 
     @media (min-width: 760px) {
       flex-direction: row;
+    }
+
+    &__required {
+      margin-right: 5px;
+      color: red;
+    }
+
+    .error-text {
+      display: none;
+      color: red;
+      font-size: 0.8rem;
+    }
+
+    .error {
+
+      input {
+        border-color: red;
+      }
+
+      .error-text {
+        display: block;
+      }
+
     }
 
     &--column {
