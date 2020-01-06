@@ -42,7 +42,6 @@
         <div class="form__item">
           <div class="form__label">{{ $t('protocol') }}</div>
           <a-select v-model="newRule.protocol">
-            <a-select-option value="ssl">SSL</a-select-option>
             <a-select-option value="tcp-proxy">TCP proxy</a-select-option>
             <a-select-option value="tcp">TCP</a-select-option>
             <a-select-option value="udp">UDP</a-select-option>
@@ -259,7 +258,6 @@
         <div class="edit-rule__item">
           <p class="edit-rule__label">{{ $t('protocol') }}</p>
           <a-select v-model="editRuleDetails.protocol">
-            <a-select-option value="ssl">SSL</a-select-option>
             <a-select-option value="tcp-proxy">TCP proxy</a-select-option>
             <a-select-option value="tcp">TCP</a-select-option>
             <a-select-option value="udp">UDP</a-select-option>
