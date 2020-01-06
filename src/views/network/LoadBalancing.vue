@@ -55,7 +55,7 @@
       </div>
     </div>
 
-    <a-list :loading="loading">
+    <a-list :loading="loading" style="min-height: 25px;">
       <a-list-item v-for="rule in lbRules" :key="rule.id" class="rule custom-ant-list">
         <div class="rule-container">
           <div class="rule__row">

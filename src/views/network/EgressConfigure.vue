@@ -58,7 +58,7 @@
       </div>
     </div>
 
-    <a-list :loading="loading">
+    <a-list :loading="loading" style="min-height: 25px;">
       <a-list-item v-for="rule in egressRules" :key="rule.id" class="rule">
         <div class="rule-container">
           <div class="rule__item">
