@@ -7,9 +7,9 @@
     <div class="form__item">
       <p class="form__label">{{ $t('operation') }}</p>
       <a-select v-model="selectedOperation" defaultValue="Add" @change="fetchData">
-        <a-select-option :value="$t('Add')">{{ $t('Add') }}</a-select-option>
-        <a-select-option :value="$t('Remove')">{{ $t('Remove') }}</a-select-option>
-        <a-select-option :value="$t('Reset')">{{ $t('Reset') }}</a-select-option>
+        <a-select-option :value="$t('add')">{{ $t('add') }}</a-select-option>
+        <a-select-option :value="$t('remove')">{{ $t('remove') }}</a-select-option>
+        <a-select-option :value="$t('reset')">{{ $t('reset') }}</a-select-option>
       </a-select>
     </div>
 
@@ -110,12 +110,6 @@ export default {
         )
     },
     projectsList () {
-      console.log('Projects list = ', this.projects
-        .filter(p =>
-          this.selectedOperation === 'Add'
-            ? !this.permittedProjects.includes(p.id)
-            : this.permittedProjects.includes(p.id)
-        ))
       return this.projects
         .filter(p =>
           this.selectedOperation === 'Add'
@@ -144,15 +138,7 @@ export default {
       api('listAccounts', {
         listall: true
       }).then(response => {
-        this.accounts = response.listaccountsresponse.account
-      }).then(() => {
-        // FIXME? user is admin vs non-admin?
-        const that = this
-        this.accounts.some(function (e) {
-          if (e.name === that.resource.account) {
-            that.accountType = e.accounttype
-          }
-        })
+        this.accounts = response.listaccountsresponse.account.filter(account => account.name !== this.resource.account)
       }).finally(e => {
         this.loading = false
       })
@@ -178,20 +164,14 @@ export default {
         }
         if (permission && permission.projectids) {
           this.permittedProjects = permission.projectids
-          console.log('permitted projects == ', this.permittedProjects)
         }
       }).finally(e => {
         this.loading = false
       })
     },
+
     handleChange (selectedItems) {
-      if (this.selectedOperation === 'Add') {
-        if (this.selectedShareWith === 'Account') {
-          this.selectedAccounts = selectedItems
-        } else {
-          this.selectedProjects = selectedItems
-        }
-      } else {
+      if (this.selectedOperation === 'Add' || this.selectedOperation === 'Remove') {
         if (this.selectedShareWith === 'Account') {
           this.selectedAccounts = selectedItems
         } else {
@@ -207,13 +187,10 @@ export default {
       let variableValue = ''
       if (this.selectedShareWith === 'Account') {
         variableKey = 'accounts'
-        console.log('selected acc == ', this.selectedAccounts)
         variableValue = this.selectedAccounts.map(account => account).join(',')
       } else {
         variableKey = 'projectids'
-        console.log('PROJECTS = ', this.selectedProjects)
         variableValue = this.projects.filter(p => this.selectedProjects.includes(p.name)).map(p => p.id).join(',')
-        console.log('projects =', variableValue)
       }
       this.loading = true
       api('updateTemplatePermissions', {

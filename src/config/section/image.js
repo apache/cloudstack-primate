@@ -89,7 +89,6 @@ export default {
           icon: 'reconciliation',
           label: 'Update template permissions',
           dataView: true,
-          args: ['op', 'accounts', 'projectids'],
           popup: true,
           component: () => import('@/views/image/UpdateTemplatePermissions')
         },
