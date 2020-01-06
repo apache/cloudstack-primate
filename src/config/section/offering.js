@@ -26,6 +26,7 @@ export default {
       title: 'Compute Offerings',
       icon: 'cloud',
       permission: ['listServiceOfferings'],
+      params: { isrecursive: 'true' },
       columns: ['name', 'displaytext', 'cpunumber', 'cpuspeed', 'memory', 'tags', 'domain', 'zone'],
       details: ['name', 'id', 'displaytext', 'offerha', 'provisioningtype', 'storagetype', 'iscustomized', 'limitcpuuse', 'cpunumber', 'cpuspeed', 'memory', 'tags', 'domain', 'zone', 'created'],
       related: [{
@@ -47,17 +48,17 @@ export default {
         dataView: true,
         args: ['name', 'displaytext']
       }, {
-        api: 'deleteServiceOffering',
-        icon: 'delete',
-        label: 'Delete Offering',
-        dataView: true
-      }, {
         api: 'updateServiceOffering',
-        icon: 'edit',
+        icon: 'lock',
         label: 'Update Offering Access',
         dataView: true,
         popup: true,
         component: () => import('@/components/view/UpdateOfferingAccess.vue')
+      }, {
+        api: 'deleteServiceOffering',
+        icon: 'delete',
+        label: 'Delete Offering',
+        dataView: true
       }]
     },
     {
@@ -117,17 +118,17 @@ export default {
         dataView: true,
         args: ['name', 'displaytext']
       }, {
-        api: 'deleteDiskOffering',
-        icon: 'delete',
-        label: 'Delete Offering',
-        dataView: true
-      }, {
         api: 'updateDiskOffering',
-        icon: 'edit',
+        icon: 'lock',
         label: 'Update Offering Access',
         dataView: true,
         popup: true,
         component: () => import('@/components/view/UpdateOfferingAccess.vue')
+      }, {
+        api: 'deleteDiskOffering',
+        icon: 'delete',
+        label: 'Delete Offering',
+        dataView: true
       }]
     },
     {
@@ -175,17 +176,17 @@ export default {
           }
         }
       }, {
-        api: 'deleteNetworkOffering',
-        icon: 'delete',
-        label: 'Delete Offering',
-        dataView: true
-      }, {
         api: 'updateNetworkOffering',
-        icon: 'edit',
+        icon: 'lock',
         label: 'Update Offering Access',
         dataView: true,
         popup: true,
         component: () => import('@/components/view/UpdateOfferingAccess.vue')
+      }, {
+        api: 'deleteNetworkOffering',
+        icon: 'delete',
+        label: 'Delete Offering',
+        dataView: true
       }]
     },
     {
@@ -239,17 +240,17 @@ export default {
           }
         }
       }, {
-        api: 'deleteVPCOffering',
-        icon: 'delete',
-        label: 'Delete Offering',
-        dataView: true
-      }, {
         api: 'updateVPCOffering',
-        icon: 'edit',
+        icon: 'lock',
         label: 'Update Offering Access',
         dataView: true,
         popup: true,
         component: () => import('@/components/view/UpdateOfferingAccess.vue')
+      }, {
+        api: 'deleteVPCOffering',
+        icon: 'delete',
+        label: 'Delete Offering',
+        dataView: true
       }]
     }
   ]
