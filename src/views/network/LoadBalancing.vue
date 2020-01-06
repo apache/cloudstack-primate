@@ -24,13 +24,15 @@
           <a-input v-model="newRule.name"></a-input>
           <span class="error-text">Required</span>
         </div>
-        <div class="form__item">
-          <div class="form__label">{{ $t('publicport') }}</div>
+        <div class="form__item" ref="newRulePublicPort">
+          <div class="form__label"><span class="form__required">*</span>{{ $t('publicport') }}</div>
           <a-input v-model="newRule.publicport"></a-input>
+          <span class="error-text">Required</span>
         </div>
-        <div class="form__item">
-          <div class="form__label">{{ $t('privateport') }}</div>
+        <div class="form__item" ref="newRulePrivatePort">
+          <div class="form__label"><span class="form__required">*</span>{{ $t('privateport') }}</div>
           <a-input v-model="newRule.privateport"></a-input>
+          <span class="error-text">Required</span>
         </div>
         <div class="form__item">
           <div class="form__label">{{ $t('algorithm') }}</div>
@@ -274,7 +276,7 @@
       width="60vw"
       @ok="handleAddNewRule"
       :okButtonProps="{ props:
-        {disabled: newRule.virtualmachineid === null } }"
+        {disabled: newRule.virtualmachineid === [] } }"
       @cancel="closeModal"
     >
 
@@ -292,19 +294,19 @@
           <span>{{ $t('select') }}</span>
         </div>
 
-        <a-radio-group v-model="newRule.virtualmachineid" style="width: 100%;" @change="fetchNics">
+        <a-checkbox-group style="width: 100%;">
           <div v-for="(vm, index) in vms" :key="index" class="vm-modal__item">
-
             <span style="min-width: 200px;">
               <span>
                 {{ vm.name }}
               </span>
               <a-icon v-if="addVmModalNicLoading" type="loading"></a-icon>
               <a-select
-                v-else-if="!addVmModalNicLoading && newRule.virtualmachineid === vm.id"
+                v-else-if="!addVmModalNicLoading && newRule.virtualmachineid[index] === vm.id"
                 mode="multiple"
-                v-model="newRule.vmguestip">
-                <a-select-option v-for="(nic, nicIndex) in nics" :key="nic" :value="nic">
+                v-model="newRule.vmguestip[index]"
+              >
+                <a-select-option v-for="(nic, nicIndex) in nics[index]" :key="nic" :value="nic">
                   {{ nic }}{{ nicIndex === 0 ? ' (Primary)' : null }}
                 </a-select-option>
               </a-select>
@@ -315,9 +317,9 @@
             <span>{{ vm.account }}</span>
             <span>{{ vm.zonename }}</span>
             <span>{{ vm.state }}</span>
-            <a-radio :value="vm.id" />
+            <a-checkbox :value="vm.id" @change="e => fetchNics(e, index)" />
           </div>
-        </a-radio-group>
+        </a-checkbox-group>
       </div>
 
     </a-modal>
@@ -369,7 +371,7 @@ export default {
         privateport: '',
         publicport: '',
         protocol: 'tcp',
-        virtualmachineid: null,
+        virtualmachineid: [],
         vmguestip: []
       },
       addVmModalVisible: false,
@@ -377,6 +379,11 @@ export default {
       addVmModalNicLoading: false,
       vms: [],
       nics: []
+    }
+  },
+  watch: {
+    resource () {
+      this.fetchData()
     }
   },
   mounted () {
@@ -832,11 +839,22 @@ export default {
     handleOpenAddVMModal () {
       if (!this.newRule.name) {
         this.$refs.newRuleName.classList.add('error')
-        return
+      } else {
+        this.$refs.newRuleName.classList.remove('error')
       }
+      if (!this.newRule.publicport) {
+        this.$refs.newRulePublicPort.classList.add('error')
+      } else {
+        this.$refs.newRulePublicPort.classList.remove('error')
+      }
+      if (!this.newRule.privateport) {
+        this.$refs.newRulePrivatePort.classList.add('error')
+      } else {
+        this.$refs.newRulePrivatePort.classList.remove('error')
+      }
+      if (!this.newRule.name || !this.newRule.publicport || !this.newRule.privateport) return
       this.addVmModalVisible = true
       this.addVmModalLoading = true
-      this.$refs.newRuleName.classList.remove('error')
       api('listVirtualMachines', {
         listAll: true,
         page: 1,
@@ -846,6 +864,11 @@ export default {
         domainid: this.resource.domainid
       }).then(response => {
         this.vms = response.listvirtualmachinesresponse.virtualmachine
+        this.vms.forEach((vm, index) => {
+          this.newRule.virtualmachineid[index] = null
+          this.nics[index] = null
+          this.newRule.vmguestip[index] = null
+        })
         this.addVmModalLoading = false
       }).catch(error => {
         this.$notification.error({
@@ -855,15 +878,28 @@ export default {
         this.closeModal()
       })
     },
-    fetchNics (e) {
+    fetchNics (e, index) {
+      if (!e.target.checked) {
+        this.newRule.virtualmachineid[index] = null
+        this.nics[index] = null
+        this.newRule.vmguestip[index] = null
+        return
+      }
+      this.newRule.virtualmachineid[index] = e.target.value
       this.addVmModalNicLoading = true
+
       api('listNics', {
         virtualmachineid: e.target.value,
         networkid: this.resource.associatednetworkid
       }).then(response => {
         if (!response.listnicsresponse.nic[0]) return
-        this.nics.push(response.listnicsresponse.nic[0].ipaddress, ...response.listnicsresponse.nic[0].secondaryip.map(ip => ip.ipaddress))
-        this.newRule.vmguestip = this.nics[0]
+        const newItem = []
+        newItem.push(response.listnicsresponse.nic[0].ipaddress)
+        if (response.listnicsresponse.nic[0].secondaryip) {
+          newItem.push(...response.listnicsresponse.nic[0].secondaryip.map(ip => ip.ipaddress))
+        }
+        this.nics[index] = newItem
+        this.newRule.vmguestip[index] = this.nics[index][0]
         this.addVmModalNicLoading = false
       }).catch(error => {
         this.$notification.error({
@@ -876,27 +912,22 @@ export default {
     handleAssignToLBRule (data) {
       const vmIDIpMap = {}
 
-      if (Array.isArray(this.newRule.vmguestip) && this.newRule.vmguestip.length > 1) {
-        this.newRule.vmguestip.forEach((ip, index) => {
-          vmIDIpMap[`vmidipmap[${index}].vmid`] = this.newRule.virtualmachineid
-          vmIDIpMap[`vmidipmap[${index}].vmip`] = ip
-        })
-      } else {
-        const ifExists = this.selectedRule.ruleInstances[0].lbvmipaddresses.includes(this.newRule.vmguestip[0]) || this.selectedRule.ruleInstances[0].lbvmipaddresses.includes(this.newRule.vmguestip)
-
-        if (ifExists) {
-          this.$notification.error({
-            message: 'Failed to assign VM',
-            description: 'VM already exists on rule'
+      let count = 0
+      let innerCount = 0
+      this.newRule.vmguestip.forEach(ip => {
+        if (Array.isArray(ip)) {
+          ip.forEach(i => {
+            vmIDIpMap[`vmidipmap[${innerCount}].vmid`] = this.newRule.virtualmachineid[count]
+            vmIDIpMap[`vmidipmap[${innerCount}].vmip`] = i
+            innerCount++
           })
-          this.closeModal()
-          this.loading = false
-          return
+        } else {
+          vmIDIpMap[`vmidipmap[${innerCount}].vmid`] = this.newRule.virtualmachineid[count]
+          vmIDIpMap[`vmidipmap[${innerCount}].vmip`] = ip
+          innerCount++
         }
-
-        vmIDIpMap[`vmidipmap[${0}].vmid`] = this.newRule.virtualmachineid
-        vmIDIpMap[`vmidipmap[${0}].vmip`] = this.newRule.vmguestip
-      }
+        count++
+      })
 
       this.loading = true
       api('assignToLoadBalancerRule', {
@@ -977,7 +1008,7 @@ export default {
       this.vms = []
       this.nics = []
       this.addVmModalVisible = false
-      this.newRule.virtualmachineid = null
+      this.newRule.virtualmachineid = []
       this.newTagsForm.resetFields()
       this.stickinessPolicyForm.resetFields()
     }
