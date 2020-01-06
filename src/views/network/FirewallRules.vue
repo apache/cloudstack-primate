@@ -47,7 +47,7 @@
           <div class="form__label">{{ $t('icmpcode') }}</div>
           <a-input v-model="newRule.icmpcode"></a-input>
         </div>
-        <div class="form__item">
+        <div class="form__item" style="margin-left: auto;">
           <a-button type="primary" @click="addRule">{{ $t('label.add.setting') }}</a-button>
         </div>
       </div>
@@ -160,6 +160,11 @@ export default {
     capitalise: val => {
       if (val === 'all') return 'All'
       return val.toUpperCase()
+    }
+  },
+  watch: {
+    resource () {
+      this.fetchData()
     }
   },
   methods: {
@@ -408,7 +413,7 @@ export default {
     &__item {
       display: flex;
       flex-direction: column;
-      flex: 1;
+      /*flex: 1;*/
       padding-right: 20px;
       margin-bottom: 20px;
 

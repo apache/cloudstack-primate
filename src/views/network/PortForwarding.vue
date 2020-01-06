@@ -62,7 +62,7 @@
             <a-select-option value="udp">{{ $t('udp') }}</a-select-option>
           </a-select>
         </div>
-        <div class="form__item">
+        <div class="form__item" style="margin-left: auto;">
           <div class="form__label">{{ $t('label.add.VM') }}</div>
           <a-button type="primary" @click="openAddVMModal">{{ $t('label.add') }}</a-button>
         </div>
@@ -238,6 +238,11 @@ export default {
   },
   mounted () {
     this.fetchData()
+  },
+  watch: {
+    resource () {
+      this.fetchData()
+    }
   },
   filters: {
     capitalise: val => {
@@ -547,7 +552,7 @@ export default {
     &__item {
       display: flex;
       flex-direction: column;
-      flex: 1;
+      /*flex: 1;*/
       padding-right: 20px;
       margin-bottom: 20px;
 

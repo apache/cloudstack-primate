@@ -50,7 +50,7 @@
             <a-select-option value="udp">UDP</a-select-option>
           </a-select>
         </div>
-        <div class="form__item">
+        <div class="form__item" style="margin-left: auto;">
           <div class="form__label">{{ $t('label.add.VMs') }}</div>
           <a-button type="primary" @click="handleOpenAddVMModal">Add</a-button>
         </div>
@@ -1124,7 +1124,7 @@ export default {
     &__item {
       display: flex;
       flex-direction: column;
-      flex: 1;
+      /*flex: 1;*/
       padding-right: 20px;
       margin-bottom: 20px;
 
