@@ -143,7 +143,7 @@
       title="Add VMs"
       v-model="addVmModalVisible"
       class="vm-modal"
-      width="80vw"
+      width="60vw"
       @ok="addRule"
       :okButtonProps="{ props:
         {disabled: newRule.virtualmachineid === null } }"
