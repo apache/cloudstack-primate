@@ -99,14 +99,11 @@ export default {
     resource: {
       type: Object,
       required: true
-    },
-    oferringType: {
-      type: String,
-      required: true
     }
   },
   data () {
     return {
+      offeringType: '',
       formOffering: {},
       selectedDomains: [],
       selectedZones: [],
@@ -130,6 +127,23 @@ export default {
     ]
   },
   mounted () {
+    this.offeringType = this.$route.meta.name
+    switch (this.$route.meta.name) {
+      case 'computeoffering':
+        this.offeringType = 'ServiceOffering'
+        break
+      case 'diskoffering':
+        this.offeringType = 'DiskOffering'
+        break
+      case 'networkoffering':
+        this.offeringType = 'NetworkOffering'
+        break
+      case 'vpcoffering':
+        this.offeringType = 'VPCOffering'
+        break
+      default:
+        this.offeringType = this.$route.meta.name
+    }
     this.fetchData()
   },
   methods: {
@@ -146,9 +160,9 @@ export default {
       params.id = this.resource.id
       params.isrecursive = true
 
-      var api = 'list' + this.oferringType + 's'
-      api(api, params).then(json => {
-        const offerings = json[api + 'response'][this.oferringType]
+      var apiName = 'list' + this.offeringType + 's'
+      api(apiName, params).then(json => {
+        const offerings = json[apiName.toLowerCase() + 'response'][this.offeringType.toLowerCase()]
         this.formOffering = offerings[0]
       }).finally(() => {
         this.updateDomainSelection()
@@ -253,7 +267,7 @@ export default {
         params.zoneid = zoneId
 
         this.loading = true
-        api('update' + this.oferringType, params).then(json => {
+        api('update' + this.offeringType, params).then(json => {
           this.$emit('refresh-data')
           this.$notification.success({
             message: this.$t('label.action.update.offering.access'),
