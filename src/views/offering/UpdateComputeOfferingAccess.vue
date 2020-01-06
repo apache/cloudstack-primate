@@ -29,6 +29,7 @@
 
         <a-form-item :label="$t('domainid')" v-if="!this.offeringIsPublic">
           <a-select
+            :value="this.selectedDomains"
             mode="multiple"
             v-decorator="['domainid', {
               rules: [
@@ -53,6 +54,7 @@
 
         <a-form-item :label="$t('zoneid')">
           <a-select
+            :value="this.selectedZones"
             mode="multiple"
             v-decorator="['zoneid', {
               rules: [
@@ -97,7 +99,7 @@
 import { api } from '@/api'
 
 export default {
-  name: 'updateServiceOffering',
+  name: 'UpdateServiceOffering',
   props: {
     resource: {
       type: Object,
@@ -107,6 +109,8 @@ export default {
   data () {
     return {
       formOffering: {},
+      selectedDomains: [],
+      selectedZones: [],
       offeringIsPublic: false,
       domains: [],
       domainLoading: false,
@@ -134,12 +138,9 @@ export default {
       this.fetchOfferingData()
       this.fetchDomainData()
       this.fetchZoneData()
-      this.updateDomainSelection()
-      this.updateZoneSelection()
     },
     isAdmin () {
-      return true
-      // return ['Admin'].includes(user.roletype)
+      return ['Admin'].includes(this.$store.getters.userInfo.roletype)
     },
     fetchOfferingData () {
       const params = {}
@@ -150,16 +151,15 @@ export default {
         const offerings = json.listserviceofferingsresponse.serviceoffering
         this.formOffering = offerings[0]
       }).finally(() => {
-        console.log(this.formOffering)
+        this.updateDomainSelection()
+        this.updateZoneSelection()
       })
     },
     fetchDomainData () {
       const params = {}
       params.listAll = true
       params.details = 'min'
-
       this.domainLoading = true
-
       api('listDomains', params).then(json => {
         const listDomains = json.listdomainsresponse.domain
         this.domains = this.domains.concat(listDomains)
@@ -170,9 +170,7 @@ export default {
     fetchZoneData () {
       const params = {}
       params.listAll = true
-
       this.zoneLoading = true
-
       api('listZones', params).then(json => {
         const listZones = json.listzonesresponse.zone
         this.zones = this.zones.concat(listZones)
@@ -182,26 +180,40 @@ export default {
     },
     updateDomainSelection () {
       var offeringDomainIds = this.formOffering.domainid
+      this.selectedDomains = []
       if (offeringDomainIds) {
         this.offeringIsPublic = false
         offeringDomainIds = offeringDomainIds.indexOf(',') !== -1 ? offeringDomainIds.split(',') : [offeringDomainIds]
         // Todo: Update domain selection
         for (var i = 0; i < offeringDomainIds.length; i++) {
+          for (var j = 0; j < this.domains.length; j++) {
+            if (offeringDomainIds[i] === this.domains[j].id) {
+              this.selectedDomains = this.selectedDomains.concat(j)
+            }
+          }
         }
       } else {
         if (this.isAdmin()) {
           this.offeringIsPublic = true
         }
       }
+      console.log(this.selectedDomains)
     },
     updateZoneSelection () {
       var offeringZoneIds = this.formOffering.zoneid
+      this.selectedZones = []
       if (offeringZoneIds) {
         offeringZoneIds = offeringZoneIds.indexOf(',') !== -1 ? offeringZoneIds.split(',') : [offeringZoneIds]
         // Todo: Update zone selection
-        for (var j = 0; j < offeringZoneIds.length; j++) {
+        for (var i = 0; i < offeringZoneIds.length; i++) {
+          for (var j = 0; j < this.zones.length; j++) {
+            if (offeringZoneIds[i] === this.zones[j].id) {
+              this.selectedZones = this.selectedZones.concat(j)
+            }
+          }
         }
       }
+      console.log(this.selectedZones)
     },
     handleSubmit (e) {
       e.preventDefault()
