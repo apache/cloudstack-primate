@@ -90,6 +90,7 @@ export default {
           label: 'Update template permissions',
           dataView: true,
           popup: true,
+          show: (record, user) => { return (['Admin', 'DomainAdmin'].includes(user.roletype) && (record.domainid === user.domainid && record.account === user.account) || record.templatetype !== 'SYSTEM') },
           component: () => import('@/views/image/UpdateTemplatePermissions')
         },
         {

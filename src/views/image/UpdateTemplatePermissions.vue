@@ -140,7 +140,7 @@ export default {
   },
   methods: {
     fetchData () {
-      console.log('admin? = ', this.$store.getters.userInfo.roletype)
+      console.log('resource = ', this.resource)
       this.fetchTemplatePermissions()
       if (this.selectedShareWith === 'Account') {
         this.selectedAccounts = []
