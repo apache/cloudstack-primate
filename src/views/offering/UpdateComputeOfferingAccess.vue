@@ -29,7 +29,6 @@
 
         <a-form-item :label="$t('domainid')" v-if="!this.offeringIsPublic">
           <a-select
-            :value="this.selectedDomains"
             mode="multiple"
             v-decorator="['domainid', {
               rules: [
@@ -46,7 +45,7 @@
             }"
             :loading="domainLoading"
             :placeholder="this.$t('label.domain')">
-            <a-select-option v-for="(opt, optIndex) in domains" :key="optIndex">
+            <a-select-option v-for="(opt, optIndex) in this.domains" :key="optIndex">
               {{ opt.name || opt.description }}
             </a-select-option>
           </a-select>
@@ -54,14 +53,10 @@
 
         <a-form-item :label="$t('zoneid')">
           <a-select
-            :value="this.selectedZones"
+            id="zone-selection"
             mode="multiple"
             v-decorator="['zoneid', {
               rules: [
-                {
-                  required: true,
-                  message: 'Please select option'
-                },
                 {
                   validator: (rule, value, callback) => {
                     if (value && value.length > 1 && value.indexOf(0) !== -1) {
@@ -79,7 +74,7 @@
             }"
             :loading="zoneLoading"
             :placeholder="this.$t('label.zoneid')">
-            <a-select-option v-for="(opt, optIndex) in zones" :key="optIndex">
+            <a-select-option v-for="(opt, optIndex) in this.zones" :key="optIndex">
               {{ opt.name || opt.description }}
             </a-select-option>
           </a-select>
@@ -184,7 +179,6 @@ export default {
       if (offeringDomainIds) {
         this.offeringIsPublic = false
         offeringDomainIds = offeringDomainIds.indexOf(',') !== -1 ? offeringDomainIds.split(',') : [offeringDomainIds]
-        // Todo: Update domain selection
         for (var i = 0; i < offeringDomainIds.length; i++) {
           for (var j = 0; j < this.domains.length; j++) {
             if (offeringDomainIds[i] === this.domains[j].id) {
@@ -197,14 +191,15 @@ export default {
           this.offeringIsPublic = true
         }
       }
-      console.log(this.selectedDomains)
+      this.form.setFieldsValue({
+        domainid: this.selectedDomains
+      })
     },
     updateZoneSelection () {
       var offeringZoneIds = this.formOffering.zoneid
       this.selectedZones = []
       if (offeringZoneIds) {
         offeringZoneIds = offeringZoneIds.indexOf(',') !== -1 ? offeringZoneIds.split(',') : [offeringZoneIds]
-        // Todo: Update zone selection
         for (var i = 0; i < offeringZoneIds.length; i++) {
           for (var j = 0; j < this.zones.length; j++) {
             if (offeringZoneIds[i] === this.zones[j].id) {
@@ -213,7 +208,9 @@ export default {
           }
         }
       }
-      console.log(this.selectedZones)
+      this.form.setFieldsValue({
+        zoneid: this.selectedZones
+      })
     },
     handleSubmit (e) {
       e.preventDefault()
@@ -223,13 +220,14 @@ export default {
         }
 
         const params = {}
+        params.id = this.formOffering.id
         var ispublic = values.ispublic
         if (ispublic === true) {
           params.domainid = 'public'
         } else {
           var domainIndexes = values.domainid
           var domainId = 'public'
-          if (domainIndexes) {
+          if (domainIndexes && domainIndexes.length > 0) {
             var domainIds = []
             for (var i = 0; i < domainIndexes.length; i++) {
               domainIds = domainIds.concat(this.domains[domainIndexes[i]].id)
@@ -240,7 +238,7 @@ export default {
         }
         var zoneIndexes = values.zoneid
         var zoneId = 'all'
-        if (zoneIndexes) {
+        if (zoneIndexes && zoneIndexes.length > 0) {
           var zoneIds = []
           for (var j = 0; j < zoneIndexes.length; j++) {
             zoneIds = zoneIds.concat(this.zones[zoneIndexes[j]].id)
@@ -248,24 +246,23 @@ export default {
           zoneId = zoneIds.join(',')
         }
         params.zoneid = zoneId
-        // console.log(params)
 
-        // this.loading = true
-        // api('updateServiceOffering', params).then(json => {
-        //   this.$emit('refresh-data')
-        //   this.$notification.success({
-        //     message: this.$t('label.action.update.offering.access'),
-        //     description: this.$t('label.action.update.offering.access')
-        //   })
-        // }).catch(error => {
-        //   this.$notification.error({
-        //     message: 'Request Failed',
-        //     description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-        //   })
-        // }).finally(() => {
-        //   this.loading = false
-        //   this.closeAction()
-        // })
+        this.loading = true
+        api('updateServiceOffering', params).then(json => {
+          this.$emit('refresh-data')
+          this.$notification.success({
+            message: this.$t('label.action.update.offering.access'),
+            description: this.$t('label.action.update.offering.access')
+          })
+        }).catch(error => {
+          this.$notification.error({
+            message: 'Request Failed',
+            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+          })
+        }).finally(() => {
+          this.loading = false
+          this.closeAction()
+        })
       })
     },
     closeAction () {
