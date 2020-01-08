@@ -320,7 +320,8 @@ export default {
           icon: 'plus',
           label: 'Add VPN Customer Gateway',
           listView: true,
-          args: ['name', 'gateway', 'cidrlist', 'ipsecpsk', 'ikelifetime', 'esplifetime', 'dpd', 'forceencap', 'ikepolicy', 'esppolicy']
+          popup: true,
+          component: () => import('@/views/network/CreateVpnCustomerGateway.vue')
         },
         {
           api: 'deleteVpnCustomerGateway',
