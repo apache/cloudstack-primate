@@ -53,7 +53,7 @@ export default {
         label: 'Update Offering Access',
         dataView: true,
         popup: true,
-        component: () => import('@/components/view/UpdateOfferingAccess.vue')
+        component: () => import('@/views/offering/UpdateOfferingAccess.vue')
       }, {
         api: 'deleteServiceOffering',
         icon: 'delete',
@@ -124,7 +124,7 @@ export default {
         label: 'Update Offering Access',
         dataView: true,
         popup: true,
-        component: () => import('@/components/view/UpdateOfferingAccess.vue')
+        component: () => import('@/views/offering/UpdateOfferingAccess.vue')
       }, {
         api: 'deleteDiskOffering',
         icon: 'delete',
@@ -183,7 +183,7 @@ export default {
         label: 'Update Offering Access',
         dataView: true,
         popup: true,
-        component: () => import('@/components/view/UpdateOfferingAccess.vue')
+        component: () => import('@/views/offering/UpdateOfferingAccess.vue')
       }, {
         api: 'deleteNetworkOffering',
         icon: 'delete',
@@ -248,7 +248,7 @@ export default {
         label: 'Update Offering Access',
         dataView: true,
         popup: true,
-        component: () => import('@/components/view/UpdateOfferingAccess.vue')
+        component: () => import('@/views/offering/UpdateOfferingAccess.vue')
       }, {
         api: 'deleteVPCOffering',
         icon: 'delete',

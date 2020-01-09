@@ -73,7 +73,7 @@
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
             :loading="zoneLoading"
-            :placeholder="this.$t('label.zoneid')">
+            :placeholder="this.$t('label.zone')">
             <a-select-option v-for="(opt, optIndex) in this.zones" :key="optIndex">
               {{ opt.name || opt.description }}
             </a-select-option>
@@ -104,7 +104,6 @@ export default {
   data () {
     return {
       offeringType: '',
-      formOffering: {},
       selectedDomains: [],
       selectedZones: [],
       offeringIsPublic: false,
@@ -121,7 +120,7 @@ export default {
   created () {
     this.zones = [
       {
-        id: '-1',
+        id: 'all',
         name: this.$t('label.all.zone')
       }
     ]
@@ -148,26 +147,11 @@ export default {
   },
   methods: {
     fetchData () {
-      this.fetchOfferingData()
       this.fetchDomainData()
       this.fetchZoneData()
     },
     isAdmin () {
       return ['Admin'].includes(this.$store.getters.userInfo.roletype)
-    },
-    fetchOfferingData () {
-      const params = {}
-      params.id = this.resource.id
-      params.isrecursive = true
-
-      var apiName = 'list' + this.offeringType + 's'
-      api(apiName, params).then(json => {
-        const offerings = json[apiName.toLowerCase() + 'response'][this.offeringType.toLowerCase()]
-        this.formOffering = offerings[0]
-      }).finally(() => {
-        this.updateDomainSelection()
-        this.updateZoneSelection()
-      })
     },
     fetchDomainData () {
       const params = {}
@@ -193,7 +177,7 @@ export default {
       })
     },
     updateDomainSelection () {
-      var offeringDomainIds = this.formOffering.domainid
+      var offeringDomainIds = this.resource.domainid
       this.selectedDomains = []
       if (offeringDomainIds) {
         this.offeringIsPublic = false
@@ -215,7 +199,7 @@ export default {
       })
     },
     updateZoneSelection () {
-      var offeringZoneIds = this.formOffering.zoneid
+      var offeringZoneIds = this.resource.zoneid
       this.selectedZones = []
       if (offeringZoneIds) {
         offeringZoneIds = offeringZoneIds.indexOf(',') !== -1 ? offeringZoneIds.split(',') : [offeringZoneIds]
@@ -239,7 +223,7 @@ export default {
         }
 
         const params = {}
-        params.id = this.formOffering.id
+        params.id = this.resource.id
         var ispublic = values.ispublic
         if (ispublic === true) {
           params.domainid = 'public'
@@ -293,7 +277,11 @@ export default {
 
 <style scoped lang="scss">
   .form-layout {
-    width: 500px;
+    width: 80vw;
+
+    @media (min-width: 1000px) {
+      width: 35vw;
+    }
   }
 
   .action-button {
