@@ -59,7 +59,6 @@
             </a-select>
           </div>
           <div v-else>
-            <!-- <a-input placeholder="Enter comma-separated list of commands" v-model="selectedAccountsList" @change="val => selectedAccountsList = val"/> -->
             <a-input v-model="selectedAccountsList" placeholder="Enter comma-separated list of commands"></a-input>
           </div>
         </div>
@@ -70,17 +69,15 @@
           <p class="form__label">
             {{ $t('project') }}
           </p>
-          <div v-if="!isUser() || allowUserViewAllDomainAccounts === true">
-            <a-select
-              mode="multiple"
-              placeholder="Select Projects"
-              :value="selectedProjects"
-              @change="handleChange"
-              style="width: 100%">
-              <a-select-option v-for="project in projectsList" :key="project.name">
-                {{ project.name }}</a-select-option>
-            </a-select>
-          </div>
+          <a-select
+            mode="multiple"
+            placeholder="Select Projects"
+            :value="selectedProjects"
+            @change="handleChange"
+            style="width: 100%">
+            <a-select-option v-for="project in projectsList" :key="project.name">
+              {{ project.name }}</a-select-option>
+          </a-select>
         </div>
       </template>
     </template>
