@@ -47,15 +47,21 @@
           <p class="form__label">
             {{ $t('account') }}
           </p>
-          <a-select
-            mode="multiple"
-            placeholder="Select Accounts"
-            :value="selectedAccounts"
-            @change="handleChange"
-            style="width: 100%">
-            <a-select-option v-for="account in accountsList" :key="account.name">
-              {{ account.name }}</a-select-option>
-          </a-select>
+          <div v-if="isUser === false || allowUserViewAllDomainAccounts === true">
+            <a-select
+              mode="multiple"
+              placeholder="Select Accounts"
+              :value="selectedAccounts"
+              @change="handleChange"
+              style="width: 100%">
+              <a-select-option v-for="account in accountsList" :key="account.name">
+                {{ account.name }}</a-select-option>
+            </a-select>
+          </div>
+          <div v-else>
+            <!-- <a-input placeholder="Enter comma-separated list of commands" v-model="selectedAccountsList" @change="val => selectedAccountsList = val"/> -->
+            <a-input v-model="selectedAccountsList" placeholder="Enter comma-separated list of commands"></a-input>
+          </div>
         </div>
       </template>
 
@@ -64,15 +70,17 @@
           <p class="form__label">
             {{ $t('project') }}
           </p>
-          <a-select
-            mode="multiple"
-            placeholder="Select Projects"
-            :value="selectedProjects"
-            @change="handleChange"
-            style="width: 100%">
-            <a-select-option v-for="project in projectsList" :key="project.name">
-              {{ project.name }}</a-select-option>
-          </a-select>
+          <div v-if="!isUser() || allowUserViewAllDomainAccounts === true">
+            <a-select
+              mode="multiple"
+              placeholder="Select Projects"
+              :value="selectedProjects"
+              @change="handleChange"
+              style="width: 100%">
+              <a-select-option v-for="project in projectsList" :key="project.name">
+                {{ project.name }}</a-select-option>
+            </a-select>
+          </div>
         </div>
       </template>
     </template>
@@ -106,12 +114,15 @@ export default {
       permittedProjects: [],
       selectedAccounts: [],
       selectedProjects: [],
+      selectedAccountsList: '',
       selectedOperation: 'Add',
       selectedShareWith: this.$t('account'),
       accountError: false,
       projectError: false,
       allowUserViewAllDomainAccounts: null,
-      loading: false
+      accountType: undefined,
+      loading: false,
+      isUser: true
     }
   },
   computed: {
@@ -146,6 +157,7 @@ export default {
         this.fetchProjects()
       }
       this.allowUserViewAllDomainAccounts = this.$store.getters.features.allowuserviewalldomainaccounts
+      this.isUser = ['User'].includes(this.$store.getters.userInfo.roletype)
     },
     fetchAccounts () {
       this.loading = true
@@ -183,7 +195,6 @@ export default {
         this.loading = false
       })
     },
-
     handleChange (selectedItems) {
       if (this.selectedOperation === 'Add' || this.selectedOperation === 'Remove') {
         if (this.selectedShareWith === 'Account') {
@@ -201,7 +212,11 @@ export default {
       let variableValue = ''
       if (this.selectedShareWith === 'Account') {
         variableKey = 'accounts'
-        variableValue = this.selectedAccounts.map(account => account).join(',')
+        if (this.isUser === false) {
+          variableValue = this.selectedAccounts.map(account => account).join(',')
+        } else {
+          variableValue = this.selectedAccountsList
+        }
       } else {
         variableKey = 'projectids'
         variableValue = this.projects.filter(p => this.selectedProjects.includes(p.name)).map(p => p.id).join(',')
