@@ -47,7 +47,7 @@
           <p class="form__label">
             {{ $t('account') }}
           </p>
-          <div v-if="isUser === false || allowUserViewAllDomainAccounts === true">
+          <div v-if="showAccountSelect">
             <a-select
               mode="multiple"
               placeholder="Select Accounts"
@@ -116,10 +116,8 @@ export default {
       selectedShareWith: this.$t('account'),
       accountError: false,
       projectError: false,
-      allowUserViewAllDomainAccounts: null,
-      accountType: undefined,
-      loading: false,
-      isUser: true
+      showAccountSelect: true,
+      loading: false
     }
   },
   computed: {
@@ -153,8 +151,7 @@ export default {
         this.selectedProjects = []
         this.fetchProjects()
       }
-      this.allowUserViewAllDomainAccounts = this.$store.getters.features.allowuserviewalldomainaccounts
-      this.isUser = ['User'].includes(this.$store.getters.userInfo.roletype)
+      this.showAccountSelect = this.$store.getters.features.allowuserviewalldomainaccounts || !(this.$store.getters.userInfo.roletype === 'User')
     },
     fetchAccounts () {
       this.loading = true
@@ -209,7 +206,7 @@ export default {
       let variableValue = ''
       if (this.selectedShareWith === 'Account') {
         variableKey = 'accounts'
-        if (this.isUser === false) {
+        if (this.showAccountSelect) {
           variableValue = this.selectedAccounts.map(account => account).join(',')
         } else {
           variableValue = this.selectedAccountsList
