@@ -14,10 +14,11 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
+
 <template>
   <div class="form">
     <div v-if="loading" class="loading">
-      <a-icon type="loading" style="color: #1890ff;"></a-icon>
+      <a-icon type="loading"></a-icon>
     </div>
 
     <div class="form__item">
@@ -99,22 +100,18 @@ export default {
   inject: ['parentFetchData'],
   data () {
     return {
-      value: [],
-      role: null,
       projects: [],
       accounts: [],
-      accountType: undefined,
-      allowUserViewAllDomainAccounts: null,
+      permittedAccounts: [],
+      permittedProjects: [],
+      selectedAccounts: [],
+      selectedProjects: [],
       selectedOperation: 'Add',
       selectedShareWith: this.$t('account'),
       accountError: false,
       projectError: false,
-      permittedAccounts: [],
-      selectedAccounts: [],
-      permittedProjects: [],
-      selectedProjects: [],
-      loading: false,
-      roletype: this.$store.getters.userInfo.roletype
+      allowUserViewAllDomainAccounts: null,
+      loading: false
     }
   },
   computed: {
@@ -140,7 +137,6 @@ export default {
   },
   methods: {
     fetchData () {
-      console.log('resource = ', this.resource)
       this.fetchTemplatePermissions()
       if (this.selectedShareWith === 'Account') {
         this.selectedAccounts = []
@@ -262,7 +258,7 @@ export default {
   }
   .actions {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     margin-top: 20px;
     button {
       &:not(:last-child) {
