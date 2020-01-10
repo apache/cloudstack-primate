@@ -57,7 +57,7 @@
           <a-input v-model="newRule.cidrlist"></a-input>
         </div>
         <div class="form__item" v-if="addType === 'account'">
-          <div class="form__label">Account, Security group</div>
+          <div class="form__label">Account, Security Group</div>
           <div style="display:flex;">
             <a-input v-model="newRule.usersecuritygrouplist.account" style="margin-right: 10px;"></a-input>
             <a-input v-model="newRule.usersecuritygrouplist.group"></a-input>
@@ -96,7 +96,7 @@
           <div>{{ rule.cidr }}</div>
         </div>
         <div class="list__col" v-if="rule.account && rule.securitygroupname">
-          <div class="list__title">Account - Security group</div>
+          <div class="list__title">Account, Security Group</div>
           <div>{{ rule.account }} - {{ rule.securitygroupname }}</div>
         </div>
         <div slot="actions" class="actions">
@@ -143,7 +143,7 @@
           </div>
         </div>
 
-        <a-button class="add-tags-done" @click="tagsModalVisible = false" type="primary">{{ $t('done') }}</a-button>
+        <a-button class="add-tags-done" @click="tagsModalVisible = false" type="primary">{{ $t('OK') }}</a-button>
       </div>
 
     </a-modal>
@@ -191,7 +191,11 @@ export default {
     }
   },
   watch: {
-    resource () {
+    resource (newItem, oldItem) {
+      if (!newItem || !newItem.id) {
+        return
+      }
+      this.resource = newItem
       this.fetchData()
     }
   },
@@ -203,19 +207,11 @@ export default {
   },
   mounted () {
     this.fetchData()
-    this.tabType = this.$parent.tab === 'Ingress Rule' ? 'ingress' : this.$parent.tab === 'Egress Rule' ? 'egress' : 'ingress'
   },
   methods: {
     fetchData () {
-      api('listSecurityGroups', { id: this.resource.id }).then(response => {
-        this.rules = this.tabType === 'ingress' ? response.listsecuritygroupsresponse.securitygroup[0].ingressrule
-          : response.listsecuritygroupsresponse.securitygroup[0].egressrule
-      }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
-      })
+      this.tabType = this.$parent.tab === 'Ingress Rule' ? 'ingress' : 'egress'
+      this.rules = this.tabType === 'ingress' ? this.resource.ingressrule : this.resource.egressrule
     },
     handleAddRule () {
       this.parentToggleLoading()
@@ -245,7 +241,7 @@ export default {
             this.parentFetchData()
             this.parentToggleLoading()
           },
-          loadingMessage: `Adding new rule...`,
+          loadingMessage: `Adding new security-group rule...`,
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
             this.parentFetchData()
@@ -282,7 +278,7 @@ export default {
             this.parentFetchData()
             this.parentToggleLoading()
           },
-          loadingMessage: `Deleting rule...`,
+          loadingMessage: `Deleting security-group rule...`,
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
             this.parentFetchData()
