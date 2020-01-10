@@ -210,6 +210,7 @@ export default {
       required: true
     }
   },
+  inject: ['parentFetchData', 'parentToggleLoading'],
   data () {
     return {
       encryptionAlgo: [
@@ -227,13 +228,13 @@ export default {
       ],
       DHGroups: {
         '': 'None',
+        'Group 2': 'modp1024',
         'Group 5': 'modp1536',
         'Group 14': 'modp2048',
         'Group 15': 'modp3072',
         'Group 16': 'modp4096',
         'Group 17': 'modp6144',
-        'Group 18': 'modp8192',
-        'Group 2': 'modp1024'
+        'Group 18': 'modp8192'
       },
       ikeDhGroupInitialValue: 'Group 5(modp1536)'
     }
@@ -272,7 +273,7 @@ export default {
           this.$store.dispatch('AddAsyncJob', {
             title: `Adding VPN customer gateway`,
             jobid: response.createvpncustomergatewayresponse.jobid,
-            description: this.resource.name,
+            description: values.name,
             status: 'progress'
           })
           this.$pollJob({
@@ -280,10 +281,12 @@ export default {
             successMessage: `Successfully added VPN customer gateway`,
             successMethod: () => {
               this.closeModal()
+              this.parentFetchData()
             },
             errorMessage: 'VPN customer gateway creation failed' + response,
             errorMethod: () => {
               this.closeModal()
+              this.parentFetchData()
             },
             loadingMessage: `Creation of VPN customer gateway is in progress`,
             catchMessage: 'Error encountered while fetching async job result',
@@ -294,7 +297,7 @@ export default {
           this.closeModal()
         }).catch(error => {
           console.error(error)
-          this.$message.error('Failed to Add vpn customer gateway.')
+          this.$message.error('Failed to Add VPN customer gateway')
         }).finally(() => {
           this.form.resetFields()
           this.closeModal()
@@ -311,7 +314,7 @@ export default {
 
 .actions {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   margin-top: 20px;
   button {
     &:not(:last-child) {
