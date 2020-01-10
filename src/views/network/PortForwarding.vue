@@ -64,7 +64,7 @@
         </div>
         <div class="form__item" style="margin-left: auto;">
           <div class="form__label">{{ $t('label.add.VM') }}</div>
-          <a-button type="primary" @click="openAddVMModal">{{ $t('label.add') }}</a-button>
+          <a-button type="primary" @click="openAddVMModal">{{ $t('add') }}</a-button>
         </div>
 
       </div>
@@ -92,7 +92,7 @@
           <div class="rule__item">
             <div class="rule__title">{{ $t('vm') }} / {{ $t('IP') }}</div>
             <div class="rule__title"></div>
-            <div>{{ rule.virtualmachinename }} / {{ rule.vmguestip }}</div>
+            <div><router-link :to="{ path: '/vm/' + rule.virtualmachineid }">{{ rule.virtualmachinename }}</router-link> - {{ rule.vmguestip }}</div>
           </div>
           <div slot="actions">
             <a-button shape="round" icon="tag" class="rule-action" @click="() => openTagsModal(rule.id)" />
@@ -159,7 +159,7 @@
           <span>{{ $t('displayname') }}</span>
           <span>{{ $t('ip') }}</span>
           <span>{{ $t('account') }}</span>
-          <span>{{ $t('zonenamelabel') }}</span>
+          <span>{{ $t('zone') }}</span>
           <span>{{ $t('state') }}</span>
           <span>{{ $t('select') }}</span>
         </div>
@@ -552,7 +552,7 @@ export default {
     &__item {
       display: flex;
       flex-direction: column;
-      /*flex: 1;*/
+      flex: 1;
       padding-right: 20px;
       margin-bottom: 20px;
 

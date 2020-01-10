@@ -48,7 +48,7 @@
           <a-input v-model="newRule.icmpcode"></a-input>
         </div>
         <div class="form__item" style="margin-left: auto;">
-          <a-button type="primary" @click="addRule">{{ $t('label.add.setting') }}</a-button>
+          <a-button type="primary" @click="addRule">{{ $t('add') }}</a-button>
         </div>
       </div>
     </div>
@@ -84,7 +84,7 @@
               okText="Yes"
               cancelText="No"
             >
-              <a-button shape="round" type="danger" icon="close-circle" class="rule-action" />
+              <a-button shape="round" type="danger" icon="delete" class="rule-action" />
             </a-popconfirm>
           </div>
         </div>
@@ -101,7 +101,7 @@
           <p class="add-tags__label">{{ $t('value') }}</p>
           <a-input v-model="newTag.value"></a-input>
         </div>
-        <a-button type="primary" @click="() => handleAddTag()">{{ $t('label.add') }}</a-button>
+        <a-button type="primary" @click="() => handleAddTag()">{{ $t('add') }}</a-button>
       </div>
 
       <a-divider></a-divider>
