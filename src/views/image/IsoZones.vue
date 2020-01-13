@@ -176,21 +176,6 @@ export default {
       this.detail = record
       this.quickView = true
     },
-    handleDeleteISO (record) {
-      const self = this
-      let title = this.$t('deleteconfirm')
-      title = title.replace('{name}', this.$t('iso'))
-
-      this.$confirm({
-        title: title,
-        okText: 'OK',
-        okType: 'danger',
-        cancelText: 'Cancel',
-        onOk () {
-          self.deleteISO(record)
-        }
-      })
-    },
     handleChangePage (page, pageSize) {
       this.page = page
       this.pageSize = pageSize
@@ -200,33 +185,6 @@ export default {
       this.page = currentPage
       this.pageSize = pageSize
       this.fetchData()
-    },
-    deleteISO (row) {
-      const params = {}
-      params.id = row.id
-      if (!row.crossZones) {
-        params.zoneid = row.zoneid
-      }
-      const title = this.$t('label.action.delete.ISO')
-      const loading = this.$message.loading(title + ' in progress for ' + row.zonename, 0)
-      api('deleteIso', params).then(json => {
-        const jsonResponse = json.deleteisoresponse
-        setTimeout(loading)
-        if (jsonResponse.success) {
-          this.$message.success('Delete success', 3)
-          this.fetchData()
-        } else {
-          this.$message.error('Delete fail', 3)
-        }
-      }).catch(error => {
-        // hide loading
-        setTimeout(loading)
-        // show error
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
-      })
     }
   }
 }
