@@ -27,7 +27,7 @@ export default {
       permission: ['listTemplates'],
       params: { templatefilter: 'executable' },
       resourceType: 'Template',
-      columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain'],
+      columns: ['sort', 'name', 'ostypename', 'status', 'hypervisor', 'account', 'domain'],
       details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'directdownload', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created'],
       related: [{
         name: 'vm',
@@ -117,7 +117,7 @@ export default {
       permission: ['listIsos'],
       params: { isofilter: 'executable' },
       resourceType: 'ISO',
-      columns: ['name', 'ostypename', 'account', 'domain'],
+      columns: ['sort', 'name', 'ostypename', 'account', 'domain'],
       details: ['name', 'id', 'displaytext', 'checksum', 'ostypename', 'size', 'bootable', 'isready', 'directdownload', 'isextractable', 'ispublic', 'isfeatured', 'crosszones', 'account', 'domain', 'created'],
       related: [{
         name: 'vm',
