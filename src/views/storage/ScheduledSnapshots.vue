@@ -80,7 +80,7 @@
 
 <script>
 import { api } from '@/api'
-import { timeZoneName } from '@/timezone'
+import { timeZoneName } from '@/utils/timezone'
 
 export default {
   name: 'ScheduledSnapshots',
