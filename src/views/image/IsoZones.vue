@@ -18,7 +18,7 @@
 <template>
   <div class="row-iso-zone">
     <a-row :gutter="12">
-      <a-col :md="24" :lg="24" v-if="!quickView">
+      <a-col :md="24" :lg="24">
         <a-table
           size="small"
           style="overflow-y: auto"
@@ -52,7 +52,7 @@
 import { api } from '@/api'
 
 export default {
-  name: 'TemplateZones',
+  name: 'IsoZones',
   props: {
     resource: {
       type: Object,
@@ -72,8 +72,7 @@ export default {
       page: 1,
       pageSize: 20,
       itemCount: 0,
-      fetchLoading: false,
-      quickView: false
+      fetchLoading: false
     }
   },
   created () {
@@ -158,12 +157,5 @@ export default {
 
 .action-button button {
   margin-right: 5px;
-}
-
-.close-quickview {
-  text-align: right;
-  margin-top: 12px;
-  line-height: 32px;
-  height: 32px;
 }
 </style>
