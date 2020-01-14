@@ -98,7 +98,7 @@
               </a-button>
             </div>
           </div>
-          <div class="rule__row">
+          <div class="rule__row" v-if="rule.ruleInstances">
             <a-collapse :bordered="false" class="rule-instance-collapse">
               <a-collapse-panel header="View Instances">
                 <div class="rule-instance-list">
