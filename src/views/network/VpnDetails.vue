@@ -18,8 +18,8 @@
 <template>
   <div v-if="remoteAccessVpn">
     <div>
-      <p>Your Remote Access VPN is currently enabled and can be accessed via the IP {{ remoteAccessVpn.publicip }}</p>
-      <p>Your IPSec pre-shared key is {{ remoteAccessVpn.presharedkey }}</p>
+      <p>Your Remote Access VPN is currently enabled and can be accessed via the IP <strong>{{ remoteAccessVpn.publicip }}</strong></p>
+      <p>Your IPSec pre-shared key is <strong>{{ remoteAccessVpn.presharedkey }}</strong></p>
       <p>Note: VPN users are now accessed by changing views at the networks tab.</p>
     </div>
   </div>

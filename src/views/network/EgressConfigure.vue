@@ -53,7 +53,7 @@
           <a-input v-model="newRule.icmpcode"></a-input>
         </div>
         <div class="form__item">
-          <a-button type="primary" icon="plus" @click="addRule">Add Setting</a-button>
+          <a-button type="primary" icon="plus" @click="addRule">{{ $t('add') }}</a-button>
         </div>
       </div>
     </div>
@@ -88,7 +88,7 @@
               okText="Yes"
               cancelText="No"
             >
-              <a-button shape="round" type="danger" icon="close-circle"></a-button>
+              <a-button shape="round" type="danger" icon="delete"></a-button>
             </a-popconfirm>
           </div>
         </div>
