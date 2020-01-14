@@ -673,9 +673,7 @@ export default {
         if (err || this.zoneError !== '') {
           return
         }
-
-        const params = {}
-
+        let params = {}
         for (const key in values) {
           const input = values[key]
 
@@ -710,10 +708,29 @@ export default {
               params[name] = true
             }
           } else {
-            params[key] = input
+            const formattedDetailData = {}
+            switch (key) {
+              case 'rootDiskControllerTypeKVM':
+                formattedDetailData['details[0].rootDiskController'] = input
+                break
+              case 'nicAdapterType':
+                formattedDetailData['details[0].nicAdapter'] = input
+                break
+              case 'keyboardType':
+                formattedDetailData['details[0].keyboard'] = input
+                break
+              case 'xenserverToolsVersion61plus':
+                formattedDetailData['details[0].hypervisortoolsversion'] = input
+                break
+            }
+
+            if (Object.keys(formattedDetailData).length > 0) {
+              params = Object.assign({}, params, formattedDetailData)
+            } else {
+              params[key] = input
+            }
           }
         }
-
         this.loading = true
         api('registerTemplate', params).then(json => {
           this.$emit('refresh-data')
