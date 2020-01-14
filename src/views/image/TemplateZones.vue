@@ -21,6 +21,7 @@
       <a-col :md="24" :lg="24">
         <a-table
           size="small"
+          style="overflow-y: auto"
           :loading="loading || fetchLoading"
           :columns="columns"
           :dataSource="dataSource"
@@ -149,9 +150,5 @@ export default {
 .row-element {
   margin-top: 15px;
   margin-bottom: 15px;
-}
-
-/deep/.ant-table-content {
-  overflow: hidden;
 }
 </style>

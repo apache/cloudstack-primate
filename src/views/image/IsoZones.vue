@@ -21,6 +21,7 @@
       <a-col :md="24" :lg="24" v-if="!quickView">
         <a-table
           size="small"
+          style="overflow-y: auto"
           :loading="loading || fetchLoading"
           :columns="columns"
           :dataSource="dataSource"
@@ -29,19 +30,6 @@
           <div slot="isready" slot-scope="text, record">
             <span v-if="record.isready">{{ $t('Yes') }}</span>
             <span v-else>{{ $t('No') }}</span>
-          </div>
-          <div slot="action" class="action-button" slot-scope="text, record">
-            <a-tooltip placement="top">
-              <template slot="title">
-                {{ $t('quickview') }}
-              </template>
-              <a-button
-                type="default"
-                shape="circle"
-                icon="eye"
-                size="small"
-                @click="handleQuickView(record)"/>
-            </a-tooltip>
           </div>
         </a-table>
         <a-pagination
@@ -55,23 +43,6 @@
           @change="handleChangePage"
           @showSizeChange="handleChangePageSize"
           showSizeChanger/>
-      </a-col>
-
-      <a-col :md="24" :lg="24" v-if="quickView">
-        <a-list size="small" :dataSource="detailColumn">
-          <div class="close-quickview">
-            <a-button @click="() => { this.quickView = false }">{{ $t('close') }}</a-button>
-          </div>
-          <a-list-item slot="renderItem" slot-scope="item" v-if="item in detail">
-            <div>
-              <strong>{{ $t(item) }}</strong>
-              <br/>
-              <div class="list-item-content">
-                {{ detail[item] }}
-              </div>
-            </div>
-          </a-list-item>
-        </a-list>
       </a-col>
     </a-row>
   </div>
@@ -121,13 +92,6 @@ export default {
         title: this.$t('isready'),
         dataIndex: 'isready',
         scopedSlots: { customRender: 'isready' }
-      },
-      {
-        title: this.$t('action'),
-        dataIndex: 'action',
-        fixed: 'right',
-        width: 50,
-        scopedSlots: { customRender: 'action' }
       }
     ]
     this.detailColumn = ['name', 'id', 'zonename', 'zoneid']
@@ -172,10 +136,6 @@ export default {
         this.fetchLoading = false
       })
     },
-    handleQuickView (record) {
-      this.detail = record
-      this.quickView = true
-    },
     handleChangePage (page, pageSize) {
       this.page = page
       this.pageSize = pageSize
@@ -194,10 +154,6 @@ export default {
 .row-element {
   margin-top: 15px;
   margin-bottom: 15px;
-}
-
-/deep/.ant-table-content {
-  overflow: hidden;
 }
 
 .action-button button {
