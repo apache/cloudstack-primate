@@ -93,7 +93,8 @@ export default {
           label: 'Recurring Snapshots',
           dataView: true,
           show: (record) => { return record.state === 'Ready' },
-          args: ['volumeid', 'intervaltype', 'schedule', 'maxsnaps', 'timezone'],
+          popup: true,
+          component: () => import('@/views/storage/RecurringSnapshotVolume.vue'),
           mapping: {
             volumeid: {
               value: (record) => { return record.id }
