@@ -15,11 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-function loadTimeZone (strQuery) {
-  if (!strQuery || strQuery === '') {
-    return []
-  }
-
+function loadTimeZone () {
   const timeZoneJson = require.context('./', true, /[A-Za-z0-9-_,\s]+\.json$/i)
   const data = []
 
@@ -28,9 +24,6 @@ function loadTimeZone (strQuery) {
     if (matched && matched.length > 1) {
       const json = timeZoneJson(key)
       for (const index in json) {
-        if (!json[index].toLowerCase().includes(strQuery.toLowerCase())) {
-          continue
-        }
         data.push({
           id: index,
           name: json[index]
@@ -69,10 +62,9 @@ function getFullTimeZone (strQuery) {
   return data
 }
 
-export function timeZone (key) {
+export function timeZone () {
   return new Promise(resolve => {
-    const dataTimeZone = loadTimeZone(key)
-
+    const dataTimeZone = loadTimeZone()
     resolve(dataTimeZone)
   })
 }

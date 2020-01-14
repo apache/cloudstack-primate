@@ -142,9 +142,7 @@
                     }]
                   }]"
                   :placeholder="$t('volume.timezone.description')"
-                  @search="fetchTimeZone"
-                  :loading="fetching"
-                  :filterOption="false">
+                  :loading="fetching">
                   <a-select-option v-for="opt in timeZoneMap" :key="opt.id">
                     {{ opt.name || opt.description }}
                   </a-select-option>
@@ -247,6 +245,7 @@ export default {
   },
   mounted () {
     this.volumeId = this.resource.id
+    this.fetchTimeZone()
   },
   methods: {
     fetchTimeZone (value) {
