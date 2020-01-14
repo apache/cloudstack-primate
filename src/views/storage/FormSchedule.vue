@@ -204,7 +204,7 @@
 
 <script>
 import { api } from '@/api'
-import { timeZone } from '@/timezone'
+import { timeZone } from '@/utils/timezone'
 import debounce from 'lodash/debounce'
 
 export default {

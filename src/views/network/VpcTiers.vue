@@ -17,7 +17,7 @@
 
 <template>
   <div>
-    TODO: Ingress view for SG
+    TODO: VPC tiers management
   </div>
 </template>
 

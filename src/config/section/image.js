@@ -90,7 +90,9 @@ export default {
           icon: 'reconciliation',
           label: 'Update template permissions',
           dataView: true,
-          args: ['op', 'accounts', 'projectids']
+          popup: true,
+          show: (record, user) => { return (['Admin', 'DomainAdmin'].includes(user.roletype) && (record.domainid === user.domainid && record.account === user.account) || record.templatetype !== 'BUILTIN') },
+          component: () => import('@/views/image/UpdateTemplatePermissions')
         },
         {
           api: 'copyTemplate',
@@ -122,6 +124,13 @@ export default {
         name: 'vm',
         title: 'Instances',
         param: 'isoid'
+      }],
+      tabs: [{
+        name: 'details',
+        component: () => import('@/components/view/DetailsTab.vue')
+      }, {
+        name: 'zones',
+        component: () => import('@/views/image/IsoZones.vue')
       }],
       actions: [
         {
