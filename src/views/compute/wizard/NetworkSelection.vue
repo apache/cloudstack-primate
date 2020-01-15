@@ -18,18 +18,19 @@
 <template>
   <a-table
     :columns="columns"
-    :dataSource="items"
+    :dataSource="networkItems"
     :rowKey="record => record.id"
     :pagination="false"
     :scroll="{x: 0, y: 320}"
     :rowSelection="rowSelection"
     size="middle"
-  >
-  </a-table>
+  ></a-table>
 </template>
 
 <script>
 import _ from 'lodash'
+import { api } from '@/api'
+import store from '@/store'
 
 export default {
   name: 'NetworkSelection',
@@ -49,7 +50,7 @@ export default {
         {
           dataIndex: 'name',
           title: this.$t('networks'),
-          width: '40%'
+          width: '30%'
         },
         {
           dataIndex: 'displaytext',
@@ -59,10 +60,16 @@ export default {
         {
           dataIndex: 'type',
           title: this.$t('guestIpType'),
-          width: '30%'
+          width: '20%'
+        },
+        {
+          dataIndex: 'vpcName',
+          title: this.$t('VPC'),
+          width: '20%'
         }
       ],
-      selectedRowKeys: []
+      selectedRowKeys: [],
+      vpcs: []
     }
   },
   computed: {
@@ -74,6 +81,17 @@ export default {
           this.$emit('select-network-item', rows)
         }
       }
+    },
+    networkItems () {
+      return this.items.map((network) => {
+        const vpc = _.find(this.vpcs, { id: network.vpcid })
+        return {
+          name: network.name,
+          displaytext: network.displaytext,
+          type: network.type,
+          vpcName: _.get(vpc, 'displaytext')
+        }
+      })
     }
   },
   watch: {
@@ -82,6 +100,15 @@ export default {
         this.selectedRowKeys = newValue
       }
     }
+  },
+  created () {
+    api('listVPCs', {
+      projectid: store.getters.project.id
+    }).then((response) => {
+      this.vpcs = _.get(response, 'listvpcsresponse.vpc')
+    })
+  },
+  methods: {
   }
 }
 </script>
