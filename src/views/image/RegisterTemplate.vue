@@ -24,7 +24,7 @@
             v-decorator="['url', {
               rules: [{ required: true, message: 'Please enter input' }]
             }]"
-            :placeholder="$t('template.url.description')" />
+            :placeholder="apiParams.url.description" />
         </a-form-item>
       </a-row>
       <a-row :gutter="12">
@@ -33,7 +33,7 @@
             v-decorator="['name', {
               rules: [{ required: true, message: 'Please enter input' }]
             }]"
-            :placeholder="$t('template.name.description')" />
+            :placeholder="apiParams.name.description" />
         </a-form-item>
       </a-row>
       <a-row :gutter="12">
@@ -42,7 +42,7 @@
             v-decorator="['displaytext', {
               rules: [{ required: true, message: 'Please enter input' }]
             }]"
-            :placeholder="$t('template.displaytext.description')" />
+            :placeholder="apiParams.displaytext.description" />
         </a-form-item>
       </a-row>
       <a-row :gutter="12">
@@ -63,7 +63,7 @@
               }]"
               :loading="zones.loading"
               mode="multiple"
-              :placeholder="$t('template.zoneids.description')"
+              :placeholder="apiParams.zoneids.description"
               @change="handlerSelectZone">
               <a-select-option v-for="opt in zones.opts" :key="opt.name || opt.description">
                 {{ opt.name || opt.description }}
@@ -85,7 +85,7 @@
                 ]
               }]"
               :loading="hyperVisor.loading"
-              :placeholder="$t('template.hypervisor.description')"
+              :placeholder="apiParams.hypervisor.description"
               @change="handlerSelectHyperVisor">
               <a-select-option v-for="(opt, optIndex) in hyperVisor.opts" :key="optIndex">
                 {{ opt.name || opt.description }}
@@ -104,7 +104,7 @@
                   }
                 ]
               }]"
-              :placeholder="$t('template.format.description')">
+              :placeholder="apiParams.format.description">
               <a-select-option v-for="opt in format.opts" :key="opt.id">
                 {{ opt.name || opt.description }}
               </a-select-option>
@@ -124,7 +124,7 @@
               v-decorator="['checksum', {
                 rules: [{ required: false, message: 'Please enter input' }]
               }]"
-              :placeholder="$t('template.checksum.description')" />
+              :placeholder="apiParams.checksum.description" />
           </a-form-item>
         </a-col>
       </a-row>
@@ -150,7 +150,7 @@
                 ]
               }]"
               :loading="rootDisk.loading"
-              :placeholder="$t('template.rootDiskControllerTypeKVM.description')">
+              :placeholder="$t('rootdiskcontroller')">
               <a-select-option v-for="opt in rootDisk.opts" :key="opt.id">
                 {{ opt.name || opt.description }}
               </a-select-option>
@@ -169,7 +169,7 @@
                 ]
               }]"
               :loading="rootDisk.loading"
-              :placeholder="$t('template.rootDiskControllerTypeKVM.description')">
+              :placeholder="$t('rootdiskcontroller')">
               <a-select-option v-for="opt in rootDisk.opts" :key="opt.id">
                 {{ opt.name || opt.description }}
               </a-select-option>
@@ -187,7 +187,7 @@
                   }
                 ]
               }]"
-              :placeholder="$t('template.nicAdapterType.description')">
+              :placeholder="$t('nicadaptertype')">
               <a-select-option v-for="opt in nicAdapterType.opts" :key="opt.id">
                 {{ opt.name || opt.description }}
               </a-select-option>
@@ -205,7 +205,7 @@
                   }
                 ]
               }]"
-              :placeholder="$t('template.keyboardType.description')">
+              :placeholder="$t('keyboard')">
               <a-select-option v-for="opt in keyboardType.opts" :key="opt.id">
                 {{ opt.name || opt.description }}
               </a-select-option>
@@ -227,7 +227,7 @@
                 ]
               }]"
               :loading="osTypes.loading"
-              :placeholder="$t('template.ostypeid.description')">
+              :placeholder="apiParams.ostypeid.description">
               <a-select-option v-for="opt in osTypes.opts" :key="opt.name || opt.description">
                 {{ opt.name || opt.description }}
               </a-select-option>
@@ -256,25 +256,13 @@
               </a-row>
               <a-row>
                 <a-col :span="12">
-                  <a-checkbox value="sshkeyenabled">
-                    {{ $t('sshkeyenabled') }}
-                  </a-checkbox>
-                </a-col>
-                <a-col :span="12">
                   <a-checkbox value="isdynamicallyscalable">
                     {{ $t('isdynamicallyscalable') }}
                   </a-checkbox>
                 </a-col>
-              </a-row>
-              <a-row>
                 <a-col :span="12">
-                  <a-checkbox value="ispublic">
-                    {{ $t('ispublic') }}
-                  </a-checkbox>
-                </a-col>
-                <a-col :span="12">
-                  <a-checkbox value="isfeatured">
-                    {{ $t('isfeatured') }}
+                  <a-checkbox value="sshkeyenabled">
+                    {{ $t('sshkeyenabled') }}
                   </a-checkbox>
                 </a-col>
               </a-row>
@@ -285,8 +273,20 @@
                   </a-checkbox>
                 </a-col>
                 <a-col :span="12">
+                  <a-checkbox value="ispublic">
+                    {{ $t('ispublic') }}
+                  </a-checkbox>
+                </a-col>
+              </a-row>
+              <a-row>
+                <a-col :span="12">
                   <a-checkbox value="requireshvm">
                     {{ $t('requireshvm') }}
+                  </a-checkbox>
+                </a-col>
+                <a-col :span="12">
+                  <a-checkbox value="isfeatured">
+                    {{ $t('isfeatured') }}
                   </a-checkbox>
                 </a-col>
               </a-row>
@@ -332,6 +332,11 @@ export default {
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
+    this.apiConfig = this.$store.getters.apis.registerTemplate || {}
+    this.apiParams = {}
+    this.apiConfig.params.forEach(param => {
+      this.apiParams[param.name] = param
+    })
   },
   created () {
     this.$set(this.zones, 'loading', false)
@@ -668,9 +673,7 @@ export default {
         if (err || this.zoneError !== '') {
           return
         }
-
-        const params = {}
-
+        let params = {}
         for (const key in values) {
           const input = values[key]
 
@@ -705,10 +708,29 @@ export default {
               params[name] = true
             }
           } else {
-            params[key] = input
+            const formattedDetailData = {}
+            switch (key) {
+              case 'rootDiskControllerTypeKVM':
+                formattedDetailData['details[0].rootDiskController'] = input
+                break
+              case 'nicAdapterType':
+                formattedDetailData['details[0].nicAdapter'] = input
+                break
+              case 'keyboardType':
+                formattedDetailData['details[0].keyboard'] = input
+                break
+              case 'xenserverToolsVersion61plus':
+                formattedDetailData['details[0].hypervisortoolsversion'] = input
+                break
+            }
+
+            if (Object.keys(formattedDetailData).length > 0) {
+              params = Object.assign({}, params, formattedDetailData)
+            } else {
+              params[key] = input
+            }
           }
         }
-
         this.loading = true
         api('registerTemplate', params).then(json => {
           this.$emit('refresh-data')
@@ -759,7 +781,11 @@ export default {
 
 <style scoped lang="less">
   .form-layout {
-    width: 500px;
+    width: 80vw;
+
+    @media (min-width: 700px) {
+      width: 550px;
+    }
   }
 
   .action-button {
