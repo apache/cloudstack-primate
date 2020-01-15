@@ -158,26 +158,6 @@ export default {
         zones: [],
         affinityGroups: []
       },
-      params: {
-        templates: {
-          list: 'listTemplates',
-          options: {
-            templatefilter: 'executable'
-          }
-        },
-        serviceOfferings: {
-          list: 'listServiceOfferings'
-        },
-        diskOfferings: {
-          list: 'listDiskOfferings'
-        },
-        zones: {
-          list: 'listZones'
-        },
-        affinityGroups: {
-          list: 'listAffinityGroups'
-        }
-      },
       instanceConfig: [],
       template: {},
       iso: {},
@@ -209,6 +189,29 @@ export default {
     },
     affinityGroupIds () {
       return _.map(this.affinityGroups, 'id')
+    },
+    params () {
+      return {
+        templates: {
+          list: 'listTemplates',
+          options: {
+            templatefilter: 'executable',
+            zoneid: _.get(this.zone, 'id')
+          }
+        },
+        serviceOfferings: {
+          list: 'listServiceOfferings'
+        },
+        diskOfferings: {
+          list: 'listDiskOfferings'
+        },
+        zones: {
+          list: 'listZones'
+        },
+        affinityGroups: {
+          list: 'listAffinityGroups'
+        }
+      }
     }
   },
   watch: {
@@ -357,10 +360,12 @@ export default {
       }
     },
     onSelectZoneId () {
-      if (this.options.isos.length === 0) {
-        return
-      }
-      this.fetchAllIsos()
+      this.$nextTick(() => {
+        if (this.options.isos.length !== 0) {
+          this.fetchAllIsos()
+        }
+        this.fetchOptions(this.params.templates, 'templates')
+      })
     }
   }
 }
