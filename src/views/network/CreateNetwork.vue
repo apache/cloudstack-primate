@@ -16,25 +16,98 @@
 // under the License.
 
 <template>
-  <div>
-    TODO: create network form: L2, isolated and shared
+  <div class="form-layout">
+    <a-tabs defaultActiveKey="1">
+      <a-tab-pane :tab="$t('Isolated')" key="1" v-if="this.isAdvancedZoneWithoutSGAvailable()">
+        <CreateIsolatedNetworkForm
+          :loading="loading"
+          :resource="resource"
+          @close-action="closeAction"
+          @refresh="handleRefresh"/>
+      </a-tab-pane>
+      <a-tab-pane :tab="$t('Shared')" key="2">
+      </a-tab-pane>
+      <a-tab-pane :tab="$t('VPC')" key="3">
+      </a-tab-pane>
+    </a-tabs>
   </div>
 </template>
 
 <script>
+import { api } from '@/api'
+import CreateIsolatedNetworkForm from '@/views/network/CreateIsolatedNetworkForm'
 
 export default {
-  name: '',
+  name: 'CreateNetwork',
   components: {
+    CreateIsolatedNetworkForm
+  },
+  props: {
+    resource: {
+      type: Object,
+      required: true
+    }
   },
   data () {
     return {
+      defaultNetworkTypeTabKey: '1',
+      loading: false,
+      actionZones: [],
+      actionZoneLoading: false
     }
   },
+  mounted () {
+    this.fetchData()
+  },
   methods: {
+    fetchData () {
+      this.loading = true
+      this.fetchActionZoneData()
+    },
+    fetchActionZoneData () {
+      const params = {}
+      params.listAll = true
+      this.actionZonesLoading = true
+      api('listZones', params).then(json => {
+        this.actionZones = json.listzonesresponse.zone
+      }).finally(() => {
+        this.actionZoneLoading = false
+        this.loading = false
+      })
+    },
+    isAdvancedZoneWithoutSGAvailable () {
+      for (const i in this.actionZones) {
+        const zone = this.actionZones[i]
+        if (zone.networktype === 'Advanced' && zone.securitygroupsenabled !== true) {
+          return true
+        }
+      }
+      return true
+    },
+    handleRefresh () {
+      this.fetchData()
+    },
+    closeAction () {
+      this.$emit('close-action')
+    }
   }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+  .form-layout {
+    width: 600px;
+  }
+
+  .random {
+    width: 80%;
+  }
+
+  .action-button {
+    text-align: right;
+
+    button {
+      margin-right: 5px;
+    }
+  }
 </style>
