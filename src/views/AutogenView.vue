@@ -32,7 +32,7 @@
                 size="small"
                 type="dashed"
                 icon="reload"
-                @click="fetchData()">/>
+                @click="fetchData()" />
             </a-tooltip>
             <a-tooltip
               v-for="(action, actionIndex) in actions"
