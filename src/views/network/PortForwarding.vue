@@ -552,7 +552,7 @@ export default {
     &__item {
       display: flex;
       flex-direction: column;
-      flex: 1;
+      /*flex: 1;*/
       padding-right: 20px;
       margin-bottom: 20px;
 

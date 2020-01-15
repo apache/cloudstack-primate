@@ -51,7 +51,7 @@
           </a-select>
         </div>
         <div class="form__item" style="margin-left: auto;">
-          <div class="form__label">{{ $t('label.add.VMs') }}</div>
+          <div class="form__label" style="white-space: nowrap;">{{ $t('label.add.VMs') }}</div>
           <a-button type="primary" @click="handleOpenAddVMModal">Add</a-button>
         </div>
 
@@ -409,7 +409,9 @@ export default {
           : []
       }).then(() => {
         if (this.lbRules.length > 0) {
-          this.fetchLBRuleInstances()
+          setTimeout(() => {
+            this.fetchLBRuleInstances()
+          }, 100)
           this.fetchLBStickinessPolicies()
           return
         }
@@ -422,10 +424,10 @@ export default {
         this.loading = false
       })
     },
-    async fetchLBRuleInstances () {
+    fetchLBRuleInstances () {
       for (const rule of this.lbRules) {
         this.loading = true
-        await api('listLoadBalancerRuleInstances', {
+        api('listLoadBalancerRuleInstances', {
           listAll: true,
           lbvmips: true,
           id: rule.id
