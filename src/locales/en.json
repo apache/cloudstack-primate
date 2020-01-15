@@ -542,6 +542,7 @@
 "label.ha.configure": "Configure HA",
 "label.ha.disable": "Disable HA",
 "label.ha.enable": "Enable HA",
+"label.header.volume.take.snapshot": "Please confirm that you want to take a snapshot of this volume.",
 "label.instanciate.template.associate.profile.blade": "Instanciate Template and Associate Profile to Blade",
 "label.japanese.keyboard": "Japanese keyboard",
 "label.link.domain.to.ldap": "Link Domain to LDAP",
