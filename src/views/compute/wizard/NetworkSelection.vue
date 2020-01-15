@@ -23,8 +23,23 @@
     :pagination="false"
     :scroll="{x: 0, y: 320}"
     :rowSelection="rowSelection"
-    size="middle"
-  ></a-table>
+  >
+    <a-list
+      slot="expandedRowRender"
+      slot-scope="record"
+      :key="record.id"
+      :dataSource="getDetails(record)"
+      size="small"
+    >
+      <a-list-item slot="renderItem" slot-scope="item, index" :key="index">
+        <a-list-item-meta
+          :description="item.description"
+        >
+          <div slot="title">{{ item.title }}</div>
+        </a-list-item-meta>
+      </a-list-item>
+    </a-list>
+  </a-table>
 </template>
 
 <script>
@@ -50,22 +65,17 @@ export default {
         {
           dataIndex: 'name',
           title: this.$t('networks'),
-          width: '30%'
-        },
-        {
-          dataIndex: 'displaytext',
-          title: this.$t('description'),
-          width: '30%'
+          width: '40%'
         },
         {
           dataIndex: 'type',
           title: this.$t('guestIpType'),
-          width: '20%'
+          width: '30%'
         },
         {
           dataIndex: 'vpcName',
           title: this.$t('VPC'),
-          width: '20%'
+          width: '30%'
         }
       ],
       selectedRowKeys: [],
@@ -86,10 +96,10 @@ export default {
       return this.items.map((network) => {
         const vpc = _.find(this.vpcs, { id: network.vpcid })
         return {
-          name: network.name,
-          displaytext: network.displaytext,
-          type: network.type,
-          vpcName: _.get(vpc, 'displaytext')
+          ...network,
+          ...{
+            vpcName: _.get(vpc, 'displaytext')
+          }
         }
       })
     }
@@ -109,6 +119,18 @@ export default {
     })
   },
   methods: {
+    getDetails (network) {
+      return [
+        {
+          title: this.$t('description'),
+          description: network.displaytext
+        },
+        {
+          title: this.$t('networkOfferingId'),
+          description: network.networkofferingdisplaytext
+        }
+      ]
+    }
   }
 }
 </script>
