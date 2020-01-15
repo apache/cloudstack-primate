@@ -17,7 +17,7 @@
 
 <template>
   <div>
-    <div>
+    <div v-if="egressRules">
       <div class="form">
         <div class="form__item">
           <div class="form__label">Source CIDR</div>
