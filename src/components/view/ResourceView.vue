@@ -84,13 +84,17 @@ export default {
     }
   },
   watch: {
-    resource: function () {
+    resource: function (newItem, oldItem) {
+      this.resource = newItem
+      if (newItem.id === oldItem.id) return
+
       if (this.resource.associatednetworkid) {
         api('listNetworks', { id: this.resource.associatednetworkid }).then(response => {
           this.networkService = response.listnetworksresponse.network[0]
         })
       }
-      if (this.resource.id) {
+
+      if (this.resource.id && this.resource.ipaddress) {
         api('listRemoteAccessVpns', {
           publicipid: this.resource.id,
           listAll: true
@@ -111,7 +115,7 @@ export default {
       } else if ('vpnEnabledFilter' in tab) {
         return this.vpnEnabled
       } else if ('show' in tab) {
-        return tab.show(this.resource, this.$route)
+        return tab.show(this.resource, this.$route, this.$store.getters.userInfo)
       } else {
         return true
       }
