@@ -990,5 +990,6 @@
 "cpu": "CPU",
 "minMaxIops": "Min IOPS / Max IOPS",
 "isSelf": "Self",
-"isShared": "Shared"
+"isShared": "Shared",
+"networks": "Networks"
 }

@@ -48,7 +48,7 @@ export default {
       columns: [
         {
           dataIndex: 'name',
-          title: this.$t('networkOfferingId'),
+          title: this.$t('networks'),
           width: '40%'
         },
         {

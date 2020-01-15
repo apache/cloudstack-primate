@@ -99,7 +99,7 @@
             <network-selection
               :items="options.networks"
               :value="networkOfferingIds"
-              @select-network-item="($event) => updatenetworks($event)"
+              @select-network-item="($event) => updateNetworks($event)"
             ></network-selection>
 
             <div class="card-footer">
@@ -326,7 +326,7 @@ export default {
         affinitygroupids: ids
       })
     },
-    updatenetworks (ids) {
+    updateNetworks (ids) {
       this.form.setFieldsValue({
         networkids: ids
       })
