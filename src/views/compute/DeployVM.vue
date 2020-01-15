@@ -96,6 +96,12 @@
               @select-affinity-group-item="($event) => updateAffinityGroups($event)"
             ></affinity-group-selection>
 
+            <network-selection
+              :items="options.networks"
+              :value="networkOfferingIds"
+              @select-network-item="($event) => updatenetworks($event)"
+            ></network-selection>
+
             <div class="card-footer">
               <!-- ToDo extract as component -->
               <a-button @click="() => this.$router.back()">{{ this.$t('cancel') }}</a-button>
@@ -123,6 +129,7 @@ import Vue from 'vue'
 import { api } from '@/api'
 import _ from 'lodash'
 import { mixin, mixinDevice } from '@/utils/mixin.js'
+import store from '@/store'
 
 import InfoCard from '@/components/view/InfoCard'
 import ComputeSelection from './wizard/ComputeSelection'
@@ -130,10 +137,12 @@ import DiskOfferingSelection from '@views/compute/wizard/DiskOfferingSelection'
 import DiskSizeSelection from '@views/compute/wizard/DiskSizeSelection'
 import TemplateIsoSelection from '@views/compute/wizard/TemplateIsoSelection'
 import AffinityGroupSelection from '@views/compute/wizard/AffinityGroupSelection'
+import NetworkSelection from '@views/compute/wizard/NetworkSelection'
 
 export default {
   name: 'Wizard',
   components: {
+    NetworkSelection,
     AffinityGroupSelection,
     TemplateIsoSelection,
     DiskSizeSelection,
@@ -156,7 +165,8 @@ export default {
         serviceOfferings: [],
         diskOfferings: [],
         zones: [],
-        affinityGroups: []
+        affinityGroups: [],
+        networks: []
       },
       instanceConfig: [],
       template: {},
@@ -164,6 +174,7 @@ export default {
       serviceOffering: {},
       diskOffering: {},
       affinityGroups: [],
+      networks: [],
       zone: {},
       isoFilter: [
         'executable',
@@ -210,8 +221,19 @@ export default {
         },
         affinityGroups: {
           list: 'listAffinityGroups'
+        },
+        networks: {
+          list: 'listNetworks',
+          options: {
+            zoneid: _.get(this.zone, 'id'),
+            canusefordeploy: true,
+            projectid: store.getters.project.id
+          }
         }
       }
+    },
+    networkOfferingIds () {
+      return _.map(this.networks, 'id')
     }
   },
   watch: {
@@ -280,6 +302,7 @@ export default {
     this.form.getFieldDecorator('diskofferingid', { initialValue: [], preserve: true })
     this.form.getFieldDecorator('affinitygroupids', { initialValue: [], preserve: true })
     this.form.getFieldDecorator('isoid', { initialValue: [], preserve: true })
+    this.form.getFieldDecorator('networkids', { initialValue: [], preserve: true })
   },
   created () {
     _.each(this.params, this.fetchOptions)
@@ -301,6 +324,11 @@ export default {
     updateAffinityGroups (ids) {
       this.form.setFieldsValue({
         affinitygroupids: ids
+      })
+    },
+    updatenetworks (ids) {
+      this.form.setFieldsValue({
+        networkids: ids
       })
     },
     getText (option) {
@@ -365,6 +393,7 @@ export default {
           this.fetchAllIsos()
         }
         this.fetchOptions(this.params.templates, 'templates')
+        this.fetchOptions(this.params.networks, 'networks')
       })
     }
   }
