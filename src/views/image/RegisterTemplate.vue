@@ -139,9 +139,15 @@
       </a-row>
       <a-row :gutter="12" v-if="hyperKVMShow || hyperVMWShow">
         <a-col :md="24" :lg="24" v-if="hyperKVMShow">
+<<<<<<< HEAD
           <a-form-item :label="$t('rootDiskControllerTypeKVM')">
             <a-select
               v-decorator="['rootDiskControllerTypeKVM', {
+=======
+          <a-form-item :label="$t('rootDiskControllerType')">
+            <a-select
+              v-decorator="['rootDiskControllerType', {
+>>>>>>> image: register template action form (#92)
                 rules: [
                   {
                     required: false,
@@ -158,9 +164,15 @@
           </a-form-item>
         </a-col>
         <a-col :md="24" :lg="12" v-if="hyperVMWShow">
+<<<<<<< HEAD
           <a-form-item :label="$t('rootDiskControllerTypeKVM')">
             <a-select
               v-decorator="['rootDiskControllerTypeKVM', {
+=======
+          <a-form-item :label="$t('rootDiskControllerType')">
+            <a-select
+              v-decorator="['rootDiskControllerType', {
+>>>>>>> image: register template action form (#92)
                 rules: [
                   {
                     required: false,
@@ -437,6 +449,7 @@ export default {
       })
     },
     fetchRootDisk (hyperVisor) {
+<<<<<<< HEAD
       const rootDiskKVM = []
       this.rootDisk.opts = []
 
@@ -458,10 +471,34 @@ export default {
           description: 'scsi'
         })
         rootDiskKVM.push({
+=======
+      const controller = []
+      this.rootDisk.opts = []
+
+      if (hyperVisor === 'KVM') {
+        controller.push({
+          id: '',
+          description: ''
+        })
+        controller.push({
+          id: 'ide',
+          description: 'ide'
+        })
+        controller.push({
+          id: 'osdefault',
+          description: 'osdefault'
+        })
+        controller.push({
+          id: 'scsi',
+          description: 'scsi'
+        })
+        controller.push({
+>>>>>>> image: register template action form (#92)
           id: 'virtio',
           description: 'virtio'
         })
       } else if (hyperVisor === 'VMware') {
+<<<<<<< HEAD
         rootDiskKVM.push({
           id: '',
           description: ''
@@ -491,12 +528,47 @@ export default {
           description: 'lsilogicsas'
         })
         rootDiskKVM.push({
+=======
+        controller.push({
+          id: '',
+          description: ''
+        })
+        controller.push({
+          id: 'scsi',
+          description: 'scsi'
+        })
+        controller.push({
+          id: 'ide',
+          description: 'ide'
+        })
+        controller.push({
+          id: 'osdefault',
+          description: 'osdefault'
+        })
+        controller.push({
+          id: 'pvscsi',
+          description: 'pvscsi'
+        })
+        controller.push({
+          id: 'lsilogic',
+          description: 'lsilogic'
+        })
+        controller.push({
+          id: 'lsisas1068',
+          description: 'lsilogicsas'
+        })
+        controller.push({
+>>>>>>> image: register template action form (#92)
           id: 'buslogic',
           description: 'buslogic'
         })
       }
 
+<<<<<<< HEAD
       this.$set(this.rootDisk, 'opts', rootDiskKVM)
+=======
+      this.$set(this.rootDisk, 'opts', controller)
+>>>>>>> image: register template action form (#92)
     },
     fetchNicAdapterType () {
       const nicAdapterType = []
@@ -683,7 +755,11 @@ export default {
 
           if (key === 'zoneids') {
             if (input.length === 1 && input[0] === this.$t('label.all.zone')) {
+<<<<<<< HEAD
               params.zoneid = '-1'
+=======
+              params.zoneids = '-1'
+>>>>>>> image: register template action form (#92)
               continue
             }
             const zonesSelected = []
@@ -710,7 +786,11 @@ export default {
           } else {
             const formattedDetailData = {}
             switch (key) {
+<<<<<<< HEAD
               case 'rootDiskControllerTypeKVM':
+=======
+              case 'rootDiskControllerType':
+>>>>>>> image: register template action form (#92)
                 formattedDetailData['details[0].rootDiskController'] = input
                 break
               case 'nicAdapterType':
@@ -770,7 +850,11 @@ export default {
       this.form.setFieldsValue({
         hypervisor: undefined,
         format: undefined,
+<<<<<<< HEAD
         rootDiskControllerTypeKVM: undefined,
+=======
+        rootDiskControllerType: undefined,
+>>>>>>> image: register template action form (#92)
         nicAdapterType: undefined,
         keyboardType: undefined
       })
