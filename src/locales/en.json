@@ -552,6 +552,7 @@
 "label.ha.enable": "Enable HA",
 "label.scheduled.snapshots": "Scheduled Snapshots",
 "label.header.volume.snapshot": "You can set up recurring snapshot schedules by selecting from the available options below and applying your policy preference",
+"label.header.volume.take.snapshot": "Please confirm that you want to take a snapshot of this volume.",
 "label.instanciate.template.associate.profile.blade": "Instanciate Template and Associate Profile to Blade",
 "label.interval.weekly": "Every {number}",
 "label.interval.monthly": "Day {number} of month",
