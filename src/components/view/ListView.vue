@@ -27,33 +27,6 @@
     :rowClassName="getRowClassName"
     style="overflow-y: auto"
   >
-    <div slot="sort" slot-scope="text, record" class="shift-btns">
-      <a-tooltip placement="top">
-        <template slot="title">Move to top</template>
-        <a-button
-          shape="round"
-          icon="double-left"
-          @click="moveItemTop(record)"
-          class="shift-btn shift-btn--rotated"></a-button>
-      </a-tooltip>
-      <a-tooltip placement="top">
-        <template slot="title">Move to bottom</template>
-        <a-button
-          shape="round"
-          icon="double-right"
-          @click="moveItemBottom(record)"
-          class="shift-btn shift-btn--rotated"></a-button>
-      </a-tooltip>
-      <a-tooltip placement="top">
-        <template slot="title">Move up one row</template>
-        <a-button shape="round" icon="caret-up" @click="moveItemUp(record)" class="shift-btn"></a-button>
-      </a-tooltip>
-      <a-tooltip placement="top">
-        <template slot="title">Move down one row</template>
-        <a-button shape="round" icon="caret-down" @click="moveItemDown(record)" class="shift-btn"></a-button>
-      </a-tooltip>
-    </div>
-
     <template slot="footer">
       <span v-if="hasSelected">
         {{ `Selected ${selectedRowKeys.length} items` }}
@@ -139,6 +112,33 @@
     <a slot="zonename" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: '/zone/' + record.zoneid }">{{ text }}</router-link>
     </a>
+
+    <div slot="order" slot-scope="text, record" class="shift-btns">
+      <a-tooltip placement="top">
+        <template slot="title">Move to top</template>
+        <a-button
+          shape="round"
+          icon="double-left"
+          @click="moveItemTop(record)"
+          class="shift-btn shift-btn--rotated"></a-button>
+      </a-tooltip>
+      <a-tooltip placement="top">
+        <template slot="title">Move to bottom</template>
+        <a-button
+          shape="round"
+          icon="double-right"
+          @click="moveItemBottom(record)"
+          class="shift-btn shift-btn--rotated"></a-button>
+      </a-tooltip>
+      <a-tooltip placement="top">
+        <template slot="title">Move up one row</template>
+        <a-button shape="round" icon="caret-up" @click="moveItemUp(record)" class="shift-btn"></a-button>
+      </a-tooltip>
+      <a-tooltip placement="top">
+        <template slot="title">Move down one row</template>
+        <a-button shape="round" icon="caret-down" @click="moveItemDown(record)" class="shift-btn"></a-button>
+      </a-tooltip>
+    </div>
 
     <template slot="value" slot-scope="text, record">
       <a-input
