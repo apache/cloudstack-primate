@@ -65,10 +65,14 @@
               :loading="zones.loading"
               mode="multiple"
 <<<<<<< HEAD
+<<<<<<< HEAD
               :placeholder="apiParams.zoneids.description"
 =======
               :placeholder="$t('template.zoneids.description')"
 >>>>>>> Fix: align form item
+=======
+              :placeholder="apiParams.zoneids.description"
+>>>>>>> image: register template action form (#92)
               @change="handlerSelectZone">
               <a-select-option v-for="opt in zones.opts" :key="opt.name || opt.description">
                 {{ opt.name || opt.description }}
@@ -245,10 +249,14 @@
               }]"
               :loading="osTypes.loading"
 <<<<<<< HEAD
+<<<<<<< HEAD
               :placeholder="apiParams.ostypeid.description">
 =======
               :placeholder="$t('template.ostypeid.description')">
 >>>>>>> Fix: align form item
+=======
+              :placeholder="apiParams.ostypeid.description">
+>>>>>>> image: register template action form (#92)
               <a-select-option v-for="opt in osTypes.opts" :key="opt.name || opt.description">
                 {{ opt.name || opt.description }}
               </a-select-option>
@@ -278,6 +286,7 @@
               <a-row>
                 <a-col :span="12">
 <<<<<<< HEAD
+<<<<<<< HEAD
                   <a-checkbox value="isdynamicallyscalable">
                     {{ $t('isdynamicallyscalable') }}
                   </a-checkbox>
@@ -294,11 +303,21 @@
                   <a-checkbox value="isdynamicallyscalable">
                     {{ $t('isdynamicallyscalable') }}
 >>>>>>> Fix: align form item
+=======
+                  <a-checkbox value="isdynamicallyscalable">
+                    {{ $t('isdynamicallyscalable') }}
+                  </a-checkbox>
+                </a-col>
+                <a-col :span="12">
+                  <a-checkbox value="sshkeyenabled">
+                    {{ $t('sshkeyenabled') }}
+>>>>>>> image: register template action form (#92)
                   </a-checkbox>
                 </a-col>
               </a-row>
               <a-row>
                 <a-col :span="12">
+<<<<<<< HEAD
 <<<<<<< HEAD
                   <a-checkbox value="isrouting">
                     {{ $t('isrouting') }}
@@ -316,11 +335,21 @@
                   <a-checkbox value="isfeatured">
                     {{ $t('isfeatured') }}
 >>>>>>> Fix: align form item
+=======
+                  <a-checkbox value="isrouting">
+                    {{ $t('isrouting') }}
+                  </a-checkbox>
+                </a-col>
+                <a-col :span="12">
+                  <a-checkbox value="ispublic">
+                    {{ $t('ispublic') }}
+>>>>>>> image: register template action form (#92)
                   </a-checkbox>
                 </a-col>
               </a-row>
               <a-row>
                 <a-col :span="12">
+<<<<<<< HEAD
 <<<<<<< HEAD
                   <a-checkbox value="requireshvm">
                     {{ $t('requireshvm') }}
@@ -338,6 +367,15 @@
                   <a-checkbox value="requireshvm">
                     {{ $t('requireshvm') }}
 >>>>>>> Fix: align form item
+=======
+                  <a-checkbox value="requireshvm">
+                    {{ $t('requireshvm') }}
+                  </a-checkbox>
+                </a-col>
+                <a-col :span="12">
+                  <a-checkbox value="isfeatured">
+                    {{ $t('isfeatured') }}
+>>>>>>> image: register template action form (#92)
                   </a-checkbox>
                 </a-col>
               </a-row>
@@ -603,13 +641,19 @@ export default {
   beforeCreate () {
     this.form = this.$form.createForm(this)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> image: register template action form (#92)
     this.apiConfig = this.$store.getters.apis.registerTemplate || {}
     this.apiParams = {}
     this.apiConfig.params.forEach(param => {
       this.apiParams[param.name] = param
     })
+<<<<<<< HEAD
 =======
 >>>>>>> #86: custom register template action
+=======
+>>>>>>> image: register template action form (#92)
   },
   created () {
     this.$set(this.zones, 'loading', false)
@@ -1098,12 +1142,16 @@ export default {
           return
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
         let params = {}
 =======
 
         const params = {}
 
 >>>>>>> #86: custom register template action
+=======
+        let params = {}
+>>>>>>> image: register template action form (#92)
         for (const key in values) {
           const input = values[key]
 
@@ -1159,9 +1207,15 @@ export default {
             const formattedDetailData = {}
             switch (key) {
 <<<<<<< HEAD
+<<<<<<< HEAD
               case 'rootDiskControllerTypeKVM':
 =======
               case 'rootDiskControllerType':
+=======
+              case 'rootDiskControllerType':
+=======
+              case 'rootDiskControllerTypeKVM':
+>>>>>>> image: register template action form (#92)
 >>>>>>> image: register template action form (#92)
                 formattedDetailData['details[0].rootDiskController'] = input
                 break
@@ -1181,6 +1235,7 @@ export default {
             } else {
               params[key] = input
             }
+<<<<<<< HEAD
           }
         }
         this.loading = true
@@ -1193,9 +1248,10 @@ export default {
 =======
           } else {
             params[key] = input
+=======
+>>>>>>> image: register template action form (#92)
           }
         }
-
         this.loading = true
 
         api('registerTemplate', params).then(json => {
@@ -1266,14 +1322,20 @@ export default {
 <style scoped lang="less">
   .form-layout {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> image: register template action form (#92)
     width: 80vw;
 
     @media (min-width: 700px) {
       width: 550px;
     }
+<<<<<<< HEAD
 =======
     width: 500px;
 >>>>>>> #86: custom register template action
+=======
+>>>>>>> image: register template action form (#92)
   }
 
   .action-button {
