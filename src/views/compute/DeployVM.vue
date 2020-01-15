@@ -106,9 +106,16 @@
       <a-col :md="24" :lg="7" v-if="!isMobile()">
         <a-affix :offsetTop="75">
           <info-card :resource="vm" :title="this.$t('yourInstance')">
-            <div slot="details" v-if="diskSize">
+            <!-- ToDo: Refactor this, maybe move everything to the info-card component -->
+            <div slot="details" v-if="diskSize" style="margin-bottom: 12px;">
               <a-icon type="hdd"></a-icon>
               <span style="margin-left: 10px">{{ diskSize }}</span>
+            </div>
+            <div slot="details" v-if="networks">
+              <div v-for="network in networks" :key="network.id" style="margin-bottom: 12px;">
+                <a-icon type="api"></a-icon>
+                <span style="margin-left: 10px">{{ network.name }}</span>
+              </div>
             </div>
           </info-card>
         </a-affix>
@@ -245,6 +252,7 @@ export default {
       this.diskOffering = _.find(this.options.diskOfferings, (option) => option.id === instanceConfig.diskofferingid)
       this.zone = _.find(this.options.zones, (option) => option.id === instanceConfig.zoneid)
       this.affinityGroups = _.filter(this.options.affinityGroups, (option) => _.includes(instanceConfig.affinitygroupids, option.id))
+      this.networks = _.filter(this.options.networks, (option) => _.includes(instanceConfig.networkids, option.id))
 
       if (this.zone) {
         this.vm.zoneid = this.zone.id
