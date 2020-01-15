@@ -405,14 +405,21 @@ export default {
         publicipid: this.resource.id
       }).then(response => {
         this.lbRules = response.listloadbalancerrulesresponse.loadbalancerrule
+          ? response.listloadbalancerrulesresponse.loadbalancerrule
+          : []
       }).then(() => {
-        this.fetchLBRuleInstances()
-        this.fetchLBStickinessPolicies()
+        if (this.lbRules.length > 0) {
+          this.fetchLBRuleInstances()
+          this.fetchLBStickinessPolicies()
+          return
+        }
+        this.loading = false
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
+        this.loading = false
       })
     },
     async fetchLBRuleInstances () {
