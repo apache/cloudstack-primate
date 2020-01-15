@@ -139,9 +139,9 @@
       </a-row>
       <a-row :gutter="12" v-if="hyperKVMShow || hyperVMWShow">
         <a-col :md="24" :lg="24" v-if="hyperKVMShow">
-          <a-form-item :label="$t('rootDiskControllerTypeKVM')">
+          <a-form-item :label="$t('rootDiskControllerType')">
             <a-select
-              v-decorator="['rootDiskControllerTypeKVM', {
+              v-decorator="['rootDiskControllerType', {
                 rules: [
                   {
                     required: false,
@@ -158,9 +158,9 @@
           </a-form-item>
         </a-col>
         <a-col :md="24" :lg="12" v-if="hyperVMWShow">
-          <a-form-item :label="$t('rootDiskControllerTypeKVM')">
+          <a-form-item :label="$t('rootDiskControllerType')">
             <a-select
-              v-decorator="['rootDiskControllerTypeKVM', {
+              v-decorator="['rootDiskControllerType', {
                 rules: [
                   {
                     required: false,
@@ -437,66 +437,66 @@ export default {
       })
     },
     fetchRootDisk (hyperVisor) {
-      const rootDiskKVM = []
+      const controller = []
       this.rootDisk.opts = []
 
       if (hyperVisor === 'KVM') {
-        rootDiskKVM.push({
+        controller.push({
           id: '',
           description: ''
         })
-        rootDiskKVM.push({
+        controller.push({
           id: 'ide',
           description: 'ide'
         })
-        rootDiskKVM.push({
+        controller.push({
           id: 'osdefault',
           description: 'osdefault'
         })
-        rootDiskKVM.push({
+        controller.push({
           id: 'scsi',
           description: 'scsi'
         })
-        rootDiskKVM.push({
+        controller.push({
           id: 'virtio',
           description: 'virtio'
         })
       } else if (hyperVisor === 'VMware') {
-        rootDiskKVM.push({
+        controller.push({
           id: '',
           description: ''
         })
-        rootDiskKVM.push({
+        controller.push({
           id: 'scsi',
           description: 'scsi'
         })
-        rootDiskKVM.push({
+        controller.push({
           id: 'ide',
           description: 'ide'
         })
-        rootDiskKVM.push({
+        controller.push({
           id: 'osdefault',
           description: 'osdefault'
         })
-        rootDiskKVM.push({
+        controller.push({
           id: 'pvscsi',
           description: 'pvscsi'
         })
-        rootDiskKVM.push({
+        controller.push({
           id: 'lsilogic',
           description: 'lsilogic'
         })
-        rootDiskKVM.push({
+        controller.push({
           id: 'lsisas1068',
           description: 'lsilogicsas'
         })
-        rootDiskKVM.push({
+        controller.push({
           id: 'buslogic',
           description: 'buslogic'
         })
       }
 
-      this.$set(this.rootDisk, 'opts', rootDiskKVM)
+      this.$set(this.rootDisk, 'opts', controller)
     },
     fetchNicAdapterType () {
       const nicAdapterType = []
@@ -683,7 +683,7 @@ export default {
 
           if (key === 'zoneids') {
             if (input.length === 1 && input[0] === this.$t('label.all.zone')) {
-              params.zoneid = '-1'
+              params.zoneids = '-1'
               continue
             }
             const zonesSelected = []
@@ -710,7 +710,7 @@ export default {
           } else {
             const formattedDetailData = {}
             switch (key) {
-              case 'rootDiskControllerTypeKVM':
+              case 'rootDiskControllerType':
                 formattedDetailData['details[0].rootDiskController'] = input
                 break
               case 'nicAdapterType':
@@ -770,7 +770,7 @@ export default {
       this.form.setFieldsValue({
         hypervisor: undefined,
         format: undefined,
-        rootDiskControllerTypeKVM: undefined,
+        rootDiskControllerType: undefined,
         nicAdapterType: undefined,
         keyboardType: undefined
       })
