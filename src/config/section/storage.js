@@ -85,7 +85,7 @@ export default {
         },
         {
           api: 'createSnapshotPolicy',
-          icon: 'video-camera',
+          icon: 'clock-circle',
           label: 'Recurring Snapshots',
           dataView: true,
           show: (record) => { return record.state === 'Ready' },

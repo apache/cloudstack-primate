@@ -60,7 +60,6 @@
                     v-decorator="['time', {
                       rules: [{required: true, message: 'Please enter input'}]
                     }]"
-                    :placeholder="$t('volume.schedule.description')"
                     :min="1"
                     :max="59"/>
                 </a-tooltip>
@@ -79,8 +78,7 @@
                       required: true,
                       message: 'Please select time'
                     }]
-                  }]"
-                  :placeholder="$t('volume.schedule.description')" />
+                  }]" />
               </a-form-item>
             </a-col>
             <a-col :md="24" :lg="12" v-if="intervalType==='weekly'">
@@ -91,8 +89,7 @@
                       required: true,
                       message: 'Please select option'
                     }]
-                  }]"
-                  :placeholder="$t('volume.dayOfWeek.description')">
+                  }]" >
                   <a-select-option v-for="(opt, optIndex) in dayOfWeek" :key="optIndex">
                     {{ opt.name || opt.description }}
                   </a-select-option>
@@ -107,8 +104,7 @@
                       required: true,
                       message: 'Please select option'
                     }]
-                  }]"
-                  :placeholder="$t('volume.dayOfMonth.description')">
+                  }]">
                   <a-select-option v-for="opt in dayOfMonth" :key="opt.name">
                     {{ opt.name }}
                   </a-select-option>
@@ -126,8 +122,7 @@
                       rules: [{ required: true, message: 'Please enter input'}]
                     }]"
                     :min="1"
-                    :max="8"
-                    :placeholder="$t('volume.maxsnaps.description')"/>
+                    :max="8" />
                 </a-tooltip>
               </a-form-item>
             </a-col>
@@ -141,7 +136,6 @@
                       message: 'Please select option'
                     }]
                   }]"
-                  :placeholder="$t('volume.timezone.description')"
                   :loading="fetching">
                   <a-select-option v-for="opt in timeZoneMap" :key="opt.id">
                     {{ opt.name || opt.description }}

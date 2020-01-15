@@ -163,8 +163,8 @@ export default {
       api('deleteSnapshotPolicies', params).then(json => {
         if (json.deletesnapshotpoliciesresponse.success) {
           this.$notification.success({
-            message: 'Delete Snapshot Policies',
-            description: 'Successfully delete snapshot policies'
+            message: 'Delete Snapshot Policy',
+            description: 'Successfully deleted snapshot policy'
           })
 
           this.$emit('refresh')
