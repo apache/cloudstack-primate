@@ -38,16 +38,9 @@
                   rules: [{ required: true, message: 'Please select option' }]
                 }]"
                 :placeholder="this.$t('vm.zone.description')"
+                :options="zoneSelectOptions"
                 @change="onSelectZoneId"
-              >
-                <a-select-option
-                  v-for="(opt, optIndex) in options.zones"
-                  :key="optIndex"
-                  :value="opt.id"
-                >
-                  {{ opt.name }}
-                </a-select-option>
-              </a-select>
+              ></a-select>
             </a-form-item>
 
             <a-collapse
@@ -234,6 +227,14 @@ export default {
     },
     networkOfferingIds () {
       return _.map(this.networks, 'id')
+    },
+    zoneSelectOptions () {
+      return this.options.zones.map((zone) => {
+        return {
+          label: zone.name,
+          value: zone.id
+        }
+      })
     }
   },
   watch: {
