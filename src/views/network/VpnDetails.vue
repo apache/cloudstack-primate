@@ -22,6 +22,35 @@
       <p>Your IPSec pre-shared key is <strong>{{ remoteAccessVpn.presharedkey }}</strong></p>
       <p>Note: VPN users are now accessed by changing views at the networks tab.</p>
     </div>
+
+    <a-button type="danger" @click="disableVpn = true">Disable VPN</a-button>
+
+    <a-modal v-model="disableVpn" :footer="null" oncancel="disableVpn = false" title="Disable Remove Access VPN">
+      <p>Are you sure you want to disable VPN?</p>
+
+      <a-divider></a-divider>
+
+      <div class="actions">
+        <a-button @click="() => disableVpn = false">Cancel</a-button>
+        <a-button type="primary" @click="handleDisableVpn">Yes</a-button>
+      </div>
+    </a-modal>
+
+  </div>
+  <div v-else>
+    <a-button type="primary" @click="enableVpn = true">Enable VPN</a-button>
+
+    <a-modal v-model="enableVpn" :footer="null" onCancel="enableVpn = false" title="Enable Remote Access VPN">
+      <p>Please confirm that you want Remote Access VPN enabled for this IP address.</p>
+
+      <a-divider></a-divider>
+
+      <div class="actions">
+        <a-button @click="() => enableVpn = false">Cancel</a-button>
+        <a-button type="primary" @click="handleCreateVpn">Yes</a-button>
+      </div>
+    </a-modal>
+
   </div>
 </template>
 
@@ -37,7 +66,9 @@ export default {
   },
   data () {
     return {
-      remoteAccessVpn: null
+      remoteAccessVpn: null,
+      enableVpn: false,
+      disableVpn: false
     }
   },
   inject: ['parentFetchData', 'parentToggleLoading'],
@@ -63,10 +94,107 @@ export default {
         .finally(() => {
           this.parentToggleLoading()
         })
+    },
+    handleCreateVpn () {
+      this.parentToggleLoading()
+      this.enableVpn = false
+      api('createRemoteAccessVpn', {
+        publicipid: this.resource.id,
+        domainid: this.resource.domainid,
+        account: this.resource.account
+      }).then(response => {
+        this.$pollJob({
+          jobId: response.createremoteaccessvpnresponse.jobid,
+          successMethod: result => {
+            const res = result.jobresult.remoteaccessvpn
+            this.$notification.success({
+              message: 'Status',
+              description:
+                `Your Remote Access VPN is currently enabled and can be accessed via the IP ${res.publicip}. Your IPSec pre-shared key is ${res.presharedkey}`,
+              duration: 0
+            })
+            this.fetchData()
+            this.parentFetchData()
+            this.parentToggleLoading()
+          },
+          errorMessage: 'Failed to enable VPN',
+          errorMethod: () => {
+            this.fetchData()
+            this.parentFetchData()
+            this.parentToggleLoading()
+          },
+          loadingMessage: `Enabling VPN...`,
+          catchMessage: 'Error encountered while fetching async job result',
+          catchMethod: () => {
+            this.fetchData()
+            this.parentFetchData()
+            this.parentToggleLoading()
+          }
+        })
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.createremoteaccessvpnresponse
+            ? error.response.data.createremoteaccessvpnresponse.errortext : error.response.data.errorresponse.errortext
+        })
+        this.fetchData()
+        this.parentFetchData()
+        this.parentToggleLoading()
+      })
+    },
+    handleDisableVpn () {
+      this.parentToggleLoading()
+      this.disableVpn = false
+      api('deleteRemoteAccessVpn', {
+        publicipid: this.resource.id,
+        domainid: this.resource.domainid
+      }).then(response => {
+        this.$pollJob({
+          jobId: response.deleteremoteaccessvpnresponse.jobid,
+          successMessage: 'Successfully disabled VPN',
+          successMethod: () => {
+            this.fetchData()
+            this.parentFetchData()
+            this.parentToggleLoading()
+          },
+          errorMessage: 'Failed to disable VPN',
+          errorMethod: () => {
+            this.fetchData()
+            this.parentFetchData()
+            this.parentToggleLoading()
+          },
+          loadingMessage: `Disabling VPN...`,
+          catchMessage: 'Error encountered while fetching async job result',
+          catchMethod: () => {
+            this.fetchData()
+            this.parentFetchData()
+            this.parentToggleLoading()
+          }
+        })
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.deleteremoteaccessvpnresponse
+            ? error.response.data.deleteremoteaccessvpnresponse.errortext : error.response.data.errorresponse.errortext
+        })
+        this.fetchData()
+        this.parentFetchData()
+        this.parentToggleLoading()
+      })
     }
   }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+
+    button {
+      &:not(:last-child) {
+        margin-right: 20px;
+      }
+    }
+  }
 </style>

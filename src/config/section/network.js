@@ -203,8 +203,7 @@ export default {
         networkServiceFilter: networkService => networkService.filter(x => x.name === 'Lb').length > 0
       }, {
         name: 'VPN',
-        component: () => import('@/views/network/VpnDetails.vue'),
-        vpnEnabledFilter: () => true
+        component: () => import('@/views/network/VpnDetails.vue')
       }],
       actions: [
         {
@@ -213,24 +212,6 @@ export default {
           label: 'Acquire New IP',
           listView: true,
           args: ['networkid']
-        },
-        {
-          api: 'createRemoteAccessVpn',
-          icon: 'link',
-          label: 'Enable Remote Access VPN',
-          dataView: true,
-          show: () => true,
-          popup: true,
-          component: () => import('@/views/network/VpnEnable.vue')
-        },
-        {
-          api: 'deleteRemoteAccessVpn',
-          icon: 'disconnect',
-          label: 'Disable Remove Access VPN',
-          dataView: true,
-          show: () => true,
-          popup: true,
-          component: () => import('@/views/network/VpnDisable.vue')
         },
         {
           api: 'enableStaticNat',

@@ -112,8 +112,6 @@ export default {
       if ('networkServiceFilter' in tab) {
         return this.networkService && this.networkService.service &&
           tab.networkServiceFilter(this.networkService.service)
-      } else if ('vpnEnabledFilter' in tab) {
-        return this.vpnEnabled
       } else if ('show' in tab) {
         return tab.show(this.resource, this.$route, this.$store.getters.userInfo)
       } else {
