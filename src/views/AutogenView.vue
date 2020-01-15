@@ -407,6 +407,8 @@ export default {
         params.id = this.$route.params.id
         if (this.$route.path.startsWith('/ssh/')) {
           params.name = this.$route.params.id
+        } else if (this.$route.path.startsWith('/ldapsetting/')) {
+          params.hostname = this.$route.params.id
         }
       }
 
@@ -453,6 +455,8 @@ export default {
             }
             if (this.$route.path.startsWith('/ssh')) {
               this.items[idx].id = this.items[idx].name
+            } else if (this.$route.path.startsWith('/ldapsetting')) {
+              this.items[idx].id = this.items[idx].hostname
             }
           }
         }
@@ -533,10 +537,17 @@ export default {
         return
       }
       var paramName = param.name
+      var params = { listall: true }
       const possibleName = 'list' + paramName.replace('ids', '').replace('id', '').toLowerCase() + 's'
       var possibleApi
       if (this.currentAction.mapping && param.name in this.currentAction.mapping && this.currentAction.mapping[param.name].api) {
         possibleApi = this.currentAction.mapping[param.name].api
+        if (this.currentAction.mapping[param.name].params) {
+          const customParams = this.currentAction.mapping[param.name].params(this.resource)
+          if (customParams) {
+            params = { ...params, ...customParams }
+          }
+        }
       } else if (paramName === 'id') {
         possibleApi = this.apiName
       } else {
@@ -552,7 +563,6 @@ export default {
       }
       param.loading = true
       param.opts = []
-      var params = { listall: true }
       if (possibleApi === 'listTemplates') {
         params.templatefilter = 'executable'
       } else if (possibleApi === 'listIsos') {
