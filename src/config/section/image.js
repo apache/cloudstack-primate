@@ -27,7 +27,7 @@ export default {
       permission: ['listTemplates'],
       params: { templatefilter: 'executable' },
       resourceType: 'Template',
-      columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain'],
+      columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain', 'order'],
       details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'directdownload', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created'],
       related: [{
         name: 'vm',
@@ -50,7 +50,8 @@ export default {
           icon: 'plus',
           label: 'Create template',
           listView: true,
-          args: ['url', 'name', 'displaytext', 'directdownload', 'zoneids', 'hypervisor', 'format', 'ostypeid', 'checksum', 'isextractable', 'passwordenabled', 'sshkeyenabled', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'isrouting', 'requireshvm']
+          popup: true,
+          component: () => import('@/views/image/RegisterTemplate.vue')
         },
         {
           api: 'getUploadParamsForTemplate',
@@ -138,7 +139,6 @@ export default {
           label: 'Register ISO',
           listView: true,
           popup: true,
-          show: (record, user, apis) => { return 'registerIso' in apis },
           component: () => import('@/views/image/RegisterIso.vue')
         },
         {
