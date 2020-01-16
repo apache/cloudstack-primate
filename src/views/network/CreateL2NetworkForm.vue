@@ -109,48 +109,8 @@
               }]"
               :placeholder="this.$t('VLAN/VNI')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.vpcid')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.forvpc">
-            <a-select
-              v-decorator="['vpcid', {
-                rules: [
-                  {
-                    required: true,
-                    message: 'Please select option'
-                  }
-                ]
-              }]"
-              showSearch
-              optionFilterProp="children"
-              :filterOption="(input, option) => {
-                return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }"
-              :loading="vpcLoading"
-              :placeholder="this.$t('label.vpcid')"
-              @change="val => { this.selectedVpc = this.vpcs[val] }">
-              <a-select-option v-for="(opt, optIndex) in this.vpcs" :key="optIndex">
-                {{ opt.name || opt.description }}
-              </a-select-option>
-            </a-select>
-          </a-form-item>
-          <a-form-item :label="$t('label.guest.externalId')">
-            <a-input
-              v-decorator="['externalid', {}]"
-              :placeholder="this.$t('label.guest.externalId')"/>
-          </a-form-item>
-          <a-form-item :label="$t('label.guest.gateway')">
-            <a-input
-              v-decorator="['guestgateway', {}]"
-              :placeholder="this.$t('Display text')"/>
-          </a-form-item>
-          <a-form-item :label="$t('label.guest.netmask')">
-            <a-input
-              v-decorator="['guestnetmask', {}]"
-              :placeholder="this.$t('label.guest.netmask')"/>
-          </a-form-item>
-          <a-form-item :label="$t('label.network.domain')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && !this.selectedNetworkOffering.forvpc">
-            <a-input
-              v-decorator="['networkdomain', {}]"
-              :placeholder="this.$t('label.network.domain')"/>
+          <a-form-item :label="$t('Bypass VLAN id/range overlap')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
+            <a-switch v-decorator="['bypassvlanoverlapcheck']" />
           </a-form-item>
           <a-form-item :label="$t('label.account')" v-if="this.accountVisible">
             <a-input
@@ -211,9 +171,6 @@ export default {
       networkOfferings: [],
       networkOfferingLoading: false,
       selectedNetworkOffering: {},
-      vpcs: [],
-      vpcLoading: false,
-      selectedVpc: {},
       accountVisible: this.isAdminOrDomainAdmin()
     }
   },
@@ -248,8 +205,11 @@ export default {
     arrayHasItems (array) {
       return Array.isArray(array) && array.length > 0
     },
+    isValidValueForKey (obj, key) {
+      return key in obj && obj[key] != null
+    },
     isValidTextValueForKey (obj, key) {
-      return key in obj && obj[key] != null && obj[key].length > 0
+      return this.isValidValueForKey(obj, key) && obj[key].length > 0
     },
     fetchZoneData () {
       const params = {}
@@ -316,11 +276,11 @@ export default {
       }
     },
     fetchNetworkOfferingData (forVpc) {
+      console.log('fetchNetworkOfferingData', forVpc)
       this.networkOfferingLoading = true
       var params = {
         zoneid: this.selectedZone.id,
-        guestiptype: 'Isolated',
-        supportedServices: 'SourceNat',
+        guestiptype: 'L2',
         state: 'Enabled'
       }
       if (this.isAdminOrDomainAdmin() && this.selectedDomain.id !== '-1') { // domain is visible only for admins
@@ -332,8 +292,6 @@ export default {
       if (forVpc !== null) {
         params.forvpc = forVpc
       }
-      this.networkOfferings = []
-      this.selectedNetworkOffering = {}
       api('listNetworkOfferings', params).then(json => {
         this.networkOfferings = json.listnetworkofferingsresponse.networkoffering
       }).finally(() => {
@@ -348,30 +306,6 @@ export default {
     },
     handleNetworkOfferingChange (networkOffering) {
       this.selectedNetworkOffering = networkOffering
-      if (networkOffering.forvpc) {
-        this.fetchVpcData()
-      }
-    },
-    fetchVpcData () {
-      this.vpcLoading = true
-      var params = {
-        listAll: true,
-        details: 'min'
-      }
-      if (this.vpc !== null) {
-        params.id = this.vpc.id
-      }
-      api('listVPCs', params).then(json => {
-        this.vpcs = json.listvpcsresponse.vpc
-      }).finally(() => {
-        this.vpcLoading = false
-        if (this.arrayHasItems(this.vpcs)) {
-          this.form.setFieldsValue({
-            vpcid: 0
-          })
-          this.selectedVpc = this.vpcs[0]
-        }
-      })
     },
     handleSubmit (e) {
       this.form.validateFields((error, values) => {
@@ -385,23 +319,11 @@ export default {
           displayText: values.displaytext,
           networkOfferingId: this.selectedNetworkOffering.id
         }
-        if (this.isValidTextValueForKey(values, 'guestgateway')) {
-          params.gateway = values.guestgateway
-        }
-        if (this.isValidTextValueForKey(values, 'guestnetmask')) {
-          params.netmask = values.guestnetmask
-        }
-        if (this.isValidTextValueForKey(values, 'externalid')) {
-          params.externalid = values.externalid
-        }
-        if (this.isValidTextValueForKey(values, 'vpcid')) {
-          params.vpcid = this.selectedVpc.id
-        }
         if (this.isValidTextValueForKey(values, 'vlanid')) {
           params.vlan = values.vlanid
         }
-        if (this.isValidTextValueForKey(values, 'networkdomain')) {
-          params.networkdomain = values.networkdomain
+        if (this.isValidValueForKey(values, 'bypassvlanoverlapcheck')) {
+          params.bypassvlanoverlapcheck = values.bypassvlanoverlapcheck
         }
         if ('domainid' in values && values.domainid > 0) {
           params.domainid = this.selectedDomain.id
@@ -412,7 +334,7 @@ export default {
         api('createNetwork', params).then(json => {
           this.$notification.success({
             message: 'Network',
-            description: 'Successfully created isolated network'
+            description: 'Successfully created L2 network'
           })
           this.resetForm()
         }).catch(error => {

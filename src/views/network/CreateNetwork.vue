@@ -25,9 +25,14 @@
           @close-action="closeAction"
           @refresh="handleRefresh"/>
       </a-tab-pane>
-      <a-tab-pane :tab="$t('Shared')" key="2">
+      <a-tab-pane :tab="$t('L2')" key="2">
+        <CreateL2NetworkForm
+          :loading="loading"
+          :resource="resource"
+          @close-action="closeAction"
+          @refresh="handleRefresh"/>
       </a-tab-pane>
-      <a-tab-pane :tab="$t('VPC')" key="3">
+      <a-tab-pane :tab="$t('Shared')" key="3">
       </a-tab-pane>
     </a-tabs>
   </div>
@@ -36,11 +41,13 @@
 <script>
 import { api } from '@/api'
 import CreateIsolatedNetworkForm from '@/views/network/CreateIsolatedNetworkForm'
+import CreateL2NetworkForm from '@/views/network/CreateL2NetworkForm'
 
 export default {
   name: 'CreateNetwork',
   components: {
-    CreateIsolatedNetworkForm
+    CreateIsolatedNetworkForm,
+    CreateL2NetworkForm
   },
   props: {
     resource: {
