@@ -169,12 +169,12 @@ export default {
             this.$pollJob({
               jobId,
               successMethod: result => {
-                console.log(result)
                 const successDescription = result.jobresult.snapshot.name
-                this.$notification.success({
-                  message: title,
-                  description: (<span domPropsInnerHTML={successDescription}></span>),
-                  duration: 0
+                this.$store.dispatch('AddAsyncJob', {
+                  title: title,
+                  jobid: jobId,
+                  description: successDescription,
+                  status: 'progress'
                 })
                 this.closeAction()
               },
