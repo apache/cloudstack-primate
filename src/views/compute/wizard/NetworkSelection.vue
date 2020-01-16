@@ -21,7 +21,6 @@
     :dataSource="networkItems"
     :rowKey="record => record.id"
     :pagination="false"
-    :scroll="{x: 0, y: 320}"
     :rowSelection="rowSelection"
   >
     <a-list
@@ -31,11 +30,11 @@
       :dataSource="getDetails(record)"
       size="small"
     >
-      <a-list-item slot="renderItem" slot-scope="item, index" :key="index">
+      <a-list-item slot="renderItem" slot-scope="item" :key="item.id">
         <a-list-item-meta
           :description="item.description"
         >
-          <div slot="title">{{ item.title }}</div>
+          <template v-slot:title>{{ item.title }}</template>
         </a-list-item-meta>
       </a-list-item>
     </a-list>
@@ -61,7 +60,23 @@ export default {
   },
   data () {
     return {
-      columns: [
+      selectedRowKeys: [],
+      vpcs: [],
+      filteredInfo: null
+    }
+  },
+  computed: {
+    columns () {
+      let vpcFilter = []
+      if (this.vpcs) {
+        vpcFilter = this.vpcs.map((vpc) => {
+          return {
+            text: vpc.displaytext,
+            value: vpc.id
+          }
+        })
+      }
+      return [
         {
           dataIndex: 'name',
           title: this.$t('networks'),
@@ -75,14 +90,15 @@ export default {
         {
           dataIndex: 'vpcName',
           title: this.$t('VPC'),
-          width: '30%'
+          width: '30%',
+          filters: vpcFilter,
+          filteredValue: _.get(this.filteredInfo, 'id'),
+          onFilter: (value, record) => {
+            return record.vpcid === value
+          }
         }
-      ],
-      selectedRowKeys: [],
-      vpcs: []
-    }
-  },
-  computed: {
+      ]
+    },
     rowSelection () {
       return {
         type: 'checkbox',
