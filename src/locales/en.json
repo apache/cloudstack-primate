@@ -115,6 +115,7 @@
 "clusterId": "Cluster",
 "clusterid": "Cluster",
 "clustername": "Cluster",
+"clusternamelabel": "Cluster Name",
 "clusters": "Clusters",
 "clustertype": "Cluster Type",
 "connectiontimeout": "Connection Timeout",
@@ -1019,5 +1020,7 @@
 "newInstance": "New instance",
 "cpu": "CPU",
 "ram": "RAM",
-"wednesday": "Wednesday"
+"wednesday": "Wednesday",
+"cancel": "Cancel",
+"ok": "Ok"
 }
