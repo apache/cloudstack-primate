@@ -32,59 +32,8 @@
                 size="small"
                 type="dashed"
                 icon="reload"
-<<<<<<< HEAD
-<<<<<<< HEAD
-                @click="fetchData()">/>
-            </a-tooltip>
-            <a-tooltip
-              v-for="(action, actionIndex) in actions"
-              :key="actionIndex"
-              placement="bottom">
-              <template slot="title">
-                {{ $t(action.label) }}
-              </template>
-              <a-button
-                v-if="action.api in $store.getters.apis &&
-                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
-                  ('show' in action ? action.show(resource) : true)"
-                :icon="action.icon"
-                :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
-                shape="circle"
-                style="margin-right: 5px"
-                @click="execAction(action)"
-              >
-              </a-button>
-=======
                 @click="fetchData()" />
->>>>>>> storage: take volume snapshot action (#110)
-=======
-                @click="fetchData()" />
-=======
-                @click="fetchData()">/>
             </a-tooltip>
-            <a-tooltip
-              v-for="(action, actionIndex) in actions"
-              :key="actionIndex"
-              placement="bottom">
-              <template slot="title">
-                {{ $t(action.label) }}
-              </template>
-              <a-button
-                v-if="action.api in $store.getters.apis &&
-                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) ||
-                  (dataView && action.dataView && ('show' in action ? action.show(resource) : true)) ||
-                  (treeView && ('show' in action ? action.show(treeSelected) : true)))"
-                :icon="action.icon"
-                :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
-                shape="circle"
-                style="margin-right: 5px"
-                @click="execAction(action)"
-              >
-              </a-button>
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-            </a-tooltip>
-<<<<<<< HEAD
           </breadcrumb>
         </a-col>
         <a-col :span="10">
@@ -97,28 +46,6 @@
               :dataView="dataView"
               :resource="resource"
               @exec-action="execAction"/>
-=======
-            <a-tooltip
-              v-for="(action, actionIndex) in actions"
-              :key="actionIndex"
-              placement="bottom">
-              <template slot="title">
-                {{ $t(action.label) }}
-              </template>
-              <a-button
-                v-if="action.api in $store.getters.apis &&
-                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) ||
-                  (dataView && action.dataView && ('show' in action ? action.show(resource) : true)) ||
-                  (treeView && ('show' in action ? action.show(treeSelected) : true)))"
-                :icon="action.icon"
-                :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
-                shape="circle"
-                style="margin-right: 5px"
-                @click="execAction(action)"
-              >
-              </a-button>
-            </a-tooltip>
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
             <a-input-search
               style="width: 25vw; margin-left: 10px"
               placeholder="Search"
@@ -278,40 +205,17 @@
     </div>
 
     <div v-if="dataView && !treeView">
-<<<<<<< HEAD
-<<<<<<< HEAD
       <resource-view
         :resource="resource"
         :loading="loading"
         :tabs="$route.meta.tabs" />
-=======
-      <resource-view :resource="resource" :loading="loading" :tabs="$route.meta.tabs" />
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-      <resource-view
-        :resource="resource"
-        :loading="loading"
-<<<<<<< HEAD
-        :tabs="$route.meta.tabs"
-        :treeView="treeView" />
->>>>>>> Fix issue display two info card in Resource-view
-=======
-        :tabs="$route.meta.tabs" />
->>>>>>> fixes
     </div>
     <div class="row-element" v-else>
       <list-view
         :loading="loading"
         :columns="columns"
         :items="items"
-<<<<<<< HEAD
-<<<<<<< HEAD
         @refresh="this.fetchData"
-=======
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-        @refresh="this.fetchData"
->>>>>>> rebase with latest master
         v-if="!treeView" />
       <a-pagination
         class="row-element"
@@ -331,17 +235,8 @@
         :treeSelected="treeSelected"
         :loading="loading"
         :tabs="$route.meta.tabs"
-<<<<<<< HEAD
-<<<<<<< HEAD
         @change-resource="changeResource"
         :actionData="actionData"/>
-=======
-        @change-resource="changeResource" />
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-        @change-resource="changeResource"
-        :actionData="actionData"/>
->>>>>>> Fix issue #27: changes requested
     </div>
   </div>
 </template>
@@ -359,11 +254,7 @@ import Status from '@/components/widgets/Status'
 import ListView from '@/components/view/ListView'
 import ResourceView from '@/components/view/ResourceView'
 import TreeView from '@/components/view/TreeView'
-<<<<<<< HEAD
 import ActionButton from '@/components/view/ActionButton'
-=======
-import { genericCompare } from '@/utils/sort.js'
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
 
 export default {
   name: 'Resource',
@@ -373,12 +264,8 @@ export default {
     ResourceView,
     ListView,
     TreeView,
-<<<<<<< HEAD
     Status,
     ActionButton
-=======
-    Status
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
   },
   mixins: [mixinDevice],
   provide: function () {
@@ -406,17 +293,8 @@ export default {
       treeView: false,
       actions: [],
       treeData: [],
-<<<<<<< HEAD
-<<<<<<< HEAD
       treeSelected: {},
       actionData: []
-=======
-      treeSelected: {}
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-      treeSelected: {},
-      actionData: []
->>>>>>> Fix issue #27: changes requested
     }
   },
   computed: {
@@ -457,13 +335,6 @@ export default {
       this.actions = []
       this.columns = []
       this.columnKeys = []
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-      this.items = []
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
->>>>>>> merge latest master
       this.treeData = []
       this.treeSelected = {}
       var params = { listall: true }
@@ -583,32 +454,14 @@ export default {
             }
             if (this.$route.path.startsWith('/ssh')) {
               this.items[idx].id = this.items[idx].name
-<<<<<<< HEAD
             } else if (this.$route.path.startsWith('/ldapsetting')) {
               this.items[idx].id = this.items[idx].hostname
-=======
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
             }
           }
         }
         if (this.items.length > 0) {
-<<<<<<< HEAD
-<<<<<<< HEAD
           this.resource = this.items[0]
           this.treeSelected = this.treeView ? this.items[0] : {}
-=======
-          if (this.treeView) {
-            this.treeSelected = this.items[0]
-            this.resource = this.items[0]
-          } else {
-            this.resource = this.items[0]
-            this.treeSelected = {}
-          }
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-          this.resource = this.items[0]
-          this.treeSelected = this.treeView ? this.items[0] : {}
->>>>>>> fixes
         } else {
           this.resource = {}
           this.treeSelected = {}
@@ -742,7 +595,6 @@ export default {
         jobId,
         successMethod: result => {
           this.fetchData()
-<<<<<<< HEAD
           if (action.response) {
             const description = action.response(result.jobresult)
             if (description) {
@@ -758,15 +610,6 @@ export default {
         loadingMessage: `${this.$t(action.label)} in progress for ${this.resource.name}`,
         catchMessage: 'Error encountered while fetching async job result',
         action
-=======
-        } else if (result.jobstatus === 0) {
-          this.$message
-            .loading(this.$t(action.label) + ' in progress for ' + this.resource.name, 3)
-            .then(() => this.pollActionCompletion(jobId, action))
-        }
-      }).catch(function (e) {
-        console.log('Error encountered while fetching async job result' + e)
->>>>>>> rebase with latest master
       })
     },
     handleSubmit (e) {
@@ -892,36 +735,19 @@ export default {
       rootItem[0].title = rootItem[0].title ? rootItem[0].title : rootItem[0].name
       rootItem[0].key = rootItem[0].id ? rootItem[0].id : 0
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Fix issue #27: changes requested
       if (!rootItem[0].haschild) {
         rootItem[0].isLeaf = true
       }
 
-<<<<<<< HEAD
-=======
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
->>>>>>> Fix issue #27: changes requested
       result.push(rootItem[0])
       return result
     },
     changeResource (resource) {
       this.treeSelected = resource
       this.resource = this.treeSelected
-<<<<<<< HEAD
     },
-<<<<<<< HEAD
     toggleLoading () {
       this.loading = !this.loading
-=======
-    changeAction (showAction) {
-      this.showAction = showAction
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
->>>>>>> Fix issue #27: changes requested
     }
   }
 }

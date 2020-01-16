@@ -141,10 +141,7 @@
 "current": "isCurrent",
 "date": "Date",
 "dedicated": "Dedicated",
-<<<<<<< HEAD
 "default": "Default",
-=======
->>>>>>> merge latest master
 "deleteconfirm": "Please confirm that you would like to delete this {name}",
 "deleteprofile": "Delete Profile",
 "deploymentPlanner": "Deployment planner",
@@ -297,7 +294,6 @@
 "isCustomized": "Custom Disk Size",
 "isCustomizedIops": "Custom IOPS",
 "isDedicated": "Dedicate",
-"isExtractable": "Extractable",
 "isFeatured": "Featured",
 "isForced": "Force Delete",
 "isManaged": "Managed",
@@ -310,7 +306,7 @@
 "isdedicated": "Dedicated",
 "isdefault": "Is Default",
 "isdynamicallyscalable": "Dynamically Scalable",
-"isextractable": "extractable",
+"isextractable": "Extractable",
 "isfeatured": "Featured",
 "iso": "ISO",
 "isolatedpvlanId": "Secondary Isolated VLAN ID",
@@ -543,29 +539,7 @@
 "label.enable.vpc.offering": "Enable VPC offering",
 "label.enable.vpn": "Enable Remote Access VPN",
 "label.enter.token": "Enter token",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 "label.error.volume.upload": "Please choose a file",
-=======
->>>>>>> image: register template action form (#92)
-=======
-"label.error.volume.upload": "Please choose a file",
->>>>>>> storage: recurring volume snapshot form (#99)
-=======
-"label.error.volume.upload": "Please choose a file",
-=======
->>>>>>> #86: custom register template action
->>>>>>> #86: custom register template action
-=======
-"label.error.volume.upload": "Please choose a file",
-=======
->>>>>>> #86: custom register template action
-=======
-"label.error.volume.upload": "Please choose a file",
->>>>>>> merge latest master
->>>>>>> merge latest master
 "label.error.zone.combined": "All Zones cannot be combined with any other zone",
 "label.french.azerty.keyboard": "French AZERTY keyboard",
 "label.globo.dns.configuration": "GloboDNS Configuration",
@@ -579,30 +553,8 @@
 "label.header.volume.snapshot": "You can set up recurring snapshot schedules by selecting from the available options below and applying your policy preference",
 "label.header.volume.take.snapshot": "Please confirm that you want to take a snapshot of this volume.",
 "label.instanciate.template.associate.profile.blade": "Instanciate Template and Associate Profile to Blade",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 "label.interval.weekly": "Every {number}",
 "label.interval.monthly": "Day {number} of month",
-=======
->>>>>>> image: register template action form (#92)
-=======
-=======
->>>>>>> merge latest master
-"label.interval.weekly": "Every {number}",
-"label.interval.monthly": "Day {number} of month",
->>>>>>> storage: recurring volume snapshot form (#99)
-=======
-"label.interval.weekly": "Every {number}",
-"label.interval.monthly": "Day {number} of month",
-=======
->>>>>>> #86: custom register template action
->>>>>>> #86: custom register template action
-=======
-"label.interval.weekly": "Every {number}",
-"label.interval.monthly": "Day {number} of month",
->>>>>>> merge latest master
 "label.japanese.keyboard": "Japanese keyboard",
 "label.link.domain.to.ldap": "Link Domain to LDAP",
 "label.make.project.owner": "Make account project owner",
@@ -925,6 +877,7 @@
 "specifyipranges": "Specify IP ranges",
 "specifyvlan": "Specify VLAN",
 "sshkeypair": "New SSH Key Pair",
+"sshkeyenabled": "SSH Enabled",
 "startdate": "By date (start)",
 "startip": "Start IP",
 "startipv4": "IPv4 Start IP",

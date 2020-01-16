@@ -18,7 +18,6 @@
 <template>
   <div class="form-layout">
     <a-form layout="vertical" :form="form">
-<<<<<<< HEAD
       <a-row :gutter="12">
         <a-form-item :label="$t('url')">
           <a-input
@@ -64,15 +63,7 @@
               }]"
               :loading="zones.loading"
               mode="multiple"
-<<<<<<< HEAD
-<<<<<<< HEAD
               :placeholder="apiParams.zoneids.description"
-=======
-              :placeholder="$t('template.zoneids.description')"
->>>>>>> Fix: align form item
-=======
-              :placeholder="apiParams.zoneids.description"
->>>>>>> image: register template action form (#92)
               @change="handlerSelectZone">
               <a-select-option v-for="opt in zones.opts" :key="opt.name || opt.description">
                 {{ opt.name || opt.description }}
@@ -148,15 +139,9 @@
       </a-row>
       <a-row :gutter="12" v-if="hyperKVMShow || hyperVMWShow">
         <a-col :md="24" :lg="24" v-if="hyperKVMShow">
-<<<<<<< HEAD
-          <a-form-item :label="$t('rootDiskControllerTypeKVM')">
-            <a-select
-              v-decorator="['rootDiskControllerTypeKVM', {
-=======
           <a-form-item :label="$t('rootDiskControllerType')">
             <a-select
               v-decorator="['rootDiskControllerType', {
->>>>>>> image: register template action form (#92)
                 rules: [
                   {
                     required: false,
@@ -173,15 +158,9 @@
           </a-form-item>
         </a-col>
         <a-col :md="24" :lg="12" v-if="hyperVMWShow">
-<<<<<<< HEAD
-          <a-form-item :label="$t('rootDiskControllerTypeKVM')">
-            <a-select
-              v-decorator="['rootDiskControllerTypeKVM', {
-=======
           <a-form-item :label="$t('rootDiskControllerType')">
             <a-select
               v-decorator="['rootDiskControllerType', {
->>>>>>> image: register template action form (#92)
                 rules: [
                   {
                     required: false,
@@ -248,15 +227,7 @@
                 ]
               }]"
               :loading="osTypes.loading"
-<<<<<<< HEAD
-<<<<<<< HEAD
               :placeholder="apiParams.ostypeid.description">
-=======
-              :placeholder="$t('template.ostypeid.description')">
->>>>>>> Fix: align form item
-=======
-              :placeholder="apiParams.ostypeid.description">
->>>>>>> image: register template action form (#92)
               <a-select-option v-for="opt in osTypes.opts" :key="opt.name || opt.description">
                 {{ opt.name || opt.description }}
               </a-select-option>
@@ -285,8 +256,6 @@
               </a-row>
               <a-row>
                 <a-col :span="12">
-<<<<<<< HEAD
-<<<<<<< HEAD
                   <a-checkbox value="isdynamicallyscalable">
                     {{ $t('isdynamicallyscalable') }}
                   </a-checkbox>
@@ -294,31 +263,11 @@
                 <a-col :span="12">
                   <a-checkbox value="sshkeyenabled">
                     {{ $t('sshkeyenabled') }}
-=======
-                  <a-checkbox value="sshkeyenabled">
-                    {{ $t('sshkeyenabled') }}
-                  </a-checkbox>
-                </a-col>
-                <a-col :span="12">
-                  <a-checkbox value="isdynamicallyscalable">
-                    {{ $t('isdynamicallyscalable') }}
->>>>>>> Fix: align form item
-=======
-                  <a-checkbox value="isdynamicallyscalable">
-                    {{ $t('isdynamicallyscalable') }}
-                  </a-checkbox>
-                </a-col>
-                <a-col :span="12">
-                  <a-checkbox value="sshkeyenabled">
-                    {{ $t('sshkeyenabled') }}
->>>>>>> image: register template action form (#92)
                   </a-checkbox>
                 </a-col>
               </a-row>
               <a-row>
                 <a-col :span="12">
-<<<<<<< HEAD
-<<<<<<< HEAD
                   <a-checkbox value="isrouting">
                     {{ $t('isrouting') }}
                   </a-checkbox>
@@ -326,31 +275,11 @@
                 <a-col :span="12">
                   <a-checkbox value="ispublic">
                     {{ $t('ispublic') }}
-=======
-                  <a-checkbox value="ispublic">
-                    {{ $t('ispublic') }}
-                  </a-checkbox>
-                </a-col>
-                <a-col :span="12">
-                  <a-checkbox value="isfeatured">
-                    {{ $t('isfeatured') }}
->>>>>>> Fix: align form item
-=======
-                  <a-checkbox value="isrouting">
-                    {{ $t('isrouting') }}
-                  </a-checkbox>
-                </a-col>
-                <a-col :span="12">
-                  <a-checkbox value="ispublic">
-                    {{ $t('ispublic') }}
->>>>>>> image: register template action form (#92)
                   </a-checkbox>
                 </a-col>
               </a-row>
               <a-row>
                 <a-col :span="12">
-<<<<<<< HEAD
-<<<<<<< HEAD
                   <a-checkbox value="requireshvm">
                     {{ $t('requireshvm') }}
                   </a-checkbox>
@@ -358,24 +287,6 @@
                 <a-col :span="12">
                   <a-checkbox value="isfeatured">
                     {{ $t('isfeatured') }}
-=======
-                  <a-checkbox value="isrouting">
-                    {{ $t('isrouting') }}
-                  </a-checkbox>
-                </a-col>
-                <a-col :span="12">
-                  <a-checkbox value="requireshvm">
-                    {{ $t('requireshvm') }}
->>>>>>> Fix: align form item
-=======
-                  <a-checkbox value="requireshvm">
-                    {{ $t('requireshvm') }}
-                  </a-checkbox>
-                </a-col>
-                <a-col :span="12">
-                  <a-checkbox value="isfeatured">
-                    {{ $t('isfeatured') }}
->>>>>>> image: register template action form (#92)
                   </a-checkbox>
                 </a-col>
               </a-row>
@@ -383,218 +294,6 @@
           </a-form-item>
         </a-col>
       </a-row>
-=======
-      <a-form-item :label="$t('url')">
-        <a-input
-          v-decorator="['url', {
-            rules: [{ required: true, message: 'Please enter input' }]
-          }]"
-          :placeholder="$t('template.url.description')" />
-      </a-form-item>
-
-      <a-form-item :label="$t('name')">
-        <a-input
-          v-decorator="['name', {
-            rules: [{ required: true, message: 'Please enter input' }]
-          }]"
-          :placeholder="$t('template.name.description')" />
-      </a-form-item>
-
-      <a-form-item :label="$t('displaytext')">
-        <a-input
-          v-decorator="['displaytext', {
-            rules: [{ required: true, message: 'Please enter input' }]
-          }]"
-          :placeholder="$t('template.displaytext.description')" />
-      </a-form-item>
-
-      <a-form-item
-        :label="$t('zoneids')"
-        :validate-status="zoneError"
-        :help="zoneErrorMessage">
-        <a-select
-          v-decorator="['zoneids', {
-            rules: [
-              {
-                required: false,
-                message: 'Please select option',
-                type: 'array'
-              }
-            ]
-          }]"
-          :loading="zones.loading"
-          mode="multiple"
-          :placeholder="$t('template.zoneids.description')"
-          @change="handlerSelectZone">
-          <a-select-option v-for="opt in zones.opts" :key="opt.name || opt.description">
-            {{ opt.name || opt.description }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <a-form-item :label="$t('hypervisor')">
-        <a-select
-          v-decorator="['hypervisor', {
-            rules: [
-              {
-                required: false,
-                message: 'Please select option'
-              }
-            ]
-          }]"
-          :loading="hyperVisor.loading"
-          :placeholder="$t('template.hypervisor.description')"
-          @change="handlerSelectHyperVisor">
-          <a-select-option v-for="(opt, optIndex) in hyperVisor.opts" :key="optIndex">
-            {{ opt.name || opt.description }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <a-form-item v-if="hyperKVMShow" :label="$t('directdownload')">
-        <a-switch v-decorator="['directdownload']" />
-      </a-form-item>
-
-      <a-form-item v-if="hyperKVMShow || hyperVMWShow" :label="$t('rootDiskControllerTypeKVM')">
-        <a-select
-          v-decorator="['rootDiskControllerTypeKVM', {
-            rules: [
-              {
-                required: false,
-                message: 'Please select option'
-              }
-            ]
-          }]"
-          :loading="rootDisk.loading"
-          :placeholder="$t('template.rootDiskControllerTypeKVM.description')">
-          <a-select-option v-for="opt in rootDisk.opts" :key="opt.id">
-            {{ opt.name || opt.description }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <a-form-item v-if="hyperXenServerShow" :label="$t('xenserverToolsVersion61plus')">
-        <a-switch
-          v-decorator="['xenserverToolsVersion61plus',{
-            initialValue: xenServerProvider
-          }]"
-          :checked="xenServerProvider" />
-      </a-form-item>
-
-      <a-form-item v-if="hyperVMWShow" :label="$t('nicAdapterType')">
-        <a-select
-          v-decorator="['nicAdapterType', {
-            rules: [
-              {
-                required: false,
-                message: 'Please select option'
-              }
-            ]
-          }]"
-          :placeholder="$t('template.nicAdapterType.description')">
-          <a-select-option v-for="opt in nicAdapterType.opts" :key="opt.id">
-            {{ opt.name || opt.description }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <a-form-item v-if="hyperVMWShow" :label="$t('keyboardType')">
-        <a-select
-          v-decorator="['keyboardType', {
-            rules: [
-              {
-                required: false,
-                message: 'Please select option'
-              }
-            ]
-          }]"
-          :placeholder="$t('template.keyboardType.description')">
-          <a-select-option v-for="opt in keyboardType.opts" :key="opt.id">
-            {{ opt.name || opt.description }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <a-form-item :label="$t('format')">
-        <a-select
-          v-decorator="['format', {
-            rules: [
-              {
-                required: false,
-                message: 'Please select option'
-              }
-            ]
-          }]"
-          :placeholder="$t('template.format.description')">
-          <a-select-option v-for="opt in format.opts" :key="opt.id">
-            {{ opt.name || opt.description }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <a-form-item :label="$t('ostypeid')">
-        <a-select
-          showSearch
-          v-decorator="['ostypeid', {
-            rules: [
-              {
-                required: false,
-                message: 'Please select option'
-              }
-            ]
-          }]"
-          :loading="osTypes.loading"
-          :placeholder="$t('template.ostypeid.description')">
-          <a-select-option v-for="opt in osTypes.opts" :key="opt.name || opt.description">
-            {{ opt.name || opt.description }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <a-form-item :label="$t('checksum')">
-        <a-input
-          v-decorator="['checksum', {
-            rules: [{ required: false, message: 'Please enter input' }]
-          }]"
-          :placeholder="$t('template.checksum.description')" />
-      </a-form-item>
-
-      <a-form-item :label="$t('isextractable')">
-        <a-switch v-decorator="['isextractable']" />
-      </a-form-item>
-
-      <a-form-item :label="$t('passwordenabled')">
-        <a-switch v-decorator="['passwordenabled']" />
-      </a-form-item>
-
-      <a-form-item :label="$t('sshkeyenabled')">
-        <a-switch v-decorator="['sshkeyenabled']" />
-      </a-form-item>
-
-      <a-form-item :label="$t('isdynamicallyscalable')">
-        <a-switch v-decorator="['isdynamicallyscalable']" />
-      </a-form-item>
-
-      <a-form-item :label="$t('ispublic')">
-        <a-switch v-decorator="['ispublic']" />
-      </a-form-item>
-
-      <a-form-item :label="$t('isfeatured')">
-        <a-switch v-decorator="['isfeatured']" />
-      </a-form-item>
-
-      <a-form-item :label="$t('isrouting')">
-        <a-switch v-decorator="['isrouting']" />
-      </a-form-item>
-
-      <a-form-item :label="$t('requireshvm')">
-        <a-switch
-          v-decorator="['requireshvm', {
-            initialValue: true
-          }]"
-          defaultChecked />
-      </a-form-item>
->>>>>>> #86: custom register template action
 
       <div :span="24" class="action-button">
         <a-button @click="closeAction">{{ this.$t('Cancel') }}</a-button>
@@ -606,10 +305,7 @@
 
 <script>
 import { api } from '@/api'
-<<<<<<< HEAD
 import store from '@/store'
-=======
->>>>>>> #86: custom register template action
 
 export default {
   name: 'RegisterTemplate',
@@ -628,32 +324,19 @@ export default {
       hyperVMWShow: false,
       zoneError: '',
       zoneErrorMessage: '',
-<<<<<<< HEAD
       loading: false,
       rootAdmin: 'Admin',
       allowed: false,
       allowDirectDownload: false
-=======
-      loading: false
->>>>>>> #86: custom register template action
     }
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> image: register template action form (#92)
     this.apiConfig = this.$store.getters.apis.registerTemplate || {}
     this.apiParams = {}
     this.apiConfig.params.forEach(param => {
       this.apiParams[param.name] = param
     })
-<<<<<<< HEAD
-=======
->>>>>>> #86: custom register template action
-=======
->>>>>>> image: register template action form (#92)
   },
   created () {
     this.$set(this.zones, 'loading', false)
@@ -678,19 +361,14 @@ export default {
     fetchData () {
       this.fetchZone()
       this.fetchOsTypes()
-<<<<<<< HEAD
       if (Object.prototype.hasOwnProperty.call(store.getters.apis, 'listConfigurations')) {
         this.fetchXenServerProvider()
       }
-=======
-      this.fetchXenServerProvider()
->>>>>>> #86: custom register template action
     },
     fetchZone () {
       const params = {}
       let listZones = []
       params.listAll = true
-<<<<<<< HEAD
 
       this.allowed = false
 
@@ -701,12 +379,6 @@ export default {
           name: this.$t('label.all.zone')
         })
       }
-=======
-      listZones.push({
-        id: this.$t('label.all.zone'),
-        name: this.$t('label.all.zone')
-      })
->>>>>>> #86: custom register template action
 
       this.zones.loading = true
       this.zones.opts = []
@@ -726,16 +398,12 @@ export default {
 
       api('listHypervisors', params).then(json => {
         const listResponse = json.listhypervisorsresponse.hypervisor
-<<<<<<< HEAD
         if (listResponse) {
           listhyperVisors = listhyperVisors.concat(listResponse)
         }
         listhyperVisors.push({
           name: 'Any'
         })
-=======
-        listhyperVisors = listhyperVisors.concat(listResponse)
->>>>>>> #86: custom register template action
 
         this.$set(this.hyperVisor, 'opts', listhyperVisors)
       }).finally(() => {
@@ -769,32 +437,6 @@ export default {
       })
     },
     fetchRootDisk (hyperVisor) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-      const rootDiskKVM = []
-      this.rootDisk.opts = []
-
-      if (hyperVisor === 'KVM') {
-        rootDiskKVM.push({
-          id: '',
-          description: ''
-        })
-        rootDiskKVM.push({
-          id: 'ide',
-          description: 'ide'
-        })
-        rootDiskKVM.push({
-          id: 'osdefault',
-          description: 'osdefault'
-        })
-        rootDiskKVM.push({
-          id: 'scsi',
-          description: 'scsi'
-        })
-        rootDiskKVM.push({
-=======
-=======
->>>>>>> #86: custom register template action
       const controller = []
       this.rootDisk.opts = []
 
@@ -816,71 +458,10 @@ export default {
           description: 'scsi'
         })
         controller.push({
-<<<<<<< HEAD
->>>>>>> image: register template action form (#92)
-=======
-=======
-      const rootDiskKVM = []
-      this.rootDisk.opts = []
-
-      if (hyperVisor === 'KVM') {
-        rootDiskKVM.push({
-          id: '',
-          description: ''
-        })
-        rootDiskKVM.push({
-          id: 'ide',
-          description: 'ide'
-        })
-        rootDiskKVM.push({
-          id: 'osdefault',
-          description: 'osdefault'
-        })
-        rootDiskKVM.push({
-          id: 'scsi',
-          description: 'scsi'
-        })
-        rootDiskKVM.push({
->>>>>>> #86: custom register template action
->>>>>>> #86: custom register template action
           id: 'virtio',
           description: 'virtio'
         })
       } else if (hyperVisor === 'VMware') {
-<<<<<<< HEAD
-<<<<<<< HEAD
-        rootDiskKVM.push({
-          id: '',
-          description: ''
-        })
-        rootDiskKVM.push({
-          id: 'scsi',
-          description: 'scsi'
-        })
-        rootDiskKVM.push({
-          id: 'ide',
-          description: 'ide'
-        })
-        rootDiskKVM.push({
-          id: 'osdefault',
-          description: 'osdefault'
-        })
-        rootDiskKVM.push({
-          id: 'pvscsi',
-          description: 'pvscsi'
-        })
-        rootDiskKVM.push({
-          id: 'lsilogic',
-          description: 'lsilogic'
-        })
-        rootDiskKVM.push({
-          id: 'lsisas1068',
-          description: 'lsilogicsas'
-        })
-        rootDiskKVM.push({
-=======
-=======
->>>>>>> #86: custom register template action
         controller.push({
           id: '',
           description: ''
@@ -910,58 +491,12 @@ export default {
           description: 'lsilogicsas'
         })
         controller.push({
-<<<<<<< HEAD
->>>>>>> image: register template action form (#92)
-=======
-=======
-        rootDiskKVM.push({
-          id: '',
-          description: ''
-        })
-        rootDiskKVM.push({
-          id: 'scsi',
-          description: 'scsi'
-        })
-        rootDiskKVM.push({
-          id: 'ide',
-          description: 'ide'
-        })
-        rootDiskKVM.push({
-          id: 'osdefault',
-          description: 'osdefault'
-        })
-        rootDiskKVM.push({
-          id: 'pvscsi',
-          description: 'pvscsi'
-        })
-        rootDiskKVM.push({
-          id: 'lsilogic',
-          description: 'lsilogic'
-        })
-        rootDiskKVM.push({
-          id: 'lsisas1068',
-          description: 'lsilogicsas'
-        })
-        rootDiskKVM.push({
->>>>>>> #86: custom register template action
->>>>>>> #86: custom register template action
           id: 'buslogic',
           description: 'buslogic'
         })
       }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-      this.$set(this.rootDisk, 'opts', rootDiskKVM)
-=======
       this.$set(this.rootDisk, 'opts', controller)
->>>>>>> image: register template action form (#92)
-=======
-      this.$set(this.rootDisk, 'opts', controller)
-=======
-      this.$set(this.rootDisk, 'opts', rootDiskKVM)
->>>>>>> #86: custom register template action
->>>>>>> #86: custom register template action
     },
     fetchNicAdapterType () {
       const nicAdapterType = []
@@ -1123,10 +658,7 @@ export default {
       this.hyperXenServerShow = false
       this.hyperVMWShow = false
       this.hyperKVMShow = false
-<<<<<<< HEAD
       this.allowDirectDownload = false
-=======
->>>>>>> #86: custom register template action
 
       this.resetSelect()
       this.fetchFormat(hyperVisor)
@@ -1141,17 +673,7 @@ export default {
         if (err || this.zoneError !== '') {
           return
         }
-<<<<<<< HEAD
-<<<<<<< HEAD
         let params = {}
-=======
-
-        const params = {}
-
->>>>>>> #86: custom register template action
-=======
-        let params = {}
->>>>>>> image: register template action form (#92)
         for (const key in values) {
           const input = values[key]
 
@@ -1161,22 +683,9 @@ export default {
 
           if (key === 'zoneids') {
             if (input.length === 1 && input[0] === this.$t('label.all.zone')) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-              params.zoneid = '-1'
-=======
-=======
->>>>>>> #86: custom register template action
               params.zoneids = '-1'
->>>>>>> image: register template action form (#92)
               continue
             }
-=======
-              params.zoneid = '-1'
-              continue
-            }
-
->>>>>>> #86: custom register template action
             const zonesSelected = []
             for (const index in input) {
               const name = input[index]
@@ -1185,10 +694,6 @@ export default {
                 zonesSelected.push(zone[0].id)
               }
             }
-<<<<<<< HEAD
-=======
-
->>>>>>> #86: custom register template action
             params[key] = zonesSelected.join(',')
           } else if (key === 'ostypeid') {
             const osTypeSelected = this.osTypes.opts.filter(item => item.description === input)
@@ -1197,7 +702,6 @@ export default {
             }
           } else if (key === 'hypervisor') {
             params[key] = this.hyperVisor.opts[input].name
-<<<<<<< HEAD
           } else if (key === 'groupenabled') {
             for (const index in input) {
               const name = input[index]
@@ -1206,17 +710,7 @@ export default {
           } else {
             const formattedDetailData = {}
             switch (key) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-              case 'rootDiskControllerTypeKVM':
-=======
               case 'rootDiskControllerType':
-=======
-              case 'rootDiskControllerType':
-=======
-              case 'rootDiskControllerTypeKVM':
->>>>>>> image: register template action form (#92)
->>>>>>> image: register template action form (#92)
                 formattedDetailData['details[0].rootDiskController'] = input
                 break
               case 'nicAdapterType':
@@ -1235,7 +729,6 @@ export default {
             } else {
               params[key] = input
             }
-<<<<<<< HEAD
           }
         }
         this.loading = true
@@ -1245,25 +738,6 @@ export default {
             message: 'Register Template',
             description: 'Successfully registered template ' + params.name
           })
-=======
-          } else {
-            params[key] = input
-=======
->>>>>>> image: register template action form (#92)
-          }
-        }
-        this.loading = true
-
-        api('registerTemplate', params).then(json => {
-          this.$emit('refresh-data')
-<<<<<<< HEAD
->>>>>>> #86: custom register template action
-=======
-          this.$notification.success({
-            message: 'Register Template',
-            description: 'Sucessfully registered template ' + params.name
-          })
->>>>>>> make minor changes
         }).catch(error => {
           this.$notification.error({
             message: 'Request Failed',
@@ -1275,12 +749,9 @@ export default {
         })
       })
     },
-<<<<<<< HEAD
     handleChangeDirect (checked) {
       this.allowDirectDownload = checked
     },
-=======
->>>>>>> #86: custom register template action
     validZone (zones) {
       const allZoneExists = zones.filter(zone => zone === this.$t('label.all.zone'))
 
@@ -1299,18 +770,7 @@ export default {
       this.form.setFieldsValue({
         hypervisor: undefined,
         format: undefined,
-<<<<<<< HEAD
-<<<<<<< HEAD
-        rootDiskControllerTypeKVM: undefined,
-=======
         rootDiskControllerType: undefined,
->>>>>>> image: register template action form (#92)
-=======
-        rootDiskControllerType: undefined,
-=======
-        rootDiskControllerTypeKVM: undefined,
->>>>>>> #86: custom register template action
->>>>>>> #86: custom register template action
         nicAdapterType: undefined,
         keyboardType: undefined
       })
@@ -1321,21 +781,11 @@ export default {
 
 <style scoped lang="less">
   .form-layout {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> image: register template action form (#92)
     width: 80vw;
 
     @media (min-width: 700px) {
       width: 550px;
     }
-<<<<<<< HEAD
-=======
-    width: 500px;
->>>>>>> #86: custom register template action
-=======
->>>>>>> image: register template action form (#92)
   }
 
   .action-button {
