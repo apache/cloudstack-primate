@@ -2,18 +2,29 @@
   <a-spin :spinning="loading">
     <div class="form">
 
-      <div class="form__item">
-        <div class="form__label"><span class="required">* </span>{{ $t('zonenamelabel') }}</div>
-        <a-select v-model="zoneId" @change="fetchPods">
-          <a-select-option
-            v-for="zone in zonesList"
-            :value="zone.id"
-            :key="zone.id">
-            {{ zone.name }}
-          </a-select-option>
-        </a-select>
-      </div>
-      <div class="form__item">
+      <a-popover placement="bottom">
+        <template slot="content">
+          The zone in which you want to create the cluster
+        </template>
+        <div class="form__item">
+          <div class="form__label"><span class="required">* </span>{{ $t('zonenamelabel') }}</div>
+          <a-select v-model="zoneId" @change="fetchPods">
+            <a-select-option
+              v-for="zone in zonesList"
+              :value="zone.id"
+              :key="zone.id">
+              {{ zone.name }}
+            </a-select-option>
+          </a-select>
+        </div>
+      </a-popover>
+
+      <a-popover placement="bottom">
+        <template slot="content">
+          The type of hypervisor software that runs on the hosts in this cluster. All hosts in a cluster run the
+          same hypervisor.
+        </template>
+        <div class="form__item">
         <div class="form__label">{{ $t('hypervisor') }}</div>
         <a-select v-model="hypervisor" @change="resetAllFields">
           <a-select-option
@@ -24,7 +35,13 @@
           </a-select-option>
         </a-select>
       </div>
-      <div class="form__item">
+      </a-popover>
+
+      <a-popover placement="bottom">
+        <template slot="content">
+          The pod in which you want to create the cluster
+        </template>
+        <div class="form__item">
         <div class="form__label">{{ $t('podname') }}</div>
         <a-select v-model="podId">
           <a-select-option
@@ -35,29 +52,60 @@
           </a-select-option>
         </a-select>
       </div>
-      <div class="form__item">
+      </a-popover>
+
+      <a-popover placement="bottom">
+        <template slot="content">
+          Cluster name. Used for display only. For VMWare hypervisor, this must be a predefined name in VCenter.
+        </template>
+        <div class="form__item">
         <div class="form__label"><span class="required">* </span>{{ $t('clusternamelabel') }}</div>
         <span class="required required-label" ref="requiredCluster">Required</span>
         <a-input v-model="clustername"></a-input>
       </div>
+      </a-popover>
 
       <template v-if="hypervisor === 'VMware'">
-        <div class="form__item">
-          <div class="form__label">{{ $t('vCenterHost') }}</div>
-          <a-input v-model="host"></a-input>
-        </div>
-        <div class="form__item">
+        <a-popover placement="bottom">
+          <template slot="content">
+            The hostname or IP address of the vCenter server
+          </template>
+          <div class="form__item">
+            <div class="form__label">{{ $t('vCenterHost') }}</div>
+            <a-input v-model="host"></a-input>
+          </div>
+        </a-popover>
+
+        <a-popover placement="bottom">
+          <template slot="content">
+            ID of a user with all administrative privileges on vCenter
+          </template>
+          <div class="form__item">
           <div class="form__label">{{ $t('vCenterUsername') }}</div>
           <a-input v-model="username"></a-input>
         </div>
-        <div class="form__item">
+        </a-popover>
+
+        <a-popover placement="bottom">
+          <template slot="content">
+            Password of the user in Username
+          </template>
+          <div class="form__item">
           <div class="form__label">{{ $t('vCenterPassword') }}</div>
           <a-input v-model="password"></a-input>
         </div>
-        <div class="form__item">
+        </a-popover>
+
+        <a-popover placement="bottom">
+          <template slot="content">
+            The vCenter datacenter the cluster is in. For example, cloud.dc.VM
+          </template>
+          <div class="form__item">
           <div class="form__label">{{ $t('vCenterDataCenter') }}</div>
           <a-input v-model="dataCenter"></a-input>
         </div>
+        </a-popover>
+
       </template>
 
       <a-divider></a-divider>
