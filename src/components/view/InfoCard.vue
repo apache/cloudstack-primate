@@ -20,18 +20,22 @@
     <a-card class="spin-content" :bordered="bordered" :title="title">
       <div>
         <div class="resource-details">
-          <div class="avatar">
-            <slot name="avatar">
-              <os-logo v-if="resource.ostypeid || resource.ostypename" :osId="resource.ostypeid" :osName="resource.ostypename" size="4x" />
-              <a-icon v-else style="font-size: 36px" :type="$route.meta.icon" />
+          <div class="resource-details__name">
+            <div class="avatar">
+              <slot name="avatar">
+                <os-logo v-if="resource.ostypeid || resource.ostypename" :osId="resource.ostypeid" :osName="resource.ostypename" size="4x" />
+                <a-icon v-else style="font-size: 36px" :type="$route.meta.icon" />
+              </slot>
+            </div>
+            <slot name="name">
+              <h4 class="name">
+                {{ resource.displayname || resource.name }}
+              </h4>
+              <console style="margin-left: 10px" :resource="resource" size="default" v-if="resource.id" />
             </slot>
           </div>
-          <div class="name">
-            <slot name="name">
-              <h4>
-                {{ resource.displayname || resource.name }}
-                <console :resource="resource" size="default" v-if="resource.id" />
-              </h4>
+          <slot name="actions">
+            <div class="tags">
               <a-tag v-if="resource.instancename">
                 {{ resource.instancename }}
               </a-tag>
@@ -50,162 +54,213 @@
               <a-tag v-if="'isdynamicallyscalable' in resource" :color="resource.isdynamicallyscalable ? 'green': 'red'">
                 {{ $t('isdynamicallyscalable') }}
               </a-tag>
-            </slot>
-            <slot name="actions">
-            </slot>
+              <a-tag v-if="resource.scope">
+                {{ resource.scope }}
+              </a-tag>
+              <a-tag v-if="resource.version">
+                {{ resource.version }}
+              </a-tag>
+            </div>
+          </slot>
+        </div>
+
+        <a-divider/>
+
+        <div class="resource-detail-item" v-if="resource.state || resource.status">
+          <div class="resource-detail-item__label">{{ $t('status') }}</div>
+          <div class="resource-detail-item__details">
+            <status class="status" :text="resource.state || resource.status"/>
+            <span>{{ resource.state || resource.status }}</span>
+            <console style="margin-left: 5px" :resource="resource" size="default" v-if="resource.id" />
           </div>
         </div>
-        <div class="resource-detail-item" style="margin-bottom: 4px" v-if="resource.state || resource.status">
-          <status :text="resource.state || resource.status" class="resource-detail-item" />
-          <span style="margin-left: -5px">{{ resource.state || resource.status }}</span>
-        </div>
         <div class="resource-detail-item" v-if="resource.id">
-          <a-tooltip placement="right" >
-            <template slot="title">
-              <span>Copy ID</span>
-            </template>
-            <a-button shape="circle" type="dashed" size="small" v-clipboard:copy="resource.id" style="margin-left: -5px">
-              <a-icon type="barcode" style="padding-left: 4px; margin-top: 4px"/>
-            </a-button>
-          </a-tooltip>
-          <span style="margin-left: 5px;">{{ resource.id }}</span>
+          <div class="resource-detail-item__label">{{ $t('id') }}</div>
+          <div class="resource-detail-item__details">
+            <a-tooltip placement="right" >
+              <template slot="title">
+                <span>Copy ID</span>
+              </template>
+              <a-button shape="circle" type="dashed" size="small" v-clipboard:copy="resource.id" style="margin-left: -5px">
+                <a-icon type="barcode" style="padding-left: 4px; margin-top: 4px"/>
+              </a-button>
+            </a-tooltip>
+            <span style="margin-left: 10px;">{{ resource.id }}</span>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.ostypename && resource.ostypeid">
-          <os-logo :osId="resource.ostypeid" :osName="resource.ostypename" size="lg" style="margin-left: -1px" />
-          <span style="margin-left: 8px">{{ resource.ostypename }}</span>
+          <div class="resource-detail-item__label">{{ $t('ostypename') }}</div>
+          <div class="resource-detail-item__details">
+            <os-logo :osId="resource.ostypeid" :osName="resource.ostypename" size="lg" style="margin-left: -1px" />
+            <span style="margin-left: 8px">{{ resource.ostypename }}</span>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="(resource.cpunumber && resource.cpuspeed) || resource.cputotal">
-          <a-icon type="appstore" />
-          <span v-if="resource.cpunumber && resource.cpuspeed">{{ resource.cpunumber }} CPU x {{ parseFloat(resource.cpuspeed / 1000.0).toFixed(2) }} Ghz</span>
-          <span v-else-if="resource.cputotal">{{ resource.cputotal }}</span>
-          <span
-            v-if="resource.cpuused"
-            style="display: flex; padding-left: 25px">
-            {{ $t('cpuusedghz') }}
-            <a-progress
-              v-if="resource.cpuused"
-              style="padding-left: 10px"
-              size="small"
-              status="active"
-              :percent="parseFloat(resource.cpuused)" />
-          </span>
-          <span
-            v-if="resource.cpuallocated"
-            style="display: flex; padding-left: 25px">
-            {{ $t('cpuallocatedghz') }}
-            <a-progress
-              style="padding-left: 10px"
-              size="small"
-              :percent="parseFloat(resource.cpuallocated)" />
-          </span>
+          <div class="resource-detail-item__label">{{ $t('cpu') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="appstore" />
+            <span v-if="resource.cpunumber && resource.cpuspeed">{{ resource.cpunumber }} CPU x {{ parseFloat(resource.cpuspeed / 1000.0).toFixed(2) }} Ghz</span>
+            <span v-else-if="resource.cputotal">{{ resource.cputotal }}</span>
+          </div>
+          <div>
+            <span v-if="resource.cpuused">
+              <a-progress
+                v-if="resource.cpuused"
+                class="progress-bar"
+                size="small"
+                status="active"
+                :percent="parseFloat(resource.cpuused)"
+                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('cpuusedghz')"
+              />
+            </span>
+            <span v-if="resource.cpuallocated">
+              <a-progress
+                class="progress-bar"
+                size="small"
+                :percent="parseFloat(resource.cpuallocated)"
+                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('cpuallocatedghz')"
+              />
+            </span>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.memory">
-          <a-icon type="bulb" />{{ resource.memory }} MB Memory
-          <span
-            v-if="resource.memorykbs && resource.memoryintfreekbs"
-            style="display: flex; padding-left: 25px">
-            {{ $t('memoryusedgb') }}
-            <a-progress
-              style="padding-left: 10px"
-              size="small"
-              status="active"
-              :percent="Number(parseFloat(100.0 * (resource.memorykbs - resource.memoryintfreekbs) / resource.memorykbs).toFixed(2))" />
-          </span>
+          <div class="resource-detail-item__label">{{ $t('memory') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="bulb" />{{ resource.memory }} MB Memory
+          </div>
+          <div>
+            <span v-if="resource.memorykbs && resource.memoryintfreekbs">
+              <a-progress
+                class="progress-bar"
+                size="small"
+                status="active"
+                :percent="Number(parseFloat(100.0 * (resource.memorykbs - resource.memoryintfreekbs) / resource.memorykbs).toFixed(2))"
+                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('memoryusedgb')"
+              />
+            </span>
+          </div>
         </div>
         <div class="resource-detail-item" v-else-if="resource.memorytotalgb">
-          <a-icon type="bulb" />{{ resource.memorytotalgb }} Memory
-          <span
-            v-if="resource.memoryusedgb"
-            style="display: flex; padding-left: 25px">
-            {{ $t('memoryusedgb') }}
-            <a-progress
-              style="padding-left: 10px"
-              size="small"
-              status="active"
-              :percent="Number(parseFloat(100.0 * parseFloat(resource.memoryusedgb) / parseFloat(resource.memorytotalgb)).toFixed(2))" />
-          </span>
-          <span
-            v-if="resource.memoryallocatedgb"
-            style="display: flex; padding-left: 25px">
-            {{ $t('memoryallocatedgb') }}
-            <a-progress
-              style="padding-left: 10px"
-              size="small"
-              :percent="Number(parseFloat(100.0 * parseFloat(resource.memoryallocatedgb) / parseFloat(resource.memorytotalgb)).toFixed(2))" />
-          </span>
+          <div class="resource-detail-item__label">{{ $t('memory') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="bulb" />{{ resource.memorytotalgb }} Memory
+          </div>
+          <div>
+            <span v-if="resource.memoryusedgb">
+              <a-progress
+                class="progress-bar"
+                size="small"
+                status="active"
+                :percent="Number(parseFloat(100.0 * parseFloat(resource.memoryusedgb) / parseFloat(resource.memorytotalgb)).toFixed(2))"
+                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('memoryusedgb')"
+              />
+            </span>
+            <span v-if="resource.memoryallocatedgb">
+              <a-progress
+                class="progress-bar"
+                size="small"
+                :percent="Number(parseFloat(100.0 * parseFloat(resource.memoryallocatedgb) / parseFloat(resource.memorytotalgb)).toFixed(2))"
+                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('memoryallocatedgb')"
+              />
+            </span>
+          </div>
         </div>
         <div class="resource-detail-item" v-else-if="resource.memorytotal">
-          <a-icon type="bulb" />{{ resource.memorytotal }} Memory
-          <span
-            v-if="resource.memoryused"
-            style="display: flex; padding-left: 25px">
-            {{ $t('memoryused') }}
-            <a-progress
-              style="padding-left: 10px"
-              size="small"
-              status="active"
-              :percent="parseFloat(resource.memoryused)" />
-          </span>
-          <span
-            v-if="resource.memoryallocated"
-            style="display: flex; padding-left: 25px">
-            {{ $t('memoryallocatedgb') }}
-            <a-progress
-              style="padding-left: 10px"
-              size="small"
-              :percent="parseFloat(resource.memoryallocated)" />
-          </span>
+          <div class="resource-detail-item__label">{{ $t('Memory') }}</div>
+          <div class="resource-detail-item__details">
+
+            <div style="display: flex; flex-direction: column; width: 100%;">
+              <div>
+                <a-icon type="bulb" />{{ resource.memorytotal }} Memory
+              </div>
+              <div>
+                <span
+                  v-if="resource.memoryused">
+                  <a-progress
+                    class="progress-bar"
+                    size="small"
+                    status="active"
+                    :percent="parseFloat(resource.memoryused)"
+                    :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('memoryused')" />
+                </span>
+                <span
+                  v-if="resource.memoryallocated">
+                  <a-progress
+                    class="progress-bar"
+                    size="small"
+                    :percent="parseFloat(resource.memoryallocated)"
+                    :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('memoryallocatedgb')" />
+                </span>
+              </div>
+            </div>
+
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.volumes || resource.sizegb">
-          <a-icon type="hdd" />
-          <span v-if="resource.volumes">{{ (resource.volumes.reduce((total, item) => total += item.size, 0) / (1024 * 1024 * 1024.0)).toFixed(2) }} GB Storage</span>
-          <span v-else-if="resource.sizegb">{{ resource.sizegb }}</span>
-          <div style="margin-left: 25px" v-if="resource.diskkbsread && resource.diskkbswrite && resource.diskioread && resource.diskiowrite">
-            <a-tag>Read {{ toSize(resource.diskkbsread) }}</a-tag>
-            <a-tag>Write {{ toSize(resource.diskkbswrite) }}</a-tag><br/>
-            <a-tag>Read (IO) {{ resource.diskioread }}</a-tag>
+          <div class="resource-detail-item__label">{{ $t('disksize') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="hdd" />
+            <span style="width: 100%;" v-if="resource.volumes">{{ (resource.volumes.reduce((total, item) => total += item.size, 0) / (1024 * 1024 * 1024.0)).toFixed(2) }} GB Storage</span>
+            <span style="width: 100%;" v-else-if="resource.sizegb">{{ resource.sizegb }}</span>
+          </div>
+          <div style="margin-left: 25px; margin-top: 5px" v-if="resource.diskkbsread && resource.diskkbswrite && resource.diskioread && resource.diskiowrite">
+            <a-tag style="margin-bottom: 5px;">Read {{ toSize(resource.diskkbsread) }}</a-tag>
+            <a-tag style="margin-bottom: 5px;">Write {{ toSize(resource.diskkbswrite) }}</a-tag><br/>
+            <a-tag style="margin-bottom: 5px;">Read (IO) {{ resource.diskioread }}</a-tag>
             <a-tag>Write (IO) {{ resource.diskiowrite }}</a-tag>
           </div>
         </div>
         <div class="resource-detail-item" v-else-if="resource.disksizetotalgb">
-          <a-icon type="database" />{{ resource.disksizetotalgb }}
-          <span
-            v-if="resource.disksizeusedgb"
-            style="display: flex; padding-left: 25px">
-            {{ $t('disksizeusedgb') }}
-            <a-progress
-              style="padding-left: 10px"
-              size="small"
-              status="active"
-              :percent="Number(parseFloat(100.0 * parseFloat(resource.disksizeusedgb) / parseFloat(resource.disksizetotalgb)).toFixed(2))" />
-          </span>
-          <span
-            v-if="resource.disksizeallocatedgb"
-            style="display: flex; padding-left: 25px">
-            {{ $t('disksizeallocatedgb') }}
-            <a-progress
-              style="padding-left: 10px"
-              size="small"
-              :percent="Number(parseFloat(100.0 * parseFloat(resource.disksizeallocatedgb) / parseFloat(resource.disksizetotalgb)).toFixed(2))" />
-          </span>
+          <div class="resource-detail-item__label">{{ $t('disksize') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="database" />{{ resource.disksizetotalgb }}
+          </div>
+          <div>
+            <span v-if="resource.disksizeusedgb">
+              <a-progress
+                class="progress-bar"
+                size="small"
+                status="active"
+                :percent="Number(parseFloat(100.0 * parseFloat(resource.disksizeusedgb) / parseFloat(resource.disksizetotalgb)).toFixed(2))"
+                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('disksizeusedgb')" />
+            </span>
+            <span v-if="resource.disksizeallocatedgb">
+              <a-progress
+                class="progress-bar"
+                size="small"
+                :percent="Number(parseFloat(100.0 * parseFloat(resource.disksizeallocatedgb) / parseFloat(resource.disksizetotalgb)).toFixed(2))"
+                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('disksizeallocatedgb')" />
+            </span>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.nic || ('networkkbsread' in resource && 'networkkbswrite' in resource)">
-          <a-icon type="wifi" />
-          <span v-if="'networkkbsread' in resource && 'networkkbswrite' in resource">
-            <a-tag><a-icon type="arrow-down" /> RX {{ toSize(resource.networkkbsread) }}</a-tag>
-            <a-tag><a-icon type="arrow-up" /> TX {{ toSize(resource.networkkbswrite) }}</a-tag>
-          </span>
-          <span v-else>{{ resource.nic.length }} NIC(s)
-          </span>
-          <div style="margin-left: 25px" v-if="resource.nic" v-for="(eth, index) in resource.nic" :key="eth.id">
-            <a-icon type="api" />eth{{ index }} {{ eth.ipaddress }}
-            <router-link v-if="eth.networkname && eth.networkid" :to="{ path: '/guestnetwork/' + eth.networkid }">({{ eth.networkname }})</router-link>
+          <div class="resource-detail-item__label">{{ $t('network') }}</div>
+          <div class="resource-detail-item__details resource-detail-item__details--start">
+            <a-icon type="wifi" />
+            <div>
+              <div v-if="'networkkbsread' in resource && 'networkkbswrite' in resource">
+                <a-tag><a-icon type="arrow-down" /> RX {{ toSize(resource.networkkbsread) }}</a-tag>
+                <a-tag><a-icon type="arrow-up" /> TX {{ toSize(resource.networkkbswrite) }}</a-tag>
+              </div>
+              <div v-else>{{ resource.nic.length }} NIC(s)</div>
+              <div
+                v-if="resource.nic"
+                v-for="(eth, index) in resource.nic"
+                :key="eth.id"
+                style="margin-left: -24px; margin-top: 5px;">
+                <a-icon type="api" />eth{{ index }} {{ eth.ipaddress }}
+                <router-link v-if="eth.networkname && eth.networkid" :to="{ path: '/guestnetwork/' + eth.networkid }">({{ eth.networkname }})</router-link>
+              </div>
+            </div>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.ipaddress">
-          <a-icon type="environment" />
-          <span v-if="resource.nic && resource.nic.length > 0">{{ resource.nic.filter(e => { return e.ipaddress }).map(e => { return e.ipaddress }).join(', ') }}</span>
-          <span v-else>{{ resource.ipaddress }}</span>
+          <div class="resource-detail-item__label">{{ $t('ip') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="environment" />
+            <span v-if="resource.nic && resource.nic.length > 0">{{ resource.nic.filter(e => { return e.ipaddress }).map(e => { return e.ipaddress }).join(', ') }}</span>
+            <span v-else>{{ resource.ipaddress }}</span>
+          </div>
         </div>
 
         <div class="resource-detail-item">
@@ -214,96 +269,161 @@
         </div>
 
         <div class="resource-detail-item" v-if="resource.groupid">
-          <a-icon type="gold" />
-          <router-link :to="{ path: '/vmgroup/' + resource.groupid }">{{ resource.group || resource.groupid }}</router-link>
+          <div class="resource-detail-item__label">{{ $t('group') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="gold" />
+            <router-link :to="{ path: '/vmgroup/' + resource.groupid }">{{ resource.group || resource.groupid }}</router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.keypair">
-          <a-icon type="key" />
-          <router-link :to="{ path: '/ssh/' + resource.keypair }">{{ resource.keypair }}</router-link>
+          <div class="resource-detail-item__label">{{ $t('keypair') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="key" />
+            <router-link :to="{ path: '/ssh/' + resource.keypair }">{{ resource.keypair }}</router-link>
+          </div>
         </div>
-
         <div class="resource-detail-item" v-if="resource.virtualmachineid">
-          <a-icon type="desktop" />
-          <router-link :to="{ path: '/vm/' + resource.virtualmachineid }">{{ resource.vmname || resource.vm || resource.virtualmachinename || resource.virtualmachineid }} </router-link>
-          <status style="margin-top: -5px" :text="resource.vmstate" v-if="resource.vmstate"/>
+          <div class="resource-detail-item__label">{{ $t('vmname') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="desktop" />
+            <router-link :to="{ path: '/vm/' + resource.virtualmachineid }">{{ resource.vmname || resource.vm || resource.virtualmachinename || resource.virtualmachineid }} </router-link>
+            <status class="status status--end" :text="resource.vmstate" v-if="resource.vmstate"/>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.volumeid">
-          <a-icon type="hdd" />
-          <router-link :to="{ path: '/volume/' + resource.volumeid }">{{ resource.volumename || resource.volume || resource.volumeid }} </router-link>
+          <div class="resource-detail-item__label">{{ $t('volume') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="hdd" />
+            <router-link :to="{ path: '/volume/' + resource.volumeid }">{{ resource.volumename || resource.volume || resource.volumeid }} </router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.associatednetworkid">
-          <a-icon type="wifi" />
-          <router-link :to="{ path: '/guestnetwork/' + resource.associatednetworkid }">{{ resource.associatednetworkname || resource.associatednetworkid }} </router-link>
+          <div class="resource-detail-item__label">{{ $t('associatednetwork') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="wifi" />
+            <router-link :to="{ path: '/guestnetwork/' + resource.associatednetworkid }">{{ resource.associatednetworkname || resource.associatednetworkid }} </router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.guestnetworkid">
-          <a-icon type="gateway" />
-          <router-link :to="{ path: '/guestnetwork/' + resource.guestnetworkid }">{{ resource.guestnetworkname || resource.guestnetworkid }} </router-link>
+          <div class="resource-detail-item__label">{{ $t('guestNetwork') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="gateway" />
+            <router-link :to="{ path: '/guestnetwork/' + resource.guestnetworkid }">{{ resource.guestnetworkname || resource.guestnetworkid }} </router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.vpcid">
-          <a-icon type="deployment-unit" />
-          <router-link :to="{ path: '/vpc/' + resource.vpcid }">{{ resource.vpcname || resource.vpcid }}</router-link>
+          <div class="resource-detail-item__label">{{ $t('vpcname') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="deployment-unit" />
+            <router-link :to="{ path: '/vpc/' + resource.vpcid }">{{ resource.vpcname || resource.vpcid }}</router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.serviceofferingname && resource.serviceofferingid">
-          <a-icon type="cloud" />
-          <router-link :to="{ path: '/computeoffering/' + resource.serviceofferingid }">{{ resource.serviceofferingname || resource.serviceofferingid }} </router-link>
+          <div class="resource-detail-item__label">{{ $t('serviceofferingname') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="cloud" />
+            <router-link :to="{ path: '/computeoffering/' + resource.serviceofferingid }">{{ resource.serviceofferingname || resource.serviceofferingid }} </router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.templateid">
-          <a-icon type="picture" />
-          <router-link :to="{ path: '/template/' + resource.templateid }">{{ resource.templatename || resource.templateid }} </router-link>
+          <div class="resource-detail-item__label">{{ $t('templatename') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="picture" />
+            <router-link :to="{ path: '/template/' + resource.templateid }">{{ resource.templatename || resource.templateid }} </router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.diskofferingname && resource.diskofferingid">
-          <a-icon type="hdd" />
-          <router-link :to="{ path: '/diskoffering/' + resource.diskofferingid }">{{ resource.diskofferingname || resource.diskofferingid }} </router-link>
+          <div class="resource-detail-item__label">{{ $t('diskoffering') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="hdd" />
+            <router-link :to="{ path: '/diskoffering/' + resource.diskofferingid }">{{ resource.diskofferingname || resource.diskofferingid }} </router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.networkofferingid">
-          <a-icon type="wifi" />
-          <router-link :to="{ path: '/networkoffering/' + resource.networkofferingid }">{{ resource.networkofferingname || resource.networkofferingid }} </router-link>
+          <div class="resource-detail-item__label">{{ $t('networkofferingid') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="wifi" />
+            <router-link :to="{ path: '/networkoffering/' + resource.networkofferingid }">{{ resource.networkofferingname || resource.networkofferingid }} </router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.vpcofferingid">
-          <a-icon type="deployment-unit" />
-          <router-link :to="{ path: '/vpcoffering/' + resource.vpcofferingid }">{{ resource.vpcofferingname || resource.vpcofferingid }} </router-link>
+          <div class="resource-detail-item__label">{{ $t('vpcoffering') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="deployment-unit" />
+            <router-link :to="{ path: '/vpcoffering/' + resource.vpcofferingid }">{{ resource.vpcofferingname || resource.vpcofferingid }} </router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.storageid">
-          <a-icon type="database" />
-          <router-link :to="{ path: '/storagepool/' + resource.storageid }">{{ resource.storage || resource.storageid }} </router-link>
-          <a-tag v-if="resource.storagetype">
-            {{ resource.storagetype }}
-          </a-tag>
+          <div class="resource-detail-item__label">{{ $t('storagePool') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="database" />
+            <router-link :to="{ path: '/storagepool/' + resource.storageid }">{{ resource.storage || resource.storageid }} </router-link>
+            <a-tag style="margin-left: 5px;" v-if="resource.storagetype">
+              {{ resource.storagetype }}
+            </a-tag>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.hostid">
-          <a-icon type="desktop" />
-          <router-link :to="{ path: '/host/' + resource.hostid }">{{ resource.hostname || resource.hostid }} </router-link>
+          <div class="resource-detail-item__label">{{ $t('hostname') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="desktop" />
+            <router-link :to="{ path: '/host/' + resource.hostid }">{{ resource.hostname || resource.hostid }} </router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.clusterid">
-          <a-icon type="cluster" />
-          <router-link :to="{ path: '/cluster/' + resource.clusterid }">{{ resource.clustername || resource.cluster || resource.clusterid }}</router-link>
+          <div class="resource-detail-item__label">{{ $t('clusterid') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="cluster" />
+            <router-link :to="{ path: '/cluster/' + resource.clusterid }">{{ resource.clustername || resource.cluster || resource.clusterid }}</router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.podid">
-          <a-icon type="appstore" />
-          <router-link :to="{ path: '/pod/' + resource.podid }">{{ resource.podname || resource.pod || resource.podid }}</router-link>
+          <div class="resource-detail-item__label">{{ $t('podId') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="appstore" />
+            <router-link :to="{ path: '/pod/' + resource.podid }">{{ resource.podname || resource.pod || resource.podid }}</router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.zoneid">
-          <a-icon type="global" />
-          <router-link :to="{ path: '/zone/' + resource.zoneid }">{{ resource.zonename || resource.zoneid }}</router-link>
+          <div class="resource-detail-item__label">{{ $t('zone') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="global" />
+            <router-link :to="{ path: '/zone/' + resource.zoneid }">{{ resource.zonename || resource.zoneid }}</router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.account">
-          <a-icon type="user" />
-          <router-link :to="{ path: '/account', query: { name: resource.account, domainid: resource.domainid } }">{{ resource.account }}</router-link>
+          <div class="resource-detail-item__label">{{ $t('account') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="user" />
+            <router-link :to="{ path: '/account', query: { name: resource.account, domainid: resource.domainid } }">{{ resource.account }}</router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.roleid">
-          <a-icon type="idcard" />
-          <router-link :to="{ path: '/role/' + resource.roleid }">{{ resource.rolename || resource.role || resource.roleid }}</router-link>
+          <div class="resource-detail-item__label">{{ $t('role') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="idcard" />
+            <router-link :to="{ path: '/role/' + resource.roleid }">{{ resource.rolename || resource.role || resource.roleid }}</router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.domainid">
-          <a-icon type="block" />
-          <router-link :to="{ path: '/domain/' + resource.domainid }">{{ resource.domain || resource.domainid }}</router-link>
+          <div class="resource-detail-item__label">{{ $t('domain') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="block" />
+            <router-link :to="{ path: '/domain/' + resource.domainid }">{{ resource.domain || resource.domainid }}</router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.managementserverid">
-          <a-icon type="rocket" />
-          <router-link :to="{ path: '/managementserver/' + resource.managementserverid }">{{ resource.managementserver || resource.managementserverid }}</router-link>
+          <div class="resource-detail-item__label">{{ $t('Management Servers') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="rocket" />
+            <router-link :to="{ path: '/managementserver/' + resource.managementserverid }">{{ resource.managementserver || resource.managementserverid }}</router-link>
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.created">
-          <a-icon type="calendar" />{{ resource.created }}
+          <div class="resource-detail-item__label">{{ $t('created') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="calendar" />{{ resource.created }}
+          </div>
         </div>
         <div class="resource-detail-item" v-if="resource.affinitygroup && resource.affinitygroup.length > 0">
           <a-icon type="swap" />
@@ -318,7 +438,8 @@
       </div>
 
       <div class="account-center-tags" v-if="$route.meta.related">
-        <span v-for="item in $route.meta.related" :key="item.path">
+        <a-divider/>
+        <div v-for="item in $route.meta.related" :key="item.path">
           <router-link
             v-if="$router.resolve('/' + item.name).route.name !== '404'"
             :to="{ path: '/' + item.name + '?' + item.param + '=' + (item.param === 'account' ? resource.name + '&domainid=' + resource.domainid : resource.id) }">
@@ -326,7 +447,7 @@
               View {{ $t(item.title) }}
             </a-button>
           </router-link>
-        </span>
+        </div>
       </div>
 
       <div class="account-center-tags" v-if="showKeys">
@@ -344,7 +465,9 @@
               </a-button>
             </a-tooltip>
           </strong>
-          {{ resource.apikey }}
+          <div>
+            {{ resource.apikey }}
+          </div>
         </div> <br/>
         <div class="user-keys">
           <a-icon type="lock" />
@@ -359,13 +482,15 @@
               </a-button>
             </a-tooltip>
           </strong>
-          {{ resource.secretkey }}
+          <div>
+            {{ resource.secretkey }}
+          </div>
         </div>
       </div>
 
       <div class="account-center-tags" v-if="resourceType && 'listTags' in $store.getters.apis">
         <a-divider/>
-        <div class="tagsTitle">Tags</div>
+        <div class="title">Tags</div>
         <div>
           <template v-for="(tag, index) in tags">
             <a-tag :key="index" :closable="true" :afterClose="() => handleDeleteTag(tag)">
@@ -399,7 +524,7 @@
 
       <div class="account-center-team" v-if="annotationType && 'listAnnotations' in $store.getters.apis">
         <a-divider :dashed="true"/>
-        <div class="teamTitle">
+        <div class="title">
           Comments ({{ notes.length }})
         </div>
         <a-list
@@ -651,43 +776,69 @@ export default {
 }
 </script>
 
-<style lang="less" scoped>
+<style lang="scss" scoped>
 
 /deep/ .ant-card-body {
-  padding: 48px;
+  padding: 30px;
 }
 
 .resource-details {
   text-align: center;
-  margin-bottom: 24px;
-  & > .avatar {
-    margin: 0 auto;
-    width: 104px;
-    //height: 104px;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    border-radius: 50%;
-    overflow: hidden;
-    img {
-      height: 100%;
-      width: 100%;
+  margin-bottom: 20px;
+
+  &__name {
+    display: flex;
+    align-items: center;
+
+    .avatar {
+      margin-right: 20px;
+      overflow: hidden;
+      min-width: 50px;
+
+      img {
+        height: 100%;
+        width: 100%;
+      }
     }
-  }
-  .name {
-    color: rgba(0, 0, 0, 0.85);
-    font-size: 20px;
-    line-height: 28px;
-    font-weight: 500;
-    margin-bottom: 4px;
-    word-wrap: break-word;
+
+    .name {
+      margin-bottom: 0;
+      font-size: 18px;
+      line-height: 1;
+      word-wrap: break-word;
+      text-align: left;
+    }
+
   }
 }
 .resource-detail-item {
+  margin-bottom: 20px;
+  word-break: break-word;
+
+  &__details {
+    display: flex;
+    align-items: center;
+
+    &--start {
+      align-items: flex-start;
+
+      i {
+        margin-top: 4px;
+      }
+
+    }
+
+  }
+
   .anticon {
     margin-right: 10px;
   }
-  margin-right: 10px;
-  margin-bottom: 12px;
+
+  &__label {
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
 }
 .user-keys {
   word-wrap: break-word;
@@ -696,6 +847,12 @@ export default {
   .ant-tag {
     margin-bottom: 8px;
   }
+
+  a {
+    display: block;
+    margin-bottom: 10px;
+  }
+
 }
 .account-center-team {
   .members {
@@ -722,10 +879,36 @@ export default {
     }
   }
 }
-.tagsTitle,
-.teamTitle {
-  font-weight: 500;
-  color: rgba(0, 0, 0, 0.85);
-  margin-bottom: 12px;
+.title {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  margin-bottom: -10px;
+
+  .ant-tag {
+    margin-right: 10px;
+    margin-bottom: 10px;
+    height: auto;
+  }
+
+}
+
+.progress-bar {
+  padding-right: 60px;
+  width: 100%;
+}
+
+.status {
+  margin-top: -5px;
+
+  &--end {
+    margin-left: 5px;
+  }
+
 }
 </style>
