@@ -32,6 +32,7 @@
                 size="small"
                 type="dashed"
                 icon="reload"
+<<<<<<< HEAD
                 @click="fetchData()">/>
             </a-tooltip>
             <a-tooltip
@@ -53,6 +54,9 @@
                 @click="execAction(action)"
               >
               </a-button>
+=======
+                @click="fetchData()" />
+>>>>>>> storage: take volume snapshot action (#110)
             </a-tooltip>
           </breadcrumb>
         </a-col>
