@@ -1,5 +1,22 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
 <template>
-  <div class="tak-snapshot">
+  <div class="take-snapshot">
     <a-spin :spinning="loading || actionLoading">
       <label>
         {{ $t('label.header.volume.take.snapshot') }}
@@ -146,18 +163,30 @@ export default {
         this.actionLoading = true
         const title = this.$t('label.action.take.snapshot')
         const description = this.$t('volume') + ' ' + this.resource.id
-        const loading = this.$message.loading(title + 'in progress for ' + description, 0)
         api('createSnapshot', params).then(json => {
-          this.checkForAddAsyncJob(json, title, description)
-          this.closeAction()
+          const jobId = json.createsnapshotresponse.jobid
+          if (jobId) {
+            this.$pollJob({
+              jobId,
+              successMethod: result => {
+                console.log(result)
+                const successDescription = result.jobresult.snapshot.name
+                this.$notification.success({
+                  message: title,
+                  description: (<span domPropsInnerHTML={successDescription}></span>),
+                  duration: 0
+                })
+                this.closeAction()
+              },
+              loadingMessage: `${title} in progress for ${description}`,
+              catchMessage: 'Error encountered while fetching async job result'
+            })
+          }
         }).catch(error => {
           this.$notification.error({
             message: 'Request Failed',
             description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
           })
-        }).finally(() => {
-          this.actionLoading = false
-          setTimeout(loading, 1000)
         })
       })
     },
@@ -196,28 +225,6 @@ export default {
       this.inputKey = ''
       this.inputValue = ''
     },
-    checkForAddAsyncJob (json, title, description) {
-      let hasJobId = false
-
-      for (const obj in json) {
-        if (obj.includes('response')) {
-          for (const res in json[obj]) {
-            if (res === 'jobid') {
-              hasJobId = true
-              const jobId = json[obj][res]
-              this.$store.dispatch('AddAsyncJob', {
-                title: title,
-                jobid: jobId,
-                description: description,
-                status: 'progress'
-              })
-            }
-          }
-        }
-      }
-
-      return hasJobId
-    },
     showInput () {
       this.inputVisible = true
       this.$nextTick(function () {
@@ -236,8 +243,12 @@ export default {
   margin-top: 10px;
 }
 
-.tak-snapshot {
-  min-width: 500px;
+.take-snapshot {
+  width: 85vw;
+
+  @media (min-width: 760px) {
+    width: 500px;
+  }
 }
 
 .ant-tag {
