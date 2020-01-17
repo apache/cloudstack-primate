@@ -96,14 +96,7 @@
           </div>
           <div slot="actions">
             <a-button shape="round" icon="tag" class="rule-action" @click="() => openTagsModal(rule.id)" />
-            <a-popconfirm
-              :title="$t('label.delete') + '?'"
-              @confirm="deleteRule(rule)"
-              okText="Yes"
-              cancelText="No"
-            >
-              <a-button shape="round" type="danger" icon="delete" class="rule-action" />
-            </a-popconfirm>
+            <a-button shape="round" type="danger" icon="delete" class="rule-action" @click="deleteRule(rule)" />
           </div>
         </div>
       </a-list-item>
@@ -240,7 +233,11 @@ export default {
     this.fetchData()
   },
   watch: {
-    resource () {
+    resource: function (newItem, oldItem) {
+      if (!newItem || !newItem.id) {
+        return
+      }
+      this.resource = newItem
       this.fetchData()
     }
   },

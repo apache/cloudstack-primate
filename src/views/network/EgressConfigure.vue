@@ -82,14 +82,7 @@
             <div>{{ rule.icmpcode || rule.endport >= 0 ? rule.icmpcode || rule.endport : 'All' }}</div>
           </div>
           <div slot="actions">
-            <a-popconfirm
-              :title="$t('label.delete') + '?'"
-              @confirm="deleteRule(rule)"
-              okText="Yes"
-              cancelText="No"
-            >
-              <a-button shape="round" type="danger" icon="delete"></a-button>
-            </a-popconfirm>
+            <a-button shape="round" type="danger" icon="delete" @click="deleteRule(rule)" />
           </div>
         </div>
       </a-list-item>
@@ -130,6 +123,15 @@ export default {
     capitalise: val => {
       if (val === 'all') return 'All'
       return val.toUpperCase()
+    }
+  },
+  watch: {
+    resource: function (newItem, oldItem) {
+      if (!newItem || !newItem.id) {
+        return
+      }
+      this.resource = newItem
+      this.fetchData()
     }
   },
   methods: {

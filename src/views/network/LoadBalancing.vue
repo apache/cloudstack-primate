@@ -381,13 +381,17 @@ export default {
       nics: []
     }
   },
-  watch: {
-    resource () {
-      this.fetchData()
-    }
-  },
   mounted () {
     this.fetchData()
+  },
+  watch: {
+    resource: function (newItem, oldItem) {
+      if (!newItem || !newItem.id) {
+        return
+      }
+      this.resource = newItem
+      this.fetchData()
+    }
   },
   filters: {
     capitalise: val => {

@@ -20,10 +20,10 @@
     <div>
       <p>Your Remote Access VPN is currently enabled and can be accessed via the IP <strong>{{ remoteAccessVpn.publicip }}</strong></p>
       <p>Your IPSec pre-shared key is <strong>{{ remoteAccessVpn.presharedkey }}</strong></p>
-      <p>Note: VPN users are now accessed by changing views at the networks tab.</p>
+      <a-divider/>
+      <a-button><router-link :to="{ path: '/vpnuser'}">Manage VPN Users</router-link></a-button>
+      <a-button style="margin-left: 10px" type="danger" @click="disableVpn = true">Disable VPN</a-button>
     </div>
-
-    <a-button type="danger" @click="disableVpn = true">Disable VPN</a-button>
 
     <a-modal v-model="disableVpn" :footer="null" oncancel="disableVpn = false" title="Disable Remove Access VPN">
       <p>Are you sure you want to disable VPN?</p>
@@ -75,9 +75,17 @@ export default {
   mounted () {
     this.fetchData()
   },
+  watch: {
+    resource: function (newItem, oldItem) {
+      if (!newItem || !newItem.id) {
+        return
+      }
+      this.resource = newItem
+      this.fetchData()
+    }
+  },
   methods: {
     fetchData () {
-      this.parentToggleLoading()
       api('listRemoteAccessVpns', {
         publicipid: this.resource.id,
         listAll: true
@@ -91,9 +99,6 @@ export default {
           description: error.response.data.errorresponse.errortext
         })
       })
-        .finally(() => {
-          this.parentToggleLoading()
-        })
     },
     handleCreateVpn () {
       this.parentToggleLoading()
