@@ -21,21 +21,18 @@
       <a-tab-pane :tab="$t('Isolated')" key="1" v-if="this.isAdvancedZoneWithoutSGAvailable()">
         <CreateIsolatedNetworkForm
           :loading="loading"
-          :resource="resource"
           @close-action="closeAction"
           @refresh="handleRefresh"/>
       </a-tab-pane>
       <a-tab-pane :tab="$t('L2')" key="2">
         <CreateL2NetworkForm
           :loading="loading"
-          :resource="resource"
           @close-action="closeAction"
           @refresh="handleRefresh"/>
       </a-tab-pane>
-      <a-tab-pane :tab="$t('Shared')" key="3">
-        <CreateSharedNetworkForm
+      <a-tab-pane :tab="$t('Guest')" key="3" v-if="this.isAdmin()">
+        <CreateGuestNetworkForm
           :loading="loading"
-          :resource="resource"
           @close-action="closeAction"
           @refresh="handleRefresh"/>
       </a-tab-pane>
@@ -47,14 +44,14 @@
 import { api } from '@/api'
 import CreateIsolatedNetworkForm from '@/views/network/CreateIsolatedNetworkForm'
 import CreateL2NetworkForm from '@/views/network/CreateL2NetworkForm'
-import CreateSharedNetworkForm from '@/views/network/CreateSharedNetworkForm'
+import CreateGuestNetworkForm from '@/views/network/CreateGuestNetworkForm'
 
 export default {
   name: 'CreateNetwork',
   components: {
     CreateIsolatedNetworkForm,
     CreateL2NetworkForm,
-    CreateSharedNetworkForm
+    CreateGuestNetworkForm
   },
   props: {
     resource: {
@@ -77,6 +74,9 @@ export default {
     fetchData () {
       this.loading = true
       this.fetchActionZoneData()
+    },
+    isAdmin () {
+      return ['Admin'].includes(this.$store.getters.userInfo.roletype)
     },
     fetchActionZoneData () {
       const params = {}

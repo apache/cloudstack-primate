@@ -190,10 +190,6 @@ export default {
       type: Boolean,
       default: false
     },
-    resource: {
-      type: Object,
-      required: true
-    },
     vpc: {
       type: Object,
       default: null
@@ -243,10 +239,10 @@ export default {
       return ['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype)
     },
     isObjectEmpty (obj) {
-      return Object.keys(obj).length === 0 && obj.constructor === Object
+      return !(obj !== null && obj !== undefined && Object.keys(obj).length > 0 && obj.constructor === Object)
     },
     arrayHasItems (array) {
-      return Array.isArray(array) && array.length > 0
+      return array !== null && array !== undefined && Array.isArray(array) && array.length > 0
     },
     isValidTextValueForKey (obj, key) {
       return key in obj && obj[key] != null && obj[key].length > 0
@@ -259,7 +255,7 @@ export default {
         for (const i in json.listzonesresponse.zone) {
           const zone = json.listzonesresponse.zone[i]
           if (zone.networktype === 'Advanced' && zone.securitygroupsenabled !== true) {
-            this.zones = this.zones.concat(zone)
+            this.zones.push(zone)
           }
         }
         this.zoneLoading = false

@@ -40,7 +40,7 @@
               }]"
               :placeholder="this.$t('Display text')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.zoneid')">
+          <a-form-item :label="$t('label.zoneid')" v-if="this.isObjectEmpty(this.zone)">
             <a-select
               v-decorator="['zoneid', {
                 rules: [
@@ -63,16 +63,9 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('label.physical.network')">
+          <a-form-item :label="$t('label.physical.network')" v-if="this.isObjectEmpty(this.zone)">
             <a-select
-              v-decorator="['physicalnetworkid', {
-                rules: [
-                  {
-                    required: true,
-                    message: 'Please select option'
-                  }
-                ]
-              }]"
+              v-decorator="['physicalnetworkid', {}]"
               showSearch
               optionFilterProp="children"
               :filterOption="(input, option) => {
@@ -107,7 +100,7 @@
                 initialValue: this.scopeType
               }]"
               buttonStyle="solid"
-              @change="selected => { this.scopeType = selected.target.value }">
+              @change="selected => { this.handleScopeTypeChange(selected.target.value) }">
               <a-radio-button value="all">
                 {{ $t('All') }}
               </a-radio-button>
@@ -122,7 +115,7 @@
               </a-radio-button>
             </a-radio-group>
           </a-form-item>
-          <a-form-item :label="$t('label.domain')" v-if="this.scopeType === 'domain' || this.scopeType === 'account'">
+          <a-form-item :label="$t('label.domain')" v-if="this.scopeType !== 'all'">
             <a-select
               v-decorator="['domainid', {}]"
               showSearch
@@ -256,15 +249,11 @@
 import { api } from '@/api'
 
 export default {
-  name: 'CreateSharedNetworkForm',
+  name: 'CreateGuestNetworkForm',
   props: {
     loading: {
       type: Boolean,
       default: false
-    },
-    resource: {
-      type: Object,
-      required: true
     },
     zone: {
       type: Object,
@@ -272,10 +261,6 @@ export default {
     },
     physicalNetworks: {
       type: Array,
-      default: null
-    },
-    vpc: {
-      type: Object,
       default: null
     }
   },
@@ -297,27 +282,24 @@ export default {
       selectedNetworkOffering: {},
       projects: [],
       projectLoading: false,
-      selectedProject: {},
-      accountVisible: this.isAdminOrDomainAdmin()
+      selectedProject: {}
     }
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
   },
   created () {
-    this.domains = [
-      {
-        id: '-1',
-        name: ' '
-      }
-    ]
   },
   mounted () {
     this.fetchData()
   },
   methods: {
     fetchData () {
-      this.fetchZoneData()
+      if (this.isObjectEmpty(this.zone)) {
+        this.fetchZoneData()
+      } else {
+        this.fetchNetworkOfferingData()
+      }
     },
     isAdmin () {
       return ['Admin'].includes(this.$store.getters.userInfo.roletype)
@@ -326,10 +308,10 @@ export default {
       return ['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype)
     },
     isObjectEmpty (obj) {
-      return Object.keys(obj).length === 0 && obj.constructor === Object
+      return !(obj !== null && obj !== undefined && Object.keys(obj).length > 0 && obj.constructor === Object)
     },
     arrayHasItems (array) {
-      return Array.isArray(array) && array.length > 0
+      return array !== null && array !== undefined && Array.isArray(array) && array.length > 0
     },
     isValidValueForKey (obj, key) {
       return key in obj && obj[key] != null
@@ -342,7 +324,7 @@ export default {
     },
     fetchZoneData () {
       if (this.zone !== null) {
-        this.zones = this.zones.concat(this.zone)
+        this.zones.push(this.zone)
         if (this.arrayHasItems(this.zones)) {
           this.form.setFieldsValue({
             zoneid: 0
@@ -357,7 +339,7 @@ export default {
           for (const i in json.listzonesresponse.zone) {
             const zone = json.listzonesresponse.zone[i]
             if (zone.networktype === 'Advanced') {
-              this.zones = this.zones.concat(zone)
+              this.zones.push(zone)
             }
           }
         }).finally(() => {
@@ -396,7 +378,7 @@ export default {
           var networks = json.listphysicalnetworksresponse.physicalnetwork
           if (this.arrayHasItems(networks)) {
             for (const i in networks) {
-              this.addPhysicalNetworkForGuestTrafficType(networks[i], i === networks.length - 1)
+              this.addPhysicalNetworkForGuestTrafficType(networks[i], i * 1 === networks.length - 1)
             }
           } else {
             this.formPhysicalNetworkLoading = false
@@ -406,12 +388,32 @@ export default {
       }
     },
     addPhysicalNetworkForGuestTrafficType (physicalNetwork, isLastNetwork) {
-      if (isLastNetwork) {
-        this.form.setFieldsValue({
-          zoneid: 0
-        })
-        this.handleZoneChange(this.zones[0])
-      }
+      const params = {}
+      params.physicalnetworkid = physicalNetwork.id
+      api('listTrafficTypes', params).then(json => {
+        var trafficTypes = json.listtraffictypesresponse.traffictype
+        if (this.arrayHasItems(trafficTypes)) {
+          for (const i in trafficTypes) {
+            if (trafficTypes[i].traffictype === 'Guest') {
+              this.formPhysicalNetworks.push(physicalNetwork)
+              break
+            }
+          }
+        } else {
+          this.formPhysicalNetworkLoading = false
+        }
+      }).finally(() => {
+        if (isLastNetwork) {
+          this.form.setFieldsValue({
+            physicalnetworkid: 0
+          })
+          this.handlePhysicalNetworkChange(this.formPhysicalNetworks[0])
+        }
+      })
+    },
+    handlePhysicalNetworkChange (physicalNet) {
+      this.formSelectedPhysicalNetwork = physicalNet
+      this.fetchNetworkOfferingData()
     },
     handleScopeTypeChange (scope) {
       this.scopeType = scope
@@ -421,39 +423,20 @@ export default {
           this.fetchDomainData()
           break
         }
-        case 'account':
-        {
-          break
-        }
         case 'project':
         {
-          this.fertchProjectData()
+          this.fetchProjectData()
+          this.fetchNetworkOfferingData()
           break
         }
         default:
         {
+          this.fetchNetworkOfferingData()
         }
       }
     },
-    updateVPCCheckAndFetchNetworkOfferingData () {
-      if (this.vpc !== null) { // from VPC section
-        this.fetchNetworkOfferingData(true)
-      } else { // from guest network section
-        var params = {}
-        this.networkOfferingLoading = true
-        api('listVPCs', params).then(json => {
-          const listVPCs = json.listvpcsresponse.vpc
-          var vpcAvailable = this.arrayHasItems(listVPCs)
-          if (vpcAvailable === false) {
-            this.fetchNetworkOfferingData(false)
-          } else {
-            this.fetchNetworkOfferingData()
-          }
-        })
-      }
-    },
     fetchNetworkOfferingData () {
-      if (this.selectedZone === null || this.selectedZone === undefined) {
+      if (this.isObjectEmpty(this.selectedZone)) {
         return
       }
       this.networkOfferingLoading = true
@@ -461,9 +444,8 @@ export default {
         zoneid: this.selectedZone.id,
         state: 'Enabled'
       }
-      if (this.formSelectedPhysicalNetwork !== null &&
-        this.formSelectedPhysicalNetwork !== undefined &&
-        this.formSelectedPhysicalNetwork.tags !== null &&
+      if (!this.isObjectEmpty(this.formSelectedPhysicalNetwork) &&
+        !this.isObjectEmpty(this.formSelectedPhysicalNetwork.tags) &&
         this.formSelectedPhysicalNetwork.tags.length > 0) {
         params.tags = this.formSelectedPhysicalNetwork.tags
       }
@@ -492,8 +474,12 @@ export default {
     },
     fetchDomainData () {
       const params = {}
-      params.listAll = true
-      params.details = 'min'
+      if (!this.isObjectEmpty(this.selectedZone) && this.selectedZone.domainid != null) {
+        params.id = this.selectedZone.id
+        params.isrecursive = true
+      } else {
+        params.listall = true
+      }
       this.domainLoading = true
       api('listDomains', params).then(json => {
         const listDomains = json.listdomainsresponse.domain
@@ -508,8 +494,7 @@ export default {
     },
     handleDomainChange (domain) {
       this.selectedDomain = domain
-      this.accountVisible = domain.id !== '-1'
-      if (this.isAdminOrDomainAdmin) {
+      if (!this.isObjectEmpty(domain)) {
         this.fetchNetworkOfferingData()
       }
     },
@@ -518,6 +503,17 @@ export default {
         if (error) {
           return
         }
+        if (
+          (!this.isValidTextValueForKey(values, 'ip4gateway') && !this.isValidTextValueForKey(values, 'ip4Netmask') &&
+            !this.isValidTextValueForKey(values, 'startipv4') && !this.isValidTextValueForKey(values, 'endipv4') &&
+            !this.isValidTextValueForKey(values, 'ip6gateway') && !this.isValidTextValueForKey(values, 'data.ip6cidr') &&
+            !this.isValidTextValueForKey(values, 'data.startipv6') && !this.isValidTextValueForKey(values, 'endipv6'))
+        ) {
+          this.$notification.error({
+            message: 'Request Failed',
+            description: 'Either IPv4 fields or IPv6 fields need to be filled when adding a guest network'
+          })
+        }
         this.actionLoading = true
         var params = {
           zoneId: this.selectedZone.id,
@@ -525,22 +521,72 @@ export default {
           displayText: values.displaytext,
           networkOfferingId: this.selectedNetworkOffering.id
         }
+        if (this.selectedNetworkOffering.guestiptype === 'Shared') {
+          params.physicalnetworkid = this.formSelectedPhysicalNetwork.id
+        }
         if (this.isValidTextValueForKey(values, 'vlanid')) {
           params.vlan = values.vlanid
         }
         if (this.isValidValueForKey(values, 'bypassvlanoverlapcheck')) {
           params.bypassvlanoverlapcheck = values.bypassvlanoverlapcheck
         }
-        if ('domainid' in values && values.domainid > 0) {
+        if (this.isValidValueForKey(values, 'isolatedpvlanid')) {
+          params.isolatedpvlan = values.isolatedpvlanid
+        }
+        if (this.scopeType !== 'all') {
           params.domainid = this.selectedDomain.id
-          if (this.isValidTextValueForKey(values, 'account')) {
+          params.acltype = this.scopeType
+          if (this.scopeType === 'account') { // account-specific
             params.account = values.account
+          } else if (this.scopeType === 'project') { // project-specific
+            params.projectid = this.selectedProject.id
+          } else { // domain-specific
+            params.subdomainaccess = this.parseBooleanValueForKey(values, 'subdomainaccess')
           }
+        } else { // zone-wide
+          params.acltype = 'domain' // server-side will make it Root domain (i.e. domainid=1)
+        }
+        // IPv4 (begin)
+        if (this.isValidTextValueForKey(values, 'ip4gateway')) {
+          params.gateway = values.ip4gateway
+        }
+        if (this.isValidTextValueForKey(values, 'ip4Netmask')) {
+          params.netmask = values.ip4Netmask
+        }
+        if (this.isValidTextValueForKey(values, 'startipv4')) {
+          params.startip = values.startipv4
+        }
+        if (this.isValidTextValueForKey(values, 'endipv4')) {
+          params.endip = values.endipv4
+        }
+        // IPv4 (end)
+
+        // IPv6 (begin)
+        if (this.isValidTextValueForKey(values, 'ip4gateway')) {
+          params.ip6gateway = values.ip6gateway
+        }
+        if (this.isValidTextValueForKey(values, 'ip4gateway')) {
+          params.ip6cidr = values.ip6cidr
+        }
+        if (this.isValidTextValueForKey(values, 'ip4gateway')) {
+          params.startipv6 = values.startipv6
+        }
+        if (this.isValidTextValueForKey(values, 'ip4gateway')) {
+          params.endipv6 = values.endipv6
+        }
+        // IPv6 (end)
+
+        if (this.isValidTextValueForKey(values, 'networkdomain')) {
+          params.networkdomain = values.networkdomain
+        }
+        var hideipaddressusage = this.parseBooleanValueForKey(values, 'hideipaddressusage')
+        if (hideipaddressusage) {
+          params.hideipaddressusage = true
         }
         api('createNetwork', params).then(json => {
           this.$notification.success({
             message: 'Network',
-            description: 'Successfully created L2 network'
+            description: 'Successfully created guest network'
           })
           this.resetForm()
         }).catch(error => {
