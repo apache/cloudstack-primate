@@ -40,7 +40,7 @@
               }]"
               :placeholder="this.$t('Display text')"/>
           </a-form-item>
-          <a-form-item :label="$t('zoneid')">
+          <a-form-item :label="$t('label.zoneid')">
             <a-select
               v-decorator="['zoneid', {
                 rules: [
@@ -63,7 +63,7 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('domainid')" v-if="this.isAdminOrDomainAdmin()">
+          <a-form-item :label="$t('label.domain')" v-if="this.isAdminOrDomainAdmin()">
             <a-select
               v-decorator="['domainid', {}]"
               showSearch
@@ -102,12 +102,12 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('label.vlan-vni')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
+          <a-form-item :label="$t('label.vlan.id')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
             <a-input
               v-decorator="['vlanid', {
                 rules: [{ required: true, message: 'Please enter value' }]
               }]"
-              :placeholder="this.$t('VLAN/VNI')"/>
+              :placeholder="this.$t('label.vlan.id')"/>
           </a-form-item>
           <a-form-item :label="$t('label.vpcid')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.forvpc">
             <a-select
@@ -294,7 +294,7 @@ export default {
     handleDomainChange (domain) {
       this.selectedDomain = domain
       this.accountVisible = domain.id !== '-1'
-      if (this.isAdminOrDomainAdmin) {
+      if (this.isAdminOrDomainAdmin()) {
         this.updateVPCCheckAndFetchNetworkOfferingData()
       }
     },

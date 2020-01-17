@@ -33,6 +33,11 @@
           @refresh="handleRefresh"/>
       </a-tab-pane>
       <a-tab-pane :tab="$t('Shared')" key="3">
+        <CreateSharedNetworkForm
+          :loading="loading"
+          :resource="resource"
+          @close-action="closeAction"
+          @refresh="handleRefresh"/>
       </a-tab-pane>
     </a-tabs>
   </div>
@@ -42,12 +47,14 @@
 import { api } from '@/api'
 import CreateIsolatedNetworkForm from '@/views/network/CreateIsolatedNetworkForm'
 import CreateL2NetworkForm from '@/views/network/CreateL2NetworkForm'
+import CreateSharedNetworkForm from '@/views/network/CreateSharedNetworkForm'
 
 export default {
   name: 'CreateNetwork',
   components: {
     CreateIsolatedNetworkForm,
-    CreateL2NetworkForm
+    CreateL2NetworkForm,
+    CreateSharedNetworkForm
   },
   props: {
     resource: {
