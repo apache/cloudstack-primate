@@ -53,6 +53,8 @@
       </div>
     </div>
 
+    <a-divider/>
+
     <a-list :loading="loading" style="min-height: 25px;">
       <a-list-item v-for="rule in firewallRules" :key="rule.id" class="rule">
         <div class="rule-container">

@@ -17,7 +17,7 @@
 
 <template>
   <div>
-    <div v-if="egressRules">
+    <div>
       <div class="form">
         <div class="form__item">
           <div class="form__label">Source CIDR</div>
@@ -57,6 +57,8 @@
         </div>
       </div>
     </div>
+
+    <a-divider/>
 
     <a-list :loading="loading" style="min-height: 25px;">
       <a-list-item v-for="rule in egressRules" :key="rule.id" class="rule">

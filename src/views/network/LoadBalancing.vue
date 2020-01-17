@@ -54,9 +54,10 @@
           <div class="form__label" style="white-space: nowrap;">{{ $t('label.add.VMs') }}</div>
           <a-button type="primary" @click="handleOpenAddVMModal">Add</a-button>
         </div>
-
       </div>
     </div>
+
+    <a-divider  />
 
     <a-list :loading="loading" style="min-height: 25px;">
       <a-list-item v-for="rule in lbRules" :key="rule.id" class="rule custom-ant-list">

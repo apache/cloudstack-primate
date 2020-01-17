@@ -66,9 +66,10 @@
           <div class="form__label">{{ $t('label.add.VM') }}</div>
           <a-button type="primary" @click="openAddVMModal">{{ $t('add') }}</a-button>
         </div>
-
       </div>
     </div>
+
+    <a-divider/>
 
     <a-list :loading="loading" style="min-height: 25px;">
       <a-list-item v-for="rule in portForwardRules" :key="rule.id" class="rule">
