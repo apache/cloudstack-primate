@@ -1,19 +1,8 @@
 <template>
-<<<<<<< HEAD
-<<<<<<< HEAD
   <a-list size="large" class="list" :loading="loading || tabLoading">
     <a-list-item :key="index" v-for="(item, index) in items" class="item">
       <a-list-item-meta>
         <span slot="title" style="word-break: break-all">{{ item.name }}</span>
-=======
-  <a-list size="large" class="list" :loading="loading">
-=======
-  <a-list size="large" class="list" :loading="loading || tabLoading">
->>>>>>> merge latest master
-    <a-list-item :key="index" v-for="(item, index) in items" class="item">
-      <a-list-item-meta>
-        <span slot="title" style="word-break: break-all"><strong>{{ item.name }}</strong></span>
->>>>>>> rebase with latest master
         <span slot="description" style="word-break: break-all">{{ item.description }}</span>
       </a-list-item-meta>
 
@@ -26,15 +15,7 @@
           @keydown.esc="editableValueKey = null"
           @pressEnter="updateData(item)">
         </a-input>
-<<<<<<< HEAD
-<<<<<<< HEAD
         <span v-else class="value" @click="setEditableSetting(item, index)">
-=======
-        <span v-else class="value">
->>>>>>> rebase with latest master
-=======
-        <span v-else class="value" @click="setEditableSetting(item, index)">
->>>>>>> merge latest master
           {{ item.value }}
         </span>
       </div>
@@ -83,17 +64,8 @@ export default {
       items: [],
       scopeKey: '',
       editableValueKey: null,
-<<<<<<< HEAD
-<<<<<<< HEAD
       editableValue: '',
       tabLoading: false
-=======
-      editableValue: ''
->>>>>>> rebase with latest master
-=======
-      editableValue: '',
-      tabLoading: false
->>>>>>> merge latest master
     }
   },
   beforeMount () {
@@ -124,34 +96,15 @@ export default {
     this.fetchData()
   },
   watch: {
-<<<<<<< HEAD
-<<<<<<< HEAD
     resource: function (newItem, oldItem) {
       if (!newItem.id) return
       this.resource = newItem
-=======
-    resource: newItem => {
-      if (!newItem.id) return
->>>>>>> rebase with latest master
-=======
-    resource: function (newItem, oldItem) {
-      if (!newItem.id) return
-      this.resource = newItem
->>>>>>> merge latest master
       this.fetchData()
     }
   },
   methods: {
     fetchData (callback) {
-<<<<<<< HEAD
-<<<<<<< HEAD
       this.tabLoading = true
-=======
-      this.loading = true
->>>>>>> rebase with latest master
-=======
-      this.tabLoading = true
->>>>>>> merge latest master
       api('listConfigurations', {
         [this.scopeKey]: this.resource.id,
         listAll: true
@@ -161,29 +114,13 @@ export default {
         console.error(error)
         this.$message.error('There was an error loading these settings.')
       }).finally(() => {
-<<<<<<< HEAD
-<<<<<<< HEAD
         this.tabLoading = false
-=======
-        this.loading = false
->>>>>>> rebase with latest master
-=======
-        this.tabLoading = false
->>>>>>> merge latest master
         if (!callback) return
         callback()
       })
     },
     updateData (item) {
-<<<<<<< HEAD
-<<<<<<< HEAD
       this.tabLoading = true
-=======
-      this.loading = true
->>>>>>> rebase with latest master
-=======
-      this.tabLoading = true
->>>>>>> merge latest master
       api('updateConfiguration', {
         [this.scopeKey]: this.resource.id,
         name: item.name,
@@ -198,15 +135,7 @@ export default {
           description: 'There was an error saving this setting. Please try again later.'
         })
       }).finally(() => {
-<<<<<<< HEAD
-<<<<<<< HEAD
         this.tabLoading = false
-=======
-        this.loading = false
->>>>>>> rebase with latest master
-=======
-        this.tabLoading = false
->>>>>>> merge latest master
         this.fetchData(() => {
           this.editableValueKey = null
         })
