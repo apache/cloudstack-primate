@@ -28,8 +28,6 @@
           <a-icon slot="prefix" type="search" />
         </a-input-search>
         <a-spin :spinning="loadingSearch">
-<<<<<<< HEAD
-<<<<<<< HEAD
           <a-tree
             showLine
             v-if="treeViewData.length > 0"
@@ -46,31 +44,6 @@
             <a-icon slot="parent" type="folder" />
             <a-icon slot="leaf" type="block" />
           </a-tree>
-=======
-          <a-directory-tree
-=======
-          <a-tree
->>>>>>> Fix issue #27: changes requested
-            showLine
-            v-if="treeViewData.length > 0"
-            class="list-tree-view"
-            :treeData="treeViewData"
-            :loadData="onLoadData"
-            :expandAction="false"
-            :showIcon="true"
-            :defaultSelectedKeys="defaultSelected"
-            :checkStrictly="true"
-            @select="onSelect"
-<<<<<<< HEAD
-            :defaultExpandedKeys="arrExpand" />
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-            @expand="onExpand"
-            :defaultExpandedKeys="arrExpand">
-            <a-icon slot="parent" type="folder" />
-            <a-icon slot="leaf" type="block" />
-          </a-tree>
->>>>>>> Fix issue #27: changes requested
         </a-spin>
       </a-card>
     </a-spin>
@@ -94,17 +67,8 @@
               :resource="resource"
               :items="items"
               :tab="tabActive"
-<<<<<<< HEAD
-<<<<<<< HEAD
               :loading="loading"
               :bordered="false" />
-=======
-              :loading="loading" />
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-              :loading="loading"
-              :bordered="false" />
->>>>>>> Fix issue #27: changes requested
           </a-tab-pane>
         </a-tabs>
       </a-card>
@@ -136,15 +100,7 @@ export default {
     },
     tabs: {
       type: Array,
-<<<<<<< HEAD
-<<<<<<< HEAD
       default () {
-=======
-      default: function () {
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-      default () {
->>>>>>> Fix issue #27: changes requested
         return [{
           name: 'details',
           component: DetailsTab
@@ -153,36 +109,19 @@ export default {
     },
     loadedKeys: {
       type: Array,
-<<<<<<< HEAD
-<<<<<<< HEAD
       default () {
-=======
-      default: function () {
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-      default () {
->>>>>>> Fix issue #27: changes requested
         return []
       }
     },
     loading: {
       type: Boolean,
       default: false
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Fix issue #27: changes requested
     },
     actionData: {
       type: Array,
       default () {
         return []
       }
-<<<<<<< HEAD
-=======
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
->>>>>>> Fix issue #27: changes requested
     }
   },
   data () {
@@ -195,14 +134,7 @@ export default {
       defaultSelected: [],
       treeVerticalData: [],
       treeViewData: [],
-<<<<<<< HEAD
-<<<<<<< HEAD
       oldTreeViewData: [],
-=======
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-      oldTreeViewData: [],
->>>>>>> Fix issue #27: changes requested
       apiList: '',
       apiChildren: '',
       apiDetail: '',
@@ -213,17 +145,8 @@ export default {
       showSetting: false,
       oldSearchQuery: '',
       searchQuery: '',
-<<<<<<< HEAD
-<<<<<<< HEAD
       arrExpand: [],
       rootKey: ''
-=======
-      arrExpand: []
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-      arrExpand: [],
-      rootKey: ''
->>>>>>> Fix: search tree-view and moving domain settings to the in folder iam
     }
   },
   created: function () {
@@ -235,17 +158,12 @@ export default {
     loading () {
       this.detailLoading = this.loading
     },
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Fix issue #27: changes requested
     treeData () {
       if (this.oldTreeViewData.length === 0) {
         this.treeViewData = this.treeData
         this.treeVerticalData = this.treeData
       }
 
-<<<<<<< HEAD
       if (this.treeViewData.length > 0) {
         this.oldTreeViewData = this.treeViewData
         this.rootKey = this.treeViewData[0].key
@@ -276,55 +194,11 @@ export default {
       this.defaultSelected.push(this.selectedTreeKey)
 
       // set default expand
-=======
-    treeData: function () {
-      this.treeViewData = this.treeData
-      this.searchQuery = ''
-=======
->>>>>>> Fix issue #27: changes requested
-      if (this.treeViewData.length > 0) {
-        this.oldTreeViewData = this.treeViewData
-        this.rootKey = this.treeViewData[0].key
-      }
-    },
-    treeSelected () {
-      if (Object.keys(this.treeSelected).length === 0) {
-        return
-      }
-
-      if (Object.keys(this.resource).length > 0) {
-        this.selectedTreeKey = this.resource.key
-        this.$emit('change-resource', this.resource)
-
-        // set default expand
-        if (this.defaultSelected.length > 1) {
-          const arrSelected = this.defaultSelected
-          this.defaultSelected = []
-          this.defaultSelected.push(arrSelected[0])
-        }
-
-        return
-      }
-
-      this.resource = this.treeSelected
-      this.resource = this.createResourceData(this.resource)
-      this.selectedTreeKey = this.treeSelected.key
-      this.defaultSelected.push(this.selectedTreeKey)
-<<<<<<< HEAD
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-
-      // set default expand
->>>>>>> Fix issue #27: changes requested
       if (this.defaultSelected.length > 1) {
         const arrSelected = this.defaultSelected
         this.defaultSelected = []
         this.defaultSelected.push(arrSelected[0])
       }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Fix issue #27: changes requested
     },
     actionData (newData, oldData) {
       if (!newData || newData.length === 0) {
@@ -332,42 +206,20 @@ export default {
       }
 
       this.reloadTreeData(newData)
-<<<<<<< HEAD
-=======
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
->>>>>>> Fix issue #27: changes requested
     }
   },
   methods: {
     onLoadData (treeNode) {
-<<<<<<< HEAD
-<<<<<<< HEAD
       if (this.searchQuery !== '' && treeNode.eventKey !== this.rootKey) {
-=======
-      if (this.searchQuery !== '') {
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-      if (this.searchQuery !== '' && treeNode.eventKey !== this.rootKey) {
->>>>>>> Fix: search tree-view and moving domain settings to the in folder iam
         return new Promise(resolve => {
           resolve()
         })
       }
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-=======
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-
->>>>>>> Fix issue #27: changes requested
       const params = {
         listAll: true,
         id: treeNode.eventKey
       }
-<<<<<<< HEAD
-<<<<<<< HEAD
 
       return new Promise(resolve => {
         api(this.apiChildren, params).then(json => {
@@ -399,91 +251,25 @@ export default {
             }
           }
 
-=======
-=======
-
->>>>>>> Fix issue #27: changes requested
-      return new Promise(resolve => {
-        api(this.apiChildren, params).then(json => {
-          const dataResponse = this.getResponseJsonData(json)
-          const dataGenerate = this.generateTreeData(dataResponse)
-          treeNode.dataRef.children = dataGenerate
-
-          if (this.treeVerticalData.length === 0) {
-            this.treeVerticalData = this.treeViewData
-          }
-
-          this.treeViewData = [...this.treeViewData]
-<<<<<<< HEAD
-          this.treeVerticalData = this.treeVerticalData.concat(jsonGenerate)
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-          this.oldTreeViewData = this.treeViewData
-
-          for (let i = 0; i < dataGenerate.length; i++) {
-            const resource = this.treeVerticalData.filter(item => item.id === dataGenerate[i].id)
-
-            if (!resource || resource.length === 0) {
-              this.treeVerticalData.push(dataGenerate[i])
-            } else {
-              this.treeVerticalData.filter((item, index) => {
-                if (item.id === dataGenerate[i].id) {
-                  // replace all value of tree data
-                  Object.keys(dataGenerate[i]).forEach((value, idx) => {
-                    this.$set(this.treeVerticalData[index], value, dataGenerate[i][value])
-                  })
-                }
-              })
-            }
-          }
-
->>>>>>> Fix issue #27: changes requested
           resolve()
         })
       })
     },
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Fix issue #27: changes requested
     onSelect (selectedKeys, event) {
       if (!event.selected) {
         setTimeout(() => { event.node.$refs.selectHandle.click() })
         return
       }
 
-<<<<<<< HEAD
-=======
-    onSelect (selectedKeys) {
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
->>>>>>> Fix issue #27: changes requested
       // check item tree selected, set selectedTreeKey
       if (selectedKeys && selectedKeys[0]) {
         this.selectedTreeKey = selectedKeys[0]
       }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Fix issue #27: changes requested
       this.getDetailResource(this.selectedTreeKey)
     },
     onExpand (treeExpand) {
       this.arrExpand = treeExpand
-<<<<<<< HEAD
-=======
-      // get item resource
-      const resource = this.treeVerticalData.filter(item => item.id === this.selectedTreeKey)
-
-      // check resource exists
-      if (resource && resource[0]) {
-        this.resource = resource[0]
-        this.$emit('change-resource', this.resource)
-      }
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
->>>>>>> Fix issue #27: changes requested
     },
     onSearch (value) {
       if (this.searchQuery === '' && this.oldSearchQuery === '') {
@@ -519,20 +305,12 @@ export default {
           return
         }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Fix: search tree-view and moving domain settings to the in folder iam
         if (listDomains[0].id === this.rootKey) {
           const rootDomain = this.generateTreeData(listDomains)
           this.treeViewData = rootDomain
           return
         }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Fix issue #27: changes requested
         this.recursiveTreeData(listDomains)
 
         if (this.treeViewData && this.treeViewData[0]) {
@@ -541,16 +319,6 @@ export default {
           this.resource = this.treeViewData[0]
           this.$emit('change-resource', this.resource)
         }
-<<<<<<< HEAD
-=======
-=======
->>>>>>> Fix: search tree-view and moving domain settings to the in folder iam
-        // get the max level of data search response
-        const maxLevel = Math.max.apply(Math, listDomains.map((o) => { return o.level }))
-        this.recursiveTreeData(listDomains, maxLevel)
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
->>>>>>> Fix issue #27: changes requested
 
         // check treeViewData, set to expand first children
         if (this.treeViewData &&
@@ -567,10 +335,6 @@ export default {
     onTabChange (key) {
       this.tabActive = key
     },
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Fix issue #27: changes requested
     reloadTreeData (objData) {
       // data response from action
       let jsonResponse = this.getResponseJsonData(objData[0])
@@ -646,11 +410,6 @@ export default {
         this.$emit('change-resource', this.resource)
       })
     },
-<<<<<<< HEAD
-=======
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
->>>>>>> Fix issue #27: changes requested
     getResponseJsonData (json) {
       let responseName
       let objectName
@@ -660,26 +419,12 @@ export default {
           break
         }
       }
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-=======
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-
->>>>>>> Fix issue #27: changes requested
       for (const key in json[responseName]) {
         if (key === 'count') {
           continue
         }
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-=======
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-
->>>>>>> Fix issue #27: changes requested
         objectName = key
         break
       }
@@ -715,24 +460,11 @@ export default {
       }
 
       for (let i = 0; i < jsonData.length; i++) {
-<<<<<<< HEAD
-<<<<<<< HEAD
         jsonData[i] = this.createResourceData(jsonData[i])
-=======
-        jsonData[i].title = jsonData[i].name
-        jsonData[i].key = jsonData[i].id
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-        jsonData[i] = this.createResourceData(jsonData[i])
->>>>>>> Fix issue #27: changes requested
       }
 
       return jsonData
     },
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Fix issue #27: changes requested
     createResourceData (resource) {
       if (!resource || Object.keys(resource) === 0) {
         return {}
@@ -760,7 +492,6 @@ export default {
     },
     recursiveTreeData (treeData) {
       const maxLevel = Math.max.apply(Math, treeData.map((o) => { return o.level }))
-<<<<<<< HEAD
       const items = treeData.filter(item => item.level <= maxLevel)
       this.treeViewData = this.getNestedChildren(items, 0, maxLevel)
       this.oldTreeViewData = this.treeViewData
@@ -798,52 +529,6 @@ export default {
 
         if (items[i].haschild) {
           items[i].children = this.getNestedChildren(dataItems, (level + 1), maxLevel, items[i].key)
-=======
-    recursiveTreeData (treeData, maxLevel) {
-=======
->>>>>>> Fix issue #27: changes requested
-      const items = treeData.filter(item => item.level <= maxLevel)
-      this.treeViewData = this.getNestedChildren(items, 0, maxLevel)
-      this.oldTreeViewData = this.treeViewData
-    },
-    getNestedChildren (dataItems, level, maxLevel, id) {
-      if (level > maxLevel) {
-        return
-      }
-
-      let items = []
-
-      if (!id || id === '') {
-        items = dataItems.filter(item => item.level === level)
-      } else {
-        items = dataItems.filter(item => {
-          let parentKey = ''
-          const arrKeys = Object.keys(item)
-          for (let i = 0; i < arrKeys.length; i++) {
-            if (arrKeys[i].indexOf('parent') > -1 && arrKeys[i].indexOf('id') > -1) {
-              parentKey = arrKeys[i]
-              break
-            }
-          }
-
-          return parentKey ? item[parentKey] === id : item.level === level
-        })
-      }
-
-      if (items.length === 0) {
-        return this.getNestedChildren(dataItems, (level + 1), maxLevel)
-      }
-
-      for (let i = 0; i < items.length; i++) {
-        items[i] = this.createResourceData(items[i])
-
-        if (items[i].haschild) {
-<<<<<<< HEAD
-          items[i].children = this.getNestedChildren(dataItems, (level + 1), maxLevel)
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-          items[i].children = this.getNestedChildren(dataItems, (level + 1), maxLevel, items[i].key)
->>>>>>> Fix: search tree-view and moving domain settings to the in folder iam
         }
       }
 
@@ -882,10 +567,6 @@ export default {
     }
   }
 }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Fix issue #27: changes requested
 
 /deep/.ant-tree li span.ant-tree-switcher.ant-tree-switcher-noop {
   display: none;
@@ -906,9 +587,4 @@ export default {
   padding-left: 0;
   margin-left: 3px;
 }
-<<<<<<< HEAD
-=======
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
->>>>>>> Fix issue #27: changes requested
 </style>

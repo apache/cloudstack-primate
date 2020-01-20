@@ -175,12 +175,7 @@ export default {
     },
     loginSuccess (res) {
       this.$router.push({ name: 'dashboard' })
-<<<<<<< HEAD
       this.$message.loading('Login Successful. Discovering Features...', 5)
-=======
-      this.$message.success('Login Successful')
-      this.$message.loading('Discoverying Features', 4)
->>>>>>> merge latest master
     },
     requestFailed (err) {
       if (err && err.response && err.response.data && err.response.data.loginresponse) {

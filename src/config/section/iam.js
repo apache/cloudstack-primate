@@ -90,10 +90,6 @@ export default {
         title: 'Users',
         param: 'account'
       }],
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> merge latest master
       tabs: [
         {
           name: 'details',
@@ -108,18 +104,6 @@ export default {
           component: () => import('@/components/view/SettingsTab.vue')
         }
       ],
-<<<<<<< HEAD
-=======
-      tabs: [{
-        name: 'details',
-        component: () => import('@/components/view/DetailsTab.vue')
-      }, {
-        name: 'Settings',
-        component: () => import('@/components/view/SettingsTab.vue')
-      }],
->>>>>>> rebase with latest master
-=======
->>>>>>> merge latest master
       actions: [
         {
           api: 'createAccount',
@@ -189,7 +173,6 @@ export default {
           icon: 'safety-certificate',
           label: 'Add certificate',
           dataView: true,
-<<<<<<< HEAD
           args: ['name', 'certificate', 'privatekey', 'certchain', 'password', 'account', 'domainid'],
           show: (record) => { return record.state === 'enabled' },
           mapping: {
@@ -200,10 +183,6 @@ export default {
               value: (record) => { return record.domainid }
             }
           }
-=======
-          args: ['name', 'certificate', 'privatekey', 'certchain', 'password'],
-          show: (record) => { return record.state === 'enabled' }
->>>>>>> merge latest master
         },
         {
           api: 'deleteAccount',
@@ -229,9 +208,6 @@ export default {
       }],
       tabs: [
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
           name: 'Domain',
           component: () => import('@/components/view/InfoCard.vue'),
           show: (record, route) => { return route.path === '/domain' }
@@ -242,33 +218,6 @@ export default {
         }, {
           name: 'Settings',
           component: () => import('@/components/view/SettingsTab.vue')
-<<<<<<< HEAD
-=======
-          name: 'details',
-          component: () => import('@/components/view/DetailsTab.vue')
-        }, {
-          name: 'settings',
-          permission: ['listConfigurations'],
-<<<<<<< HEAD
-          component: () => import('@/views/domain/TemplateDomainSettings.vue')
->>>>>>> Issue #27: https://github.com/apache/cloudstack-primate/issues/27
-=======
-          component: () => import('@/views/iam/TemplateDomainSettings.vue')
->>>>>>> Fix: search tree-view and moving domain settings to the in folder iam
-=======
-          name: 'info',
-=======
-          name: 'Domain',
->>>>>>> fixes
-          component: () => import('@/components/view/InfoCard.vue'),
-          show: (record, route) => { return route.path === '/domain' }
-        },
-        {
-          name: 'details',
-          component: () => import('@/components/view/DetailsTab.vue')
->>>>>>> Fix issue #27: changes requested
-=======
->>>>>>> rebase with latest master
         }
       ],
       treeView: true,
@@ -278,15 +227,7 @@ export default {
           icon: 'plus',
           label: 'label.add.domain',
           listView: true,
-<<<<<<< HEAD
-<<<<<<< HEAD
           dataView: true,
-=======
-          type: 'create',
->>>>>>> Fix issue #27: changes requested
-=======
-          dataView: true,
->>>>>>> fixes
           args: ['parentdomainid', 'name', 'networkdomain', 'domainid'],
           mapping: {
             parentdomainid: {
