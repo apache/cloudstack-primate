@@ -1,0 +1,374 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+<template>
+  <div class="ldap-account-layout">
+    <a-row :gutter="12">
+      <a-col :md="24" :lg="13">
+        <a-card :bordered="true" :title="this.$t('label.add.ldap.list.users')">
+          <a-table
+            size="small"
+            :loading="listLoading"
+            :columns="columns"
+            :dataSource="dataSource"
+            :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
+            :rowKey="record => record.username"
+            :pagination="false"
+            :scroll="{ x: 'auto' }"
+          />
+        </a-card>
+      </a-col>
+      <a-col :md="24" :lg="11">
+        <a-card :bordered="true">
+          <a-form
+            :form="form"
+            @submit="handleSubmit"
+            layout="vertical"
+          >
+            <a-form-item :label="this.$t('domain')">
+              <a-select
+                showSearch
+                v-decorator="['domainid', {
+                  rules: [{ required: true, message: 'Please select option' }]
+                }]"
+                :placeholder="apiParams.domainid.description"
+                :loading="domainLoading">
+                <a-select-option v-for="opt in listDomains" :key="opt.name">
+                  {{ opt.name }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+            <a-form-item :label="this.$t('Account')">
+              <a-input
+                v-decorator="['account']"
+                :placeholder="apiParams.account.description"
+              />
+            </a-form-item>
+            <a-form-item :label="this.$t('Role')">
+              <a-select
+                showSearch
+                v-decorator="['roleid', {
+                  rules: [{ required: true, message: 'Please select option' }]
+                }]"
+                :placeholder="apiParams.roleid.description"
+                :loading="roleLoading">
+                <a-select-option v-for="opt in listRoles" :key="opt.name">
+                  {{ opt.name }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+            <a-form-item :label="this.$t('timezone')">
+              <a-select
+                showSearch
+                v-decorator="['timezone']"
+                :placeholder="apiParams.timezone.description"
+                :loading="timeZoneLoading">
+                <a-select-option v-for="opt in timeZoneMap" :key="opt.id">
+                  {{ opt.name || opt.description }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+            <a-form-item :label="this.$t('networkdomain')">
+              <a-input
+                v-decorator="['networkdomain']"
+                :placeholder="apiParams.networkdomain.description"
+              />
+            </a-form-item>
+            <a-form-item :label="this.$t('group')">
+              <a-input
+                v-decorator="['group']"
+                :placeholder="apiParams.group.description"
+              />
+            </a-form-item>
+            <div class="card-footer">
+              <!-- ToDo extract as component -->
+              <a-button @click="handleClose">{{ this.$t('cancel') }}</a-button>
+              <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('submit') }}</a-button>
+            </div>
+          </a-form>
+        </a-card>
+      </a-col>
+    </a-row>
+  </div>
+</template>
+
+<script>
+import { api } from '@/api'
+import { timeZone } from '@/utils/timezone'
+
+export default {
+  name: 'AddLdapAccount',
+  data () {
+    return {
+      columns: [],
+      dataSource: [],
+      selectedRowKeys: [],
+      listDomains: [],
+      listRoles: [],
+      timeZoneMap: [],
+      listLoading: false,
+      timeZoneLoading: false,
+      domainLoading: false,
+      roleLoading: false,
+      loading: false
+    }
+  },
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
+    this.apiLdapCreateAccountConfig = this.$store.getters.apis.ldapCreateAccount || {}
+    this.apiImportLdapUsersConfig = this.$store.getters.apis.importLdapUsers || {}
+    this.apiParams = {}
+    this.apiLdapCreateAccountConfig.params.forEach(param => {
+      this.apiParams[param.name] = param
+    })
+    this.apiImportLdapUsersConfig.params.forEach(param => {
+      if (!this.apiParams || !this.apiParams[param.name]) {
+        this.apiParams[param.name] = param
+      }
+    })
+  },
+  created () {
+    this.selectedRowKeys = []
+    this.dataSource = []
+    this.listDomains = []
+    this.listRoles = []
+    this.columns = [
+      {
+        title: this.$t('name'),
+        dataIndex: 'name',
+        width: '100px',
+        scopedSlots: { customRender: 'name' }
+      },
+      {
+        title: this.$t('username'),
+        dataIndex: 'username',
+        width: '100px',
+        scopedSlots: { customRender: 'username' }
+      },
+      {
+        title: this.$t('email'),
+        dataIndex: 'email',
+        width: '100px',
+        scopedSlots: { customRender: 'email' }
+      }
+    ]
+  },
+  mounted () {
+    this.fetchData()
+  },
+  methods: {
+    async fetchData () {
+      this.listLoading = true
+      this.timeZoneLoading = true
+      this.domainLoading = true
+      this.roleLoading = true
+      const [
+        listTimeZone,
+        listLdapUsers,
+        listDomains,
+        listRoles
+      ] = await Promise.all([
+        this.fetchTimeZone(),
+        this.fetchListLdapUsers(),
+        this.fetchListDomains(),
+        this.fetchListRoles()
+      ]).catch(error => {
+        this.$notification.error({
+          message: 'Request Failed',
+          description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+        })
+      }).finally(() => {
+        this.listLoading = false
+        this.timeZoneLoading = false
+        this.domainLoading = false
+        this.roleLoading = false
+      })
+      this.timeZoneMap = listTimeZone && listTimeZone.length > 0 ? listTimeZone : []
+      this.dataSource = listLdapUsers && listLdapUsers.length > 0 ? listLdapUsers : []
+      this.listDomains = listDomains && listDomains.length > 0 ? listDomains : []
+      this.listRoles = listRoles && listRoles.length > 0 ? listRoles : []
+    },
+    fetchTimeZone (value) {
+      return new Promise((resolve, reject) => {
+        timeZone(value).then(json => {
+          resolve(json)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    fetchListLdapUsers () {
+      return new Promise((resolve, reject) => {
+        const params = {}
+        params.listtype = 'new'
+        api('listLdapUsers', params).then(json => {
+          const listLdapUsers = json.ldapuserresponse.LdapUser
+          if (listLdapUsers) {
+            const ldapUserLength = listLdapUsers.length
+            for (let i = 0; i < ldapUserLength; i++) {
+              listLdapUsers[i].name = [listLdapUsers[i].firstname, listLdapUsers[i].lastname].join(' ')
+            }
+            resolve(listLdapUsers)
+            return
+          }
+          resolve([])
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    fetchListDomains () {
+      return new Promise((resolve, reject) => {
+        const params = {}
+        api('listDomains', params).then(json => {
+          const listDomains = json.listdomainsresponse.domain
+          resolve(listDomains)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    fetchListRoles () {
+      return new Promise((resolve, reject) => {
+        const params = {}
+        api('listRoles', params).then(json => {
+          const listRoles = json.listrolesresponse.role
+          resolve(listRoles)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    handleSubmit (e) {
+      e.preventDefault()
+      this.form.validateFields((err, values) => {
+        if (err || this.selectedRowKeys.length === 0) {
+          return
+        }
+        let apiName = 'ldapCreateAccount'
+        const domain = this.listDomains.filter(item => item.name === values.domainid)
+        const role = this.listRoles.filter(item => item.name === values.roleid)
+        const promises = []
+        const params = {}
+        params.domainid = domain[0].id
+        params.roleid = role[0].id
+        params.timezone = values.timezone
+        params.networkdomain = values.networkdomain
+        params.group = values.group
+        if (params.group && params.group.trim().length > 0) {
+          apiName = 'importLdapUsers'
+        }
+        this.selectedRowKeys.forEach(username => {
+          params.username = username
+          promises.push(new Promise((resolve, reject) => {
+            api(apiName, params).then(json => {
+              resolve(json)
+            }).catch(error => {
+              reject(error)
+            })
+          }))
+        })
+        this.loading = true
+        Promise.all(promises).then(response => {
+          for (let i = 0; i < response.length; i++) {
+            if (apiName === 'ldapCreateAccount' && values.samlEnable) {
+              const users = response.createaccountresponse.account.user
+              const entity = values.samlEntity
+              if (users && entity) {
+                this.authorizeUsersForSamlSSO(users, entity)
+              }
+            } else if (apiName === 'importLdapUsers' && response.ldapuserresponse && values.samlEnable) {
+              this.$notification.error({
+                message: 'Request Failed',
+                description: 'Unable to find users IDs to enable SAML Single Sign On, kindly enable it manually.'
+              })
+            } else {
+              if (apiName === 'ldapCreateAccount') {
+                this.$notification.success({
+                  message: this.$t('label.add.ldap.account'),
+                  description: response[i].createaccountresponse.account.name
+                })
+              }
+            }
+          }
+
+          this.$emit('refresh-data')
+          this.handleClose()
+        }).catch(error => {
+          this.$notification.error({
+            message: 'Request Failed',
+            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+          })
+          this.$emit('refresh-data')
+        }).finally(() => {
+          this.loading = false
+        })
+      })
+    },
+    handleClose () {
+      this.$emit('close-action')
+    },
+    authorizeUsersForSamlSSO (users, entity) {
+      const promises = []
+      for (var i = 0; i < users.length; i++) {
+        const params = {}
+        params.enable = true
+        params.userid = users[i].id
+        params.entityid = entity
+        promises.push(new Promise((resolve, reject) => {
+          api('authorizeSamlSso', params).catch(error => {
+            reject(error)
+          })
+        }))
+      }
+      Promise.all(promises).catch(error => {
+        this.$notification.error({
+          message: 'Request Failed',
+          description: error.response.headers['x-description']
+        })
+      })
+    },
+    onSelectChange (selectedRowKeys) {
+      this.selectedRowKeys = selectedRowKeys
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+.ldap-account-layout {
+  width: 80vw;
+
+  @media (min-width: 800px) {
+    width: 800px;
+  }
+}
+
+.card-footer {
+  text-align: right;
+
+  button + button {
+    margin-left: 8px;
+  }
+}
+
+/deep/td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
