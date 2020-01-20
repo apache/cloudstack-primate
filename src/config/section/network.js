@@ -283,12 +283,8 @@ export default {
           label: 'Enable Static NAT',
           dataView: true,
           show: (record) => { return !record.virtualmachineid && !record.issourcenat },
-          args: ['ipaddressid', 'virtualmachineid', 'vmguestip'],
-          mapping: {
-            ipaddressid: {
-              value: (record) => { return record.id }
-            }
-          }
+          popup: true,
+          component: () => import('@/views/network/EnableStaticNat.vue')
         },
         {
           api: 'disableStaticNat',
