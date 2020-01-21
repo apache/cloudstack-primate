@@ -95,6 +95,11 @@
               @select-network-item="($event) => updateNetworks($event)"
             ></network-selection>
 
+            <network-configuration
+              v-if="networks.length > 0"
+              :items="networks"
+            ></network-configuration>
+
             <div class="card-footer">
               <!-- ToDo extract as component -->
               <a-button @click="() => this.$router.back()">{{ this.$t('cancel') }}</a-button>
@@ -138,10 +143,12 @@ import DiskSizeSelection from '@views/compute/wizard/DiskSizeSelection'
 import TemplateIsoSelection from '@views/compute/wizard/TemplateIsoSelection'
 import AffinityGroupSelection from '@views/compute/wizard/AffinityGroupSelection'
 import NetworkSelection from '@views/compute/wizard/NetworkSelection'
+import NetworkConfiguration from '@views/compute/wizard/NetworkConfiguration'
 
 export default {
   name: 'Wizard',
   components: {
+    NetworkConfiguration,
     NetworkSelection,
     AffinityGroupSelection,
     TemplateIsoSelection,

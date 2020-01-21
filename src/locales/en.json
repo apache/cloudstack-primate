@@ -1019,6 +1019,7 @@
 "instance": "Instance",
 "yourInstance": "Your instance",
 "newInstance": "New instance",
+"defaultNetwork": "Default network",
 "cpu": "CPU",
 "minMaxIops": "Min IOPS / Max IOPS",
 "isSelf": "Self",
