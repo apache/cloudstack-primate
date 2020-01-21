@@ -44,13 +44,13 @@
         </div>
         <div class="form__item">
           <div class="form__label">{{ $t('protocol') }}</div>
-          <a-select v-model="newRule.protocol">
-            <a-select-option value="tcp-proxy">TCP proxy</a-select-option>
+          <a-select v-model="newRule.protocol" style="min-width: 100px">
+            <a-select-option value="tcp-proxy">TCP Proxy</a-select-option>
             <a-select-option value="tcp">TCP</a-select-option>
             <a-select-option value="udp">UDP</a-select-option>
           </a-select>
         </div>
-        <div class="form__item" style="margin-left: auto;">
+        <div class="form__item">
           <div class="form__label" style="white-space: nowrap;">{{ $t('label.add.VMs') }}</div>
           <a-button type="primary" @click="handleOpenAddVMModal">Add</a-button>
         </div>
@@ -82,32 +82,41 @@
           </div>
           <div class="rule__row">
             <div class="rule__item">
+              <div class="rule__title">{{ $t('protocol') }}</div>
+              <div>{{ rule.protocol | capitalise }}</div>
+            </div>
+            <div class="rule__item">
               <div class="rule__title">{{ $t('state') }}</div>
               <div>{{ rule.state }}</div>
             </div>
             <div class="rule__item">
               <div class="rule__title">{{ $t('label.action.configure.stickiness') }}</div>
-              <a-button @click="() => openStickinessModal(rule.id)">{{ returnStickinessLabel(rule.id) }}</a-button>
-            </div>
-            <div class="rule__item">
-              <div class="rule__title">{{ $t('protocol') }}</div>
-              <div>{{ rule.protocol | capitalise }}</div>
+              <a-button @click="() => openStickinessModal(rule.id)">
+                {{ returnStickinessLabel(rule.id) }}
+              </a-button>
             </div>
             <div class="rule__item">
               <div class="rule__title">{{ $t('label.add.VMs') }}</div>
-              <a-button type="primary" @click="() => { selectedRule = rule; handleOpenAddVMModal() }">Add
+              <a-button type="primary" icon="plus" @click="() => { selectedRule = rule; handleOpenAddVMModal() }">
+                {{ $t('add') }}
               </a-button>
             </div>
           </div>
           <div class="rule__row" v-if="rule.ruleInstances">
             <a-collapse :bordered="false" class="rule-instance-collapse">
+              <template v-slot:expandIcon="props">
+                <a-icon type="caret-right" :rotate="props.isActive ? 90 : 0" />
+              </template>
               <a-collapse-panel header="View Instances">
                 <div class="rule-instance-list">
                   <div v-for="instance in rule.ruleInstances" :key="instance.loadbalancerruleinstance.id">
                     <div v-for="ip in instance.lbvmipaddresses" :key="ip" class="rule-instance-list__item">
-                      <div>{{ instance.loadbalancerruleinstance.name }}</div>
+                      <div>
+                        <a-icon type="desktop" />
+                        <router-link :to="{ path: '/vm/' + rule.virtualmachineid }"> {{ instance.loadbalancerruleinstance.displayname }}</router-link>
+                      </div>
                       <div>{{ ip }}</div>
-                      <div>State - {{ instance.loadbalancerruleinstance.state }}</div>
+                      <div><status :text="instance.loadbalancerruleinstance.state" displayText /></div>
                       <a-button
                         shape="round"
                         type="danger"
@@ -120,16 +129,16 @@
             </a-collapse>
           </div>
         </div>
-        <div slot="actions">
-          <a-button shape="round" icon="tag" class="rule-action" @click="() => openTagsModal(rule.id)" />
-          <a-button shape="round" icon="edit" class="rule-action" @click="() => openEditRuleModal(rule)"></a-button>
+        <div class="rule__item">
+          <a-button shape="circle" icon="edit" class="rule-action" @click="() => openEditRuleModal(rule)"></a-button>
+          <a-button shape="circle" icon="tag" class="rule-action" @click="() => openTagsModal(rule.id)" />
           <a-popconfirm
             :title="$t('label.delete') + '?'"
             @confirm="handleDeleteRule(rule)"
             okText="Yes"
             cancelText="No"
           >
-            <a-button shape="round" type="danger" icon="delete" class="rule-action" />
+            <a-button shape="circle" type="danger" icon="delete" class="rule-action" />
           </a-popconfirm>
         </div>
       </a-list-item>
@@ -237,7 +246,7 @@
         <a-form-item label="Expires" v-show="stickinessPolicyMethod === 'SourceBased'">
           <a-input v-decorator="['expire']" />
         </a-form-item>
-        <a-button type="primary" html-type="submit">Ok</a-button>
+        <a-button type="primary" html-type="submit">OK</a-button>
       </a-form>
     </a-modal>
 
@@ -330,8 +339,13 @@
 
 <script>
 import { api } from '@/api'
+import Status from '@/components/widgets/Status'
 
 export default {
+  name: 'LoadBalancing',
+  components: {
+    Status
+  },
   props: {
     resource: {
       type: Object,
@@ -367,7 +381,7 @@ export default {
         protocol: ''
       },
       newRule: {
-        algorithm: 'leastconn',
+        algorithm: 'roundrobin',
         name: '',
         privateport: '',
         publicport: '',
@@ -437,7 +451,7 @@ export default {
           lbvmips: true,
           id: rule.id
         }).then(response => {
-          rule.ruleInstances = response.listloadbalancerruleinstancesresponse.lbrulevmidip
+          this.$set(rule, 'ruleInstances', response.listloadbalancerruleinstancesresponse.lbrulevmidip)
         }).catch(error => {
           this.$notification.error({
             message: `Error ${error.response.status}`,
@@ -851,22 +865,24 @@ export default {
       })
     },
     handleOpenAddVMModal () {
-      if (!this.newRule.name) {
-        this.$refs.newRuleName.classList.add('error')
-      } else {
-        this.$refs.newRuleName.classList.remove('error')
+      if (!this.selectedRule) {
+        if (!this.newRule.name) {
+          this.$refs.newRuleName.classList.add('error')
+        } else {
+          this.$refs.newRuleName.classList.remove('error')
+        }
+        if (!this.newRule.publicport) {
+          this.$refs.newRulePublicPort.classList.add('error')
+        } else {
+          this.$refs.newRulePublicPort.classList.remove('error')
+        }
+        if (!this.newRule.privateport) {
+          this.$refs.newRulePrivatePort.classList.add('error')
+        } else {
+          this.$refs.newRulePrivatePort.classList.remove('error')
+        }
+        if (!this.newRule.name || !this.newRule.publicport || !this.newRule.privateport) return
       }
-      if (!this.newRule.publicport) {
-        this.$refs.newRulePublicPort.classList.add('error')
-      } else {
-        this.$refs.newRulePublicPort.classList.remove('error')
-      }
-      if (!this.newRule.privateport) {
-        this.$refs.newRulePrivatePort.classList.add('error')
-      } else {
-        this.$refs.newRulePrivatePort.classList.remove('error')
-      }
-      if (!this.newRule.name || !this.newRule.publicport || !this.newRule.privateport) return
       this.addVmModalVisible = true
       this.addVmModalLoading = true
       api('listVirtualMachines', {
@@ -1092,7 +1108,6 @@ export default {
   .form {
     display: flex;
     margin-right: -20px;
-    margin-bottom: 20px;
     flex-direction: column;
     align-items: flex-start;
 
@@ -1138,12 +1153,12 @@ export default {
     &__item {
       display: flex;
       flex-direction: column;
-      /*flex: 1;*/
       padding-right: 20px;
       margin-bottom: 20px;
 
-      @media (min-width: 760px) {
+      @media (min-width: 1200px) {
         margin-bottom: 0;
+        flex: 1;
       }
 
       input,
@@ -1173,12 +1188,7 @@ export default {
   }
 
   .rule-action {
-    margin-bottom: 20px;
-
-    &:not(:last-of-type) {
-      margin-right: 10px;
-    }
-
+    margin-bottom: 10px;
   }
 
   .tags-modal {
@@ -1249,6 +1259,7 @@ export default {
 
   .rule-instance-collapse {
     width: 100%;
+    margin-left: -15px;
 
     .ant-collapse-item {
       border: 0;
@@ -1265,18 +1276,13 @@ export default {
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 10px;
 
       div {
-        margin-right: 10px;
+        margin-left: 25px;
         margin-bottom: 10px;
       }
-
-      &:not(:last-child) {
-        margin-bottom: 10px;
-      }
-
     }
-
   }
 
   .edit-rule {
@@ -1323,9 +1329,7 @@ export default {
     }
 
   }
-</style>
 
-<style lang="scss">
   .custom-ant-form {
     .ant-form-item-label {
       font-weight: bold;

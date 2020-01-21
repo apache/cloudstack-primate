@@ -91,9 +91,9 @@
             <div>{{ rule.state }}</div>
           </div>
           <div class="rule__item">
-            <div class="rule__title">{{ $t('vm') }} / {{ $t('IP') }}</div>
+            <div class="rule__title">{{ $t('vm') }}</div>
             <div class="rule__title"></div>
-            <div><router-link :to="{ path: '/vm/' + rule.virtualmachineid }">{{ rule.virtualmachinename }}</router-link> - {{ rule.vmguestip }}</div>
+            <div><a-icon type="desktop"/> <router-link :to="{ path: '/vm/' + rule.virtualmachineid }">{{ rule.virtualmachinename }}</router-link> ({{ rule.vmguestip }})</div>
           </div>
           <div slot="actions">
             <a-button shape="round" icon="tag" class="rule-action" @click="() => openTagsModal(rule.id)" />
@@ -134,7 +134,7 @@
     </a-modal>
 
     <a-modal
-      title="Add VMs"
+      title="Add VM"
       v-model="addVmModalVisible"
       class="vm-modal"
       width="60vw"
@@ -471,11 +471,16 @@ export default {
         virtualmachineid: e.target.value,
         networkid: this.resource.associatednetworkid
       }).then(response => {
-        if (!response.listnicsresponse.nic[0]) return
-        this.nics.push(response.listnicsresponse.nic[0].ipaddress, ...response.listnicsresponse.nic[0].secondaryip.map(ip => ip.ipaddress))
+        if (!response.listnicsresponse.nic || response.listnicsresponse.nic.length < 1) return
+        const nic = response.listnicsresponse.nic[0]
+        this.nics.push(nic.ipaddress)
+        if (nic.secondaryip && nic.secondaryip.length > 0) {
+          this.nics.push(...nic.secondaryip.map(ip => ip.ipaddress))
+        }
         this.newRule.vmguestip = this.nics[0]
         this.addVmModalNicLoading = false
       }).catch(error => {
+        console.log(error)
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext

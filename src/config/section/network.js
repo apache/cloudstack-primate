@@ -283,7 +283,7 @@ export default {
         {
           api: 'disassociateIpAddress',
           icon: 'delete',
-          label: 'Delete IP',
+          label: 'Release IP',
           dataView: true,
           show: (record) => { return !record.issourcenat }
         }
