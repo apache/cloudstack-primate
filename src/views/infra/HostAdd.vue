@@ -1,3 +1,20 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
 <template>
   <a-spin :spinning="loading">
     <div class="form">
@@ -42,7 +59,7 @@
         </template>
         <div class="form__item">
           <div class="form__label"><span class="required">* </span>{{ $t('clustername') }}</div>
-          <a-select v-model="clusterId">
+          <a-select v-model="clusterId" @change="handleChangeCluster">
             <a-select-option
               v-for="cluster in clustersList"
               :value="cluster.id"
@@ -83,9 +100,25 @@
         <div class="form__item">
           <div class="form__label"><span class="required">* </span>{{ $t('password') }}</div>
           <span class="required required-label" ref="requiredCluster">Required</span>
-          <a-input v-model="password"></a-input>
+          <a-input type="password" v-model="password"></a-input>
         </div>
       </a-popover>
+
+      <template v-if="selectedClusterHyperVisorType === 'Ovm3'">
+        <div class="form__item">
+          <div class="form__label">{{ $t('agentUsername') }}</div>
+          <a-input v-model="agentusername"></a-input>
+        </div>
+        <div class="form__item">
+          <div class="form__label"><span class="required">* </span>{{ $t('agentPassword') }}</div>
+          <span class="required required-label" ref="requiredCluster">Required</span>
+          <a-input type="password" v-model="agentpassword"></a-input>
+        </div>
+        <div class="form__item">
+          <div class="form__label">{{ $t('agentPort') }}</div>
+          <a-input v-model="agentport"></a-input>
+        </div>
+      </template>
 
       <div class="form__item">
         <div class="form__label">{{ $t('hostTags') }}</div>
@@ -134,7 +167,18 @@ export default {
       zonesList: [],
       clustersList: [],
       podsList: [],
-      hostTagsList: []
+      hostTagsList: [],
+      url: null,
+      vcenterHost: null,
+      cpunumber: null,
+      cpuspeed: null,
+      memory: null,
+      hostmac: null,
+      agentusername: null,
+      agentpassword: null,
+      agentport: null,
+      selectedCluster: null,
+      selectedClusterHyperVisorType: null
     }
   },
   mounted () {
@@ -226,8 +270,56 @@ export default {
         this.loading = false
       })
     },
+    handleChangeCluster () {
+      this.selectedCluster = this.clustersList.find(i => i.id === this.clusterId)
+      this.selectedClusterHyperVisorType = this.selectedCluster.hypervisortype
+    },
     handleSubmitForm () {
+      if (this.selectedClusterHyperVisorType === 'VMware') {
+        this.username = ''
+        this.password = ''
+        if (this.vcenterHost.indexOf('http://') === -1) {
+          this.url = `http://${this.vcenterHost}`
+        } else {
+          this.url = this.vcenterHost
+        }
+      } else {
+        if (this.hostname.indexOf('http://') === -1) {
+          this.url = `http://${this.hostname}`
+        } else {
+          this.url = this.hostname
+        }
+      }
 
+      this.loading = true
+      api('addHost', {}, 'POST', {
+        zoneid: this.zoneId,
+        podid: this.podId,
+        clusterid: this.clusterId,
+        hypervisor: this.selectedClusterHyperVisorType,
+        clustertype: this.selectedCluster.clustertype,
+        hosttags: this.selectedTags.join(),
+        username: this.username,
+        password: this.password,
+        url: this.url,
+        vcenterHost: this.vcenterHost,
+        cpunumber: this.cpunumber,
+        cpuspeed: this.cpuspeed,
+        memory: this.memory,
+        hostmac: this.hostmac,
+        agentusername: this.agentusername,
+        agentpassword: this.agentpassword,
+        agentport: this.agentport
+      }).then(response => {
+        // RESPONSE
+        this.loading = false
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.addhostresponse.errortext
+        })
+        this.loading = false
+      })
     }
   }
 }
