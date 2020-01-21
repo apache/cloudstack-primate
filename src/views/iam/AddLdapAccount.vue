@@ -20,15 +20,24 @@
     <a-row :gutter="12">
       <a-col :md="24" :lg="13">
         <a-card :bordered="true" :title="this.$t('label.add.ldap.list.users')">
+          <a-input-search
+            style="margin-bottom: 10px"
+            placeholder="Search"
+            v-model="searchQuery"
+            @search="handleSearch" />
           <a-table
             size="small"
             :loading="listLoading"
             :columns="columns"
             :dataSource="dataSource"
-            :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
+            :rowSelection="{
+              columnWidth: 50,
+              selectedRowKeys: selectedRowKeys,
+              onChange: onSelectChange
+            }"
             :rowKey="record => record.username"
             :pagination="false"
-            :scroll="{ x: 'auto' }"
+            :scroll="{ x: 540, y: 450 }"
           />
         </a-card>
       </a-col>
@@ -116,6 +125,7 @@ export default {
     return {
       columns: [],
       dataSource: [],
+      oldDataSource: [],
       selectedRowKeys: [],
       listDomains: [],
       listRoles: [],
@@ -124,7 +134,8 @@ export default {
       timeZoneLoading: false,
       domainLoading: false,
       roleLoading: false,
-      loading: false
+      loading: false,
+      searchQuery: undefined
     }
   },
   beforeCreate () {
@@ -150,19 +161,18 @@ export default {
       {
         title: this.$t('name'),
         dataIndex: 'name',
-        width: '100px',
+        width: 120,
         scopedSlots: { customRender: 'name' }
       },
       {
         title: this.$t('username'),
         dataIndex: 'username',
-        width: '100px',
+        width: 120,
         scopedSlots: { customRender: 'username' }
       },
       {
         title: this.$t('email'),
         dataIndex: 'email',
-        width: '100px',
         scopedSlots: { customRender: 'email' }
       }
     ]
@@ -198,9 +208,10 @@ export default {
         this.roleLoading = false
       })
       this.timeZoneMap = listTimeZone && listTimeZone.length > 0 ? listTimeZone : []
-      this.dataSource = listLdapUsers && listLdapUsers.length > 0 ? listLdapUsers : []
       this.listDomains = listDomains && listDomains.length > 0 ? listDomains : []
       this.listRoles = listRoles && listRoles.length > 0 ? listRoles : []
+      this.dataSource = listLdapUsers
+      this.oldDataSource = listLdapUsers
     },
     fetchTimeZone (value) {
       return new Promise((resolve, reject) => {
@@ -222,10 +233,8 @@ export default {
             for (let i = 0; i < ldapUserLength; i++) {
               listLdapUsers[i].name = [listLdapUsers[i].firstname, listLdapUsers[i].lastname].join(' ')
             }
-            resolve(listLdapUsers)
-            return
           }
-          resolve([])
+          resolve(listLdapUsers)
         }).catch(error => {
           reject(error)
         })
@@ -319,6 +328,25 @@ export default {
         })
       })
     },
+    handleSearch () {
+      this.dataSource = this.oldDataSource
+      if (!this.searchQuery || this.searchQuery.length === 0) {
+        return
+      }
+      this.dataSource = this.dataSource.filter(item => this.filterLdapUser(item))
+    },
+    filterLdapUser (item) {
+      switch (true) {
+        case (item.name && item.name.toLowerCase().indexOf(this.searchQuery.toLowerCase()) > -1):
+          return item
+        case (item.username && item.username.toLowerCase().indexOf(this.searchQuery.toLowerCase()) > -1):
+          return item
+        case (item.email && item.email.toLowerCase().indexOf(this.searchQuery.toLowerCase()) > -1):
+          return item
+        default:
+          break
+      }
+    },
     handleClose () {
       this.$emit('close-action')
     },
@@ -356,6 +384,14 @@ export default {
   @media (min-width: 800px) {
     width: 800px;
   }
+
+  /deep/.ant-table-header {
+    overflow: auto;
+  }
+
+  /deep/.ant-table-body {
+    overflow: auto !important;
+  }
 }
 
 .card-footer {
@@ -364,11 +400,5 @@ export default {
   button + button {
     margin-left: 8px;
   }
-}
-
-/deep/td {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 </style>
