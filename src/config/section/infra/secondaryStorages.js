@@ -35,7 +35,6 @@ export default {
       icon: 'plus',
       label: 'label.add.secondary.storage',
       listView: true,
-      // args: ['name', 'provider', 'zoneid', 'url', 'details'],
       popup: true,
       component: () => import('@/views/infra/AddSecondaryStorage.vue')
     },
