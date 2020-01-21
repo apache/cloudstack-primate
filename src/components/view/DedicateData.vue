@@ -16,7 +16,7 @@
 // under the License.
 
 <template>
-  <div v-if="active">
+  <div>
     <div>
       <a-list-item v-if="dedicatedDomainId">
         <div>
@@ -58,10 +58,6 @@ import DedicateModal from './DedicateModal'
 
 export default {
   props: {
-    active: {
-      type: Boolean,
-      required: true
-    },
     resource: {
       type: Object,
       required: true

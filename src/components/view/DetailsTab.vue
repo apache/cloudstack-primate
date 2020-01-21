@@ -28,7 +28,7 @@
         </div>
       </div>
     </a-list-item>
-    <DedicateData :resource="resource" :active="dedicatedSectionActive" />
+    <DedicateData :resource="resource" v-if="dedicatedSectionActive" />
   </a-list>
 </template>
 
