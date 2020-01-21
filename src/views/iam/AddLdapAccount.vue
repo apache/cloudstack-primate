@@ -17,9 +17,9 @@
 
 <template>
   <div class="ldap-account-layout">
-    <a-row :gutter="12">
-      <a-col :md="24" :lg="13">
-        <a-card :bordered="true" :title="this.$t('label.add.ldap.list.users')">
+    <a-row :gutter="0">
+      <a-col :md="24" :lg="16">
+        <a-card :bordered="false">
           <a-input-search
             style="margin-bottom: 10px"
             placeholder="Search"
@@ -36,19 +36,21 @@
               onChange: onSelectChange
             }"
             :rowKey="record => record.username"
+            :rowClassName="getRowClassName"
             :pagination="false"
-            :scroll="{ x: 540, y: 450 }"
+            style="overflow-y: auto"
+            :scroll="{ y: '50vh' }"
           />
         </a-card>
       </a-col>
-      <a-col :md="24" :lg="11">
-        <a-card :bordered="true">
+      <a-col :md="24" :lg="8">
+        <a-card :bordered="false">
           <a-form
             :form="form"
             @submit="handleSubmit"
             layout="vertical"
           >
-            <a-form-item :label="this.$t('domain')">
+            <a-form-item :label="$t('domain')">
               <a-select
                 showSearch
                 v-decorator="['domainid', {
@@ -61,13 +63,13 @@
                 </a-select-option>
               </a-select>
             </a-form-item>
-            <a-form-item :label="this.$t('Account')">
+            <a-form-item :label="$t('account')">
               <a-input
                 v-decorator="['account']"
                 :placeholder="apiParams.account.description"
               />
             </a-form-item>
-            <a-form-item :label="this.$t('Role')">
+            <a-form-item :label="$t('role')">
               <a-select
                 showSearch
                 v-decorator="['roleid', {
@@ -80,7 +82,7 @@
                 </a-select-option>
               </a-select>
             </a-form-item>
-            <a-form-item :label="this.$t('timezone')">
+            <a-form-item :label="$t('timezone')">
               <a-select
                 showSearch
                 v-decorator="['timezone']"
@@ -91,22 +93,21 @@
                 </a-select-option>
               </a-select>
             </a-form-item>
-            <a-form-item :label="this.$t('networkdomain')">
+            <a-form-item :label="$t('networkdomain')">
               <a-input
                 v-decorator="['networkdomain']"
                 :placeholder="apiParams.networkdomain.description"
               />
             </a-form-item>
-            <a-form-item :label="this.$t('group')">
+            <a-form-item :label="$t('group')">
               <a-input
                 v-decorator="['group']"
                 :placeholder="apiParams.group.description"
               />
             </a-form-item>
             <div class="card-footer">
-              <!-- ToDo extract as component -->
-              <a-button @click="handleClose">{{ this.$t('cancel') }}</a-button>
-              <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('submit') }}</a-button>
+              <a-button @click="handleClose">{{ $t('Close') }}</a-button>
+              <a-button :loading="loading" type="primary" @click="handleSubmit">{{ $t('add') }}</a-button>
             </div>
           </a-form>
         </a-card>
@@ -372,6 +373,12 @@ export default {
     },
     onSelectChange (selectedRowKeys) {
       this.selectedRowKeys = selectedRowKeys
+    },
+    getRowClassName (record, index) {
+      if (index % 2 === 0) {
+        return 'light-row'
+      }
+      return 'dark-row'
     }
   }
 }
@@ -379,18 +386,10 @@ export default {
 
 <style lang="less" scoped>
 .ldap-account-layout {
-  width: 80vw;
+  width: 85vw;
 
-  @media (min-width: 800px) {
-    width: 800px;
-  }
-
-  /deep/.ant-table-header {
-    overflow: auto;
-  }
-
-  /deep/.ant-table-body {
-    overflow: auto !important;
+  @media (min-width: 1000px) {
+    width: 900px;
   }
 }
 
@@ -401,4 +400,13 @@ export default {
     margin-left: 8px;
   }
 }
+
+/deep/ .light-row {
+  background-color: #fff;
+}
+
+/deep/ .dark-row {
+  background-color: #f9f9f9;
+}
+
 </style>

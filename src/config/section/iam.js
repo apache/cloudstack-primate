@@ -118,8 +118,8 @@ export default {
           label: 'label.add.ldap.account',
           listView: true,
           popup: true,
-          show: (record, userInfo, isLdapEnabled) => {
-            return isLdapEnabled
+          show: (record, store) => {
+            return store.isLdapEnabled
           },
           component: () => import('@/views/iam/AddLdapAccount.vue')
         },
