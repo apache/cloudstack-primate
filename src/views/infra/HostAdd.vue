@@ -74,9 +74,9 @@
         <template slot="content">
           The DNS name or IP address of the host
         </template>
-        <div class="form__item">
+        <div class="form__item required-field">
           <div class="form__label"><span class="required">* </span>{{ $t('hostnamelabel') }}</div>
-          <span class="required required-label" ref="requiredCluster">Required</span>
+          <span class="required required-label">Required</span>
           <a-input v-model="hostname"></a-input>
         </div>
       </a-popover>
@@ -85,9 +85,9 @@
         <template slot="content">
           Usually root
         </template>
-        <div class="form__item">
+        <div class="form__item required-field">
           <div class="form__label"><span class="required">* </span>{{ $t('username') }}</div>
-          <span class="required required-label" ref="requiredCluster">Required</span>
+          <span class="required required-label">Required</span>
           <a-input v-model="username"></a-input>
         </div>
       </a-popover>
@@ -97,9 +97,9 @@
           The password for the user named in Username. The password was set during the hypervisor installation on the
           host.
         </template>
-        <div class="form__item">
+        <div class="form__item required-field">
           <div class="form__label"><span class="required">* </span>{{ $t('password') }}</div>
-          <span class="required required-label" ref="requiredCluster">Required</span>
+          <span class="required required-label">Required</span>
           <a-input type="password" v-model="password"></a-input>
         </div>
       </a-popover>
@@ -109,9 +109,9 @@
           <div class="form__label">{{ $t('agentUsername') }}</div>
           <a-input v-model="agentusername"></a-input>
         </div>
-        <div class="form__item">
+        <div class="form__item required-field">
           <div class="form__label"><span class="required">* </span>{{ $t('agentPassword') }}</div>
-          <span class="required required-label" ref="requiredCluster">Required</span>
+          <span class="required required-label">Required</span>
           <a-input type="password" v-model="agentpassword"></a-input>
         </div>
         <div class="form__item">
@@ -237,6 +237,7 @@ export default {
         if (response.listclustersresponse.cluster) {
           this.clustersList = response.listclustersresponse.cluster
           this.clusterId = this.clustersList[0].id
+          this.handleChangeCluster()
         } else {
           this.clustersList = []
           this.clusterId = null
@@ -275,6 +276,19 @@ export default {
       this.selectedClusterHyperVisorType = this.selectedCluster.hypervisortype
     },
     handleSubmitForm () {
+      const requiredFields = document.querySelectorAll('.required-field')
+
+      requiredFields.forEach(field => {
+        const input = field.querySelector('.ant-input')
+        if (!input.value) {
+          input.parentNode.querySelector('.required-label').classList.add('required-label--error')
+        } else {
+          input.parentNode.querySelector('.required-label').classList.remove('required-label--error')
+        }
+      })
+
+      if (this.$el.querySelectorAll('.required-label--error').length > 0) return
+
       if (this.selectedClusterHyperVisorType === 'VMware') {
         this.username = ''
         this.password = ''
@@ -358,7 +372,7 @@ export default {
     color: #ff0000;
     &-label {
       display: none;
-      &--visible {
+      &--error {
         display: block;
       }
     }
