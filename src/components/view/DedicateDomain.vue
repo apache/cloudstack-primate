@@ -75,6 +75,11 @@ export default {
         details: 'min'
       }).then(response => {
         this.domainsList = response.listdomainsresponse.domain
+
+        if (this.domainsList[0]) {
+          this.domainId = this.domainsList[0].id
+          this.handleChangeDomain()
+        }
         this.domainsLoading = false
       }).catch(error => {
         this.$notification.error({
