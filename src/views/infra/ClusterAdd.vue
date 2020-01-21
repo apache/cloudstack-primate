@@ -65,6 +65,18 @@
         </div>
       </a-popover>
 
+      <div class="form__item">
+        <div class="form__label">{{ $t('isDedicated') }}</div>
+        <a-checkbox @change="showDedicated = !showDedicated" />
+      </div>
+
+      <template v-if="showDedicated">
+        <DedicateDomain
+          @domainChange="id => domainId = id"
+          @accountChange="id => dedicatedAccount = id"
+          :error="domainError" />
+      </template>
+
       <template v-if="hypervisor === 'VMware'">
         <a-popover placement="bottom">
           <template slot="content">
@@ -121,9 +133,13 @@
 
 <script>
 import { api } from '@/api'
+import DedicateDomain from '../../components/view/DedicateDomain'
 
 export default {
   name: 'ClusterAdd',
+  components: {
+    DedicateDomain
+  },
   props: {
     resource: {
       type: Object,
@@ -149,7 +165,11 @@ export default {
       ovm3vip: null,
       zonesList: [],
       hypervisorsList: [],
-      podsList: []
+      podsList: [],
+      showDedicated: false,
+      domainId: null,
+      dedicatedAccount: null,
+      domainError: false
     }
   },
   mounted () {
@@ -244,7 +264,10 @@ export default {
         username: this.username,
         password: this.password,
         url: this.url
-      }).then(() => {
+      }).then(response => {
+        if (response.addclusterresponse.cluster[0].id) {
+          this.dedicateCluster(response.addclusterresponse.cluster[0].id)
+        }
         this.loading = false
         this.parentFetchData()
         this.fetchPods()
@@ -259,6 +282,43 @@ export default {
         this.parentFetchData()
         this.parentToggleLoading()
         this.$parent.$parent.close()
+      })
+    },
+    dedicateCluster (clusterId) {
+      this.loading = true
+      api('dedicateCluster', {
+        clusterId,
+        domainId: this.domainId,
+        account: this.dedicatedAccount
+      }).then(response => {
+        this.$pollJob({
+          jobId: response.dedicateclusterresponse.jobid,
+          successMessage: `Successfully dedicated cluster`,
+          successMethod: () => {
+            this.loading = false
+            this.$store.dispatch('AddAsyncJob', {
+              title: 'Successfully dedicated cluster',
+              jobid: response.dedicateclusterresponse.jobid,
+              description: `Domain ID: ${this.dedicatedDomainId}`,
+              status: 'progress'
+            })
+          },
+          errorMessage: 'Failed to dedicate cluster',
+          errorMethod: () => {
+            this.loading = false
+          },
+          loadingMessage: `Dedicating cluster...`,
+          catchMessage: 'Error encountered while fetching async job result',
+          catchMethod: () => {
+            this.loading = false
+          }
+        })
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.errorresponse.errortext
+        })
+        this.loading = false
       })
     },
     resetAllFields () {
