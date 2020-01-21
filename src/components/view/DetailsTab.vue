@@ -28,12 +28,18 @@
         </div>
       </div>
     </a-list-item>
+    <DedicateData :resource="resource" v-if="dedicatedSectionActive" />
   </a-list>
 </template>
 
 <script>
+import DedicateData from './DedicateData'
+
 export default {
   name: 'DetailsTab',
+  components: {
+    DedicateData
+  },
   props: {
     resource: {
       type: Object,
@@ -43,6 +49,15 @@ export default {
       type: Boolean,
       default: false
     }
+  },
+  data () {
+    return {
+      dedicatedRoutes: ['zone', 'pod', 'cluster', 'host'],
+      dedicatedSectionActive: false
+    }
+  },
+  mounted () {
+    if (this.dedicatedRoutes.includes(this.$route.meta.name)) this.dedicatedSectionActive = true
   }
 }
 </script>
