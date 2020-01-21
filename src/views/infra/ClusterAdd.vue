@@ -25,16 +25,16 @@
           same hypervisor.
         </template>
         <div class="form__item">
-        <div class="form__label">{{ $t('hypervisor') }}</div>
-        <a-select v-model="hypervisor" @change="resetAllFields">
-          <a-select-option
-            v-for="hypervisor in hypervisorsList"
-            :value="hypervisor.name"
-            :key="hypervisor.name">
-            {{ hypervisor.name }}
-          </a-select-option>
-        </a-select>
-      </div>
+          <div class="form__label">{{ $t('hypervisor') }}</div>
+          <a-select v-model="hypervisor" @change="resetAllFields">
+            <a-select-option
+              v-for="hypervisor in hypervisorsList"
+              :value="hypervisor.name"
+              :key="hypervisor.name">
+              {{ hypervisor.name }}
+            </a-select-option>
+          </a-select>
+        </div>
       </a-popover>
 
       <a-popover placement="bottom">
@@ -42,16 +42,16 @@
           The pod in which you want to create the cluster
         </template>
         <div class="form__item">
-        <div class="form__label">{{ $t('podname') }}</div>
-        <a-select v-model="podId">
-          <a-select-option
-            v-for="pod in podsList"
-            :value="pod.id"
-            :key="pod.id">
-            {{ pod.name }}
-          </a-select-option>
-        </a-select>
-      </div>
+          <div class="form__label">{{ $t('podname') }}</div>
+          <a-select v-model="podId">
+            <a-select-option
+              v-for="pod in podsList"
+              :value="pod.id"
+              :key="pod.id">
+              {{ pod.name }}
+            </a-select-option>
+          </a-select>
+        </div>
       </a-popover>
 
       <a-popover placement="bottom">
@@ -59,10 +59,10 @@
           Cluster name. Used for display only. For VMWare hypervisor, this must be a predefined name in VCenter.
         </template>
         <div class="form__item">
-        <div class="form__label"><span class="required">* </span>{{ $t('clusternamelabel') }}</div>
-        <span class="required required-label" ref="requiredCluster">Required</span>
-        <a-input v-model="clustername"></a-input>
-      </div>
+          <div class="form__label"><span class="required">* </span>{{ $t('clusternamelabel') }}</div>
+          <span class="required required-label" ref="requiredCluster">Required</span>
+          <a-input v-model="clustername"></a-input>
+        </div>
       </a-popover>
 
       <template v-if="hypervisor === 'VMware'">
@@ -81,9 +81,9 @@
             ID of a user with all administrative privileges on vCenter
           </template>
           <div class="form__item">
-          <div class="form__label">{{ $t('vCenterUsername') }}</div>
-          <a-input v-model="username"></a-input>
-        </div>
+            <div class="form__label">{{ $t('vCenterUsername') }}</div>
+            <a-input v-model="username"></a-input>
+          </div>
         </a-popover>
 
         <a-popover placement="bottom">
@@ -91,9 +91,9 @@
             Password of the user in Username
           </template>
           <div class="form__item">
-          <div class="form__label">{{ $t('vCenterPassword') }}</div>
-          <a-input v-model="password"></a-input>
-        </div>
+            <div class="form__label">{{ $t('vCenterPassword') }}</div>
+            <a-input v-model="password"></a-input>
+          </div>
         </a-popover>
 
         <a-popover placement="bottom">
@@ -101,9 +101,9 @@
             The vCenter datacenter the cluster is in. For example, cloud.dc.VM
           </template>
           <div class="form__item">
-          <div class="form__label">{{ $t('vCenterDataCenter') }}</div>
-          <a-input v-model="dataCenter"></a-input>
-        </div>
+            <div class="form__label">{{ $t('vCenterDataCenter') }}</div>
+            <a-input v-model="dataCenter"></a-input>
+          </div>
         </a-popover>
 
       </template>
