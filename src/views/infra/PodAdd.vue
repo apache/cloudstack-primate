@@ -1,0 +1,324 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+<template>
+  <a-spin :spinning="loading">
+    <a-form :form="form" layout="vertical" class="form">
+
+      <a-popover placement="bottom">
+        <template slot="content">
+          The zone in which you want to create the cluster
+        </template>
+        <div>
+          <a-form-item class="form__item" :label="$t('zone')">
+            <a-select
+              v-decorator="['zoneId', {
+                initialValue: this.zoneId,
+                rules: [{ required: true, message: 'required' }] }
+              ]">
+              <a-select-option
+                v-for="zone in zonesList"
+                :value="zone.id"
+                :key="zone.id">
+                {{ zone.name }}
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+        </div>
+      </a-popover>
+
+      <a-popover placement="bottom">
+        <template slot="content">
+          Set a name for the pod
+        </template>
+        <div>
+          <a-form-item class="form__item" :label="$t('podname')">
+            <a-input
+              v-decorator="[
+                'podName',
+                {
+                  rules: [{ required: true, message: 'required' }]
+                }]"
+            />
+          </a-form-item>
+        </div>
+      </a-popover>
+
+      <a-popover placement="bottom">
+        <template slot="content">
+          The gateway for the hosts in the pod
+        </template>
+        <div>
+          <a-form-item class="form__item" :label="$t('reservedSystemGateway')">
+            <a-input
+              v-decorator="[
+                'gateway',
+                {
+                  rules: [{ required: true, message: 'required' }]
+                }]"
+            />
+          </a-form-item>
+        </div>
+      </a-popover>
+
+      <a-popover placement="bottom">
+        <template slot="content">
+          The network prefix that defines the pod's subnet.
+        </template>
+        <div>
+          <a-form-item class="form__item" :label="$t('reservedSystemNetmask')">
+            <a-input
+              v-decorator="[
+                'netmask',
+                {
+                  rules: [{ required: true, message: 'required' }]
+                }]"
+            />
+          </a-form-item>
+        </div>
+      </a-popover>
+
+      <a-popover placement="bottom">
+        <template slot="content">
+          The first IP address to define a range in the management network that is used to manage various system VMs
+        </template>
+        <div>
+          <a-form-item class="form__item" :label="$t('reservedSystemStartIp')">
+            <a-input
+              v-decorator="[
+                'startIp',
+                {
+                  rules: [{ required: true, message: 'required' }]
+                }]"
+            />
+          </a-form-item>
+        </div>
+      </a-popover>
+
+      <a-popover placement="bottom">
+        <template slot="content">
+          The last IP address to define a range in the management network that is used to manage various system VMs
+        </template>
+        <div>
+          <a-form-item class="form__item" :label="$t('reservedSystemEndIp')">
+            <a-input
+              v-decorator="[
+                'endIp',
+                {
+                  rules: [{ required: true, message: 'required' }]
+                }]"
+            />
+          </a-form-item>
+        </div>
+      </a-popover>
+
+      <div class="form__item">
+        <div class="form__label">{{ $t('isDedicated') }}</div>
+        <a-checkbox @change="showDedicated = !showDedicated" />
+      </div>
+
+      <template v-if="showDedicated">
+        <DedicateDomain
+          @domainChange="id => domainId = id"
+          @accountChange="id => dedicatedAccount = id"
+          :error="domainError" />
+      </template>
+
+      <a-divider></a-divider>
+
+      <div class="actions">
+        <a-button @click="() => this.$parent.$parent.close()">{{ $t('cancel') }}</a-button>
+        <a-button @click="handleSubmit" type="primary">{{ $t('ok') }}</a-button>
+      </div>
+
+    </a-form>
+  </a-spin>
+</template>
+
+<script>
+import { api } from '@/api'
+import DedicateDomain from '../../components/view/DedicateDomain'
+
+export default {
+  name: 'ClusterAdd',
+  components: {
+    DedicateDomain
+  },
+  props: {
+    resource: {
+      type: Object,
+      required: true
+    }
+  },
+  inject: ['parentFetchData'],
+  data () {
+    return {
+      loading: false,
+      zonesList: [],
+      zoneId: null,
+      domainId: null,
+      dedicatedAccount: null,
+      domainError: false,
+      showDedicated: false
+    }
+  },
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
+  },
+  mounted () {
+    this.fetchData()
+  },
+  methods: {
+    fetchData () {
+      this.loading = true
+      this.fetchZones()
+    },
+    fetchZones () {
+      api('listZones').then(response => {
+        this.zonesList = response.listzonesresponse.zone
+        this.zoneId = this.zonesList[0].id
+        this.loading = false
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.errorresponse.errortext
+        })
+        this.loading = false
+      })
+    },
+    handleSubmit (e) {
+      e.preventDefault()
+      this.form.validateFields((err, values) => {
+        if (err) return
+        console.log(values)
+        this.loading = true
+
+        api('createPod', {
+          zoneId: values.zoneId,
+          name: values.podName,
+          gateway: values.gateway,
+          netmask: values.netmask,
+          startIp: values.startIp,
+          endIp: values.endIp
+        }).then(response => {
+          // RESPONSE
+          if (response.addpodresponse.pod[0].id) {
+            this.dedicatePod(response.addpodresponse.pod[0].id)
+          }
+          this.loading = false
+          this.parentFetchData()
+          this.$parent.$parent.close()
+        }).catch(error => {
+          this.$notification.error({
+            message: `Error ${error.response.status}`,
+            description: error.response.data.createpodresponse.errortext
+          })
+          this.loading = false
+          this.parentFetchData()
+          this.$parent.$parent.close()
+        })
+      })
+    },
+    dedicatePod (podId) {
+      this.loading = true
+      api('dedicateCluster', {
+        podId,
+        domainId: this.domainId,
+        account: this.dedicatedAccount
+      }).then(response => {
+        this.$pollJob({
+          jobId: response.dedicatepodresponse.jobid,
+          successMessage: `Successfully dedicated pod`,
+          successMethod: () => {
+            this.loading = false
+            this.$store.dispatch('AddAsyncJob', {
+              title: 'Successfully dedicated pod',
+              jobid: response.dedicatepodresponse.jobid,
+              description: `Domain ID: ${this.dedicatedDomainId}`,
+              status: 'progress'
+            })
+          },
+          errorMessage: 'Failed to dedicate pod',
+          errorMethod: () => {
+            this.loading = false
+          },
+          loadingMessage: `Dedicating cluster...`,
+          catchMessage: 'Error encountered while fetching async job result',
+          catchMethod: () => {
+            this.loading = false
+          }
+        })
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.errorresponse.errortext
+        })
+        this.loading = false
+      })
+    }
+  }
+}
+</script>
+
+<style scoped lang="scss">
+  .form {
+
+    &__label {
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    &__item {
+      margin-bottom: 20px;
+    }
+
+    .ant-select {
+      width: 85vw;
+
+      @media (min-width: 760px) {
+        width: 400px;
+      }
+    }
+
+  }
+
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+
+    button {
+      &:not(:last-child) {
+        margin-right: 10px;
+      }
+    }
+
+  }
+
+  .required {
+    color: #ff0000;
+
+    &-label {
+      display: none;
+
+      &--visible {
+        display: block;
+      }
+
+    }
+
+  }
+</style>
