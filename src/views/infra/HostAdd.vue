@@ -291,8 +291,7 @@ export default {
         }
       }
 
-      this.loading = true
-      api('addHost', {}, 'POST', {
+      const args = {
         zoneid: this.zoneId,
         podid: this.podId,
         clusterid: this.clusterId,
@@ -310,7 +309,11 @@ export default {
         agentusername: this.agentusername,
         agentpassword: this.agentpassword,
         agentport: this.agentport
-      }).then(response => {
+      }
+      Object.keys(args).forEach((key) => (args[key] == null) && delete args[key])
+
+      this.loading = true
+      api('addHost', {}, 'POST', args).then(response => {
         // RESPONSE
         this.loading = false
       }).catch(error => {
