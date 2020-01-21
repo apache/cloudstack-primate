@@ -236,6 +236,12 @@ export default {
             this.parentToggleLoading()
             this.dedicatedDomainId = this.domainId
             this.dedicatedDomainModal = false
+            this.$store.dispatch('AddAsyncJob', {
+              title: 'Successfully dedicated zone',
+              jobid: response.dedicatezoneresponse.jobid,
+              description: `Domain ID: ${this.dedicatedDomainId}`,
+              status: 'progress'
+            })
           },
           errorMessage: 'Failed to dedicate zone',
           errorMethod: () => {
@@ -278,6 +284,12 @@ export default {
             this.parentToggleLoading()
             this.dedicatedDomainId = this.domainId
             this.dedicatedDomainModal = false
+            this.$store.dispatch('AddAsyncJob', {
+              title: 'Successfully dedicated pod',
+              jobid: response.dedicatepodresponse.jobid,
+              description: `Domain ID: ${this.dedicatedDomainId}`,
+              status: 'progress'
+            })
           },
           errorMessage: 'Failed to dedicate pod',
           errorMethod: () => {
@@ -320,6 +332,12 @@ export default {
             this.parentToggleLoading()
             this.dedicatedDomainId = this.domainId
             this.dedicatedDomainModal = false
+            this.$store.dispatch('AddAsyncJob', {
+              title: 'Successfully dedicated cluster',
+              jobid: response.dedicateclusterresponse.jobid,
+              description: `Domain ID: ${this.dedicatedDomainId}`,
+              status: 'progress'
+            })
           },
           errorMessage: 'Failed to dedicate cluster',
           errorMethod: () => {
@@ -362,6 +380,12 @@ export default {
             this.parentToggleLoading()
             this.dedicatedDomainId = this.domainId
             this.dedicatedDomainModal = false
+            this.$store.dispatch('AddAsyncJob', {
+              title: 'Successfully dedicated host',
+              jobid: response.dedicatehostresponse.jobid,
+              description: `Domain ID: ${this.dedicatedDomainId}`,
+              status: 'progress'
+            })
           },
           errorMessage: 'Failed to dedicate host',
           errorMethod: () => {
@@ -397,6 +421,11 @@ export default {
             this.parentFetchData()
             this.parentToggleLoading()
             this.dedicatedDomainId = null
+            this.$store.dispatch('AddAsyncJob', {
+              title: 'Successfully released dedicated zone',
+              jobid: response.releasededicatedzoneresponse.jobid,
+              status: 'progress'
+            })
           },
           errorMessage: 'Failed to release dedicated zone',
           errorMethod: () => {
@@ -429,6 +458,11 @@ export default {
             this.parentFetchData()
             this.parentToggleLoading()
             this.dedicatedDomainId = null
+            this.$store.dispatch('AddAsyncJob', {
+              title: 'Successfully released dedicated pod',
+              jobid: response.releasededicatedpodresponse.jobid,
+              status: 'progress'
+            })
           },
           errorMessage: 'Failed to release dedicated pod',
           errorMethod: () => {
@@ -461,6 +495,11 @@ export default {
             this.parentFetchData()
             this.parentToggleLoading()
             this.dedicatedDomainId = null
+            this.$store.dispatch('AddAsyncJob', {
+              title: 'Successfully released dedicated cluster',
+              jobid: response.releasededicatedclusterresponse.jobid,
+              status: 'progress'
+            })
           },
           errorMessage: 'Failed to release dedicated cluster',
           errorMethod: () => {
@@ -493,6 +532,11 @@ export default {
             this.parentFetchData()
             this.parentToggleLoading()
             this.dedicatedDomainId = null
+            this.$store.dispatch('AddAsyncJob', {
+              title: 'Successfully released dedicated host',
+              jobid: response.releasededicatedhostresponse.jobid,
+              status: 'progress'
+            })
           },
           errorMessage: 'Failed to release dedicated host',
           errorMethod: () => {
