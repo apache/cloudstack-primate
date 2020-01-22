@@ -229,13 +229,12 @@ export default {
         if (err) {
           return
         }
-        this.loading = true
+
         var data = {
           name: values.name
         }
         var url = ''
         var provider = values.provider
-        var zone = ''
         if (provider === 'NFS') {
           url = this.nfsURL(values.server, values.path)
         }
@@ -265,14 +264,14 @@ export default {
             data['details[' + index.toString() + '].value'] = swiftParams[key]
           })
         }
-        if (values.zone) {
-          zone = this.zones.filter(function (zone) { return zone.name === values.zone })
-        }
+
         data.url = url
         data.provider = provider
-        if (provider !== 'Swift') {
-          data.zoneid = zone[0].id
+        if (values.zone && provider !== 'Swift') {
+          data.zoneid = values.zone
         }
+
+        this.loading = true
         api('addImageStore', data).then(json => {
           this.$notification.success({
             message: this.$t('label.add.secondary.storage'),
@@ -295,7 +294,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .form-layout {
-  width: 80vw;
+  width: 85vw;
 
   @media (min-width: 1000px) {
     width: 35vw;
