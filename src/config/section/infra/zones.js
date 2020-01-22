@@ -57,6 +57,9 @@ export default {
   }, {
     name: 'Settings',
     component: () => import('@/components/view/SettingsTab.vue')
+  }, {
+    name: 'resources',
+    component: () => import('@/views/infra/ZoneResources.vue')
   }],
   actions: [
     {
