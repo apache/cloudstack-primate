@@ -20,7 +20,7 @@
     <a-spin :spinning="loading">
       <a-form :form="form" layout="vertical">
         <a-form-item :label="$t('scope')">
-          <a-select v-decorator="['scope']" initialValue="Cluster" @change="val => { this.scope = val }">
+          <a-select v-decorator="['scope', { initialValue: 'Cluster' }]" @change="val => { this.scope = val }">
             <a-select-option :value="$t('clusterid')"> {{ $t('clusterid') }} </a-select-option>
             <a-select-option :value="$t('zonewide')"> {{ $t('zonewide') }} </a-select-option>
           </a-select>
@@ -66,13 +66,17 @@
             </a-select-option>
           </a-select>
         </a-form-item>
-        <div v-if="protocolSelected === 'nfs'">
-          <a-form-item :label="$t('server')">
-            <a-input v-decorator="['server', { rules: [{ required: true, message: 'required' }] }]" />
-          </a-form-item>
-          <a-form-item :label="$t('path')">
-            <a-input v-decorator="['path', { rules: [{ required: true, message: 'required' }] }]" />
-          </a-form-item>
+        <div v-if="protocolSelected === 'nfs' || protocolSelected === 'SharedMountPoint' || protocolSelected === 'Gluster'">
+          <div v-if="protocolSelected !== 'SharedMountPoint'">
+            <a-form-item :label="$t('server')">
+              <a-input v-decorator="['server', { rules: [{ required: true, message: 'required' }] }]" />
+            </a-form-item>
+          </div>
+          <div v-if="protocolSelected !== 'Gluster'">
+            <a-form-item :label="$t('path')">
+              <a-input v-decorator="['path', { rules: [{ required: true, message: 'required' }] }]" />
+            </a-form-item>
+          </div>
         </div>
         <a-form-item :label="$t('providername')">
           <a-select
@@ -88,14 +92,37 @@
           </a-checkbox-group>
         </a-form-item>
         <a-form-item :label="$t('capacityBytes')">
-          <a-input v-decorator="['capacityBytes', { rules: [{ required: true, message: 'required' }] }]" />
+          <a-input v-decorator="['capacityBytes']" />
         </a-form-item>
         <a-form-item :label="$t('capacityIops')">
-          <a-input v-decorator="['capacityIops', { rules: [{ required: true, message: 'required' }] }]" />
+          <a-input v-decorator="['capacityIops']" />
         </a-form-item>
         <a-form-item :label="$t('url')">
-          <a-input v-decorator="['url', { rules: [{ required: true, message: 'required' }] }]" />
+          <a-input v-decorator="['url']" />
         </a-form-item>
+        <div v-if="this.protocolSelected === 'RBD'">
+          <a-form-item :label="$t('radosmonitor')">
+            <a-input v-decorator="['radosmonitor']" />
+          </a-form-item><a-form-item :label="$t('radospool')">
+            <a-input v-decorator="['radospool']" />
+          </a-form-item>
+          <a-form-item :label="$t('radosuser')">
+            <a-input v-decorator="['radosuser']" />
+          </a-form-item>
+          <a-form-item :label="$t('radossecret')">
+            <a-input v-decorator="['radossecret']" />
+          </a-form-item>
+        </div>
+        <div v-if="protocolSelected === 'CLVM'">
+          <a-form-item :label="$t('volumegroup')">
+            <a-input v-decorator="['volumegroup', { rules: [{ required: true, message: 'required'}] }]" />
+          </a-form-item>
+        </div>
+        <div v-if="protocolSelected === 'Gluster'">
+          <a-form-item :label="$t('volume')">
+            <a-input v-decorator="['volume']" />
+          </a-form-item>
+        </div>
         <a-form-item :label="$t('storageTags')">
           <div>
             <template v-for="(tag, idx) in storagetags">
