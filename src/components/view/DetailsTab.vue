@@ -57,7 +57,15 @@ export default {
     }
   },
   mounted () {
-    if (this.dedicatedRoutes.includes(this.$route.meta.name)) this.dedicatedSectionActive = true
+    this.dedicatedSectionActive = this.dedicatedRoutes.includes(this.$route.meta.name)
+  },
+  created () {
+    this.dedicatedSectionActive = this.dedicatedRoutes.includes(this.$route.meta.name)
+  },
+  watch: {
+    $route () {
+      this.dedicatedSectionActive = this.dedicatedRoutes.includes(this.$route.meta.name)
+    }
   }
 }
 </script>
