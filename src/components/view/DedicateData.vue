@@ -24,10 +24,14 @@
             <strong>{{ $t('dedicated') }}</strong>
             <div>Yes</div>
           </div>
-          <div>
-            <strong>{{ $t('domainid') }}</strong>
-            <div>{{ dedicatedDomainId }}</div>
-          </div>
+          <p>
+            <strong>{{ $t('domainid') }}</strong><br/>
+            <router-link :to="{ path: '/domain/' + dedicatedDomainId }">{{ dedicatedDomainId }}</router-link>
+          </p>
+          <p v-if="dedicatedAccountId">
+            <strong>{{ $t('account') }}</strong><br/>
+            <router-link :to="{ path: '/account/' + dedicatedAccountId }">{{ dedicatedAccountId }}</router-link>
+          </p>
           <a-button style="margin-top: 10px;" type="danger" @click="handleRelease">
             {{ releaseButtonLabel }}
           </a-button>
@@ -73,11 +77,16 @@ export default {
       dedicatedButtonLabel: 'Dedicate',
       releaseButtonLabel: 'Release',
       dedicatedModalLabel: 'Dedicate',
-      dedicatedDomainId: null
+      dedicatedDomainId: null,
+      dedicatedAccountId: null
     }
   },
-  mounted () {
-    this.fetchData()
+  watch: {
+    resource (newItem, oldItem) {
+      if (this.resource && this.resource.id && newItem && newItem.id !== oldItem.id) {
+        this.fetchData()
+      }
+    }
   },
   methods: {
     fetchData () {
@@ -113,14 +122,13 @@ export default {
         if (response.listdedicatedzonesresponse.dedicatedzone &&
           response.listdedicatedzonesresponse.dedicatedzone.length > 0) {
           this.dedicatedDomainId = response.listdedicatedzonesresponse.dedicatedzone[0].domainid
+          this.dedicatedAccountId = response.listdedicatedzonesresponse.dedicatedzone[0].accountid
         }
-        this.parentFetchData()
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
-        this.parentFetchData()
       })
     },
     fetchDedicatedPods () {
@@ -130,14 +138,13 @@ export default {
         if (response.listdedicatedpodsresponse.dedicatedpod &&
           response.listdedicatedpodsresponse.dedicatedpod.length > 0) {
           this.dedicatedDomainId = response.listdedicatedpodsresponse.dedicatedpod[0].domainid
+          this.dedicatedAccountId = response.listdedicatedpodsresponse.dedicatedpod[0].accountid
         }
-        this.parentFetchData()
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
-        this.parentFetchData()
       })
     },
     fetchDedicatedClusters () {
@@ -147,14 +154,13 @@ export default {
         if (response.listdedicatedclustersresponse.dedicatedcluster &&
           response.listdedicatedclustersresponse.dedicatedcluster.length > 0) {
           this.dedicatedDomainId = response.listdedicatedclustersresponse.dedicatedcluster[0].domainid
+          this.dedicatedAccountId = response.listdedicatedclustersresponse.dedicatedcluster[0].accountid
         }
-        this.parentFetchData()
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
-        this.parentFetchData()
       })
     },
     fetchDedicatedHosts () {
@@ -164,14 +170,13 @@ export default {
         if (response.listdedicatedhostsresponse.dedicatedhost &&
           response.listdedicatedhostsresponse.dedicatedhost.length > 0) {
           this.dedicatedDomainId = response.listdedicatedhostsresponse.dedicatedhost[0].domainid
+          this.dedicatedAccountId = response.listdedicatedhostsresponse.dedicatedhost[0].accountid
         }
-        this.parentFetchData()
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
-        this.parentFetchData()
       })
     },
     releaseDedidcatedZone () {
