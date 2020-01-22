@@ -78,7 +78,7 @@ export default {
 
         if (this.domainsList[0]) {
           this.domainId = this.domainsList[0].id
-          this.handleChangeDomain()
+          this.handleChangeDomain(this.domainId)
         }
         this.domainsLoading = false
       }).catch(error => {
@@ -93,7 +93,10 @@ export default {
       api('listAccounts', {
         domainid: this.domainId
       }).then(response => {
-        this.accountsList = response.listaccountsresponse.account
+        this.accountsList = response.listaccountsresponse.account || []
+        if (this.accountsList && this.accountsList.length === 0) {
+          this.handleChangeAccount(null)
+        }
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
