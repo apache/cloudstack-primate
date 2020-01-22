@@ -33,6 +33,7 @@
 </template>
 
 <script>
+
 import DedicateData from './DedicateData'
 
 export default {
@@ -52,12 +53,16 @@ export default {
   },
   data () {
     return {
-      dedicatedRoutes: ['zone', 'pod', 'cluster', 'host'],
       dedicatedSectionActive: false
     }
   },
-  mounted () {
-    if (this.dedicatedRoutes.includes(this.$route.meta.name)) this.dedicatedSectionActive = true
+  created () {
+    this.dedicatedSectionActive = ['zone', 'pod', 'cluster', 'host'].includes(this.$route.meta.name)
+  },
+  watch: {
+    $route () {
+      this.dedicatedSectionActive = ['zone', 'pod', 'cluster', 'host'].includes(this.$route.meta.name)
+    }
   }
 }
 </script>

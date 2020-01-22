@@ -76,8 +76,12 @@ export default {
       dedicatedDomainId: null
     }
   },
-  mounted () {
-    this.fetchData()
+  watch: {
+    resource (newItem, oldItem) {
+      if (this.resource && this.resource.id && newItem && newItem.id !== oldItem.id) {
+        this.fetchData()
+      }
+    }
   },
   methods: {
     fetchData () {
@@ -114,13 +118,11 @@ export default {
           response.listdedicatedzonesresponse.dedicatedzone.length > 0) {
           this.dedicatedDomainId = response.listdedicatedzonesresponse.dedicatedzone[0].domainid
         }
-        this.parentFetchData()
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
-        this.parentFetchData()
       })
     },
     fetchDedicatedPods () {
@@ -131,13 +133,11 @@ export default {
           response.listdedicatedpodsresponse.dedicatedpod.length > 0) {
           this.dedicatedDomainId = response.listdedicatedpodsresponse.dedicatedpod[0].domainid
         }
-        this.parentFetchData()
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
-        this.parentFetchData()
       })
     },
     fetchDedicatedClusters () {
@@ -148,13 +148,11 @@ export default {
           response.listdedicatedclustersresponse.dedicatedcluster.length > 0) {
           this.dedicatedDomainId = response.listdedicatedclustersresponse.dedicatedcluster[0].domainid
         }
-        this.parentFetchData()
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
-        this.parentFetchData()
       })
     },
     fetchDedicatedHosts () {
@@ -165,13 +163,11 @@ export default {
           response.listdedicatedhostsresponse.dedicatedhost.length > 0) {
           this.dedicatedDomainId = response.listdedicatedhostsresponse.dedicatedhost[0].domainid
         }
-        this.parentFetchData()
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
-        this.parentFetchData()
       })
     },
     releaseDedidcatedZone () {
