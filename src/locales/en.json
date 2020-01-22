@@ -1030,6 +1030,7 @@
 "zoneid": "Zone",
 "zonename": "Zone",
 "zonenamelabel": "Zone Name",
+"zonewide": "Zone-Wide",
 "instance": "Instance",
 "yourInstance": "Your instance",
 "newInstance": "New instance",
