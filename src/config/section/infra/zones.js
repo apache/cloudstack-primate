@@ -168,7 +168,7 @@ export default {
       icon: 'block',
       label: 'label.add.vmware.datacenter',
       dataView: true,
-      show: (record) => { return !record.vmwaredcid },
+      show: record => record.vmwaredcs && !record.vmwaredcs.length > 0,
       args: ['zoneid', 'name', 'vcenter', 'username', 'password'],
       mapping: {
         zoneid: {
@@ -181,7 +181,7 @@ export default {
       icon: 'block',
       label: 'label.update.vmware.datacenter',
       dataView: true,
-      show: (record) => { return record.vmwaredcid },
+      show: record => record.vmwaredcs && record.vmwaredcs.length > 0,
       args: ['zoneid', 'name', 'vcenter', 'username', 'password'],
       mapping: {
         zoneid: {
@@ -194,7 +194,7 @@ export default {
       icon: 'minus-square',
       label: 'label.remove.vmware.datacenter',
       dataView: true,
-      show: (record) => { return record.vmwaredcid },
+      show: record => record.vmwaredcs && record.vmwaredcs.length > 0,
       args: ['zoneid'],
       mapping: {
         zoneid: {
