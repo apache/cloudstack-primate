@@ -46,7 +46,7 @@ export default {
   },
   data () {
     return {
-      vmwaredc: {}
+      vmwaredc: null
     }
   },
   watch: {
@@ -62,6 +62,7 @@ export default {
   methods: {
     fetchData () {
       if (!this.resource.id) return
+      this.$set(this.resource, 'vmwaredc', null)
       api('listVmwareDcs', {
         zoneid: this.resource.id
       }).then(response => {
