@@ -55,7 +55,10 @@ export default {
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
   }, {
-    name: 'Settings',
+    name: 'resources',
+    component: () => import('@/views/infra/ZoneResources.vue')
+  }, {
+    name: 'settings',
     component: () => import('@/components/view/SettingsTab.vue')
   }],
   actions: [
@@ -168,7 +171,7 @@ export default {
       icon: 'block',
       label: 'label.add.vmware.datacenter',
       dataView: true,
-      show: (record) => { return !record.vmwaredcid },
+      show: record => !record.vmwaredc,
       args: ['zoneid', 'name', 'vcenter', 'username', 'password'],
       mapping: {
         zoneid: {
@@ -181,7 +184,7 @@ export default {
       icon: 'block',
       label: 'label.update.vmware.datacenter',
       dataView: true,
-      show: (record) => { return record.vmwaredcid },
+      show: record => record.vmwaredc,
       args: ['zoneid', 'name', 'vcenter', 'username', 'password'],
       mapping: {
         zoneid: {
@@ -194,7 +197,7 @@ export default {
       icon: 'minus-square',
       label: 'label.remove.vmware.datacenter',
       dataView: true,
-      show: (record) => { return record.vmwaredcid },
+      show: record => record.vmwaredc,
       args: ['zoneid'],
       mapping: {
         zoneid: {
