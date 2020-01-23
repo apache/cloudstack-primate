@@ -55,7 +55,7 @@ export default {
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
   }, {
-    name: 'resources',
+    name: 'capacity',
     component: () => import('@/views/infra/ZoneResources.vue')
   }, {
     name: 'settings',
