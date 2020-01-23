@@ -16,19 +16,19 @@
 // under the License.
 
 <template>
-  <a-list-item v-if="vmwaredcsList.length > 0">
+  <a-list-item v-if="vmwaredc">
     <div>
       <div style="margin-bottom: 10px;">
         <div><strong>{{ $t('vmwaredcName') }}</strong></div>
-        <div>{{ vmwaredcsList[0].name }}</div>
+        <div>{{ vmwaredc.name }}</div>
       </div>
       <div style="margin-bottom: 10px;">
         <div><strong>{{ $t('vmwaredcVcenter') }}</strong></div>
-        <div>{{ vmwaredcsList[0].vcenter }}</div>
+        <div>{{ vmwaredc.vcenter }}</div>
       </div>
       <div style="margin-bottom: 10px;">
         <div><strong>{{ $t('vmwaredcId') }}</strong></div>
-        <div>{{ vmwaredcsList[0].id }}</div>
+        <div>{{ vmwaredc.id }}</div>
       </div>
     </div>
   </a-list-item>
@@ -46,7 +46,7 @@ export default {
   },
   data () {
     return {
-      vmwaredcsList: []
+      vmwaredc: {}
     }
   },
   watch: {
@@ -66,9 +66,9 @@ export default {
         zoneid: this.resource.id
       }).then(response => {
         if (response.listvmwaredcsresponse.VMwareDC && response.listvmwaredcsresponse.VMwareDC.length > 0) {
-          this.vmwaredcsList = response.listvmwaredcsresponse.VMwareDC
+          this.vmwaredc = response.listvmwaredcsresponse.VMwareDC[0]
         }
-        this.$set(this.resource, 'vmwaredcs', this.vmwaredcsList)
+        this.$set(this.resource, 'vmwaredc', this.vmwaredc)
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
