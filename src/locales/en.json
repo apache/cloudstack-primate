@@ -598,6 +598,8 @@
 "label.outofbandmanagement.disable": "Disable Out-of-band Management",
 "label.outofbandmanagement.enable": "Enable Out-of-band Management",
 "label.primary.storage":"Primary Storage",
+"label.primary.storage.allocated":"Primary Storage Allocated",
+"label.primary.storage.used":"Primary Storage Used",
 "label.project.invitation": "Project Invitations",
 "label.public.ips":"Public IP Addresses",
 "label.quota.add.credits": "Add Credits",

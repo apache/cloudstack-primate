@@ -16,20 +16,27 @@
 // under the License.
 
 <template>
-  <a-list>
-    <a-list-item v-for="item in resourcesList" :key="item.id" class="list-item">
-      <div class="list-item__container">
-        <div class="list-item__data list-item__title">{{ returnCapacityTitle(item.type) }}</div>
-        <div class="list-item__vals">
-          <div class="list-item__data">
-            Allocated:
-            {{ convertByType(item.type, item.capacityused) }}/{{ convertByType(item.type, item.capacitytotal) }}
+  <a-spin :spinning="fetchLoading">
+    <a-list>
+      <a-list-item v-for="item in resourcesList" :key="item.id" class="list-item">
+        <div class="list-item__container">
+          <div class="list-item__data list-item__title">{{ returnCapacityTitle(item.type) }}</div>
+          <div class="list-item__vals">
+            <div class="list-item__data">
+              Allocated:
+              {{ convertByType(item.type, item.capacityused) }} / {{ convertByType(item.type, item.capacitytotal) }}
+            </div>
+            <a-progress
+              status="normal"
+              strokeWidth="10"
+              style="margin-top: -2px"
+              :percent="parseFloat(item.percentused)"
+              :format="p => parseFloat(item.percentused).toFixed(2) + '%'" />
           </div>
-          <a-progress :percent="parseFloat(item.percentused)" status="normal" />
         </div>
-      </div>
-    </a-list-item>
-  </a-list>
+      </a-list-item>
+    </a-list>
+  </a-spin>
 </template>
 
 <script>
@@ -45,13 +52,14 @@ export default {
   },
   watch: {
     resource (newItem, oldItem) {
-      if (this.resource && this.resource.id && newItem && newItem.id !== oldItem.id) {
+      if (this.resource && this.resource.id) {
         this.fetchData()
       }
     }
   },
   data () {
     return {
+      fetchLoading: false,
       resourcesList: []
     }
   },
@@ -60,6 +68,7 @@ export default {
   },
   methods: {
     fetchData () {
+      this.fetchLoading = true
       api('listCapacity', {
         zoneid: this.resource.id
       }).then(response => {
@@ -70,6 +79,8 @@ export default {
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
+      }).finally(() => {
+        this.fetchLoading = false
       })
     },
     animatePercentVals () {
@@ -82,15 +93,15 @@ export default {
       })
     },
     convertBytes (val) {
-      if (val < 1024 * 1024) return `${(val / 1024).toFixed(2)}KB`
-      if (val < 1024 * 1024 * 1024) return `${(val / 1024 / 1024).toFixed(2)}MB`
-      if (val < 1024 * 1024 * 1024 * 1024) return `${(val / 1024 / 1024 / 1024).toFixed(2)}GB`
-      if (val < 1024 * 1024 * 1024 * 1024 * 1024) return `${(val / 1024 / 1024 / 1024 / 1024).toFixed(2)}TB`
+      if (val < 1024 * 1024) return `${(val / 1024).toFixed(2)} KB`
+      if (val < 1024 * 1024 * 1024) return `${(val / 1024 / 1024).toFixed(2)} MB`
+      if (val < 1024 * 1024 * 1024 * 1024) return `${(val / 1024 / 1024 / 1024).toFixed(2)} GB`
+      if (val < 1024 * 1024 * 1024 * 1024 * 1024) return `${(val / 1024 / 1024 / 1024 / 1024).toFixed(2)} TB`
       return val
     },
     convertHz (val) {
-      if (val < 1000) return `${val}Mhz`
-      return `${(val / 1000).toFixed(2)}GHz`
+      if (val < 1000) return `${val} Mhz`
+      return `${(val / 1000).toFixed(2)} GHz`
     },
     convertByType (type, val) {
       switch (type) {
@@ -108,8 +119,8 @@ export default {
       switch (type) {
         case 0: return this.$t('label.memory')
         case 1: return this.$t('label.cpu')
-        case 2: return this.$t('label.storage')
-        case 3: return this.$t('label.primary.storage')
+        case 2: return this.$t('label.primary.storage.used')
+        case 3: return this.$t('label.primary.storage.allocated')
         case 4: return this.$t('label.public.ips')
         case 5: return this.$t('label.management.ips')
         case 6: return this.$t('label.secondary.storage')
@@ -144,7 +155,6 @@ export default {
       @media (min-width: 760px) {
         max-width: 95%;
       }
-
     }
 
     &__title {
@@ -157,12 +167,9 @@ export default {
     }
 
     &__vals {
-
       @media (min-width: 760px) {
         display: flex;
       }
-
     }
-
   }
 </style>
