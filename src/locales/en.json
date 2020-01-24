@@ -998,7 +998,7 @@
 "vlanId": "VLAN/VNI ID",
 "vlanRange": "VLAN/VNI Range",
 "vlanname": "VLAN",
-"vlanrange": "VLAN/VNI Range(s)",
+"vlanrange": "VLAN/VNI Range",
 "vm": "VM",
 "vmLimit": "Instance Limits",
 "vmTotal": "Instances",

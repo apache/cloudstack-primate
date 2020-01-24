@@ -17,8 +17,7 @@
 
 <template>
   <a-spin :spinning="fetchLoading">
-    <a-button type="primary" @click="handleOpenModal">{{ $t('label.dedicate.vlan.vni.range') }}</a-button>
-    <a-divider></a-divider>
+    <a-button type="dashed" icon="plus" style="width: 100%" @click="handleOpenModal">{{ $t('label.dedicate.vlan.vni.range') }}</a-button>
     <a-list class="list">
       <a-list-item v-for="item in items" :key="item.id" class="list__item">
         <div class="list__item-outer-container">
@@ -268,7 +267,7 @@ export default {
         id: item.id
       }).then(response => {
         this.$store.dispatch('AddAsyncJob', {
-          title: `Deleted ${item.id}`,
+          title: `Deleted dedicated VLAN/VNI range ${item.guestvlanrange} for ${item.account}`,
           jobid: response.releasededicatedguestvlanrangeresponse.jobid,
           status: 'progress'
         })
@@ -361,7 +360,6 @@ export default {
         margin-right: 20px;
       }
     }
-
   }
 
   &__item {
@@ -380,10 +378,7 @@ export default {
         flex-direction: row;
         margin-bottom: 10px;
       }
-
     }
-
   }
-
 }
 </style>
