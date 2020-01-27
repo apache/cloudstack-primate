@@ -16,32 +16,22 @@
 // under the License.
 
 <template>
-  <a-list
-    size="small"
-    :dataSource="$route.meta.details">
-    <a-list-item slot="renderItem" slot-scope="item" v-if="item in resource">
-      <div>
-        <strong>{{ $t(item) }}</strong>
-        <br/>
-        <div>
-          {{ resource[item] }}
-        </div>
-      </div>
-    </a-list-item>
-    <DedicateData :resource="resource" v-if="dedicatedSectionActive" />
-    <VmwareData :resource="resource" v-if="$route.meta.name === 'zone'" />
-  </a-list>
+  <a-spin :spinning="fetchLoading">
+    <a-button type="dashed" style="width: 100%" icon="plus" @click="todo()">Add ACL: show modal/form and run this.. createNetworkACL</a-button>
+    <div v-for="(acl, index) in acls" :key="index">
+      {{ acl }}
+    </div>
+  </a-spin>
 </template>
 
 <script>
-import DedicateData from './DedicateData'
-import VmwareData from './VmwareData'
+import { api } from '@/api'
+import Status from '@/components/widgets/Status'
 
 export default {
-  name: 'DetailsTab',
+  name: 'AclListRulesTab',
   components: {
-    DedicateData,
-    VmwareData
+    Status
   },
   props: {
     resource: {
@@ -55,16 +45,38 @@ export default {
   },
   data () {
     return {
-      dedicatedSectionActive: false
+      acls: [],
+      fetchLoading: false
     }
   },
-  created () {
-    this.dedicatedSectionActive = ['zone', 'pod', 'cluster', 'host'].includes(this.$route.meta.name)
+  mounted () {
+    this.fetchData()
   },
   watch: {
-    $route () {
-      this.dedicatedSectionActive = ['zone', 'pod', 'cluster', 'host'].includes(this.$route.meta.name)
+    loading (newData, oldData) {
+      if (!newData && this.resource.id) {
+        this.fetchData()
+      }
+    }
+  },
+  methods: {
+    fetchData () {
+      this.fetchLoading = true
+      api('listNetworkACLs', { aclid: this.resource.id }).then(json => {
+        this.acls = json.listnetworkaclsresponse.networkacl
+      }).catch(error => {
+        this.$notification.error({
+          message: 'Request Failed',
+          description: error.response.headers['x-description']
+        })
+      }).finally(() => {
+        this.fetchLoading = false
+      })
     }
   }
 }
 </script>
+
+<style lang="less" scoped>
+
+</style>

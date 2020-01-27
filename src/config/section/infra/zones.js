@@ -55,7 +55,10 @@ export default {
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
   }, {
-    name: 'Settings',
+    name: 'resources',
+    component: () => import('@/views/infra/ZoneResources.vue')
+  }, {
+    name: 'settings',
     component: () => import('@/components/view/SettingsTab.vue')
   }],
   actions: [
@@ -98,32 +101,6 @@ export default {
       dataView: true,
       defaultArgs: { allocationstate: 'Enabled' },
       show: (record) => { return record.allocationstate === 'Disabled' }
-    },
-    {
-      api: 'dedicateZone',
-      icon: 'user-add',
-      label: 'label.dedicate.zone',
-      dataView: true,
-      show: (record) => { return !record.domainid },
-      args: ['zoneid', 'domainid', 'account'],
-      mapping: {
-        zoneid: {
-          value: (record) => { return record.id }
-        }
-      }
-    },
-    {
-      api: 'releaseDedicatedZone',
-      icon: 'user-delete',
-      label: 'label.release.dedicated.zone',
-      dataView: true,
-      show: (record) => { return record.domainid },
-      args: ['zoneid'],
-      mapping: {
-        zoneid: {
-          value: (record) => { return record.id }
-        }
-      }
     },
     {
       api: 'enableOutOfBandManagementForZone',
@@ -194,7 +171,7 @@ export default {
       icon: 'block',
       label: 'label.add.vmware.datacenter',
       dataView: true,
-      show: (record) => { return !record.vmwaredcid },
+      show: record => !record.vmwaredc,
       args: ['zoneid', 'name', 'vcenter', 'username', 'password'],
       mapping: {
         zoneid: {
@@ -207,8 +184,8 @@ export default {
       icon: 'block',
       label: 'label.update.vmware.datacenter',
       dataView: true,
-      show: (record) => { return record.vmwaredcid },
-      args: ['zoneid', 'name', 'vcenter', 'username', 'password', 'isrecursive'],
+      show: record => record.vmwaredc,
+      args: ['zoneid', 'name', 'vcenter', 'username', 'password'],
       mapping: {
         zoneid: {
           value: (record) => { return record.id }
@@ -220,7 +197,7 @@ export default {
       icon: 'minus-square',
       label: 'label.remove.vmware.datacenter',
       dataView: true,
-      show: (record) => { return record.vmwaredcid },
+      show: record => record.vmwaredc,
       args: ['zoneid'],
       mapping: {
         zoneid: {

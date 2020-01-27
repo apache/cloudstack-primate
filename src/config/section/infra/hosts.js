@@ -23,7 +23,14 @@ export default {
   resourceType: 'Host',
   params: { type: 'routing' },
   columns: ['name', 'state', 'resourcestate', 'powerstate', 'ipaddress', 'hypervisor', 'instances', 'cpunumber', 'cputotalghz', 'cpuusedghz', 'cpuallocatedghz', 'memorytotalgb', 'memoryusedgb', 'memoryallocatedgb', 'networkread', 'networkwrite', 'clustername', 'zonename'],
-  details: ['name', 'id', 'resourcestate', 'ipaddress', 'hypervisor', 'hypervisorversion', 'version', 'type', 'oscategoryname', 'hosttags', 'clustername', 'podname', 'zonename', 'created'],
+  details: ['name', 'id', 'resourcestate', 'ipaddress', 'hypervisor', 'type', 'clustername', 'podname', 'zonename', 'disconnected', 'created'],
+  tabs: [{
+    name: 'details',
+    component: () => import('@/components/view/DetailsTab.vue')
+  }, {
+    name: 'Config',
+    component: () => import('@/views/infra/HostInfoTab.vue')
+  }],
   related: [{
     name: 'vm',
     title: 'Instances',
@@ -42,7 +49,12 @@ export default {
       icon: 'edit',
       label: 'label.edit',
       dataView: true,
-      args: ['hosttags', 'oscategoryid']
+      args: ['hosttags', 'oscategoryid'],
+      mapping: {
+        oscategoryid: {
+          api: 'listOsCategories'
+        }
+      }
     },
     {
       api: 'provisionCertificate',
@@ -79,32 +91,6 @@ export default {
       dataView: true,
       defaultArgs: { allocationstate: 'Enable' },
       show: (record) => { return record.resourcestate === 'Disabled' }
-    },
-    {
-      api: 'dedicateHost',
-      icon: 'user-add',
-      label: 'label.dedicate.host',
-      dataView: true,
-      show: (record) => { return !record.domainid },
-      args: ['hostid', 'domainid', 'account'],
-      mapping: {
-        hostid: {
-          value: (record) => { return record.id }
-        }
-      }
-    },
-    {
-      api: 'releaseDedicatedHost',
-      icon: 'user-delete',
-      label: 'label.release.dedicated.host',
-      dataView: true,
-      show: (record) => { return record.domainid },
-      args: ['hostid'],
-      mapping: {
-        hostid: {
-          value: (record) => { return record.id }
-        }
-      }
     },
     {
       api: 'prepareHostForMaintenance',
@@ -205,9 +191,13 @@ export default {
       label: 'label.ha.configure',
       dataView: true,
       args: ['hostid', 'provider'],
+      show: (record) => { return ['KVM'].includes(record.hypervisor) },
       mapping: {
         hostid: {
           value: (record) => { return record.id }
+        },
+        provider: {
+          options: ['KVMHAProvider']
         }
       }
     },

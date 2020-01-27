@@ -16,33 +16,43 @@
 // under the License.
 
 export default {
-  name: 'imagestore',
-  title: 'Secondary Storages',
-  icon: 'picture',
-  permission: ['listImageStores'],
-  columns: ['name', 'url', 'protocol', 'scope', 'zonename'],
-  details: ['name', 'id', 'url', 'protocol', 'provider', 'scope', 'zonename'],
+  name: 'nsp',
+  title: 'Network Service Providers',
+  icon: 'compass',
+  hidden: true,
+  permission: ['listNetworkServiceProviders'],
+  columns: ['name', 'state', 'physicalnetworkid'],
+  details: ['name', 'state', 'servicelist', 'canenableindividualservice', 'physicalnetworkid'],
   tabs: [{
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
-  }, {
-    name: 'Settings',
-    component: () => import('@/components/view/SettingsTab.vue')
   }],
   actions: [
     {
-      api: 'addImageStore',
-      icon: 'plus',
-      label: 'label.add.secondary.storage',
-      listView: true,
-      popup: true,
-      component: () => import('@/views/infra/AddSecondaryStorage.vue')
+      api: 'updateNetworkServiceProvider',
+      icon: 'stop',
+      label: 'Disable Provider',
+      dataView: true,
+      args: ['state'],
+      show: (record) => { return record.state === 'Enabled' },
+      mapping: {
+        state: {
+          value: (record) => { return 'Disabled' }
+        }
+      }
     },
     {
-      api: 'deleteImageStore',
-      icon: 'delete',
-      label: 'label.action.delete.secondary.storage',
-      dataView: true
+      api: 'updateNetworkServiceProvider',
+      icon: 'right-circle',
+      label: 'Enable Provider',
+      dataView: true,
+      args: ['state'],
+      show: (record) => { return record.state === 'Disabled' },
+      mapping: {
+        state: {
+          value: (record) => { return 'Enabled' }
+        }
+      }
     }
   ]
 }

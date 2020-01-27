@@ -152,7 +152,7 @@ export default {
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
         name: 'Tiers',
-        component: () => import('@/views/network/VpcTiers.vue')
+        component: () => import('@/views/network/VpcTiersTab.vue')
       }],
       actions: [
         {
@@ -260,12 +260,8 @@ export default {
           label: 'Enable Static NAT',
           dataView: true,
           show: (record) => { return !record.virtualmachineid && !record.issourcenat },
-          args: ['ipaddressid', 'virtualmachineid', 'vmguestip'],
-          mapping: {
-            ipaddressid: {
-              value: (record) => { return record.id }
-            }
-          }
+          popup: true,
+          component: () => import('@/views/network/EnableStaticNat.vue')
         },
         {
           api: 'disableStaticNat',
@@ -330,7 +326,35 @@ export default {
       permission: ['listNetworkACLLists'],
       columns: ['name', 'description', 'id'],
       details: ['name', 'description', 'id'],
+      tabs: [{
+        name: 'details',
+        component: () => import('@/components/view/DetailsTab.vue')
+      }, {
+        name: 'ACL List Rules',
+        component: () => import('@/views/network/AclListRulesTab.vue'),
+        show: () => true
+      }],
       actions: [
+        {
+          api: 'createNetworkACLList',
+          icon: 'plus',
+          label: 'Add ACL List',
+          listView: true,
+          args: ['name', 'description', 'vpcid']
+        },
+        {
+          api: 'updateNetworkACLList',
+          icon: 'edit',
+          label: 'Edit ACL List',
+          dataView: true,
+          args: ['name', 'description']
+        },
+        {
+          api: 'deleteNetworkACLList',
+          icon: 'delete',
+          label: 'Delete ACL List',
+          dataView: true
+        }
       ]
     },
     {
