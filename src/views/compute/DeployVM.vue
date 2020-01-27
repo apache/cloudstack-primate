@@ -25,80 +25,97 @@
             @submit="handleSubmit"
             layout="vertical"
           >
-            <a-form-item :label="this.$t('name')">
-              <a-input
-                v-decorator="['name']"
-                :placeholder="this.$t('vm.name.description')"
-              />
-            </a-form-item>
-
-            <a-form-item :label="this.$t('zoneid')">
-              <a-select
-                v-decorator="['zoneid', {
-                  rules: [{ required: true, message: 'Please select option' }]
-                }]"
-                :placeholder="this.$t('vm.zone.description')"
-                :options="zoneSelectOptions"
-                @change="onSelectZoneId"
-              ></a-select>
-            </a-form-item>
-
             <a-collapse
-              :accordion="true"
-              defaultActiveKey="templates"
-              @change="onTemplatesIsosCollapseChange"
+              :accordion="false"
+              :bordered="false"
+              defaultActiveKey="basic"
             >
-              <a-collapse-panel :header="this.$t('Templates')" key="templates">
-                <template-iso-selection
-                  input-decorator="templateid"
-                  :items="options.templates"
-                ></template-iso-selection>
+              <a-collapse-panel :header="this.$t('BasicSetup')" key="basic">
+                <a-form-item :label="this.$t('name')">
+                  <a-input
+                    v-decorator="['name']"
+                    :placeholder="this.$t('vm.name.description')"
+                  />
+                </a-form-item>
+
+                <a-form-item :label="this.$t('zoneid')">
+                  <a-select
+                    v-decorator="['zoneid', {
+                      rules: [{ required: true, message: 'Please select option' }]
+                    }]"
+                    :placeholder="this.$t('vm.zone.description')"
+                    :options="zoneSelectOptions"
+                    @change="onSelectZoneId"
+                  ></a-select>
+                </a-form-item>
+              </a-collapse-panel>
+
+              <a-collapse-panel :header="this.$t('templateIso')" key="templates-isos">
+                <a-collapse
+                  :accordion="true"
+                  defaultActiveKey="templates"
+                  @change="onTemplatesIsosCollapseChange"
+                >
+                  <a-collapse-panel :header="this.$t('Templates')" key="templates">
+                    <template-iso-selection
+                      input-decorator="templateid"
+                      :items="options.templates"
+                    ></template-iso-selection>
+                    <disk-size-selection
+                      input-decorator="rootdisksize"
+                    ></disk-size-selection>
+                  </a-collapse-panel>
+
+                  <a-collapse-panel :header="this.$t('ISOs')" key="isos">
+                    <template-iso-selection
+                      input-decorator="isoid"
+                      :items="options.isos"
+                    ></template-iso-selection>
+                  </a-collapse-panel>
+                </a-collapse>
+              </a-collapse-panel>
+
+              <a-collapse-panel :header="this.$t('serviceOfferingId')" key="compute">
+                <compute-selection
+                  :compute-items="options.serviceOfferings"
+                  :value="serviceOffering ? serviceOffering.id : ''"
+                  @select-compute-item="($event) => updateComputeOffering($event)"
+                ></compute-selection>
+              </a-collapse-panel>
+
+              <a-collapse-panel :header="this.$t('diskOfferingId')" key="disk">
+                <disk-offering-selection
+                  :items="options.diskOfferings"
+                  :value="diskOffering ? diskOffering.id : ''"
+                  @select-disk-offering-item="($event) => updateDiskOffering($event)"
+                ></disk-offering-selection>
                 <disk-size-selection
-                  input-decorator="rootdisksize"
+                  v-if="diskOffering && diskOffering.iscustomized"
+                  input-decorator="size"
                 ></disk-size-selection>
               </a-collapse-panel>
 
-              <a-collapse-panel :header="this.$t('ISOs')" key="isos">
-                <template-iso-selection
-                  input-decorator="isoid"
-                  :items="options.isos"
-                ></template-iso-selection>
+              <a-collapse-panel :header="this.$t('Affinity Groups')" key="affinity">
+                <affinity-group-selection
+                  :items="options.affinityGroups"
+                  :value="affinityGroupIds"
+                  @select-affinity-group-item="($event) => updateAffinityGroups($event)"
+                ></affinity-group-selection>
+              </a-collapse-panel>
+
+              <a-collapse-panel :header="this.$t('networks')" key="networks">
+                <network-selection
+                  :items="options.networks"
+                  :value="networkOfferingIds"
+                  @select-network-item="($event) => updateNetworks($event)"
+                ></network-selection>
+
+                <network-configuration
+                  v-if="networks.length > 0"
+                  :items="networks"
+                ></network-configuration>
               </a-collapse-panel>
             </a-collapse>
-
-            <compute-selection
-              :compute-items="options.serviceOfferings"
-              :value="serviceOffering ? serviceOffering.id : ''"
-              @select-compute-item="($event) => updateComputeOffering($event)"
-            ></compute-selection>
-
-            <disk-offering-selection
-              :items="options.diskOfferings"
-              :value="diskOffering ? diskOffering.id : ''"
-              @select-disk-offering-item="($event) => updateDiskOffering($event)"
-            ></disk-offering-selection>
-
-            <disk-size-selection
-              v-if="diskOffering && diskOffering.iscustomized"
-              input-decorator="size"
-            ></disk-size-selection>
-
-            <affinity-group-selection
-              :items="options.affinityGroups"
-              :value="affinityGroupIds"
-              @select-affinity-group-item="($event) => updateAffinityGroups($event)"
-            ></affinity-group-selection>
-
-            <network-selection
-              :items="options.networks"
-              :value="networkOfferingIds"
-              @select-network-item="($event) => updateNetworks($event)"
-            ></network-selection>
-
-            <network-configuration
-              v-if="networks.length > 0"
-              :items="networks"
-            ></network-configuration>
 
             <div class="card-footer">
               <!-- ToDo extract as component -->
@@ -436,10 +453,18 @@ export default {
 </style>
 
 <style lang="less">
+  @import url('../../style/index');
+
   .ant-table-selection-column {
     // Fix for the table header if the row selection use radio buttons instead of checkboxes
     > div:empty {
       width: 16px;
     }
+  }
+  .ant-collapse-borderless > .ant-collapse-item {
+    /*border: 1px solid #e8e8e8;*/
+    border: 1px solid @border-color-split;
+    border-radius: @border-radius-base;
+    margin: 1.2rem;
   }
 </style>

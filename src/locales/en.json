@@ -1061,5 +1061,7 @@
 "isSelf": "Self",
 "isShared": "Shared",
 "networks": "Networks",
+"BasicSetup": "Basic setup",
+"templateIso": "Template/ISO",
 "wednesday": "Wednesday"
 }
