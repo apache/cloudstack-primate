@@ -462,9 +462,8 @@ export default {
     }
   }
   .ant-collapse-borderless > .ant-collapse-item {
-    /*border: 1px solid #e8e8e8;*/
     border: 1px solid @border-color-split;
     border-radius: @border-radius-base;
-    margin: 1.2rem;
+    margin: 0 0 1.2rem;
   }
 </style>
