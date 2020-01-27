@@ -17,18 +17,31 @@
 
 <template>
   <a-spin :spinning="fetchLoading">
-    <a-tabs :animated="false" defaultActiveKey="0" tabPosition="left">
+    <a-tabs defaultActiveKey="0" tabPosition="top" type="card">
       <a-tab-pane v-for="(item, index) in traffictypes" :tab="item.traffictype" :key="index">
-        <div>
-          <strong>{{ $t('id') }}</strong> {{ item.id }}
+        <div style="margin-bottom: 10px;">
+          <div><strong>{{ $t('id') }}</strong></div>
+          <div>{{ item.id }}</div>
         </div>
-        <div v-for="(type, idx) in ['kvmnetworklabel', 'vmwarenetworklabel', 'xennetworklabel', 'hypervnetworklabel', 'ovm3networklabel']" :key="idx">
-          <strong>{{ $t(type) }}</strong>
-          {{ item[type] || 'Use default gateway' }}
+        <div
+          v-for="(type, idx) in ['kvmnetworklabel', 'vmwarenetworklabel', 'xennetworklabel', 'hypervnetworklabel',
+         'ovm3networklabel']"
+          :key="idx"
+          style="margin-bottom: 10px;">
+          <div><strong>{{ $t(type) }}</strong></div>
+          <div>{{ item[type] || 'Use default gateway' }}</div>
         </div>
         <div v-if="item.traffictype === 'Public'">
-          Insert here form/component to manage public IP ranges
-          <IpRangesTab :resource="resource" />
+          <a-divider />
+          <IpRangesTabPublic :resource="resource" :networkid="networkid" />
+        </div>
+        <div v-if="item.traffictype === 'Management'">
+          <a-divider />
+          <IpRangesTabManagement :resource="resource" />
+        </div>
+        <div v-if="item.traffictype === 'Storage'">
+          <a-divider />
+          <IpRangesTabStorage :resource="resource" />
         </div>
       </a-tab-pane>
       <a-tab-pane tab="Service Providers" key="nsp">
@@ -46,12 +59,16 @@
 <script>
 import { api } from '@/api'
 import Status from '@/components/widgets/Status'
-import IpRangesTab from './IpRangesTab'
+import IpRangesTabPublic from './IpRangesTabPublic'
+import IpRangesTabManagement from './IpRangesTabManagement'
+import IpRangesTabStorage from './IpRangesTabStorage'
 
 export default {
   name: 'NetworkTab',
   components: {
-    IpRangesTab,
+    IpRangesTabPublic,
+    IpRangesTabManagement,
+    IpRangesTabStorage,
     Status
   },
   props: {
@@ -68,6 +85,7 @@ export default {
     return {
       traffictypes: [],
       nsps: [],
+      networkid: null,
       fetchLoading: false
     }
   },
@@ -98,6 +116,23 @@ export default {
       this.fetchLoading = true
       api('listNetworkServiceProviders', { physicalnetworkid: this.resource.id }).then(json => {
         this.nsps = json.listnetworkserviceprovidersresponse.networkserviceprovider
+      }).catch(error => {
+        this.$notification.error({
+          message: 'Request Failed',
+          description: error.response.headers['x-description']
+        })
+      }).finally(() => {
+        this.fetchLoading = false
+      })
+
+      this.fetchLoading = true
+      api('listNetworks', {
+        listAll: true,
+        trafficType: 'Public',
+        isSystem: true,
+        zoneId: this.resource.zoneid
+      }).then(json => {
+        this.networkid = json.listnetworksresponse.network[0].id
       }).catch(error => {
         this.$notification.error({
           message: 'Request Failed',

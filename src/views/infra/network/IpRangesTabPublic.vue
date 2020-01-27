@@ -1,0 +1,411 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+<template>
+  <a-spin :spinning="componentLoading">
+    <a-button
+      type="primary"
+      style="margin-bottom: 20px;"
+      @click="handleOpenAddIpRangeModal">
+      {{ $t('label.add.ip.range') }}
+    </a-button>
+
+    <a-list class="list">
+      <a-list-item v-for="(item, index) in items" :key="index">
+        <div class="list__item">
+          <div class="list__data">
+            <div class="list__col">
+              <div class="list__label">{{ $t('gateway') }}</div>
+              <div>{{ item.gateway }}</div>
+            </div>
+            <div class="list__col">
+              <div class="list__label">{{ $t('netmask') }}</div>
+              <div>{{ item.netmask }}</div>
+            </div>
+            <div class="list__col">
+              <div class="list__label">{{ $t('vlan') }}</div>
+              <div>{{ item.vlan }}</div>
+            </div>
+            <div class="list__col">
+              <div class="list__label">{{ $t('startip') }}</div>
+              <div>{{ item.startip }}</div>
+            </div>
+            <div class="list__col">
+              <div class="list__label">{{ $t('endip') }}</div>
+              <div>{{ item.endip }}</div>
+            </div>
+            <div class="list__col">
+              <div class="list__label">{{ $t('account') }}</div>
+              <a-button @click="() => handleOpenAccountModal(item)">{{ `View ${$t('account')}` }}</a-button>
+            </div>
+          </div>
+          <div slot="actions" class="actions">
+            <a-popover placement="bottom">
+              <template slot="content">{{ $t('label.remove.ip.range') }}</template>
+              <a-button icon="delete" shape="round" type="danger" @click="handleDeleteIpRange(item.id)"></a-button>
+            </a-popover>
+            <a-popover v-if="item.account === 'system'" placement="bottom">
+              <template slot="content">{{ $t('label.add.account') }}</template>
+              <a-button
+                icon="user-add"
+                shape="round"
+                type="primary"
+                @click="() => handleOpenAddAccountModal(item)"></a-button>
+            </a-popover>
+            <a-popover
+              v-else
+              placement="bottom">
+              <template slot="content">{{ $t('label.release.account') }}</template>
+              <a-button
+                icon="user-delete"
+                shape="round"
+                type="danger"
+                @click="() => handleRemoveAccount(item.id)"></a-button>
+            </a-popover>
+          </div>
+        </div>
+      </a-list-item>
+    </a-list>
+
+    <a-modal v-model="accountModal" v-if="selectedItem" @ok="accountModal = false">
+      <div>
+        <div style="margin-bottom: 10px;">
+          <div class="list__label">{{ $t('account') }}</div>
+          <div>{{ selectedItem.account }}</div>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <div class="list__label">{{ $t('domain') }}</div>
+          <div>{{ selectedItem.domain }}</div>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <div class="list__label">{{ $t('System VMs') }}</div>
+          <div>{{ selectedItem.forsystemvms }}</div>
+        </div>
+      </div>
+    </a-modal>
+
+    <a-modal :zIndex="1001" v-model="addAccountModal" :title="$t('label.add.account')" @ok="handleAddAccount">
+      <a-spin :spinning="domainsLoading">
+        <div style="margin-bottom: 10px;">
+          <div class="list__label">{{ $t('account') }}:</div>
+          <a-input v-model="addAccount.account"></a-input>
+        </div>
+        <div>
+          <div class="list__label">{{ $t('domain') }}:</div>
+          <a-select v-model="addAccount.domain">
+            <a-select-option
+              v-for="domain in domains"
+              :key="domain.id"
+              :value="domain.id">{{ domain.name }}
+            </a-select-option>
+          </a-select>
+        </div>
+      </a-spin>
+    </a-modal>
+
+    <a-modal v-model="addIpRangeModal" :title="$t('label.add.ip.range')" @ok="handleAddIpRange">
+      <a-form
+        :form="form"
+        @submit="handleAddIpRange"
+        layout="vertical"
+        class="form"
+      >
+        <a-form-item :label="$t('gateway')" class="form__item">
+          <a-input
+            v-decorator="['gateway', { rules: [{ required: true, message: 'Required' }] }]">
+          </a-input>
+        </a-form-item>
+        <a-form-item :label="$t('netmask')" class="form__item">
+          <a-input
+            v-decorator="['netmask', { rules: [{ required: true, message: 'Required' }] }]">
+          </a-input>
+        </a-form-item>
+        <a-form-item :label="$t('vlan')" class="form__item">
+          <a-input
+            v-decorator="['vlan']">
+          </a-input>
+        </a-form-item>
+        <a-form-item :label="$t('startip')" class="form__item">
+          <a-input
+            v-decorator="['startip', { rules: [{ required: true, message: 'Required' }] }]">
+          </a-input>
+        </a-form-item>
+        <a-form-item :label="$t('endip')" class="form__item">
+          <a-input
+            v-decorator="['endip', { rules: [{ required: true, message: 'Required' }] }]">
+          </a-input>
+        </a-form-item>
+        <a-button @click="handleOpenAddAccountModal">{{ $t('label.set.reservation') }}</a-button>
+      </a-form>
+    </a-modal>
+
+  </a-spin>
+</template>
+
+<script>
+import { api } from '@/api'
+
+export default {
+  name: 'IpRangesTabPublic',
+  props: {
+    resource: {
+      type: Object,
+      required: true
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    networkid: {
+      type: String,
+      required: true
+    }
+  },
+  data () {
+    return {
+      componentLoading: false,
+      items: [],
+      selectedItem: null,
+      accountModal: false,
+      addAccountModal: false,
+      addAccount: {
+        account: null,
+        domain: null
+      },
+      domains: [],
+      domainsLoading: false,
+      addIpRangeModal: false
+    }
+  },
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
+  },
+  mounted () {
+    this.fetchData()
+  },
+  watch: {
+    resource (newData, oldData) {
+      if (!newData && this.resource.id) {
+        this.fetchData()
+      }
+    }
+  },
+  methods: {
+    fetchData () {
+      this.componentLoading = true
+      api('listVlanIpRanges', {
+        networkid: this.networkid,
+        zoneid: this.resource.zoneid
+      }).then(response => {
+        this.items = response.listvlaniprangesresponse.vlaniprange ? response.listvlaniprangesresponse.vlaniprange : []
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.listvlaniprangesresponse
+            ? error.response.data.listvlaniprangesresponse.errortext : error.response.data.errorresponse.errortext
+        })
+      }).finally(() => {
+        this.componentLoading = false
+      })
+    },
+    fetchDomains () {
+      this.domainsLoading = true
+      api('listDomains', {
+        details: 'min',
+        listAll: true
+      }).then(response => {
+        this.domains = response.listdomainsresponse.domain ? response.listdomainsresponse.domain : []
+        if (this.domains.length > 0) this.addAccount.domain = this.domains[0].id
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.listdomains
+            ? error.response.data.listdomains.errortext : error.response.data.errorresponse.errortext
+        })
+      }).finally(() => {
+        this.domainsLoading = false
+      })
+    },
+    handleAddAccount () {
+      this.domainsLoading = true
+
+      if (this.addIpRangeModal === true) {
+        this.addAccountModal = false
+        return
+      }
+
+      api('dedicatePublicIpRange', {
+        id: this.selectedItem.id,
+        zoneid: this.selectedItem.zoneid,
+        domainid: this.addAccount.domain,
+        account: this.addAccount.account
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.dedicatepubliciprangeresponse
+            ? error.response.data.dedicatepubliciprangeresponse.errortext : error.response.data.errorresponse.errortext
+        })
+      }).finally(() => {
+        this.addAccountModal = false
+        this.domainsLoading = false
+        this.fetchData()
+      })
+    },
+    handleRemoveAccount (id) {
+      this.componentLoading = true
+      api('releasePublicIpRange', { id }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.releasepubliciprangeresponse
+            ? error.response.data.releasepubliciprangeresponse.errortext : error.response.data.errorresponse.errortext
+        })
+      }).finally(() => {
+        this.fetchData()
+      })
+    },
+    handleOpenAccountModal (item) {
+      this.selectedItem = item
+      this.accountModal = true
+    },
+    handleOpenAddAccountModal (item) {
+      if (!this.addIpRangeModal) {
+        this.selectedItem = item
+      }
+      this.addAccountModal = true
+      this.fetchDomains()
+    },
+    handleOpenAddIpRangeModal () {
+      this.addIpRangeModal = true
+    },
+    handleDeleteIpRange (id) {
+      this.componentLoading = true
+      api('deleteVlanIpRange', { id }).then(() => {
+        this.$notification.success({
+          message: 'Removed IP Range'
+        })
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.deletevlaniprangeresponse
+            ? error.response.data.deletevlaniprangeresponse.errortext : error.response.data.errorresponse.errortext
+        })
+      }).finally(() => {
+        this.componentLoading = false
+        this.fetchData()
+      })
+    },
+    handleAddIpRange (e) {
+      this.form.validateFields((error, values) => {
+        if (error) return
+
+        this.componentLoading = true
+        this.addIpRangeModal = false
+        api('createVlanIpRange', {
+          zoneId: this.resource.zoneid,
+          vlan: values.vlan,
+          gateway: values.gateway,
+          netmask: values.netmask,
+          startip: values.startip,
+          endip: values.endip,
+          account: this.addAccount.account,
+          domainid: this.addAccount.domain,
+          forVirtualNetwork: true
+        }).then(() => {
+          this.$notification.success({
+            message: 'Successfully added IP Range'
+          })
+        }).catch(error => {
+          this.$notification.error({
+            message: `Error ${error.response.status}`,
+            description: error.response.data.createvlaniprangeresponse
+              ? error.response.data.createvlaniprangeresponse.errortext : error.response.data.errorresponse.errortext
+          })
+        }).finally(() => {
+          this.componentLoading = false
+          this.fetchData()
+        })
+      })
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+  .list {
+    &__item {
+      display: flex;
+    }
+
+    &__data {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    &__col {
+      flex-basis: calc((100% / 3) - 20px);
+      margin-right: 20px;
+      margin-bottom: 10px;
+    }
+
+    &__label {
+      font-weight: bold;
+    }
+  }
+
+  .ant-list-item {
+    padding-top: 0;
+    padding-bottom: 0;
+
+    &:not(:first-child) {
+      padding-top: 20px;
+    }
+
+    &:not(:last-child) {
+      padding-bottom: 20px;
+    }
+  }
+
+  .actions {
+    button {
+      &:not(:last-child) {
+        margin-bottom: 10px;
+      }
+    }
+  }
+
+  .ant-select {
+    width: 100%;
+  }
+
+  .form {
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+
+      button {
+        &:not(:last-child) {
+          margin-right: 10px;
+        }
+      }
+
+    }
+
+    &__item {
+      font-weight: bold;
+    }
+  }
+</style>
