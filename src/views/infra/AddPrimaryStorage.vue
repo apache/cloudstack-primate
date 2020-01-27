@@ -23,18 +23,30 @@
           <a-select v-decorator="['scope', { initialValue: 'Cluster' }]" @change="val => { this.scope = val }">
             <a-select-option :value="$t('clusterid')"> {{ $t('clusterid') }} </a-select-option>
             <a-select-option :value="$t('zonewide')"> {{ $t('zonewide') }} </a-select-option>
+            <a-select-option :value="$t('hostId')"> {{ $t('hostId') }} </a-select-option>
           </a-select>
         </a-form-item>
-        <div v-if="this.scope === 'Cluster'">
-          <a-form-item :label="$t('zoneid')">
+        <div v-if="scope === 'Zone-Wide'">
+          <a-form-item :label="$t('hypervisor')">
             <a-select
-              v-decorator="['zone', { initialValue: this.zoneSelected, rules: [{ required: true, message: 'required'}] }]"
-              @change="val => this.zoneSelected = val">
-              <a-select-option :value="zone.id" v-for="(zone) in zones" :key="zone.id">
-                {{ zone.name }}
+              v-decorator="['hypervisor', { initialValue: hypervisors[0]}]"
+              @change="val => this.selectedHypervisor = val">
+              <a-select-option :value="hypervisor" v-for="(hypervisor, idx) in hypervisors" :key="idx">
+                {{ hypervisor }}
               </a-select-option>
             </a-select>
           </a-form-item>
+        </div>
+        <a-form-item :label="$t('zoneid')">
+          <a-select
+            v-decorator="['zone', { initialValue: this.zoneSelected, rules: [{ required: true, message: 'required'}] }]"
+            @change="val => this.zoneSelected = val">
+            <a-select-option :value="zone.id" v-for="(zone) in zones" :key="zone.id">
+              {{ zone.name }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+        <div v-if="this.scope === 'Cluster' || this.scope === 'Host'">
           <a-form-item :label="$t('podId')">
             <a-select
               v-decorator="['pod', { initialValue: this.podSelected, rules: [{ required: true, message: 'required'}] }]"
@@ -47,16 +59,27 @@
           <a-form-item :label="$t('clusterId')">
             <a-select
               v-decorator="['cluster', { initialValue: this.clusterSelected, rules: [{ required: true, message: 'required'}] }]"
-              @change="val => this.clusterSelected = val">
-              <a-select-option :value="cluster.id" v-for="(cluster) in clusters" :key="cluster.id">
+              @change="val => fetchHypervisor(val)">
+              <a-select-option :value="cluster.id" v-for="cluster in clusters" :key="cluster.id">
                 {{ cluster.name }}
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('name')">
-            <a-input v-decorator="['name', { rules: [{ required: true, message: 'required' }] }]"/>
+        </div>
+        <div v-if="this.scope === 'Host'">
+          <a-form-item :label="$t('hostId')">
+            <a-select
+              v-decorator="['host', { initialValue: this.hostSelected, rules: [{ required: true, message: 'required'}] }]"
+              @change="val => this.hostSelected = val">
+              <a-select-option :value="host.id" v-for="host in hosts" :key="host.id">
+                {{ host.name }}
+              </a-select-option>
+            </a-select>
           </a-form-item>
         </div>
+        <a-form-item :label="$t('name')">
+          <a-input v-decorator="['name', { rules: [{ required: true, message: 'required' }] }]"/>
+        </a-form-item>
         <a-form-item :label="$t('protocol')">
           <a-select
             v-decorator="['protocol', { initialValue: this.protocols[0], rules: [{ required: true, message: 'required'}] }]"
@@ -66,40 +89,69 @@
             </a-select-option>
           </a-select>
         </a-form-item>
-        <div v-if="protocolSelected === 'nfs' || protocolSelected === 'SharedMountPoint' || protocolSelected === 'Gluster'">
-          <div v-if="protocolSelected !== 'SharedMountPoint'">
-            <a-form-item :label="$t('server')">
-              <a-input v-decorator="['server', { rules: [{ required: true, message: 'required' }] }]" />
-            </a-form-item>
-          </div>
-          <div v-if="protocolSelected !== 'Gluster'">
-            <a-form-item :label="$t('path')">
-              <a-input v-decorator="['path', { rules: [{ required: true, message: 'required' }] }]" />
-            </a-form-item>
-          </div>
+        <div
+          v-if="protocolSelected === 'nfs' || protocolSelected === 'SMB' || protocolSelected === 'iscsi' || protocolSelected === 'vmfs'|| protocolSelected === 'Gluster'">
+          <a-form-item :label="$t('server')">
+            <a-input v-decorator="['server', { rules: [{ required: true, message: 'required' }] }]" />
+          </a-form-item>
+        </div>
+        <div v-if="protocolSelected === 'nfs' || protocolSelected === 'SMB' || protocolSelected === 'ocfs2' || protocolSelected === 'preSetup'|| protocolSelected === 'SharedMountPoint'">
+          <a-form-item :label="$t('path')">
+            <a-input v-decorator="['path', { rules: [{ required: true, message: 'required' }] }]" />
+          </a-form-item>
+        </div>
+        <div v-if="protocolSelected === 'SMB'">
+          <a-form-item :label="$t('smbUsername')">
+            <a-input v-decorator="['smbUsername', { rules: [{ required: true, message: 'required' }] }]"/>
+          </a-form-item>
+          <a-form-item :label="$t('smbPassword')">
+            <a-input-password v-decorator="['smbPassword', { rules: [{ required: true, message: 'required' }] }]"/>
+          </a-form-item>
+          <a-form-item :label="$t('smbDomain')">
+            <a-input v-decorator="['smbDomain', { rules: [{ required: true, message: 'required' }] }]"/>
+          </a-form-item>
+        </div>
+        <div v-if="protocolSelected === 'iscsi'">
+          <a-form-item :label="$t('iqn')">
+            <a-input v-decorator="['iqn', { rules: [{ required: true, message: 'required' }] }]"/>
+          </a-form-item>
+          <a-form-item :label="$t('lun')">
+            <a-input v-decorator="['lun', { rules: [{ required: true, message: 'required' }] }]"/>
+          </a-form-item>
+        </div>
+        <div v-if="protocolSelected === 'vmfs'">
+          <a-form-item :label="$t('vCenterDataCenter')">
+            <a-input v-decorator="['vCenterDataCenter', { rules: [{ required: true, message: 'required' }] }]"/>
+          </a-form-item>
+          <a-form-item :label="$t('vCenterDataStore')">
+            <a-input v-decorator="['vCenterDataStore', { rules: [{ required: true, message: 'required' }] }]"/>
+          </a-form-item>
         </div>
         <a-form-item :label="$t('providername')">
           <a-select
-            v-decorator="['provider', { initialValue: 'SolidFire', rules: [{ required: true, message: 'required'}] }]">
+            v-decorator="['provider', { initialValue: this.providers[0], rules: [{ required: true, message: 'required'}] }]"
+            @change="val => this.providerSelected = val">
             <a-select-option :value="provider" v-for="(provider,idx) in providers" :key="idx">
               {{ provider }}
             </a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="$t('isManaged')">
-          <a-checkbox-group v-decorator="['managed']" >
-            <a-checkbox value="ismanaged"></a-checkbox>
-          </a-checkbox-group>
-        </a-form-item>
-        <a-form-item :label="$t('capacityBytes')">
-          <a-input v-decorator="['capacityBytes']" />
-        </a-form-item>
-        <a-form-item :label="$t('capacityIops')">
-          <a-input v-decorator="['capacityIops']" />
-        </a-form-item>
-        <a-form-item :label="$t('url')">
-          <a-input v-decorator="['url']" />
-        </a-form-item>
+        <div v-if="this.providerSelected !== 'DefaultPrimary'">
+          <a-form-item :label="$t('isManaged')">
+            <a-checkbox-group v-decorator="['managed']" >
+              <a-checkbox value="ismanaged"></a-checkbox>
+            </a-checkbox-group>
+          </a-form-item>
+          <a-form-item :label="$t('capacityBytes')">
+            <a-input v-decorator="['capacityBytes']" />
+          </a-form-item>
+          <a-form-item :label="$t('capacityIops')">
+            <a-input v-decorator="['capacityIops']" />
+          </a-form-item>
+          <a-form-item :label="$t('url')">
+            <a-input v-decorator="['url']" />
+          </a-form-item>
+        </div>
         <div v-if="this.protocolSelected === 'RBD'">
           <a-form-item :label="$t('radosmonitor')">
             <a-input v-decorator="['radosmonitor']" />
@@ -164,20 +216,28 @@ export default {
       required: true
     }
   },
+  inject: ['parentFetchData'],
   data () {
     return {
-      protocols: ['nfs', 'SharedMountPoint', 'RBD', 'CLVM', 'Gluster', 'custom'],
-      providers: ['SolidFire', 'SolidFireShared', 'DefaultPrimary', 'Datera', 'CloudByte'],
+      hypervisors: ['KVM', 'VMware', 'Hyperv', 'Any'],
+      // protocols: ['nfs', 'SMB', 'preSetup', 'ocfs2', 'SharedMountPoint', 'CLVM', 'RBD', 'vmfs', 'iscsi', 'Gluster', 'custom'],
+      protocols: [],
+      providers: [],
       scope: 'Cluster',
       zones: [],
       pods: [],
       clusters: [],
+      hosts: [],
       storagetags: [],
       zoneId: '',
       zoneSelected: '',
       podSelected: '',
       clusterSelected: '',
+      hostSelected: '',
+      hypervisorType: '',
       protocolSelected: 'nfs',
+      providerSelected: 'SolidFire',
+      selectedHypervisor: 'KVM',
       size: 'default',
       inputVisible: false,
       tagInput: '',
@@ -187,6 +247,11 @@ export default {
   beforeCreate () {
     this.form = this.$form.createForm(this)
   },
+  computed: {
+    condition1: function () {
+      return (this.protocolSelected !== 'SharedMountPoint' || this.protocolSelected !== 'ocfs2' || this.protocolSelected !== 'preSetup')
+    }
+  },
   mounted () {
     this.fetchData()
   },
@@ -194,8 +259,7 @@ export default {
     fetchData () {
       this.getInfraData()
       this.listStorageTags()
-      // this.listStorageProviders()
-      // this.listHosts()
+      this.listStorageProviders()
     },
     getInfraData () {
       api('listZones').then(json => {
@@ -216,7 +280,6 @@ export default {
             }
           }
         }).then(() => {
-          console.log('pod id = ', this.podSelected)
           api('listClusters', {
             podid: this.podSelected
           }).then(json => {
@@ -224,10 +287,32 @@ export default {
               this.clusters = json.listclustersresponse.cluster
               if (this.clusters.length > 0) {
                 this.clusterSelected = this.clusters[0].id
+                this.fetchHypervisor()
               }
             }
+          }).then(() => {
+            api('listHosts', {
+              clusterid: this.clusterSelected
+            }).then(json => {
+              if (json && json.listhostsresponse && json.listhostsresponse.host) {
+                this.hosts = json.listhostsresponse.host
+                if (this.hosts.length > 0) {
+                  this.hostSelected = this.hosts[0].id
+                }
+              }
+            })
           })
         })
+      })
+    },
+    listStorageProviders () {
+      api('listStorageProviders', { type: 'primary' }).then(json => {
+        if (json && json.liststorageprovidersresponse && json.liststorageprovidersresponse.dataStoreProvider) {
+          var providers = json.liststorageprovidersresponse.dataStoreProvider
+          for (var i = 0; i < providers.length; i++) {
+            this.providers.push(providers[i].name)
+          }
+        }
       })
     },
     listStorageTags () {
@@ -240,9 +325,136 @@ export default {
         }
       })
     },
+    fetchHypervisor (value) {
+      const cluster = this.clusters.find(cluster => cluster.id === this.clusterSelected)
+      this.hypervisorType = cluster.hypervisortype
+      if (this.hypervisorType === 'KVM') {
+        this.protocols = ['nfs', 'SharedMountPoint', 'RBD', 'CLVM', 'Gluster', 'custom']
+      } else if (this.hypervisorType === 'XenServer') {
+        this.protocols = ['nfs', 'preSetup', 'iscsi', 'custom']
+      } else if (this.hypervisorType === 'VMware') {
+        this.protocols = ['nfs', 'vmfs', 'custom']
+      } else if (this.hypervisorType === 'Hyperv') {
+        this.protocols = ['SMB']
+      } else if (this.hypervisorType === 'Ovm') {
+        this.protocols = ['nfs', 'ocfs2']
+      } else if (this.hypervisorType === 'LXC') {
+        this.protocols = ['nfs', 'SharedMountPoint', 'RBD']
+      } else if (this.hypervisorType === 'Ovm3') {
+        this.protocols = ['nfs']
+      } else {
+        this.protocols = []
+      }
+    },
+    nfsURL (server, path) {
+      var url
+      if (path.substring(0, 1) !== '/') {
+        path = '/' + path
+      }
+      if (server.indexOf('://') === -1) {
+        url = 'nfs://' + server + path
+      } else {
+        url = server + path
+      }
+
+      return url
+    },
+    smbURL (server, path, smbUsername, smbPassword, smbDomain) {
+      var url = ''
+      if (path.substring(0, 1) !== '/') {
+        path = '/' + path
+      }
+      if (server.indexOf('://') === -1) {
+        url += 'cifs://'
+      }
+      url += (server + path)
+      return url
+    },
+    presetupURL (server, path) {
+      var url
+      if (server.indexOf('://') === -1) {
+        url = 'presetup://' + server + path
+      } else {
+        url = server + path
+      }
+      return url
+    },
+    ocfs2URL (server, path) {
+      var url
+      if (server.indexOf('://') === -1) {
+        url = 'ocfs2://' + server + path
+      } else {
+        url = server + path
+      }
+      return url
+    },
+    SharedMountPointURL (server, path) {
+      var url
+      if (server.indexOf('://') === -1) {
+        url = 'SharedMountPoint://' + server + path
+      } else {
+        url = server + path
+      }
+      return url
+    },
+    rbdURL (monitor, pool, id, secret) {
+      var url
+      /*  Replace the + and / symbols by - and _ to have URL-safe base64 going to the API
+          It's hacky, but otherwise we'll confuse java.net.URI which splits the incoming URI
+      */
+      secret = secret.replace('+', '-')
+      secret = secret.replace('/', '_')
+      if (id !== null && secret !== null) {
+        monitor = id + ':' + secret + '@' + monitor
+      }
+      if (pool.substring(0, 1) !== '/') {
+        pool = '/' + pool
+      }
+      if (monitor.indexOf('://') === -1) {
+        url = 'rbd://' + monitor + pool
+      } else {
+        url = monitor + pool
+      }
+      return url
+    },
+    clvmURL (vgname) {
+      var url
+      if (vgname.indexOf('://') === -1) {
+        url = 'clvm://localhost/' + vgname
+      } else {
+        url = vgname
+      }
+      return url
+    },
+    vmfsURL (server, path) {
+      var url
+      if (server.indexOf('://') === -1) {
+        url = 'vmfs://' + server + path
+      } else {
+        url = server + path
+      }
+      return url
+    },
+    iscsiURL (server, iqn, lun) {
+      var url
+      if (server.indexOf('://') === -1) {
+        url = 'iscsi://' + server + iqn + '/' + lun
+      } else {
+        url = server + iqn + '/' + lun
+      }
+      return url
+    },
+    glusterURL (server, path) {
+      var url
+      if (server.indexOf('://') === -1) {
+        url = 'gluster://' + server + path
+      } else {
+        url = server + path
+      }
+      return url
+    },
     handleClose (removedTag) {
       const tags = this.storagetags.filter(tag => tag !== removedTag)
-      console.log(tags)
       this.storagetags = tags
     },
     showTag () {
@@ -271,8 +483,106 @@ export default {
         if (err) {
           return
         }
-        console.log('values = ', values)
-        console.log('zone id = ', this.zoneSelected)
+        var params = {
+          scope: values.scope,
+          zoneid: values.zone,
+          name: values.name,
+          provider: values.provider
+        }
+        if (values.scope === 'Zone-Wide') {
+          params.hypervisor = values.hypervisor
+        }
+        if (values.scope === 'Cluster' || values.scope === 'Host') {
+          params.podid = values.pod
+          params.clusterid = values.cluster
+        }
+        if (values.scope === 'Host') {
+          params.hostid = values.host
+        }
+        var server = values.server ? values.server : null
+        var path = values.path ? values.path : null
+        if (path !== null && path.substring(0, 1) !== '/') {
+          path = '/' + path
+        }
+        var url = ''
+        if (values.protocol === 'nfs') {
+          url = this.nfsURL(server, path)
+        } else if (values.protocol === 'SMB') {
+          url = this.smbURL(server, path)
+          const smbParams = {
+            user: values.smbUsername,
+            password: values.smbPassword,
+            domain: values.smbDomain
+          }
+          Object.keys(smbParams).forEach((key, index) => {
+            params['details[' + index.toString() + '].' + key] = smbParams[key]
+          })
+        } else if (values.protocol === 'PreSetup') {
+          url = this.presetupURL(server, path)
+        } else if (values.protocol === 'ocfs2') {
+          url = this.ocfs2URL(server, path)
+        } else if (values.protocol === 'SharedMountPoint') {
+          url = this.SharedMountPointURL(server, path)
+        } else if (values.protocol === 'CLVM') {
+          var vg = (values.volumegroup.substring(0, 1) !== '/') ? ('/' + values.volumegroup) : values.volumegroup
+          url = this.clvmURL(vg)
+        } else if (values.protocol === 'RBD') {
+          url = this.rbdURL(values.radosmonitor, values.radospool, values.radosuser, values.radossecret)
+        } else if (values.protocol === 'vmfs') {
+          path = values.vCenterDataCenter
+          if (path.substring(0, 1) !== '/') {
+            path = '/' + path
+          }
+          path += '/' + values.vCenterDataStore
+          url = this.vmfsURL(server, path)
+        } else if (values.protocol === 'Gluster') {
+          var glustervolume = values.volume
+          if (glustervolume.substring(0, 1) !== '/') {
+            glustervolume = '/' + glustervolume
+          }
+          url = this.glusterURL(server, glustervolume)
+        } else if (values.protocol === 'iscsi') {
+          var iqn = values.iqn
+          if (iqn.substring(0, 1) !== '/') {
+            iqn = '/' + iqn
+          }
+          var lun = values.lun
+          url = this.iscsiURL(server, iqn, lun)
+        }
+        params.url = url
+        if (values.provider !== 'DefaultPrimary') {
+          if (values.managed) {
+            params.managed = true
+          } else {
+            params.managed = false
+          }
+          if (values.capacityBytes && values.capacityBytes.length > 0) {
+            params.capacityBytes = values.capacityBytes.split(',').join('')
+          }
+          if (values.capacityIops && values.capacityIops.length > 0) {
+            params.capacityIops = values.capacityIops.split(',').join('')
+          }
+          if (values.url && values.url.length > 0) {
+            params.url = values.url
+          }
+        }
+        var storagetags = this.storagetags.map(tag => tag).join(',')
+        params.storagetags = storagetags
+        api('createStoragePool', params).then(json => {
+          this.$notification.success({
+            message: this.$t('label.add.primary.storage'),
+            description: this.$t('label.add.primary.storage')
+          })
+        }).catch(error => {
+          this.$notification.error({
+            message: 'Request Failed',
+            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+          })
+        }).finally(() => {
+          this.loading = false
+          this.closeModal()
+          this.parentFetchData()
+        })
       })
     }
   }

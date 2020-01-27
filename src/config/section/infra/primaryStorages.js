@@ -40,7 +40,6 @@ export default {
       icon: 'plus',
       label: 'label.add.primary.storage',
       listView: true,
-      args: ['scope', 'zoneid', 'podid', 'clusterid', 'name', 'provider', 'managed', 'capacityBytes', 'capacityIops', 'url', 'tags'],
       popup: true,
       component: () => import('@/views/infra/AddPrimaryStorage.vue')
     },
