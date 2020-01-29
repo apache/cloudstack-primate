@@ -1063,5 +1063,8 @@
 "networks": "Networks",
 "BasicSetup": "Basic setup",
 "templateIso": "Template/ISO",
+"addAnotherNetwork": "Add another network",
+"addNewNetworks": "Add new networks",
+"existingNetworks": "Existing networks",
 "wednesday": "Wednesday"
 }

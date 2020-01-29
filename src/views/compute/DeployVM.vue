@@ -104,11 +104,25 @@
               </a-collapse-panel>
 
               <a-collapse-panel :header="this.$t('networks')" key="networks">
-                <network-selection
-                  :items="options.networks"
-                  :value="networkOfferingIds"
-                  @select-network-item="($event) => updateNetworks($event)"
-                ></network-selection>
+                <a-collapse
+                  :accordion="false"
+                >
+                  <a-collapse-panel
+                    :header="$t('existingNetworks')"
+                  >
+                    <network-selection
+                      :items="options.networks"
+                      :value="networkOfferingIds"
+                      @select-network-item="($event) => updateNetworks($event)"
+                    ></network-selection>
+                  </a-collapse-panel>
+
+                  <a-collapse-panel
+                    :header="$t('addNewNetworks')"
+                  >
+                    <network-creation></network-creation>
+                  </a-collapse-panel>
+                </a-collapse>
 
                 <network-configuration
                   v-if="networks.length > 0"
@@ -161,10 +175,12 @@ import TemplateIsoSelection from '@views/compute/wizard/TemplateIsoSelection'
 import AffinityGroupSelection from '@views/compute/wizard/AffinityGroupSelection'
 import NetworkSelection from '@views/compute/wizard/NetworkSelection'
 import NetworkConfiguration from '@views/compute/wizard/NetworkConfiguration'
+import NetworkCreation from '@views/compute/wizard/NetworksCreation'
 
 export default {
   name: 'Wizard',
   components: {
+    NetworkCreation,
     NetworkConfiguration,
     NetworkSelection,
     AffinityGroupSelection,
@@ -461,9 +477,10 @@ export default {
       width: 16px;
     }
   }
+
   .ant-collapse-borderless > .ant-collapse-item {
     border: 1px solid @border-color-split;
-    border-radius: @border-radius-base;
+    border-radius: @border-radius-base !important;
     margin: 0 0 1.2rem;
   }
 </style>
