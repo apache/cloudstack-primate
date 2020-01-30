@@ -4,7 +4,7 @@
       v-if="networkItems.length > 0"
       :columns="columns"
       :dataSource="networkItems"
-      :pagination="{showSizeChanger: true}"
+      :pagination="false"
     >
       <template v-slot:name="text">
         <a-input
