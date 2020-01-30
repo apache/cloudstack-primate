@@ -19,8 +19,7 @@
   <a-table
     :columns="columns"
     :dataSource="tableSource"
-    :pagination="false"
-    :scroll="{x: 0, y: 320}"
+    :pagination="{showSizeChanger: true}"
     :rowSelection="rowSelection"
     size="middle"
   >

@@ -20,8 +20,7 @@
     :columns="columns"
     :dataSource="items"
     :rowKey="record => record.id"
-    :pagination="false"
-    :scroll="{x: 0, y: 320}"
+    :pagination="{showSizeChanger: true}"
     :rowSelection="rowSelection"
     size="middle"
   >

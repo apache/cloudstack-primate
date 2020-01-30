@@ -20,7 +20,7 @@
     :columns="columns"
     :dataSource="networkItems"
     :rowKey="record => record.id"
-    :pagination="false"
+    :pagination="{showSizeChanger: true}"
     :rowSelection="rowSelection"
   >
     <a-list

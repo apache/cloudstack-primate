@@ -19,7 +19,7 @@
   <a-table
     :columns="columns"
     :dataSource="items"
-    :pagination="false"
+    :pagination="{showSizeChanger: true}"
     :rowSelection="rowSelection"
     :rowKey="record => record.id"
     size="middle"
