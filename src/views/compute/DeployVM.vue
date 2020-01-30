@@ -129,6 +129,14 @@
                   :items="networks"
                 ></network-configuration>
               </a-collapse-panel>
+
+              <a-collapse-panel :header="this.$t('sshKeyPairs')" key="sshKeyPairs">
+                <ssh-key-pair-selection
+                  :items="options.sshKeyPairs"
+                  :value="sshKeyPair ? sshKeyPair.name : ''"
+                  @select-ssh-key-pair-item="($event) => updateSshKeyPairs($event)"
+                ></ssh-key-pair-selection>
+              </a-collapse-panel>
             </a-collapse>
 
             <div class="card-footer">
@@ -176,10 +184,12 @@ import AffinityGroupSelection from '@views/compute/wizard/AffinityGroupSelection
 import NetworkSelection from '@views/compute/wizard/NetworkSelection'
 import NetworkConfiguration from '@views/compute/wizard/NetworkConfiguration'
 import NetworkCreation from '@views/compute/wizard/NetworksCreation'
+import SshKeyPairSelection from '@views/compute/wizard/SshKeyPairSelection'
 
 export default {
   name: 'Wizard',
   components: {
+    SshKeyPairSelection,
     NetworkCreation,
     NetworkConfiguration,
     NetworkSelection,
@@ -206,7 +216,8 @@ export default {
         diskOfferings: [],
         zones: [],
         affinityGroups: [],
-        networks: []
+        networks: [],
+        sshKeyPairs: []
       },
       instanceConfig: [],
       template: {},
@@ -216,6 +227,7 @@ export default {
       affinityGroups: [],
       networks: [],
       zone: {},
+      sshKeyPair: {},
       isoFilter: [
         'executable',
         'selfexecutable',
@@ -262,6 +274,9 @@ export default {
         affinityGroups: {
           list: 'listAffinityGroups'
         },
+        sshKeyPairs: {
+          list: 'listSSHKeyPairs'
+        },
         networks: {
           list: 'listNetworks',
           options: {
@@ -293,6 +308,7 @@ export default {
       this.zone = _.find(this.options.zones, (option) => option.id === instanceConfig.zoneid)
       this.affinityGroups = _.filter(this.options.affinityGroups, (option) => _.includes(instanceConfig.affinitygroupids, option.id))
       this.networks = _.filter(this.options.networks, (option) => _.includes(instanceConfig.networkids, option.id))
+      this.sshKeyPair = _.find(this.options.sshKeyPairs, (option) => option.name === instanceConfig.keypair)
 
       if (this.zone) {
         this.vm.zoneid = this.zone.id
@@ -352,6 +368,7 @@ export default {
     this.form.getFieldDecorator('affinitygroupids', { initialValue: [], preserve: true })
     this.form.getFieldDecorator('isoid', { initialValue: [], preserve: true })
     this.form.getFieldDecorator('networkids', { initialValue: [], preserve: true })
+    this.form.getFieldDecorator('keypair', { initialValue: [], preserve: true })
   },
   created () {
     _.each(this.params, this.fetchOptions)
@@ -378,6 +395,11 @@ export default {
     updateNetworks (ids) {
       this.form.setFieldsValue({
         networkids: ids
+      })
+    },
+    updateSshKeyPairs (name) {
+      this.form.setFieldsValue({
+        keypair: name
       })
     },
     getText (option) {

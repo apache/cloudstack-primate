@@ -1066,5 +1066,6 @@
 "addAnotherNetwork": "Add another network",
 "addNewNetworks": "Add new networks",
 "existingNetworks": "Existing networks",
+"sshKeyPairs": "SSH keypairs",
 "wednesday": "Wednesday"
 }
