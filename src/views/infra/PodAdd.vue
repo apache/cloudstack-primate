@@ -19,112 +19,75 @@
   <a-spin :spinning="loading">
     <a-form :form="form" layout="vertical" class="form">
 
-      <a-popover placement="bottom">
-        <template slot="content">
-          The zone in which you want to create the cluster
-        </template>
-        <div>
-          <a-form-item class="form__item" :label="$t('zone')">
-            <a-select
-              v-decorator="['zoneId', {
-                initialValue: this.zoneId,
-                rules: [{ required: true, message: 'required' }] }
-              ]">
-              <a-select-option
-                v-for="zone in zonesList"
-                :value="zone.id"
-                :key="zone.id">
-                {{ zone.name }}
-              </a-select-option>
-            </a-select>
-          </a-form-item>
-        </div>
-      </a-popover>
+      <a-form-item class="form__item" :label="$t('zone')">
+        <a-select
+          v-decorator="['zoneid', {
+            initialValue: this.zoneId,
+            rules: [{ required: true, message: 'required' }] }
+          ]">
+          <a-select-option
+            v-for="zone in zonesList"
+            :value="zone.id"
+            :key="zone.id">
+            {{ zone.name }}
+          </a-select-option>
+        </a-select>
+      </a-form-item>
 
-      <a-popover placement="bottom">
-        <template slot="content">
-          Set a name for the pod
-        </template>
-        <div>
-          <a-form-item class="form__item" :label="$t('podname')">
-            <a-input
-              v-decorator="[
-                'podName',
-                {
-                  rules: [{ required: true, message: 'required' }]
-                }]"
-            />
-          </a-form-item>
-        </div>
-      </a-popover>
+      <a-form-item class="form__item" :label="$t('podname')">
+        <a-input
+          :placeholder="placeholder.name"
+          v-decorator="[
+            'name',
+            {
+              rules: [{ required: true, message: 'required' }]
+            }]"
+        />
+      </a-form-item>
 
-      <a-popover placement="bottom">
-        <template slot="content">
-          The gateway for the hosts in the pod
-        </template>
-        <div>
-          <a-form-item class="form__item" :label="$t('reservedSystemGateway')">
-            <a-input
-              v-decorator="[
-                'gateway',
-                {
-                  rules: [{ required: true, message: 'required' }]
-                }]"
-            />
-          </a-form-item>
-        </div>
-      </a-popover>
+      <a-form-item class="form__item" :label="$t('reservedSystemGateway')">
+        <a-input
+          :placeholder="placeholder.gateway"
+          v-decorator="[
+            'gateway',
+            {
+              rules: [{ required: true, message: 'required' }]
+            }]"
+        />
+      </a-form-item>
 
-      <a-popover placement="bottom">
-        <template slot="content">
-          The network prefix that defines the pod's subnet.
-        </template>
-        <div>
-          <a-form-item class="form__item" :label="$t('reservedSystemNetmask')">
-            <a-input
-              v-decorator="[
-                'netmask',
-                {
-                  rules: [{ required: true, message: 'required' }]
-                }]"
-            />
-          </a-form-item>
-        </div>
-      </a-popover>
+      <a-form-item class="form__item" :label="$t('reservedSystemNetmask')">
+        <a-input
+          :placeholder="placeholder.netmask"
+          v-decorator="[
+            'netmask',
+            {
+              rules: [{ required: true, message: 'required' }]
+            }]"
+        />
+      </a-form-item>
 
-      <a-popover placement="bottom">
-        <template slot="content">
-          The first IP address to define a range in the management network that is used to manage various system VMs
-        </template>
-        <div>
-          <a-form-item class="form__item" :label="$t('reservedSystemStartIp')">
-            <a-input
-              v-decorator="[
-                'startIp',
-                {
-                  rules: [{ required: true, message: 'required' }]
-                }]"
-            />
-          </a-form-item>
-        </div>
-      </a-popover>
+      <a-form-item class="form__item" :label="$t('reservedSystemStartIp')">
+        <a-input
+          :placeholder="placeholder.startip"
+          v-decorator="[
+            'startip',
+            {
+              rules: [{ required: true, message: 'required' }]
+            }]"
+        />
+      </a-form-item>
 
-      <a-popover placement="bottom">
-        <template slot="content">
-          The last IP address to define a range in the management network that is used to manage various system VMs
-        </template>
-        <div>
-          <a-form-item class="form__item" :label="$t('reservedSystemEndIp')">
-            <a-input
-              v-decorator="[
-                'endIp',
-                {
-                  rules: [{ required: true, message: 'required' }]
-                }]"
-            />
-          </a-form-item>
-        </div>
-      </a-popover>
+      <a-form-item class="form__item" :label="$t('reservedSystemEndIp')">
+        <a-input
+          :placeholder="placeholder.endip"
+          v-decorator="[
+            'endip',
+            {
+              rules: [{ required: true, message: 'required' }]
+            }]"
+        />
+      </a-form-item>
 
       <div class="form__item">
         <div class="form__label">{{ $t('isDedicated') }}</div>
@@ -173,7 +136,15 @@ export default {
       domainId: null,
       dedicatedAccount: null,
       domainError: false,
-      showDedicated: false
+      showDedicated: false,
+      params: [],
+      placeholder: {
+        name: null,
+        gateway: null,
+        netmask: null,
+        startip: null,
+        endip: null
+      }
     }
   },
   beforeCreate () {
@@ -192,6 +163,8 @@ export default {
         this.zonesList = response.listzonesresponse.zone
         this.zoneId = this.zonesList[0].id
         this.loading = false
+        this.params = this.$store.getters.apis.createPod.params
+        Object.keys(this.placeholder).forEach(item => { this.returnPlaceholder(item) })
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
@@ -208,12 +181,12 @@ export default {
         this.loading = true
 
         api('createPod', {
-          zoneId: values.zoneId,
-          name: values.podName,
+          zoneId: values.zoneid,
+          name: values.name,
           gateway: values.gateway,
           netmask: values.netmask,
-          startIp: values.startIp,
-          endIp: values.endIp
+          startIp: values.startip,
+          endIp: values.endip
         }).then(response => {
           // RESPONSE
           if (response.addpodresponse.pod[0].id) {
@@ -268,6 +241,11 @@ export default {
           description: error.response.data.errorresponse.errortext
         })
         this.loading = false
+      })
+    },
+    returnPlaceholder (field) {
+      this.params.find(i => {
+        if (i.name === field) this.placeholder[field] = i.description
       })
     }
   }
