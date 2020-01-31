@@ -19,90 +19,59 @@
   <a-spin :spinning="loading">
     <div class="form">
 
-      <a-popover placement="bottom">
-        <template slot="content">
-          The zone where you want to add the host
-        </template>
-        <div class="form__item">
-          <div class="form__label"><span class="required">* </span>{{ $t('zonenamelabel') }}</div>
-          <a-select v-model="zoneId" @change="fetchPods">
-            <a-select-option
-              v-for="zone in zonesList"
-              :value="zone.id"
-              :key="zone.id">
-              {{ zone.name }}
-            </a-select-option>
-          </a-select>
-        </div>
-      </a-popover>
+      <div class="form__item">
+        <div class="form__label"><span class="required">* </span>{{ $t('zonenamelabel') }}</div>
+        <a-select v-model="zoneId" @change="fetchPods">
+          <a-select-option
+            v-for="zone in zonesList"
+            :value="zone.id"
+            :key="zone.id">
+            {{ zone.name }}
+          </a-select-option>
+        </a-select>
+      </div>
 
-      <a-popover placement="bottom">
-        <template slot="content">
-          The pod where you want to add the host
-        </template>
-        <div class="form__item">
-          <div class="form__label"><span class="required">* </span>{{ $t('podname') }}</div>
-          <a-select v-model="podId" @change="fetchClusters">
-            <a-select-option
-              v-for="pod in podsList"
-              :value="pod.id"
-              :key="pod.id">
-              {{ pod.name }}
-            </a-select-option>
-          </a-select>
-        </div>
-      </a-popover>
+      <div class="form__item">
+        <div class="form__label"><span class="required">* </span>{{ $t('podname') }}</div>
+        <a-select v-model="podId" @change="fetchClusters">
+          <a-select-option
+            v-for="pod in podsList"
+            :value="pod.id"
+            :key="pod.id">
+            {{ pod.name }}
+          </a-select-option>
+        </a-select>
+      </div>
 
-      <a-popover placement="bottom">
-        <template slot="content">
-          The cluster where you want to add the host
-        </template>
-        <div class="form__item">
-          <div class="form__label"><span class="required">* </span>{{ $t('clustername') }}</div>
-          <a-select v-model="clusterId" @change="handleChangeCluster">
-            <a-select-option
-              v-for="cluster in clustersList"
-              :value="cluster.id"
-              :key="cluster.id">
-              {{ cluster.name }}
-            </a-select-option>
-          </a-select>
-        </div>
-      </a-popover>
+      <div class="form__item">
+        <div class="form__label"><span class="required">* </span>{{ $t('clustername') }}</div>
+        <a-select v-model="clusterId" @change="handleChangeCluster">
+          <a-select-option
+            v-for="cluster in clustersList"
+            :value="cluster.id"
+            :key="cluster.id">
+            {{ cluster.name }}
+          </a-select-option>
+        </a-select>
+      </div>
 
-      <a-popover placement="bottom">
-        <template slot="content">
-          The DNS name or IP address of the host
-        </template>
-        <div class="form__item required-field">
-          <div class="form__label"><span class="required">* </span>{{ $t('hostnamelabel') }}</div>
-          <span class="required required-label">Required</span>
-          <a-input v-model="hostname"></a-input>
-        </div>
-      </a-popover>
+      <div class="form__item required-field">
+        <div class="form__label"><span class="required">* </span>{{ $t('hostnamelabel') }}</div>
+        <span class="required required-label">Required</span>
+        <a-input v-model="hostname"></a-input>
+      </div>
 
-      <a-popover placement="bottom">
-        <template slot="content">
-          Usually root
-        </template>
-        <div class="form__item required-field">
-          <div class="form__label"><span class="required">* </span>{{ $t('username') }}</div>
-          <span class="required required-label">Required</span>
-          <a-input v-model="username"></a-input>
-        </div>
-      </a-popover>
+      <div class="form__item required-field">
+        <div class="form__label"><span class="required">* </span>{{ $t('username') }}</div>
+        <span class="required required-label">Required</span>
+        <a-input :placeholder="placeholder.username" v-model="username"></a-input>
+      </div>
 
-      <a-popover placement="bottom">
-        <template slot="content">
-          The password for the user named in Username. The password was set during the hypervisor installation on the
-          host.
-        </template>
-        <div class="form__item required-field">
-          <div class="form__label"><span class="required">* </span>{{ $t('password') }}</div>
-          <span class="required required-label">Required</span>
-          <a-input type="password" v-model="password"></a-input>
-        </div>
-      </a-popover>
+      <div class="form__item required-field">
+        <div class="form__label"><span class="required">* </span>{{ $t('password') }}</div>
+        <span class="required required-label">Required</span>
+        <a-input :placeholder="placeholder.password" type="password" v-model="password"></a-input>
+      </div>
 
       <template v-if="selectedClusterHyperVisorType === 'Ovm3'">
         <div class="form__item">
@@ -124,7 +93,7 @@
         <div class="form__label">{{ $t('hostTags') }}</div>
         <a-select
           mode="tags"
-          placeholder="Type in part of a host tag"
+          :placeholder="placeholder.hosttags"
           v-model="selectedTags"
         >
           <a-select-option v-for="tag in hostTagsList" :key="tag.name">{{ tag.name }}</a-select-option>
@@ -178,7 +147,13 @@ export default {
       agentpassword: null,
       agentport: null,
       selectedCluster: null,
-      selectedClusterHyperVisorType: null
+      selectedClusterHyperVisorType: null,
+      params: [],
+      placeholder: {
+        username: null,
+        password: null,
+        hosttags: null
+      }
     }
   },
   mounted () {
@@ -189,6 +164,8 @@ export default {
       this.loading = true
       this.fetchZones()
       this.fetchHostTags()
+      this.params = this.$store.getters.apis.addHost.params
+      Object.keys(this.placeholder).forEach(item => { this.returnPlaceholder(item) })
     },
     fetchZones () {
       api('listZones').then(response => {
@@ -336,6 +313,11 @@ export default {
           description: error.response.data.addhostresponse.errortext
         })
         this.loading = false
+      })
+    },
+    returnPlaceholder (field) {
+      this.params.find(i => {
+        if (i.name === field) this.placeholder[field] = i.description
       })
     }
   }
