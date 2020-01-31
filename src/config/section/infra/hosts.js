@@ -23,7 +23,14 @@ export default {
   resourceType: 'Host',
   params: { type: 'routing' },
   columns: ['name', 'state', 'resourcestate', 'powerstate', 'ipaddress', 'hypervisor', 'instances', 'cpunumber', 'cputotalghz', 'cpuusedghz', 'cpuallocatedghz', 'memorytotalgb', 'memoryusedgb', 'memoryallocatedgb', 'networkread', 'networkwrite', 'clustername', 'zonename'],
-  details: ['name', 'id', 'resourcestate', 'ipaddress', 'hypervisor', 'hypervisorversion', 'version', 'type', 'oscategoryname', 'hosttags', 'clustername', 'podname', 'zonename', 'created'],
+  details: ['name', 'id', 'resourcestate', 'ipaddress', 'hypervisor', 'type', 'clustername', 'podname', 'zonename', 'disconnected', 'created'],
+  tabs: [{
+    name: 'details',
+    component: () => import('@/components/view/DetailsTab.vue')
+  }, {
+    name: 'Config',
+    component: () => import('@/views/infra/HostInfoTab.vue')
+  }],
   related: [{
     name: 'vm',
     title: 'Instances',
@@ -42,7 +49,12 @@ export default {
       icon: 'edit',
       label: 'label.edit',
       dataView: true,
-      args: ['hosttags', 'oscategoryid']
+      args: ['hosttags', 'oscategoryid'],
+      mapping: {
+        oscategoryid: {
+          api: 'listOsCategories'
+        }
+      }
     },
     {
       api: 'provisionCertificate',
@@ -115,8 +127,8 @@ export default {
       label: 'label.outofbandmanagement.enable',
       dataView: true,
       show: (record) => {
-        return !record.resourcedetails || !record.resourcedetails.outOfBandManagementEnabled ||
-          record.resourcedetails.outOfBandManagementEnabled === 'false'
+        return !record.outofbandmanagement || !record.outofbandmanagement.enabled ||
+          record.outofbandmanagement.enabled === false
       },
       args: ['hostid'],
       mapping: {
@@ -131,8 +143,8 @@ export default {
       label: 'label.outofbandmanagement.disable',
       dataView: true,
       show: (record) => {
-        return record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
-          record.resourcedetails.outOfBandManagementEnabled === 'true'
+        return record.outofbandmanagement && record.outofbandmanagement.enabled &&
+          record.outofbandmanagement.enabled === true
       },
       args: ['hostid'],
       mapping: {
@@ -147,8 +159,8 @@ export default {
       label: 'label.outofbandmanagement.action.issue',
       dataView: true,
       show: (record) => {
-        return record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
-          record.resourcedetails.outOfBandManagementEnabled === 'true'
+        return record.outofbandmanagement && record.outofbandmanagement.enabled &&
+        record.outofbandmanagement.enabled === true
       },
       args: ['hostid', 'action'],
       mapping: {
@@ -163,8 +175,8 @@ export default {
       label: 'label.outofbandmanagement.changepassword',
       dataView: true,
       show: (record) => {
-        return record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
-          record.resourcedetails.outOfBandManagementEnabled === 'true'
+        return record.outofbandmanagement && record.outofbandmanagement.enabled &&
+          record.outofbandmanagement.enabled === true
       },
       args: ['hostid', 'password'],
       mapping: {
@@ -195,8 +207,7 @@ export default {
       label: 'label.ha.enable',
       dataView: true,
       show: (record) => {
-        return !record.resourcedetails || !record.resourcedetails.resourceHAEnabled ||
-          record.resourcedetails.resourceHAEnabled === 'false'
+        return !record.hostha || !record.hostha.haenable || record.hostha.haenable === false
       },
       args: ['hostid'],
       mapping: {
@@ -211,8 +222,8 @@ export default {
       label: 'label.ha.disable',
       dataView: true,
       show: (record) => {
-        return record.resourcedetails && record.resourcedetails.resourceHAEnabled &&
-          record.resourcedetails.resourceHAEnabled === 'true'
+        return record.hostha && record.hostha.haenable &&
+        record.hostha.haenable === true
       },
       args: ['hostid'],
       mapping: {

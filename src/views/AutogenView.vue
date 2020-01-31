@@ -147,7 +147,7 @@
                   }"
                 >
                   <a-select-option v-for="(opt, optIndex) in field.opts" :key="optIndex">
-                    {{ opt.name || opt.description }}
+                    {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
                 </a-select>
               </span>
@@ -271,7 +271,9 @@ export default {
   provide: function () {
     return {
       parentFetchData: this.fetchData,
-      parentToggleLoading: this.toggleLoading
+      parentToggleLoading: this.toggleLoading,
+      parentStartLoading: this.startLoading,
+      parentFinishLoading: this.finishLoading
     }
   },
   data () {
@@ -525,6 +527,9 @@ export default {
 
       this.showAction = true
       for (const param of this.currentAction.paramFields) {
+        if (param.type === 'list' && param.name === 'hosttags') {
+          param.type = 'string'
+        }
         if (param.type === 'uuid' || param.type === 'list' || param.name === 'account' || (this.currentAction.mapping && param.name in this.currentAction.mapping)) {
           this.listUuidOpts(param)
         }
@@ -748,6 +753,12 @@ export default {
     },
     toggleLoading () {
       this.loading = !this.loading
+    },
+    startLoading () {
+      this.loading = true
+    },
+    finishLoading () {
+      this.loading = false
     }
   }
 }

@@ -16,32 +16,23 @@
 // under the License.
 
 <template>
-  <a-list
-    size="small"
-    :dataSource="$route.meta.details">
-    <a-list-item slot="renderItem" slot-scope="item" v-if="item in resource">
-      <div>
-        <strong>{{ $t(item) }}</strong>
-        <br/>
-        <div>
-          {{ resource[item] }}
-        </div>
-      </div>
-    </a-list-item>
-    <DedicateData :resource="resource" v-if="dedicatedSectionActive" />
-    <VmwareData :resource="resource" v-if="$route.meta.name === 'zone'" />
-  </a-list>
+  <a-spin :spinning="fetchLoading">
+    Static Routes Stub
+    <a-button type="dashed" icon="plus" style="width: 100%" @click="handleOpenModal">Add: button to add static route</a-button>
+    <div v-for="(route, index) in routes" :key="index">
+      {{ route }}
+    </div>
+  </a-spin>
 </template>
 
 <script>
-import DedicateData from './DedicateData'
-import VmwareData from './VmwareData'
+import { api } from '@/api'
+import Status from '@/components/widgets/Status'
 
 export default {
-  name: 'DetailsTab',
+  name: 'StaticRoutesTab',
   components: {
-    DedicateData,
-    VmwareData
+    Status
   },
   props: {
     resource: {
@@ -55,20 +46,38 @@ export default {
   },
   data () {
     return {
-      dedicatedRoutes: ['zone', 'pod', 'cluster', 'host'],
-      dedicatedSectionActive: false
+      routes: [],
+      fetchLoading: false
     }
   },
   mounted () {
-    this.dedicatedSectionActive = this.dedicatedRoutes.includes(this.$route.meta.name)
-  },
-  created () {
-    this.dedicatedSectionActive = this.dedicatedRoutes.includes(this.$route.meta.name)
+    this.fetchData()
   },
   watch: {
-    $route () {
-      this.dedicatedSectionActive = this.dedicatedRoutes.includes(this.$route.meta.name)
+    loading (newData, oldData) {
+      if (!newData && this.resource.id) {
+        this.fetchData()
+      }
+    }
+  },
+  methods: {
+    fetchData () {
+      this.fetchLoading = true
+      api('listStaticRoutes', { gatewayid: this.resource.id }).then(json => {
+        this.routes = json.liststaticroutesresponse.staticroute
+      }).catch(error => {
+        this.$notification.error({
+          message: 'Request Failed',
+          description: error.response.headers['x-description']
+        })
+      }).finally(() => {
+        this.fetchLoading = false
+      })
     }
   }
 }
 </script>
+
+<style lang="less" scoped>
+
+</style>
