@@ -16,31 +16,40 @@
 // under the License.
 
 <template>
-  <div class="page-header-index-wide page-header-wrapper-grid-content-main">
-    <a-row :gutter="12">
-      <a-col :md="24" :lg="7" style="margin-bottom: 12px">
-        <slot name="left">
-        </slot>
+  <a-form-item :label="this.$t('diskSize')">
+    <a-row>
+      <a-col :span="10">
+        <a-slider
+          :min="0"
+          :max="1024"
+          v-decorator="[inputDecorator]"
+        />
       </a-col>
-      <a-col :md="24" :lg="17">
-        <slot name="right">
-        </slot>
+      <a-col :span="4">
+        <a-input-number
+          v-decorator="[inputDecorator, {
+            rules: [{ required: false, message: 'Please enter a number' }]
+          }]"
+          :formatter="value => `${value} GB`"
+          :parser="value => value.replace(' GB', '')"
+        />
       </a-col>
     </a-row>
-  </div>
+  </a-form-item>
 </template>
 
 <script>
 export default {
-  name: 'ResourceLayout'
+  name: 'DiskSizeSelection',
+  props: {
+    inputDecorator: {
+      type: String,
+      default: ''
+    }
+  }
 }
 </script>
 
-<style lang="less" scoped>
-.page-header-wrapper-grid-content-main {
-  width: 100%;
-  height: 100%;
-  min-height: 100%;
-  transition: 0.3s;
-}
+<style scoped>
+
 </style>
