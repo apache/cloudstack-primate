@@ -18,14 +18,14 @@
 <template>
   <a-spin :spinning="componentLoading">
     <div class="new-route">
-      <a-input v-model="newRoute" icon="plus" :placeholder="$t('label.CIDR.of.destination.network')"></a-input>
+      <a-input v-model="newRoute" icon="plus" :placeholder="$t('label.cidr.destination.network')"></a-input>
       <a-button type="primary" @click="handleAdd">{{ $t('label.add.route') }}</a-button>
     </div>
 
     <div class="list">
       <div v-for="(route, index) in routes" :key="index" class="list__item">
         <div class="list__col">
-          <div class="list__label">{{ $t('label.CIDR.of.destination.network') }}</div>
+          <div class="list__label">{{ $t('label.cidr.destination.network') }}</div>
           <div>{{ route.cidr }}</div>
         </div>
         <div class="actions">
