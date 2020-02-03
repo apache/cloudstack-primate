@@ -17,7 +17,7 @@
 
 <template>
   <a-spin :spinning="fetchLoading">
-    <a-tabs defaultActiveKey="0" tabPosition="top" type="card">
+    <a-tabs defaultActiveKey="0" :tabPosition="device === 'mobile' ? 'top' : 'left'" :animated="false">
       <a-tab-pane v-for="(item, index) in traffictypes" :tab="item.traffictype" :key="index">
         <div style="margin-bottom: 10px;">
           <div><strong>{{ $t('id') }}</strong></div>
@@ -58,6 +58,7 @@
 
 <script>
 import { api } from '@/api'
+import { mixinDevice } from '@/utils/mixin.js'
 import Status from '@/components/widgets/Status'
 import IpRangesTabPublic from './IpRangesTabPublic'
 import IpRangesTabManagement from './IpRangesTabManagement'
@@ -71,6 +72,7 @@ export default {
     IpRangesTabStorage,
     Status
   },
+  mixins: [mixinDevice],
   props: {
     resource: {
       type: Object,
