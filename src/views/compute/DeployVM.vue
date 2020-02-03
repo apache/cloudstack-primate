@@ -60,6 +60,7 @@
                     <template-iso-selection
                       input-decorator="templateid"
                       :items="options.templates"
+                      :loading="loading.templates"
                     ></template-iso-selection>
                     <disk-size-selection
                       input-decorator="rootdisksize"
@@ -70,6 +71,7 @@
                     <template-iso-selection
                       input-decorator="isoid"
                       :items="options.isos"
+                      :loading="loading.isos"
                     ></template-iso-selection>
                   </a-collapse-panel>
                 </a-collapse>
@@ -79,7 +81,9 @@
                 <compute-selection
                   :compute-items="options.serviceOfferings"
                   :value="serviceOffering ? serviceOffering.id : ''"
+                  :loading="loading.serviceOfferings"
                   @select-compute-item="($event) => updateComputeOffering($event)"
+                  @handle-search-filter="($event) => handleSearchFilter('serviceOfferings', $event)"
                 ></compute-selection>
               </a-collapse-panel>
 
@@ -87,7 +91,9 @@
                 <disk-offering-selection
                   :items="options.diskOfferings"
                   :value="diskOffering ? diskOffering.id : ''"
+                  :loading="loading.diskOfferings"
                   @select-disk-offering-item="($event) => updateDiskOffering($event)"
+                  @handle-search-filter="($event) => handleSearchFilter('diskOfferings', $event)"
                 ></disk-offering-selection>
                 <disk-size-selection
                   v-if="diskOffering && diskOffering.iscustomized"
@@ -99,7 +105,9 @@
                 <affinity-group-selection
                   :items="options.affinityGroups"
                   :value="affinityGroupIds"
+                  :loading="loading.affinityGroups"
                   @select-affinity-group-item="($event) => updateAffinityGroups($event)"
+                  @handle-search-filter="($event) => handleSearchFilter('affinityGroups', $event)"
                 ></affinity-group-selection>
               </a-collapse-panel>
 
@@ -113,7 +121,9 @@
                     <network-selection
                       :items="options.networks"
                       :value="networkOfferingIds"
+                      :loading="loading.networks"
                       @select-network-item="($event) => updateNetworks($event)"
+                      @handle-search-filter="($event) => handleSearchFilter('networks', $event)"
                     ></network-selection>
                   </a-collapse-panel>
 
@@ -134,7 +144,9 @@
                 <ssh-key-pair-selection
                   :items="options.sshKeyPairs"
                   :value="sshKeyPair ? sshKeyPair.name : ''"
+                  :loading="loading.sshKeyPairs"
                   @select-ssh-key-pair-item="($event) => updateSshKeyPairs($event)"
+                  @handle-search-filter="($event) => handleSearchFilter('sshKeyPairs', $event)"
                 ></ssh-key-pair-selection>
               </a-collapse-panel>
             </a-collapse>
@@ -219,6 +231,15 @@ export default {
         networks: [],
         sshKeyPairs: []
       },
+      loading: {
+        templates: false,
+        isos: false,
+        serviceOfferings: false,
+        diskOfferings: false,
+        affinityGroups: false,
+        networks: false,
+        sshKeyPairs: false
+      },
       instanceConfig: [],
       template: {},
       iso: {},
@@ -263,26 +284,49 @@ export default {
           }
         },
         serviceOfferings: {
-          list: 'listServiceOfferings'
+          list: 'listServiceOfferings',
+          options: {
+            page: 1,
+            pageSize: 10,
+            keyword: undefined
+          }
         },
         diskOfferings: {
-          list: 'listDiskOfferings'
+          list: 'listDiskOfferings',
+          options: {
+            page: 1,
+            pageSize: 10,
+            keyword: undefined
+          }
         },
         zones: {
           list: 'listZones'
         },
         affinityGroups: {
-          list: 'listAffinityGroups'
+          list: 'listAffinityGroups',
+          options: {
+            page: 1,
+            pageSize: 10,
+            keyword: undefined
+          }
         },
         sshKeyPairs: {
-          list: 'listSSHKeyPairs'
+          list: 'listSSHKeyPairs',
+          options: {
+            page: 1,
+            pageSize: 10,
+            keyword: undefined
+          }
         },
         networks: {
           list: 'listNetworks',
           options: {
             zoneid: _.get(this.zone, 'id'),
             canusefordeploy: true,
-            projectid: store.getters.project.id
+            projectid: store.getters.project.id,
+            page: 1,
+            pageSize: 10,
+            keyword: undefined
           }
         }
       }
@@ -368,7 +412,7 @@ export default {
     this.form.getFieldDecorator('affinitygroupids', { initialValue: [], preserve: true })
     this.form.getFieldDecorator('isoid', { initialValue: [], preserve: true })
     this.form.getFieldDecorator('networkids', { initialValue: [], preserve: true })
-    this.form.getFieldDecorator('keypair', { initialValue: [], preserve: true })
+    this.form.getFieldDecorator('keypair', { initialValue: undefined, preserve: true })
   },
   created () {
     _.each(this.params, this.fetchOptions)
@@ -409,6 +453,7 @@ export default {
       console.log('wizard submit')
     },
     fetchOptions (param, name) {
+      this.loading[name] = true
       param.loading = true
       param.opts = []
       const options = param.options || {}
@@ -416,6 +461,11 @@ export default {
       api(param.list, options).then((response) => {
         param.loading = false
         _.map(response, (responseItem, responseKey) => {
+          if (Object.keys(responseItem).length === 0) {
+            this.options[name] = []
+            this.$forceUpdate()
+            return
+          }
           if (!responseKey.includes('response')) {
             return
           }
@@ -431,26 +481,41 @@ export default {
       }).catch(function (error) {
         console.log(error.stack)
         param.loading = false
+      }).finally(() => {
+        this.loading[name] = false
       })
     },
     fetchIsos (isoFilter) {
-      api('listIsos', {
-        zoneid: _.get(this.zone, 'id'),
-        isofilter: isoFilter,
-        bootable: true
-      }).then((response) => {
-        const concatedIsos = _.concat(this.options.isos, _.get(response, 'listisosresponse.iso', []))
-        this.options.isos = _.uniqWith(concatedIsos, _.isEqual)
-        this.$forceUpdate()
-      }).catch((reason) => {
-        // ToDo: Handle errors
-        console.log(reason)
+      return new Promise((resolve, reject) => {
+        api('listIsos', {
+          zoneid: _.get(this.zone, 'id'),
+          isofilter: isoFilter,
+          bootable: true
+        }).then((response) => {
+          resolve(response)
+        }).catch((reason) => {
+          // ToDo: Handle errors
+          reject(reason)
+        })
       })
     },
     fetchAllIsos () {
+      const promises = []
       this.options.isos = []
+      this.loading.isos = true
       this.isoFilter.forEach((filter) => {
-        this.fetchIsos(filter)
+        promises.push(this.fetchIsos(filter))
+      })
+      Promise.all(promises).then(response => {
+        response.forEach((resItem) => {
+          const concatedIsos = _.concat(this.options.isos, _.get(resItem, 'listisosresponse.iso', []))
+          this.options.isos = _.uniqWith(concatedIsos, _.isEqual)
+          this.$forceUpdate()
+        })
+      }).catch((reason) => {
+        console.log(reason)
+      }).finally(() => {
+        this.loading.isos = false
       })
     },
     onTemplatesIsosCollapseChange (key) {
@@ -466,6 +531,10 @@ export default {
         this.fetchOptions(this.params.templates, 'templates')
         this.fetchOptions(this.params.networks, 'networks')
       })
+    },
+    handleSearchFilter (name, options) {
+      this.params[name].options = { ...options }
+      this.fetchOptions(this.params[name], name)
     }
   }
 }

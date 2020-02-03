@@ -22,10 +22,12 @@
       <span slot="tab">
         <os-logo :os-name="osName"></os-logo>
       </span>
-      <TemplateIsoRadioGroup
-        :osList="osList"
-        :input-decorator="inputDecorator"
-      ></TemplateIsoRadioGroup>
+      <a-spin :spinning="loading">
+        <TemplateIsoRadioGroup
+          :osList="osList"
+          :input-decorator="inputDecorator"
+        ></TemplateIsoRadioGroup>
+      </a-spin>
     </a-tab-pane>
   </a-tabs>
   <div v-else>
@@ -60,6 +62,10 @@ export default {
     inputDecorator: {
       type: String,
       default: ''
+    },
+    loading: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -116,5 +122,9 @@ export default {
 <style lang="less" scoped>
   .search-input {
     margin: 0.5rem 0 1rem;
+  }
+
+  /deep/.ant-tabs-nav-scroll {
+    min-height: 45px;
   }
 </style>
