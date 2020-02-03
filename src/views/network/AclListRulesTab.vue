@@ -17,13 +17,15 @@
 
 <template>
   <a-spin :spinning="fetchLoading">
-    <a-button type="dashed" style="width: 100%" icon="plus" @click="openAddRuleModal">
-      {{ $t('add') }} {{ $t('aclid') }}
-    </a-button>
+    <div style="width: 100%; display: flex">
+      <a-button type="dashed" icon="plus" style="width: 100%; margin-right: 10px" @click="openAddRuleModal">
+        {{ $t('add') }} {{ $t('aclid') }}
+      </a-button>
 
-    <a-button @click="exportAclList" icon="download" class="download">
-      Export ACLs
-    </a-button>
+      <a-button type="dashed" @click="exportAclList" style="width: 100%" icon="download">
+        Export ACLs
+      </a-button>
+    </div>
 
     <div class="list">
       <draggable
@@ -613,7 +615,7 @@ export default {
       const hiddenElement = document.createElement('a')
       hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csvData)
       hiddenElement.target = '_blank'
-      hiddenElement.download = 'aclRules.csv'
+      hiddenElement.download = 'AclRules-' + this.resource.name + '-' + this.resource.id + '.csv'
       hiddenElement.click()
     }
   }
