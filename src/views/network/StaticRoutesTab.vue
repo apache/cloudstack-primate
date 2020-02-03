@@ -17,19 +17,9 @@
 
 <template>
   <a-spin :spinning="componentLoading">
-    <a-button
-      v-if="!showNewInput"
-      type="dashed"
-      icon="plus"
-      style="width: 100%"
-      @click="showNewInput = true">
-      {{ $t('label.add.route') }}
-    </a-button>
-
-    <div v-if="showNewInput" class="new-route">
-      <a-input v-model="newRoute" :placeholder="$t('label.CIDR.of.destination.network')"></a-input>
-      <a-button @click="showNewInput = false">{{ $t('cancel') }}</a-button>
-      <a-button type="primary" @click="handleAdd">{{ $t('add') }}</a-button>
+    <div class="new-route">
+      <a-input v-model="newRoute" icon="plus" :placeholder="$t('label.CIDR.of.destination.network')"></a-input>
+      <a-button type="primary" @click="handleAdd">{{ $t('label.add.route') }}</a-button>
     </div>
 
     <div class="list">
@@ -106,7 +96,6 @@ export default {
       newTagsForm: this.$form.createForm(this),
       tags: [],
       tagsLoading: false,
-      showNewInput: false,
       newRoute: null
     }
   },
@@ -152,7 +141,6 @@ export default {
               status: 'progress'
             })
             this.componentLoading = false
-            this.showNewInput = false
             this.newRoute = null
           },
           errorMessage: 'Failed to add static route',
