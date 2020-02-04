@@ -161,7 +161,7 @@
           </a-form-item>
         </a-col>
       </a-row>
-      <a-row :gutter="12" v-if="allowed && hyperKVMShow">
+      <a-row :gutter="12" v-if="allowed && hyperKVMShow && currentForm !== 'Upload'">
         <a-col :md="24" :lg="12">
           <a-form-item :label="$t('directdownload')">
             <a-switch v-decorator="['directdownload']" @change="handleChangeDirect" />
