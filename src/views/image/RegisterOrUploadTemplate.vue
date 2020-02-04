@@ -18,15 +18,39 @@
 <template>
   <div class="form-layout">
     <a-form layout="vertical" :form="form">
-      <a-row :gutter="12">
-        <a-form-item :label="$t('url')">
-          <a-input
-            v-decorator="['url', {
+      <div v-if="currentForm === 'Create'">
+        <a-row :gutter="12">
+          <a-form-item :label="$t('url')">
+            <a-input
+              v-decorator="['url', {
+                rules: [{ required: true, message: 'Please enter input' }]
+              }]"
+              :placeholder="apiParams.url.description" />
+          </a-form-item>
+        </a-row>
+      </div>
+      <div v-if="currentForm === 'Upload'">
+        <a-form-item :label="$t('templateFileUpload')">
+          <a-upload
+            :fileList="fileList"
+            :remove="handleRemove"
+            :beforeUpload="beforeUpload"
+            v-decorator="['file', {
               rules: [{ required: true, message: 'Please enter input' }]
-            }]"
-            :placeholder="apiParams.url.description" />
+            }]">
+            <a-button> <a-icon type="upload" /> Select File </a-button>
+          </a-upload>
+          <!-- <a-button
+            type="primary"
+            @click="handleUpload"
+            :disabled="fileList.length === 0"
+            :loading="uploading"
+            style="margin-top: 16px"
+          >
+            {{ uploading ? 'Uploading' : 'Start Upload' }}
+          </a-button> -->
         </a-form-item>
-      </a-row>
+      </div>
       <a-row :gutter="12">
         <a-form-item :label="$t('name')">
           <a-input
@@ -45,33 +69,58 @@
             :placeholder="apiParams.displaytext.description" />
         </a-form-item>
       </a-row>
-      <a-row :gutter="12">
-        <a-col :md="24" :lg="24">
-          <a-form-item
-            :label="$t('zoneids')"
-            :validate-status="zoneError"
-            :help="zoneErrorMessage">
-            <a-select
-              v-decorator="['zoneids', {
-                rules: [
-                  {
-                    required: false,
-                    message: 'Please select option',
-                    type: 'array'
-                  }
-                ]
-              }]"
-              :loading="zones.loading"
-              mode="multiple"
-              :placeholder="apiParams.zoneids.description"
-              @change="handlerSelectZone">
-              <a-select-option v-for="opt in zones.opts" :key="opt.name || opt.description">
-                {{ opt.name || opt.description }}
-              </a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-      </a-row>
+      <div v-if="currentForm === 'Create'">
+        <a-row :gutter="12">
+          <a-col :md="24" :lg="24">
+            <a-form-item
+              :label="$t('zoneids')"
+              :validate-status="zoneError"
+              :help="zoneErrorMessage">
+              <a-select
+                v-decorator="['zoneids', {
+                  rules: [
+                    {
+                      required: false,
+                      message: 'Please select option',
+                      type: 'array'
+                    }
+                  ]
+                }]"
+                :loading="zones.loading"
+                mode="multiple"
+                :placeholder="apiParams.zoneids.description"
+                @change="handlerSelectZone">
+                <a-select-option v-for="opt in zones.opts" :key="opt.name || opt.description">
+                  {{ opt.name || opt.description }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+        </a-row>
+      </div>
+      <div v-else>
+        <a-row :gutter="12">
+          <a-col :md="24" :lg="24">
+            <a-form-item
+              :label="$t('zoneid')"
+              :validate-status="zoneError"
+              :help="zoneErrorMessage">
+              <a-select
+                v-decorator="['zoneid', {
+                  initialValue: this.zoneSelected
+                }]"
+                @change="handlerSelectZone"
+                :loading="zones.loading">
+                <a-select-option :value="zone.id" v-for="zone in zones.opts" :key="zone.id">
+                  <div v-if="zone.name !== $t('label.all.zone')">
+                    {{ zone.name || zone.description }}
+                  </div>
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+        </a-row>
+      </div>
       <a-row :gutter="12">
         <a-col :md="24" :lg="12">
           <a-form-item :label="$t('hypervisor')">
@@ -79,7 +128,7 @@
               v-decorator="['hypervisor', {
                 rules: [
                   {
-                    required: false,
+                    required: true,
                     message: 'Please select option'
                   }
                 ]
@@ -99,7 +148,7 @@
               v-decorator="['format', {
                 rules: [
                   {
-                    required: false,
+                    required: true,
                     message: 'Please select option'
                   }
                 ]
@@ -144,7 +193,7 @@
               v-decorator="['rootDiskControllerType', {
                 rules: [
                   {
-                    required: false,
+                    required: true,
                     message: 'Please select option'
                   }
                 ]
@@ -219,9 +268,10 @@
             <a-select
               showSearch
               v-decorator="['ostypeid', {
+                initialValue: defaultOsType,
                 rules: [
                   {
-                    required: false,
+                    required: true,
                     message: 'Please select option'
                   }
                 ]
@@ -306,18 +356,34 @@
 <script>
 import { api } from '@/api'
 import store from '@/store'
+import { axios } from '../../utils/request'
 
 export default {
-  name: 'RegisterTemplate',
+  name: 'RegisterOrUploadTemplate',
+  props: {
+    resource: {
+      type: Object,
+      required: true
+    },
+    action: {
+      type: Object,
+      required: true
+    }
+  },
   data () {
     return {
+      uploading: false,
+      fileList: [],
       zones: {},
+      defaultZone: '',
+      zoneSelected: '',
       hyperVisor: {},
       rootDisk: {},
       nicAdapterType: {},
       keyboardType: {},
       format: {},
       osTypes: {},
+      defaultOsType: '',
       xenServerProvider: false,
       hyperKVMShow: false,
       hyperXenServerShow: false,
@@ -327,7 +393,9 @@ export default {
       loading: false,
       rootAdmin: 'Admin',
       allowed: false,
-      allowDirectDownload: false
+      allowDirectDownload: false,
+      uploadParams: null,
+      currentForm: this.action.currentAction.api === 'registerTemplate' ? 'Create' : 'Upload'
     }
   },
   beforeCreate () {
@@ -365,6 +433,47 @@ export default {
         this.fetchXenServerProvider()
       }
     },
+    handleFormChange (e) {
+      this.currentForm = e.target.value
+    },
+    handleRemove (file) {
+      const index = this.fileList.indexOf(file)
+      const newFileList = this.fileList.slice()
+      newFileList.splice(index, 1)
+      this.fileList = newFileList
+    },
+    beforeUpload (file) {
+      this.fileList = [...this.fileList, file]
+      return false
+    },
+    handleUpload () {
+      const { fileList } = this
+      if (this.fileList.length > 1) {
+        this.$notification.error({
+          message: 'Only one file can be uploaded',
+          description: 'Only one file can be uploaded'
+        })
+      }
+      const formData = new FormData()
+      fileList.forEach(file => {
+        formData.append('files[]', file)
+      })
+      this.loading = true
+      axios.post(this.uploadParams.postURL,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'X-signature': this.uploadParams.signature,
+            'X-expires': this.uploadParams.expires,
+            'X-metadata': this.uploadParams.metadata
+          }
+        }).then((json) => {
+        return json
+      }).catch(e => {
+        console.log('error = ', e)
+      })
+    },
     fetchZone () {
       const params = {}
       let listZones = []
@@ -389,7 +498,9 @@ export default {
 
         this.$set(this.zones, 'opts', listZones)
       }).finally(() => {
+        this.zoneSelected = (this.zones.opts && this.zones.opts[1]) ? this.zones.opts[1].id : ''
         this.zones.loading = false
+        this.fetchHyperVisor({ zoneid: this.zoneSelected })
       })
     },
     fetchHyperVisor (params) {
@@ -401,10 +512,11 @@ export default {
         if (listResponse) {
           listhyperVisors = listhyperVisors.concat(listResponse)
         }
-        listhyperVisors.push({
-          name: 'Any'
-        })
-
+        if (this.currentForm !== 'Upload') {
+          listhyperVisors.push({
+            name: 'Any'
+          })
+        }
         this.$set(this.hyperVisor, 'opts', listhyperVisors)
       }).finally(() => {
         this.hyperVisor.loading = false
@@ -420,6 +532,7 @@ export default {
       api('listOsTypes', params).then(json => {
         const listOsTypes = json.listostypesresponse.ostype
         this.$set(this.osTypes, 'opts', listOsTypes)
+        this.defaultOsType = this.osTypes.opts[1].description
       }).finally(() => {
         this.osTypes.loading = false
       })
@@ -620,7 +733,6 @@ export default {
         default:
           break
       }
-
       this.$set(this.format, 'opts', format)
     },
     handlerSelectZone (value) {
@@ -638,7 +750,6 @@ export default {
 
       if (allZoneExists.length > 0) {
         params.listAll = true
-
         this.fetchHyperVisor(params)
         return
       }
@@ -680,6 +791,9 @@ export default {
           if (input === undefined) {
             continue
           }
+          if (key === 'file') {
+            continue
+          }
 
           if (key === 'zoneids') {
             if (input.length === 1 && input[0] === this.$t('label.all.zone')) {
@@ -695,6 +809,8 @@ export default {
               }
             }
             params[key] = zonesSelected.join(',')
+          } else if (key === 'zoneid') {
+            params[key] = values[key]
           } else if (key === 'ostypeid') {
             const osTypeSelected = this.osTypes.opts.filter(item => item.description === input)
             if (osTypeSelected && osTypeSelected[0]) {
@@ -732,21 +848,42 @@ export default {
           }
         }
         this.loading = true
-        api('registerTemplate', params).then(json => {
-          this.$emit('refresh-data')
-          this.$notification.success({
-            message: 'Register Template',
-            description: 'Successfully registered template ' + params.name
+        if (this.currentForm === 'Create') {
+          api('registerTemplate', params).then(json => {
+            this.$emit('refresh-data')
+            this.$notification.success({
+              message: 'Register Template',
+              description: 'Successfully registered template ' + params.name
+            })
+          }).catch(error => {
+            this.$notification.error({
+              message: 'Request Failed',
+              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+            })
+          }).finally(() => {
+            this.loading = false
+            this.closeAction()
           })
-        }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+        } else {
+          api('getUploadParamsForTemplate', params).then(json => {
+            this.uploadParams = (json.postuploadtemplateresponse && json.postuploadtemplateresponse.getuploadparams) ? json.postuploadtemplateresponse.getuploadparams : ''
+            const respose = this.handleUpload()
+            if (respose === 'upload successful') {
+              this.$notification.success({
+                message: 'upload successful',
+                description: 'upload successful'
+              })
+            }
+          }).catch(error => {
+            this.$notification.error({
+              message: 'Request Failed',
+              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+            })
+          }).finally(() => {
+            this.loading = false
+            this.closeAction()
           })
-        }).finally(() => {
-          this.loading = false
-          this.closeAction()
-        })
+        }
       })
     },
     handleChangeDirect (checked) {

@@ -51,7 +51,7 @@ export default {
           label: 'Create template',
           listView: true,
           popup: true,
-          component: () => import('@/views/image/RegisterTemplate.vue')
+          component: () => import('@/views/image/RegisterOrUploadTemplate.vue')
         },
         {
           api: 'getUploadParamsForTemplate',
@@ -59,7 +59,7 @@ export default {
           label: 'Upload Local Template',
           listView: true,
           popup: true,
-          component: () => import('@/views/image/UploadLocalTemplate.vue')
+          component: () => import('@/views/image/RegisterOrUploadTemplate.vue')
         },
         {
           api: 'updateTemplate',
