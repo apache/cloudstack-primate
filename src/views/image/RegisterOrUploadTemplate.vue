@@ -40,22 +40,13 @@
             }]">
             <a-button> <a-icon type="upload" /> Select File </a-button>
           </a-upload>
-          <!-- <a-button
-            type="primary"
-            @click="handleUpload"
-            :disabled="fileList.length === 0"
-            :loading="uploading"
-            style="margin-top: 16px"
-          >
-            {{ uploading ? 'Uploading' : 'Start Upload' }}
-          </a-button> -->
         </a-form-item>
       </div>
       <a-row :gutter="12">
         <a-form-item :label="$t('name')">
           <a-input
             v-decorator="['name', {
-              rules: [{ required: true, message: 'Please enter input' }]
+              rules: [{ required: true, message: 'Please upload a template ' }]
             }]"
             :placeholder="apiParams.name.description" />
         </a-form-item>
@@ -450,8 +441,8 @@ export default {
       const { fileList } = this
       if (this.fileList.length > 1) {
         this.$notification.error({
-          message: 'Only one file can be uploaded',
-          description: 'Only one file can be uploaded'
+          message: 'Template Upload Failed',
+          description: 'Only one template can be uploaded at a time'
         })
       }
       const formData = new FormData()
@@ -867,8 +858,8 @@ export default {
         } else {
           api('getUploadParamsForTemplate', params).then(json => {
             this.uploadParams = (json.postuploadtemplateresponse && json.postuploadtemplateresponse.getuploadparams) ? json.postuploadtemplateresponse.getuploadparams : ''
-            const respose = this.handleUpload()
-            if (respose === 'upload successful') {
+            const response = this.handleUpload()
+            if (response === 'upload successful') {
               this.$notification.success({
                 message: 'upload successful',
                 description: 'upload successful'

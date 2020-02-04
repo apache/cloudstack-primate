@@ -48,7 +48,7 @@ export default {
         {
           api: 'registerTemplate',
           icon: 'plus',
-          label: 'Create template',
+          label: 'Register template',
           listView: true,
           popup: true,
           component: () => import('@/views/image/RegisterOrUploadTemplate.vue')
@@ -139,7 +139,7 @@ export default {
           label: 'Register ISO',
           listView: true,
           popup: true,
-          component: () => import('@/views/image/RegisterIso.vue')
+          component: () => import('@/views/image/RegisterOrUploadIso.vue')
         },
         {
           api: 'getUploadParamsForIso',
@@ -147,7 +147,7 @@ export default {
           label: 'Upload Local Iso',
           listView: true,
           popup: true,
-          component: () => import('@/views/image/UploadLocalIso.vue')
+          component: () => import('@/views/image/RegisterOrUploadIso.vue')
         },
         {
           api: 'updateIso',
