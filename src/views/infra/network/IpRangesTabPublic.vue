@@ -149,7 +149,23 @@
             v-decorator="['endip', { rules: [{ required: true, message: 'Required' }] }]">
           </a-input>
         </a-form-item>
-        <a-button @click="handleOpenAddAccountModal">{{ $t('label.set.reservation') }}</a-button>
+        <a-button @click="handleShowAccountFields">{{ $t('label.set.reservation') }}</a-button>
+        <div v-if="showAccountFields" style="margin-top: 20px;">
+          <a-spin :spinning="domainsLoading">
+            <a-form-item :label="$t('account')" class="form__item">
+              <a-input v-decorator="['account']"></a-input>
+            </a-form-item>
+            <a-form-item :label="$t('domain')" class="form__item">
+              <a-select v-decorator="['domain']">
+                <a-select-option
+                  v-for="domain in domains"
+                  :key="domain.id"
+                  :value="domain.id">{{ domain.name }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-spin>
+        </div>
       </a-form>
     </a-modal>
 
@@ -188,7 +204,8 @@ export default {
       },
       domains: [],
       domainsLoading: false,
-      addIpRangeModal: false
+      addIpRangeModal: false,
+      showAccountFields: false
     }
   },
   beforeCreate () {
@@ -229,7 +246,10 @@ export default {
         listAll: true
       }).then(response => {
         this.domains = response.listdomainsresponse.domain ? response.listdomainsresponse.domain : []
-        if (this.domains.length > 0) this.addAccount.domain = this.domains[0].id
+        if (this.domains.length > 0) {
+          this.addAccount.domain = this.domains[0].id
+          this.form.setFieldsValue({ domain: this.domains[0].id })
+        }
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
@@ -288,6 +308,10 @@ export default {
       this.addAccountModal = true
       this.fetchDomains()
     },
+    handleShowAccountFields () {
+      this.showAccountFields = true
+      this.fetchDomains()
+    },
     handleOpenAddIpRangeModal () {
       this.addIpRangeModal = true
     },
@@ -321,8 +345,8 @@ export default {
           netmask: values.netmask,
           startip: values.startip,
           endip: values.endip,
-          account: this.addAccount.account,
-          domainid: this.addAccount.domain,
+          account: values.account,
+          domainid: values.domain,
           forVirtualNetwork: true
         }).then(() => {
           this.$notification.success({
