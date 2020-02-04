@@ -24,9 +24,22 @@
           <div class="list__item-container">
             <div class="list__col">
               <div class="list__label">
-                <router-link :to="{ path: '/guestnetwork/' + network.id }">{{ network.name }}</router-link>
+                {{ $t('name') }}
               </div>
-              <div>CIDR: {{ network.cidr }}</div>
+              <div>
+                <router-link :to="{ path: '/guestnetwork/' + network.id }">{{ network.name }}</router-link>
+                <a-tag v-if="network.broadcasturi">{{ network.broadcasturi }}</a-tag>
+              </div>
+            </div>
+            <div class="list__col">
+              <div class="list__label">{{ $t('state') }}</div>
+              <div><status :text="network.state" displayText></status></div>
+            </div>
+            <div class="list__col">
+              <div class="list__label">
+                {{ $t('CIDR') }}
+              </div>
+              <div>{{ network.cidr }}</div>
             </div>
             <div class="list__col">
               <a-button icon="share-alt">

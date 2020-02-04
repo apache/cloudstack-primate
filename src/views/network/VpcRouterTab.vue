@@ -29,7 +29,13 @@
             <div class="list__item">
               <div class="list__col">
                 <div class="list__label">{{ $t('ip') }}</div>
-                <div>{{ item.ipaddress }}</div>
+                <div>
+                  <router-link :to="{ path: '/privategw/' + item.id }">{{ item.ipaddress }}</router-link>
+                </div>
+              </div>
+              <div class="list__col">
+                <div class="list__label">{{ $t('state') }}</div>
+                <div><status :text="item.state" displayText></status></div>
               </div>
               <div class="list__col">
                 <div class="list__label">{{ $t('gateway') }}</div>
@@ -102,39 +108,52 @@
             <div class="list__item">
               <div class="list__col">
                 <div class="list__label">{{ $t('ip') }}</div>
-                <div>{{ item.ipaddress }}{{ item.issourcenat === true ? ' [Source NAT]' : null }}</div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('zone') }}</div>
-                <div>{{ item.zonename }}</div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('network') }}</div>
-                <div>{{ item.networkname }}</div>
+                <div>
+                  <router-link :to="{ path: '/publicip/' + item.id }">
+                    {{ item.ipaddress }}
+                    <a-tag v-if="item.issourcenat">source-nat</a-tag>
+                    <a-tag v-if="item.isstaticnat">static-nat</a-tag>
+                  </router-link>
+                </div>
               </div>
               <div class="list__col">
                 <div class="list__label">{{ $t('state') }}</div>
                 <div><status :text="item.state" displayText></status></div>
+              </div>
+              <div class="list__col">
+                <div class="list__label">{{ $t('vm') }}</div>
+                <div>
+                  <router-link :to="{ path: '/vm/' + item.virtualmachineid }">
+                    {{ item.virtualmachinedisplayname || item.virtualmachinename }}
+                  </router-link>
+                </div>
+              </div>
+              <div class="list__col">
+                <div class="list__label">{{ $t('network') }}</div>
+                <div>
+                  <router-link :to="{ path: '/guestnetwork/' + item.associatednetworkid }">
+                    {{ item.associatednetworkname }}
+                  </router-link>
+                </div>
               </div>
             </div>
           </a-list-item>
         </a-list>
       </a-tab-pane>
       <a-tab-pane tab="S2S VPN Gateway" key="vpngw" v-if="'listVpnGateways' in $store.getters.apis">
+        <a-button type="dashed" icon="plus" style="width: 100%">Create Site-to-Site VPN Gateway</a-button>
+        TODO: the add/create button should be only shown when there are no gateways, otherwise show it.
+        only clicking, it should fire createVpnGateway API with vpcid=resource.id as param
         <a-list class="list">
           <a-list-item v-for="item in vpnGateways" :key="item.id">
             <div class="list__item">
               <div class="list__col">
                 <div class="list__label">{{ $t('ip') }}</div>
-                <div>{{ item.publicip }}</div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('account') }}</div>
-                <div>{{ item.account }}</div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('domain') }}</div>
-                <div>{{ item.domain }}</div>
+                <div>
+                  <router-link :to="{ path: '/s2svpn/' + item.id }">
+                    {{ item.publicip }}
+                  </router-link>
+                </div>
               </div>
             </div>
           </a-list-item>
@@ -149,16 +168,22 @@
           Create Site-to-Site VPN Connection
         </a-button>
         <a-table
-          style="margin-top: 20px;"
+          style="margin-top: 20px; overflow-y: auto"
           size="small"
           :columns="vpnConnectionsColumns"
           :dataSource="vpnConnections"
           :pagination="false"
-          :scroll="{ x: 1000 }"
           :rowKey="record => record.id">
+
+          <a slot="publicip" slot-scope="text, record" href="javascript:;">
+            <router-link :to="{ path: '/s2svpnconn/' + record.id }">
+              {{ text }}
+            </router-link>
+          </a>
           <template slot="state" slot-scope="text">
             <status :text="text ? text : ''" displayText />
           </template>
+
         </a-table>
         <a-modal v-model="modals.vpnConnection" :title="$t('label.create.VPN.connection')" @ok="handleVpnConnectionFormSubmit">
           <a-spin :spinning="modals.vpnConnectionLoading">
@@ -190,15 +215,15 @@
             <div class="list__item">
               <div class="list__col">
                 <div class="list__label">{{ $t('name') }}</div>
-                <div>{{ item.name }}</div>
+                <div>
+                  <router-link :to="{ path: '/acllist/' + item.id }">
+                    {{ item.name }}
+                  </router-link>
+                </div>
               </div>
               <div class="list__col">
                 <div class="list__label">{{ $t('description') }}</div>
                 <div>{{ item.description }}</div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('id') }}</div>
-                <div>{{ item.id }}</div>
               </div>
             </div>
           </a-list-item>
@@ -224,21 +249,19 @@
               <div class="list__row">
                 <div class="list__col">
                   <div class="list__label">{{ $t('name') }}</div>
-                  <div>{{ item.name }}</div>
+                  <div>
+                    <router-link :to="{ path: '/router/' + item.id }">
+                      {{ item.name }}
+                    </router-link>
+                  </div>
                 </div>
                 <div class="list__col">
                   <div class="list__label">{{ $t('state') }}</div>
                   <div><status :text="item.state" displayText></status></div>
                 </div>
                 <div class="list__col">
-                  <div class="list__label">{{ $t('hostname') }}</div>
-                  <div>{{ item.hostname }}</div>
-                </div>
-              </div>
-              <div class="list__row">
-                <div class="list__col">
-                  <div class="list__label">{{ $t('linklocalip') }}</div>
-                  <div>{{ item.linklocalip }}</div>
+                  <div class="list__label">{{ $t('publicip') }}</div>
+                  <div>{{ item.publicip }}</div>
                 </div>
                 <div class="list__col">
                   <div class="list__label">{{ $t('redundantrouter') }}</div>
@@ -248,47 +271,13 @@
                   <div class="list__label">{{ $t('redundantstate') }}</div>
                   <div>{{ item.redundantstate }}</div>
                 </div>
-              </div>
-              <div class="list__row">
                 <div class="list__col">
-                  <div class="list__label">{{ $t('id') }}</div>
-                  <div>{{ item.id }}</div>
-                </div>
-                <div class="list__col">
-                  <div class="list__label">{{ $t('label.service.offering') }}</div>
-                  <div>{{ item.serviceofferingname }}</div>
-                </div>
-                <div class="list__col">
-                  <div class="list__label">{{ $t('zone') }}</div>
-                  <div>{{ item.zonename }}</div>
-                </div>
-              </div>
-              <div class="list__row">
-                <div class="list__col">
-                  <div class="list__label">{{ $t('gateway') }}</div>
-                  <div>{{ item.gateway }}</div>
-                </div>
-                <div class="list__col">
-                  <div class="list__label">{{ $t('publicip') }}</div>
-                  <div>{{ item.publicip }}</div>
-                </div>
-                <div class="list__col">
-                  <div class="list__label">{{ $t('guestipaddress') }}</div>
-                  <div>{{ item.guestipaddress }}</div>
-                </div>
-              </div>
-              <div class="list__row">
-                <div class="list__col">
-                  <div class="list__label">{{ $t('dns') }}</div>
-                  <div>{{ item.dns1 }}</div>
-                </div>
-                <div class="list__col">
-                  <div class="list__label">{{ $t('account') }}</div>
-                  <div>{{ item.account }}</div>
-                </div>
-                <div class="list__col">
-                  <div class="list__label">{{ $t('domain') }}</div>
-                  <div>{{ item.domain }}</div>
+                  <div class="list__label">{{ $t('hostname') }}</div>
+                  <div>
+                    <router-link :to="{ path: '/host/' + item.hostid }">
+                      {{ item.hostname }}
+                    </router-link>
+                  </div>
                 </div>
               </div>
             </div>
@@ -347,11 +336,8 @@ export default {
       vpnConnectionsColumns: [
         {
           title: this.$t('ip'),
-          dataIndex: 'publicip'
-        },
-        {
-          title: this.$t('gateway'),
-          dataIndex: 'gateway'
+          dataIndex: 'publicip',
+          scopedSlots: { customRender: 'publicip' }
         },
         {
           title: this.$t('state'),
@@ -359,16 +345,12 @@ export default {
           scopedSlots: { customRender: 'state' }
         },
         {
+          title: this.$t('gateway'),
+          dataIndex: 'gateway'
+        },
+        {
           title: this.$t('ipsecpsk'),
           dataIndex: 'ipsecpsk'
-        },
-        {
-          title: this.$t('ikepolicy'),
-          dataIndex: 'ikepolicy'
-        },
-        {
-          title: this.$t('esppolicy'),
-          dataIndex: 'esppolicy'
         }
       ]
     }
