@@ -19,7 +19,7 @@
   <a-spin :spinning="fetchLoading">
     <a-tabs
       :activeKey="currentTab"
-      :tabPosition="device === 'tablet' ? 'top' : 'left'"
+      :tabPosition="device === 'tablet' || device === 'mobile' ? 'top' : 'left'"
       :animated="false"
       @change="handleChangeTab">
       <a-tab-pane tab="Private Gateways" key="pgw" v-if="'listPrivateGateways' in $store.getters.apis">
@@ -148,9 +148,14 @@
           showSizeChanger/>
       </a-tab-pane>
       <a-tab-pane tab="S2S VPN Gateway" key="vpngw" v-if="'listVpnGateways' in $store.getters.apis">
-        <a-button type="dashed" icon="plus" style="width: 100%">Create Site-to-Site VPN Gateway</a-button>
-        TODO: the add/create button should be only shown when there are no gateways, otherwise show it.
-        only clicking, it should fire createVpnGateway API with vpcid=resource.id as param
+        <a-button
+          v-if="vpnGateways.length === 0"
+          type="dashed"
+          icon="plus"
+          style="width: 100%"
+          @click="handleCreateVpnGateway">
+          Create Site-to-Site VPN Gateway
+        </a-button>
         <a-list class="list">
           <a-list-item v-for="item in vpnGateways" :key="item.id">
             <div class="list__item">
@@ -549,7 +554,7 @@ export default {
         vpcid: this.resource.id,
         listAll: true
       }).then(json => {
-        this.vpnGateways = json.listvpngatewaysresponse.vpngateway
+        this.vpnGateways = json.listvpngatewaysresponse.vpngateway ? json.listvpngatewaysresponse.vpngateway : []
       }).catch(error => {
         this.$notification.error({
           message: 'Request Failed',
@@ -811,6 +816,41 @@ export default {
           this.fetchLoading = false
           this.fetchAclList()
         })
+      })
+    },
+    handleCreateVpnGateway () {
+      this.fetchLoading = true
+      api('createVpnGateway', {
+        vpcid: this.resource.id
+      }).then(response => {
+        this.$store.dispatch('AddAsyncJob', {
+          title: `Successfully added VPN Gateway`,
+          jobid: response.createvpngatewayresponse.jobid,
+          status: 'progress'
+        })
+        this.$pollJob({
+          jobId: response.createvpngatewayresponse.jobid,
+          successMethod: () => {
+            this.fetchLoading = false
+          },
+          errorMessage: 'Adding VPN Gateway failed',
+          errorMethod: () => {
+            this.fetchLoading = false
+          },
+          loadingMessage: `Adding VPN Gateway...`,
+          catchMessage: 'Error encountered while fetching async job result',
+          catchMethod: () => {
+            this.fetchLoading = false
+          }
+        })
+      }).catch(error => {
+        this.$notification.error({
+          message: 'Request Failed',
+          description: error.response.headers['x-description']
+        })
+      }).finally(() => {
+        this.fetchLoading = false
+        this.handleFetchData()
       })
     },
     changePage (page, pageSize) {
