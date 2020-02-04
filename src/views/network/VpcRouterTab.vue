@@ -17,41 +17,44 @@
 
 <template>
   <a-spin :spinning="fetchLoading">
-    <a-tabs :tabPosition="device === 'tablet' ? 'top' : 'left'" :animated="false" @change="handleFetchData">
+    <a-tabs
+      :activeKey="currentTab"
+      :tabPosition="device === 'tablet' ? 'top' : 'left'"
+      :animated="false"
+      @change="handleChangeTab">
       <a-tab-pane tab="Private Gateways" key="pgw" v-if="'listPrivateGateways' in $store.getters.apis">
         <a-button
           type="dashed"
           icon="plus"
           style="width: 100%"
           @click="() => handleOpenModals('privateGateways')">Add Private Gateway</a-button>
-        <a-list class="list">
-          <a-list-item v-for="item in privateGateways" :key="item.id">
-            <div class="list__item">
-              <div class="list__col">
-                <div class="list__label">{{ $t('ip') }}</div>
-                <div>
-                  <router-link :to="{ path: '/privategw/' + item.id }">{{ item.ipaddress }}</router-link>
-                </div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('state') }}</div>
-                <div><status :text="item.state" displayText></status></div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('gateway') }}</div>
-                <div>{{ item.gateway }}</div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('netmask') }}</div>
-                <div>{{ item.netmask }}</div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('vlan') }}</div>
-                <div>{{ item.vlan }}</div>
-              </div>
-            </div>
-          </a-list-item>
-        </a-list>
+        <a-table
+          class="table"
+          size="small"
+          :columns="privateGatewaysColumns"
+          :dataSource="privateGateways"
+          :rowKey="item => item.id"
+          :pagination="false"
+        >
+          <template slot="ipaddress" slot-scope="text, item">
+            <router-link :to="{ path: '/privategw/' + item.id }">{{ text }}</router-link>
+          </template>
+          <template slot="state" slot-scope="text, item">
+            <status :text="item.state" displayText></status>
+          </template>
+        </a-table>
+        <a-pagination
+          class="row-element pagination"
+          size="small"
+          :current="page"
+          :pageSize="pageSize"
+          :total="itemCounts.privateGateways"
+          :showTotal="total => `Total ${total} items`"
+          :pageSizeOptions="['10', '20', '40', '80', '100']"
+          @change="changePage"
+          @showSizeChange="changePageSize"
+          showSizeChanger/>
+
         <a-modal v-model="modals.gateway" :title="$t('label.add.new.gateway')" @ok="handleGatewayFormSubmit">
           <a-spin :spinning="modals.gatewayLoading">
             <p>{{ $t('message.add.new.gateway.to.vpc') }}</p>
@@ -103,42 +106,46 @@
       </a-tab-pane>
       <a-tab-pane tab="Public IP Addresses" key="ip" v-if="'listPublicIpAddresses' in $store.getters.apis">
         <a-button type="dashed" icon="plus" style="width: 100%" @click="handleAcquireNewIp">Acquire New IP</a-button>
-        <a-list class="list">
-          <a-list-item v-for="item in publicIpAddresses" :key="item.id">
-            <div class="list__item">
-              <div class="list__col">
-                <div class="list__label">{{ $t('ip') }}</div>
-                <div>
-                  <router-link :to="{ path: '/publicip/' + item.id }">
-                    {{ item.ipaddress }}
-                    <a-tag v-if="item.issourcenat">source-nat</a-tag>
-                    <a-tag v-if="item.isstaticnat">static-nat</a-tag>
-                  </router-link>
-                </div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('state') }}</div>
-                <div><status :text="item.state" displayText></status></div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('vm') }}</div>
-                <div>
-                  <router-link :to="{ path: '/vm/' + item.virtualmachineid }">
-                    {{ item.virtualmachinedisplayname || item.virtualmachinename }}
-                  </router-link>
-                </div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('network') }}</div>
-                <div>
-                  <router-link :to="{ path: '/guestnetwork/' + item.associatednetworkid }">
-                    {{ item.associatednetworkname }}
-                  </router-link>
-                </div>
-              </div>
-            </div>
-          </a-list-item>
-        </a-list>
+        <a-table
+          class="table"
+          size="small"
+          :columns="publicIpAddressesColumns"
+          :dataSource="publicIpAddresses"
+          :rowKey="item => item.id"
+          :pagination="false"
+        >
+          <template slot="ipaddress" slot-scope="text, item">
+            <router-link :to="{ path: '/publicip/' + item.id }">
+              {{ text }}
+              <a-tag v-if="item.issourcenat">source-nat</a-tag>
+              <a-tag v-if="item.isstaticnat">static-nat</a-tag>
+            </router-link>
+          </template>
+          <template slot="state" slot-scope="text, item">
+            <status :text="item.state" displayText></status>
+          </template>
+          <template slot="vm" slot-scope="text, item">
+            <router-link :to="{ path: '/vm/' + item.virtualmachineid }">
+              {{ item.virtualmachinedisplayname || item.virtualmachinename }}
+            </router-link>
+          </template>
+          <template slot="network" slot-scope="text, item">
+            <router-link :to="{ path: '/guestnetwork/' + item.associatednetworkid }">
+              {{ item.associatednetworkname }}
+            </router-link>
+          </template>
+        </a-table>
+        <a-pagination
+          class="row-element pagination"
+          size="small"
+          :current="page"
+          :pageSize="pageSize"
+          :total="itemCounts.publicIpAddresses"
+          :showTotal="total => `Total ${total} items`"
+          :pageSizeOptions="['10', '20', '40', '80', '100']"
+          @change="changePage"
+          @showSizeChange="changePageSize"
+          showSizeChanger/>
       </a-tab-pane>
       <a-tab-pane tab="S2S VPN Gateway" key="vpngw" v-if="'listVpnGateways' in $store.getters.apis">
         <a-button type="dashed" icon="plus" style="width: 100%">Create Site-to-Site VPN Gateway</a-button>
@@ -168,13 +175,12 @@
           Create Site-to-Site VPN Connection
         </a-button>
         <a-table
-          style="margin-top: 20px; overflow-y: auto"
+          class="table"
           size="small"
           :columns="vpnConnectionsColumns"
           :dataSource="vpnConnections"
           :pagination="false"
           :rowKey="record => record.id">
-
           <a slot="publicip" slot-scope="text, record" href="javascript:;">
             <router-link :to="{ path: '/s2svpnconn/' + record.id }">
               {{ text }}
@@ -183,8 +189,18 @@
           <template slot="state" slot-scope="text">
             <status :text="text ? text : ''" displayText />
           </template>
-
         </a-table>
+        <a-pagination
+          class="row-element pagination"
+          size="small"
+          :current="page"
+          :pageSize="pageSize"
+          :total="itemCounts.vpnConnections"
+          :showTotal="total => `Total ${total} items`"
+          :pageSizeOptions="['10', '20', '40', '80', '100']"
+          @change="changePage"
+          @showSizeChange="changePageSize"
+          showSizeChanger/>
         <a-modal v-model="modals.vpnConnection" :title="$t('label.create.VPN.connection')" @ok="handleVpnConnectionFormSubmit">
           <a-spin :spinning="modals.vpnConnectionLoading">
             <a-form @submit.prevent="handleVpnConnectionFormSubmit" :form="vpnConnectionForm">
@@ -210,24 +226,31 @@
           @click="() => handleOpenModals('networkAcl')">
           Add Network ACL List
         </a-button>
-        <a-list class="list">
-          <a-list-item v-for="item in networkAcls" :key="item.id">
-            <div class="list__item">
-              <div class="list__col">
-                <div class="list__label">{{ $t('name') }}</div>
-                <div>
-                  <router-link :to="{ path: '/acllist/' + item.id }">
-                    {{ item.name }}
-                  </router-link>
-                </div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('description') }}</div>
-                <div>{{ item.description }}</div>
-              </div>
-            </div>
-          </a-list-item>
-        </a-list>
+        <a-table
+          class="table"
+          size="small"
+          :columns="networkAclsColumns"
+          :dataSource="networkAcls"
+          :rowKey="item => item.id"
+          :pagination="false"
+        >
+          <template slot="name" slot-scope="text, item">
+            <router-link :to="{ path: '/acllist/' + item.id }">
+              {{ text }}
+            </router-link>
+          </template>
+        </a-table>
+        <a-pagination
+          class="row-element pagination"
+          size="small"
+          :current="page"
+          :pageSize="pageSize"
+          :total="itemCounts.networkAcls"
+          :showTotal="total => `Total ${total} items`"
+          :pageSizeOptions="['10', '20', '40', '80', '100']"
+          @change="changePage"
+          @showSizeChange="changePageSize"
+          showSizeChanger/>
         <a-modal
           v-model="modals.networkAcl"
           :title="$t('label.add.acl.list')"
@@ -333,6 +356,30 @@ export default {
       },
       physicalnetworks: [],
       vpncustomergateways: [],
+      privateGatewaysColumns: [
+        {
+          title: this.$t('ip'),
+          dataIndex: 'ipaddress',
+          scopedSlots: { customRender: 'ipaddress' }
+        },
+        {
+          title: this.$t('state'),
+          dataIndex: 'state',
+          scopedSlots: { customRender: 'state' }
+        },
+        {
+          title: this.$t('gateway'),
+          dataIndex: 'gateway'
+        },
+        {
+          title: this.$t('netmask'),
+          dataIndex: 'netmask'
+        },
+        {
+          title: this.$t('vlan'),
+          dataIndex: 'vlan'
+        }
+      ],
       vpnConnectionsColumns: [
         {
           title: this.$t('ip'),
@@ -352,7 +399,49 @@ export default {
           title: this.$t('ipsecpsk'),
           dataIndex: 'ipsecpsk'
         }
-      ]
+      ],
+      publicIpAddressesColumns: [
+        {
+          title: this.$t('ip'),
+          dataIndex: 'ipaddress',
+          scopedSlots: { customRender: 'ipaddress' }
+        },
+        {
+          title: this.$t('state'),
+          dataIndex: 'state',
+          scopedSlots: { customRender: 'state' }
+        },
+        {
+          title: this.$t('vm'),
+          dataIndex: 'vm',
+          scopedSlots: { customRender: 'vm' }
+        },
+        {
+          title: this.$t('network'),
+          dataIndex: 'network',
+          scopedSlots: { customRender: 'network' }
+        }
+      ],
+      networkAclsColumns: [
+        {
+          title: this.$t('name'),
+          dataIndex: 'name',
+          scopedSlots: { customRender: 'name' }
+        },
+        {
+          title: this.$t('description'),
+          dataIndex: 'description'
+        }
+      ],
+      itemCounts: {
+        privateGateways: 0,
+        publicIpAddresses: 0,
+        vpnConnections: 0,
+        networkAcls: 0
+      },
+      page: 1,
+      pageSize: 10,
+      currentTab: 'pgw'
     }
   },
   beforeCreate () {
@@ -371,8 +460,14 @@ export default {
     }
   },
   methods: {
-    handleFetchData (e) {
-      switch (e) {
+    handleChangeTab (e) {
+      this.currentTab = e
+      this.page = 1
+      this.pageSize = 10
+      this.handleFetchData()
+    },
+    handleFetchData () {
+      switch (this.currentTab) {
         case 'pgw':
           this.fetchPrivateGateways()
           break
@@ -411,8 +506,14 @@ export default {
     },
     fetchPrivateGateways () {
       this.fetchLoading = true
-      api('listPrivateGateways', { vpcid: this.resource.id, listAll: true }).then(json => {
+      api('listPrivateGateways', {
+        vpcid: this.resource.id,
+        listAll: true,
+        page: this.page,
+        pagesize: this.pageSize
+      }).then(json => {
         this.privateGateways = json.listprivategatewaysresponse.privategateway
+        this.itemCounts.privateGateways = json.listprivategatewaysresponse.count
       }).catch(error => {
         this.$notification.error({
           message: 'Request Failed',
@@ -427,11 +528,12 @@ export default {
       api('listPublicIpAddresses', {
         vpcid: this.resource.id,
         listAll: true,
-        page: 1,
-        pagesize: 500,
+        page: this.page,
+        pagesize: this.pageSize,
         forvirtualnetwork: true
       }).then(json => {
         this.publicIpAddresses = json.listpublicipaddressesresponse.publicipaddress
+        this.itemCounts.publicIpAddresses = json.listpublicipaddressesresponse.count
       }).catch(error => {
         this.$notification.error({
           message: 'Request Failed',
@@ -445,9 +547,7 @@ export default {
       this.fetchLoading = true
       api('listVpnGateways', {
         vpcid: this.resource.id,
-        listAll: true,
-        page: 1,
-        pagesize: 500
+        listAll: true
       }).then(json => {
         this.vpnGateways = json.listvpngatewaysresponse.vpngateway
       }).catch(error => {
@@ -464,10 +564,11 @@ export default {
       api('listVpnConnections', {
         vpcid: this.resource.id,
         listAll: true,
-        page: 1,
-        pagesize: 500
+        page: this.page,
+        pagesize: this.pageSize
       }).then(json => {
         this.vpnConnections = json.listvpnconnectionsresponse.vpnconnection
+        this.itemCounts.vpnConnections = json.listvpnconnectionsresponse.count
       }).catch(error => {
         this.$notification.error({
           message: 'Request Failed',
@@ -482,10 +583,11 @@ export default {
       api('listNetworkACLLists', {
         vpcid: this.resource.id,
         listAll: true,
-        page: 1,
-        pagesize: 500
+        page: this.page,
+        pagesize: this.pageSize
       }).then(json => {
         this.networkAcls = json.listnetworkacllistsresponse.networkacllist
+        this.itemCounts.networkAcls = json.listnetworkacllistsresponse.count
         if (this.modals.gateway === true) {
           this.$nextTick(() => {
             this.gatewayForm.setFieldsValue({ acl: this.networkAcls[0].id })
@@ -710,6 +812,16 @@ export default {
           this.fetchAclList()
         })
       })
+    },
+    changePage (page, pageSize) {
+      this.page = page
+      this.pageSize = pageSize
+      this.handleFetchData()
+    },
+    changePageSize (currentPage, pageSize) {
+      this.page = currentPage
+      this.pageSize = pageSize
+      this.handleFetchData()
     }
   }
 }
@@ -739,5 +851,14 @@ export default {
     font-weight: bold;
   }
 
+}
+
+.pagination {
+  margin-top: 20px;
+}
+
+.table {
+  margin-top: 20px;
+  overflow-y: auto;
 }
 </style>
