@@ -149,7 +149,10 @@
             v-decorator="['endip', { rules: [{ required: true, message: 'Required' }] }]">
           </a-input>
         </a-form-item>
-        <a-button @click="handleShowAccountFields">{{ $t('label.set.reservation') }}</a-button>
+        <div class="form__item">
+          <div style="font-weight:bold; color: black;">{{ $t('label.set.reservation') }}</div>
+          <a-switch @change="handleShowAccountFields"></a-switch>
+        </div>
         <div v-if="showAccountFields" style="margin-top: 20px;">
           <a-spin :spinning="domainsLoading">
             <a-form-item :label="$t('account')" class="form__item">
@@ -309,8 +312,12 @@ export default {
       this.fetchDomains()
     },
     handleShowAccountFields () {
-      this.showAccountFields = true
-      this.fetchDomains()
+      if (this.showAccountFields === false) {
+        this.showAccountFields = true
+        this.fetchDomains()
+        return
+      }
+      this.showAccountFields = false
     },
     handleOpenAddIpRangeModal () {
       this.addIpRangeModal = true
