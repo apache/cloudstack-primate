@@ -130,7 +130,10 @@
                   <a-collapse-panel
                     :header="$t('addNewNetworks')"
                   >
-                    <network-creation></network-creation>
+                    <network-creation
+                      :zoneId="zoneId"
+                      @handle-update-network="updateDataCreatedNetworks">
+                    </network-creation>
                   </a-collapse-panel>
                 </a-collapse>
 
@@ -220,6 +223,7 @@ export default {
   mixins: [mixin, mixinDevice],
   data () {
     return {
+      zoneId: '',
       vm: {},
       options: {
         templates: [],
@@ -247,6 +251,7 @@ export default {
       diskOffering: {},
       affinityGroups: [],
       networks: [],
+      networksAdd: [],
       zone: {},
       sshKeyPair: {},
       isoFilter: [
@@ -441,6 +446,9 @@ export default {
         networkids: ids
       })
     },
+    updateDataCreatedNetworks (networks) {
+      this.networksAdd = networks
+    },
     updateSshKeyPairs (name) {
       this.form.setFieldsValue({
         keypair: name
@@ -449,8 +457,20 @@ export default {
     getText (option) {
       return _.get(option, 'displaytext', _.get(option, 'name'))
     },
-    handleSubmit () {
+    handleSubmit (e) {
       console.log('wizard submit')
+      e.preventDefault()
+      this.form.validateFields((err, values) => {
+        if (err) {
+          return
+        }
+        console.log(values)
+        this.createNetworks(values.zoneid).then(response => {
+          console.log(response)
+        }).catch(error => {
+          console.log(error)
+        })
+      })
     },
     fetchOptions (param, name) {
       this.loading[name] = true
@@ -523,7 +543,8 @@ export default {
         this.fetchAllIsos()
       }
     },
-    onSelectZoneId () {
+    onSelectZoneId (value) {
+      this.zoneId = value
       this.$nextTick(() => {
         if (this.options.isos.length !== 0) {
           this.fetchAllIsos()
@@ -535,6 +556,40 @@ export default {
     handleSearchFilter (name, options) {
       this.params[name].options = { ...options }
       this.fetchOptions(this.params[name], name)
+    },
+    createNetworks (zoneId) {
+      return new Promise((resolve, reject) => {
+        if (this.networksAdd.length === 0) {
+          resolve()
+          return
+        }
+        const promises = []
+        this.networksAdd.forEach((item) => {
+          const params = {}
+          params.zoneid = zoneId
+          params.name = item.name
+          params.displayText = item.name
+          params.networkOfferingId = item.networkOfferingId
+          params.vpcid = item.vpcid
+
+          promises.push(this.createNetwork(params))
+        })
+        Promise.all(promises).then(response => {
+          resolve(response)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    createNetwork (params) {
+      return new Promise((resolve, reject) => {
+        api('createNetwork', params).then(json => {
+          const networkRes = _.get(json, 'createnetworkresponse.network', [])
+          resolve(networkRes.id)
+        }).catch(error => {
+          reject(error)
+        })
+      })
     }
   }
 }

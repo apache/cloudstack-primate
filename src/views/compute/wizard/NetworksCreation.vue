@@ -21,32 +21,37 @@
       v-if="networkItems.length > 0"
       :columns="columns"
       :dataSource="networkItems"
+      :rowKey="record => record.key"
       :pagination="false"
     >
-      <template v-slot:name="text">
+      <template slot="name" slot-scope="text, record">
         <a-input
-          :value="text"
-        ></a-input>
+          style="width: 15vw"
+          :placeholder="$t('networks')"
+          @change="($event) => handleChangeInput(record.key, $event.target.value, 'name')"/>
       </template>
-      <template v-slot:operation>
+      <template slot="operation" slot-scope="text, record">
         <a-popconfirm
-          v-if="networkItems.length"
+          v-if="networkItems.length > 1"
           title="Sure to delete?"
-          @confirm="removeItem()"
+          @confirm="removeItem(record.key)"
         >
           <a-button type="link">Delete</a-button>
         </a-popconfirm>
       </template>
-      <template v-slot:networkOffering>
+      <template slot="networkOffering" slot-scope="text, record">
         <a-select
           :placeholder="$t('networkOfferingId')"
           :options="networkOfferingOptions"
+          @change="($event) => handleChangeInput(record.key, $event, 'networkOfferingId')"
         ></a-select>
       </template>
-      <template v-slot:vpc>
+      <template slot="vpc" slot-scope="text, record">
         <a-select
           :placeholder="$t('vpc')"
           :options="vpcOptions"
+          style="min-width: 12vw"
+          @change="($event) => handleChangeInput(record.key, $event, 'vpcid')"
         ></a-select>
       </template>
     </a-table>
@@ -71,9 +76,19 @@ import _ from 'lodash'
  */
 export default {
   name: 'NetworkCreation',
+  props: {
+    zoneId: {
+      type: String,
+      default () {
+        return ''
+      }
+    }
+  },
   data () {
     return {
-      networkItems: [{}],
+      networkItems: [{
+        key: this.randomKey()
+      }],
       columns: [
         {
           dataIndex: 'name',
@@ -100,10 +115,20 @@ export default {
         }
       ],
       networkOfferings: [],
-      vpcs: []
+      vpcs: [],
+      dataNetworkCreated: []
     }
   },
   computed: {
+    network () {
+      return {
+        key: undefined,
+        name: undefined,
+        displayText: undefined,
+        networkOfferingId: undefined,
+        vpcid: undefined
+      }
+    },
     networkOfferingOptions () {
       return this.networkOfferings.map((offering) => {
         return {
@@ -123,7 +148,12 @@ export default {
   },
   created () {
     api('listNetworkOfferings', {
-      // ToDo: Add the zoneId
+      forvpc: false,
+      zoneid: this.zoneId,
+      guestiptype: 'Isolated',
+      supportedServices: 'SourceNat',
+      specifyvlan: false,
+      state: 'Enabled'
     }).then((response) => {
       this.networkOfferings = _.get(response, 'listnetworkofferingsresponse.networkoffering')
     })
@@ -136,10 +166,34 @@ export default {
   },
   methods: {
     addNewItem () {
-      this.networkItems.push({})
+      const key = this.randomKey()
+      this.networkItems.push({
+        key: key
+      })
     },
-    removeItem () {
-      this.networkItems.pop()
+    removeItem (key) {
+      this.networkItems = this.networkItems.filter((item) => item.key !== key)
+      this.dataNetworkCreated = this.dataNetworkCreated.filter((item) => item.key !== key)
+    },
+    handleChangeInput (key, value, name) {
+      let network = { ...this.network }
+      const networkExist = this.dataNetworkCreated.filter((item) => item.key === key)
+      if (networkExist && networkExist.length > 0) {
+        network = { ...networkExist[0] }
+        this.dataNetworkCreated = this.dataNetworkCreated.filter((item) => item.key !== key)
+        network.key = key
+        network[name] = value
+      } else {
+        network.key = key
+        network[name] = value
+      }
+      this.dataNetworkCreated.push(network)
+      this.$emit('handle-update-network', this.dataNetworkCreated)
+    },
+    randomKey () {
+      const now = new Date()
+      const random = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      return [random, now.getTime()].join('')
     }
   }
 }
