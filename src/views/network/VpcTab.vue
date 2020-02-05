@@ -700,15 +700,18 @@ export default {
             jobId: response.createprivategatewayresponse.jobid,
             successMethod: () => {
               this.modals.gateway = false
+              this.handleFetchData()
             },
             errorMessage: 'Adding Private Gateway failed',
             errorMethod: () => {
               this.modals.gateway = false
+              this.handleFetchData()
             },
             loadingMessage: `Adding Private Gateway...`,
             catchMessage: 'Error encountered while fetching async job result',
             catchMethod: () => {
               this.modals.gateway = false
+              this.handleFetchData()
             }
           })
         }).catch(error => {
@@ -770,12 +773,37 @@ export default {
           s2svpngatewayid: this.vpnGateways[0].id,
           s2scustomergatewayid: values.vpncustomergateway,
           passive: values.passive ? values.passive : false
+        }).then(response => {
+          this.$store.dispatch('AddAsyncJob', {
+            title: `VPN Connection`,
+            jobid: response.createvpnconnectionresponse.jobid,
+            status: 'progress'
+          })
+          this.$pollJob({
+            jobId: response.createvpnconnectionresponse.jobid,
+            successMethod: () => {
+              this.fetchVpnConnections()
+              this.fetchLoading = false
+            },
+            errorMessage: 'Adding VPN Connection failed',
+            errorMethod: () => {
+              this.fetchVpnConnections()
+              this.fetchLoading = false
+            },
+            loadingMessage: `Adding VPN Connection...`,
+            catchMessage: 'Error encountered while fetching async job result',
+            catchMethod: () => {
+              this.fetchVpnConnections()
+              this.fetchLoading = false
+            }
+          })
         }).catch(error => {
           this.$notification.error({
             message: 'Request Failed',
             description: error.response.headers['x-description']
           })
         }).finally(() => {
+          this.fetchVpnConnections()
           this.fetchLoading = false
         })
       })
