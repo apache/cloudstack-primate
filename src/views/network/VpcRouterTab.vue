@@ -22,6 +22,12 @@
       :tabPosition="device === 'tablet' || device === 'mobile' ? 'top' : 'left'"
       :animated="false"
       @change="handleChangeTab">
+      <a-tab-pane :tab="$t('details')" key="details">
+        <DetailsTab :resource="resource" :loading="loading" />
+      </a-tab-pane>
+      <a-tab-pane :tab="$t('networks')" key="tier">
+        <VpcTiersTab :resource="resource" :loading="loading" />
+      </a-tab-pane>
       <a-tab-pane tab="Private Gateways" key="pgw" v-if="'listPrivateGateways' in $store.getters.apis">
         <a-button
           type="dashed"
@@ -147,7 +153,7 @@
           @showSizeChange="changePageSize"
           showSizeChanger/>
       </a-tab-pane>
-      <a-tab-pane tab="S2S VPN Gateway" key="vpngw" v-if="'listVpnGateways' in $store.getters.apis">
+      <a-tab-pane tab="VPN Gateway" key="vpngw" v-if="'listVpnGateways' in $store.getters.apis">
         <a-button
           v-if="vpnGateways.length === 0"
           type="dashed"
@@ -171,7 +177,7 @@
           </a-list-item>
         </a-list>
       </a-tab-pane>
-      <a-tab-pane tab="S2S VPN Connection" key="vpnc" v-if="'listVpnConnections' in $store.getters.apis">
+      <a-tab-pane tab="VPN Connections" key="vpnc" v-if="'listVpnConnections' in $store.getters.apis">
         <a-button
           type="dashed"
           icon="plus"
@@ -318,13 +324,17 @@
 
 <script>
 import { api } from '@/api'
+import DetailsTab from '@/components/view/DetailsTab'
 import Status from '@/components/widgets/Status'
+import VpcTiersTab from './VpcTiersTab'
 import { mixinDevice } from '@/utils/mixin.js'
 
 export default {
   name: 'VpcRouterTab',
   components: {
-    Status
+    DetailsTab,
+    Status,
+    VpcTiersTab
   },
   mixins: [mixinDevice],
   props: {
@@ -446,7 +456,7 @@ export default {
       },
       page: 1,
       pageSize: 10,
-      currentTab: 'pgw'
+      currentTab: 'details'
     }
   },
   beforeCreate () {
@@ -490,9 +500,6 @@ export default {
           break
         case 'vr':
           this.fetchRouters()
-          break
-        default:
-          this.fetchPrivateGateways()
           break
       }
     },

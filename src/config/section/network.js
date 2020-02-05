@@ -128,14 +128,8 @@ export default {
         param: 'vpcid'
       }],
       tabs: [{
-        name: 'details',
-        component: () => import('@/components/view/DetailsTab.vue')
-      }, {
-        name: 'Router',
+        name: 'VPC',
         component: () => import('@/views/network/VpcRouterTab.vue')
-      }, {
-        name: 'Network',
-        component: () => import('@/views/network/VpcTiersTab.vue')
       }],
       actions: [
         {
