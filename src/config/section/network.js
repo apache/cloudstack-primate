@@ -125,7 +125,7 @@ export default {
       }],
       tabs: [{
         name: 'VPC',
-        component: () => import('@/views/network/VpcRouterTab.vue')
+        component: () => import('@/views/network/VpcTab.vue')
       }],
       actions: [
         {

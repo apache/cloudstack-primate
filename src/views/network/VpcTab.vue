@@ -330,7 +330,7 @@ import VpcTiersTab from './VpcTiersTab'
 import { mixinDevice } from '@/utils/mixin.js'
 
 export default {
-  name: 'VpcRouterTab',
+  name: 'VpcTab',
   components: {
     DetailsTab,
     Status,
