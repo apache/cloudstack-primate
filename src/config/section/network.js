@@ -119,10 +119,6 @@ export default {
       columns: ['name', 'state', 'displaytext', 'cidr', 'account', 'zonename'],
       details: ['name', 'id', 'displaytext', 'cidr', 'networkdomain', 'ispersistent', 'redundantvpcrouter', 'restartrequired', 'zonename', 'account', 'domain'],
       related: [{
-        name: 'guestnetwork',
-        title: 'Networks',
-        param: 'vpcid'
-      }, {
         name: 'vm',
         title: 'Instances',
         param: 'vpcid'

@@ -27,7 +27,7 @@
                 {{ $t('name') }}
               </div>
               <div>
-                <router-link :to="{ path: '/guestnetwork/' + network.id }">{{ network.name }}</router-link>
+                <router-link :to="{ path: '/guestnetwork/' + network.id }">{{ network.name }} </router-link>
                 <a-tag v-if="network.broadcasturi">{{ network.broadcasturi }}</a-tag>
               </div>
             </div>
@@ -41,6 +41,19 @@
               </div>
               <div>{{ network.cidr }}</div>
             </div>
+            <div class="list__col">
+              <div class="list__label">
+                {{ $t('aclid') }}
+              </div>
+              <div>
+                <router-link :to="{ path: '/acllist/' + network.aclid }">
+                  {{ network.aclid }}
+                </router-link>
+              </div>
+            </div>
+
+          </div>
+          <div class="list__item-container">
             <div class="list__col">
               <a-button icon="share-alt">
                 <router-link :to="{ path: '/ilb?networkid=' + network.id }"> Internal LB</router-link>
@@ -63,20 +76,8 @@
             </div>
           </div>
         </div>
-        <div slot="actions">
-          <a-popconfirm
-            :title="`${$t('label.delete')}?`"
-            @confirm="handleDelete(item)"
-            okText="Yes"
-            cancelText="No"
-            placement="top"
-          >
-            <a-button icon="delete" type="danger" shape="round"></a-button>
-          </a-popconfirm>
-        </div>
       </a-list-item>
     </a-list>
-
   </a-spin>
 </template>
 
