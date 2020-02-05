@@ -262,7 +262,8 @@ export default {
             'X-signature': this.uploadParams.signature,
             'X-expires': this.uploadParams.expires,
             'X-metadata': this.uploadParams.metadata
-          }
+          },
+          timeout: 1000000
         }).then((json) => {
         this.$notification.success({
           message: 'Upload Successful',
@@ -271,7 +272,7 @@ export default {
       }).catch(e => {
         this.$notification.error({
           message: 'Upload Failed',
-          description: 'Failed to upload ISO'
+          description: `Failed to upload ISO -  ${e}`
         })
       })
     },
