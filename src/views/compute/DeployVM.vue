@@ -291,6 +291,8 @@ export default {
         serviceOfferings: {
           list: 'listServiceOfferings',
           options: {
+            zoneid: _.get(this.zone, 'id'),
+            issystem: false,
             page: 1,
             pageSize: 10,
             keyword: undefined
@@ -299,6 +301,7 @@ export default {
         diskOfferings: {
           list: 'listDiskOfferings',
           options: {
+            zoneid: _.get(this.zone, 'id'),
             page: 1,
             pageSize: 10,
             keyword: undefined
@@ -318,6 +321,7 @@ export default {
         sshKeyPairs: {
           list: 'listSSHKeyPairs',
           options: {
+            zoneid: _.get(this.zone, 'id'),
             page: 1,
             pageSize: 10,
             keyword: undefined
@@ -464,11 +468,13 @@ export default {
         if (err) {
           return
         }
-        console.log(values)
         this.createNetworks(values.zoneid).then(response => {
-          console.log(response)
+          this.deployVirtualMachine(response, values)
         }).catch(error => {
-          console.log(error)
+          this.$notification.error({
+            message: 'Request Failed',
+            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+          })
         })
       })
     },
@@ -539,6 +545,7 @@ export default {
       })
     },
     onTemplatesIsosCollapseChange (key) {
+      this.templateIsoKey = key
       if (key === 'isos' && this.options.isos.length === 0) {
         this.fetchAllIsos()
       }
@@ -588,6 +595,72 @@ export default {
           resolve(networkRes.id)
         }).catch(error => {
           reject(error)
+        })
+      })
+    },
+    deployVirtualMachine (newNetworkIds, values) {
+      const deployVmData = {}
+      let networkIds = []
+      // step 1 : select zone
+      deployVmData.zoneid = values.zoneid
+      // step 2: select template/iso
+      if (this.templateIsoKey === 'templates') {
+        deployVmData.templateid = values.templateid
+      } else {
+        deployVmData.templateid = values.templateid
+      }
+      if (values.rootdisksize && values.rootdisksize > 0) {
+        deployVmData.rootdisksize = values.rootdisksize
+      }
+      // step 3: select service offering
+      deployVmData.serviceofferingid = values.computeofferingid
+      // step 4: select disk offering
+      deployVmData.diskofferingid = values.diskofferingid
+      if (values.size) {
+        deployVmData.size = values.size
+      }
+      // step 5: select an affinity group
+      deployVmData.affinitygroupids = values.affinitygroupids.join(',')
+      // step 6: select network
+      if (newNetworkIds && newNetworkIds.length > 0) {
+        networkIds = newNetworkIds.concat(values.networkids)
+      } else {
+        networkIds = values.networkids
+      }
+      if (networkIds.length > 0) {
+        for (let i = 0; i < networkIds.length; i++) {
+          deployVmData['iptonetworklist[' + i + '].networkid'] = networkIds[i]
+        }
+      }
+      // step 7: select ssh key pair
+      deployVmData.keypair = values.keypair
+      deployVmData.name = values.name
+      deployVmData.displayname = values.name
+      const title = this.$t('Launch Virtual Machine')
+      const description = this.$t('zone') + ' ' + values.zoneid
+      api('deployVirtualMachine', deployVmData).then(response => {
+        const jobId = response.deployvirtualmachineresponse.jobid
+        if (jobId) {
+          this.$pollJob({
+            jobId,
+            successMethod: result => {
+              const successDescription = result.jobresult.snapshot.name
+              this.$store.dispatch('AddAsyncJob', {
+                title: title,
+                jobid: jobId,
+                description: successDescription,
+                status: 'progress'
+              })
+            },
+            loadingMessage: `${title} in progress for ${description}`,
+            catchMessage: 'Error encountered while fetching async job result'
+          })
+        }
+        this.$router.back()
+      }).catch(error => {
+        this.$notification.error({
+          message: 'Request Failed',
+          description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
         })
       })
     }
