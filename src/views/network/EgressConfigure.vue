@@ -345,7 +345,6 @@ export default {
     }
 
   }
-
   .pagination {
     margin-top: 20px;
   }
