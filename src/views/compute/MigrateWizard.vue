@@ -16,60 +16,64 @@
 // under the License.
 
 <template>
-  <a-list :dataSource="hosts" itemLayout="vertical" class="list" :loading="loading">
-    <div slot="header" class="list__header">
-      <a-input-search
-        placeholder="Search"
-        v-model="searchQuery"
-        @search="fetchData" />
-    </div>
-    <a-list-item
-      slot="renderItem"
-      slot-scope="host, index"
-      class="host-item"
-      :class="{ 'host-item--selected' : selectedIndex === index }"
-    >
-      <div class="host-item__row">
-        <div class="host-item__value">
-          <span class="host-item__title">{{ $t('name') }}</span>
-          {{ host.name }}
-        </div>
-        <div class="host-item__value host-item__value--small">
-          <span class="host-item__title">Suitability</span>
-          <a-icon
-            class="host-item__suitability-icon"
-            type="check-circle"
-            theme="twoTone"
-            twoToneColor="#52c41a"
-            v-if="host.suitableformigration" />
-          <a-icon
-            class="host-item__suitability-icon"
-            type="close-circle"
-            theme="twoTone"
-            twoToneColor="#f5222d"
-            v-else />
-        </div>
-        <div class="host-item__value host-item__value--full">
-          <span class="host-item__title">{{ $t('cpuused') }}</span>
-          {{ host.cpuused }}
-        </div>
-        <div class="host-item__value">
-          <span class="host-item__title">{{ $t('memused') }}</span>
-          {{ host.memoryused | byteToGigabyte }} GB
-        </div>
+  <div>
+    <a-input-search
+      placeholder="Search"
+      v-model="searchQuery"
+      style="margin-bottom: 10px;"
+      @search="fetchData" />
+    <a-table
+      size="small"
+      style="overflow-y: auto"
+      :loading="loading"
+      :columns="columns"
+      :dataSource="hosts"
+      :pagination="false"
+      :rowKey="record => record.id">
+      <div slot="suitability" slot-scope="record">
+        <a-icon
+          class="host-item__suitability-icon"
+          type="check-circle"
+          theme="twoTone"
+          twoToneColor="#52c41a"
+          v-if="record.suitableformigration" />
+        <a-icon
+          class="host-item__suitability-icon"
+          type="close-circle"
+          theme="twoTone"
+          twoToneColor="#f5222d"
+          v-else />
+      </div>
+      <div slot="memused" slot-scope="record">
+        {{ record.memoryused | byteToGigabyte }} GB
+      </div>
+      <template slot="select" slot-scope="record">
         <a-radio
           class="host-item__radio"
           @click="selectedIndex = index"
           :checked="selectedIndex === index"
-          :disabled="!host.suitableformigration"></a-radio>
-      </div>
-    </a-list-item>
-    <div slot="footer" class="list__footer">
+          :disabled="!record.suitableformigration"></a-radio>
+      </template>
+    </a-table>
+    <a-pagination
+      class="pagination"
+      size="small"
+      :current="page"
+      :pageSize="pageSize"
+      :total="hosts.length"
+      :showTotal="total => `Total ${total} items`"
+      :pageSizeOptions="['10', '20', '40', '80', '100']"
+      @change="handleChangePage"
+      @showSizeChange="handleChangePageSize"
+      showSizeChanger/>
+
+    <div style="margin-top: 20px; display: flex; justify-content:flex-end;">
       <a-button type="primary" :disabled="selectedIndex === null" @click="submitForm">
         {{ $t('OK') }}
       </a-button>
     </div>
-  </a-list>
+  </div>
+
 </template>
 
 <script>
@@ -88,7 +92,31 @@ export default {
       loading: true,
       hosts: [],
       selectedIndex: null,
-      searchQuery: ''
+      searchQuery: '',
+      page: 1,
+      pageSize: 10,
+      columns: [
+        {
+          title: this.$t('name'),
+          dataIndex: 'name'
+        },
+        {
+          title: this.$t('Suitability'),
+          scopedSlots: { customRender: 'suitability' }
+        },
+        {
+          title: this.$t('cpuused'),
+          dataIndex: 'cpuused'
+        },
+        {
+          title: this.$t('memused'),
+          scopedSlots: { customRender: 'memused' }
+        },
+        {
+          title: this.$t('select'),
+          scopedSlots: { customRender: 'select' }
+        }
+      ]
     }
   },
   mounted () {
@@ -100,8 +128,8 @@ export default {
       api('findHostsForMigration', {
         virtualmachineid: this.resource.id,
         keyword: this.searchQuery,
-        page: 1,
-        pagesize: 500
+        page: this.page,
+        pagesize: this.pageSize
       }).then(response => {
         this.hosts = response.findhostsformigrationresponse.host
         this.loading = false
@@ -143,6 +171,16 @@ export default {
         console.error(error)
         this.$message.error('Failed to migrate host.')
       })
+    },
+    handleChangePage (page, pageSize) {
+      this.page = page
+      this.pageSize = pageSize
+      this.fetchData()
+    },
+    handleChangePageSize (currentPage, pageSize) {
+      this.page = currentPage
+      this.pageSize = pageSize
+      this.fetchData()
     }
   },
   filters: {
@@ -156,29 +194,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
-  .list {
-    max-height: 95vh;
-    width: 95vw;
-    overflow-y: scroll;
-    margin: -24px;
-
-    @media (min-width: 1000px) {
-      max-height: 70vh;
-      width: 60vw;
-    }
-
-    &__header,
-    &__footer {
-      padding-left: 20px;
-      padding-right: 20px;
-    }
-
-    &__footer {
-      display: flex;
-      justify-content: flex-end;
-    }
-  }
 
   .host-item {
     padding-right: 20px;
@@ -229,5 +244,9 @@ export default {
       align-items: center;
     }
 
+  }
+
+  .pagination {
+    margin-top: 20px;
   }
 </style>
