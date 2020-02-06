@@ -55,36 +55,41 @@
 
     <a-divider/>
 
-    <a-list :loading="loading" style="min-height: 25px;">
-      <a-list-item v-for="rule in firewallRules" :key="rule.id" class="rule">
-        <div class="rule-container">
-          <div class="rule__item">
-            <div class="rule__title">{{ $t('sourcecidr') }}</div>
-            <div>{{ rule.cidrlist }}</div>
-          </div>
-          <div class="rule__item">
-            <div class="rule__title">{{ $t('protocol') }}</div>
-            <div>{{ rule.protocol | capitalise }}</div>
-          </div>
-          <div class="rule__item">
-            <div class="rule__title">{{ rule.protocol === 'icmp' ? $t('icmptype') : $t('startport') }}</div>
-            <div>{{ rule.icmptype || rule.startport >= 0 ? rule.icmptype || rule.startport : $t('all') }}</div>
-          </div>
-          <div class="rule__item">
-            <div class="rule__title">{{ rule.protocol === 'icmp' ? 'ICMP Code' : 'End Port' }}</div>
-            <div>{{ rule.icmpcode || rule.endport >= 0 ? rule.icmpcode || rule.endport : $t('all') }}</div>
-          </div>
-          <div class="rule__item">
-            <div class="rule__title">{{ $t('state') }}</div>
-            <div>{{ rule.state }}</div>
-          </div>
-          <div slot="actions">
-            <a-button shape="round" icon="tag" class="rule-action" @click="() => openTagsModal(rule.id)" />
-            <a-button shape="round" type="danger" icon="delete" class="rule-action" @click="deleteRule(rule)" />
-          </div>
+    <a-table
+      size="small"
+      style="overflow-y: auto"
+      :loading="loading"
+      :columns="columns"
+      :dataSource="firewallRules"
+      :pagination="false"
+      :rowKey="record => record.id">
+      <template slot="protocol" slot-scope="record">
+        {{ record.protocol | capitalise }}
+      </template>
+      <template slot="startport" slot-scope="record">
+        {{ record.icmptype || record.startport >= 0 ? record.icmptype || record.startport : $t('all') }}
+      </template>
+      <template slot="endport" slot-scope="record">
+        {{ record.icmpcode || record.endport >= 0 ? record.icmpcode || record.endport : $t('all') }}
+      </template>
+      <template slot="actions" slot-scope="record">
+        <div class="actions">
+          <a-button shape="round" icon="tag" class="rule-action" @click="() => openTagsModal(record.id)" />
+          <a-button shape="round" type="danger" icon="delete" class="rule-action" @click="deleteRule(record)" />
         </div>
-      </a-list-item>
-    </a-list>
+      </template>
+    </a-table>
+    <a-pagination
+      class="pagination"
+      size="small"
+      :current="page"
+      :pageSize="pageSize"
+      :total="firewallRules.length"
+      :showTotal="total => `Total ${total} items`"
+      :pageSizeOptions="['10', '20', '40', '80', '100']"
+      @change="handleChangePage"
+      @showSizeChange="handleChangePageSize"
+      showSizeChanger/>
 
     <a-modal title="Edit Tags" v-model="tagsModalVisible" :footer="null" :afterClose="closeModal">
       <div class="add-tags">
@@ -145,7 +150,35 @@ export default {
       newTag: {
         key: null,
         value: null
-      }
+      },
+      page: 1,
+      pageSize: 10,
+      columns: [
+        {
+          title: this.$t('sourcecidr'),
+          dataIndex: 'cidrlist'
+        },
+        {
+          title: this.$t('protocol'),
+          scopedSlots: { customRender: 'protocol' }
+        },
+        {
+          title: `${this.$t('icmptype')}/${this.$t('startport')}`,
+          scopedSlots: { customRender: 'startport' }
+        },
+        {
+          title: `${this.$t('ICMP Code')}/${this.$t('End Port')}`,
+          scopedSlots: { customRender: 'endport' }
+        },
+        {
+          title: this.$t('state'),
+          dataIndex: 'state'
+        },
+        {
+          title: this.$t('action'),
+          scopedSlots: { customRender: 'actions' }
+        }
+      ]
     }
   },
   mounted () {
@@ -171,7 +204,9 @@ export default {
       this.loading = true
       api('listFirewallRules', {
         listAll: true,
-        ipaddressid: this.resource.id
+        ipaddressid: this.resource.id,
+        page: this.page,
+        pageSize: this.pageSize
       }).then(response => {
         this.firewallRules = response.listfirewallrulesresponse.firewallrule
       }).catch(error => {
@@ -343,6 +378,16 @@ export default {
         })
         this.closeModal()
       })
+    },
+    handleChangePage (page, pageSize) {
+      this.page = page
+      this.pageSize = pageSize
+      this.fetchData()
+    },
+    handleChangePageSize (currentPage, pageSize) {
+      this.page = currentPage
+      this.pageSize = pageSize
+      this.fetchData()
     }
   }
 }
@@ -434,7 +479,6 @@ export default {
   }
 
   .rule-action {
-    margin-bottom: 20px;
 
     &:not(:last-of-type) {
       margin-right: 10px;
@@ -471,6 +515,9 @@ export default {
   .add-tags-done {
     display: block;
     margin-left: auto;
+  }
+  .pagination {
+    margin-top: 20px;
   }
 
 </style>
