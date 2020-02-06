@@ -24,56 +24,62 @@
       {{ $t('label.add.ip.range') }}
     </a-button>
 
-    <a-list class="list" itemLayout="vertical">
-      <a-list-item v-for="item in items" :key="item.id">
-        <div v-for="(i, index) in item.startip" :key="index">
-          <div class="list__item">
-            <div class="list__data">
-              <div class="list__col">
-                <div class="list__label">{{ $t('podId') }}</div>
-                <div>{{ item.name }}</div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('gateway') }}</div>
-                <div>{{ item.gateway }}</div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('netmask') }}</div>
-                <div>{{ item.netmask }}</div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('vlan') }}</div>
-                <div>{{ item.vlanid[index] }}</div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('startip') }}</div>
-                <div>{{ item.startip[index] }}</div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('endip') }}</div>
-                <div>{{ item.endip[index] }}</div>
-              </div>
-              <div class="list__col">
-                <div class="list__label">{{ $t('System VMs') }}</div>
-                <a-icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" v-if="item.forsystemvms[index] === '1'" />
-                <a-icon type="close-circle" theme="twoTone" twoToneColor="#f5222d" v-else />
-              </div>
-            </div>
-            <div slot="actions" class="actions">
-              <a-popover placement="bottom">
-                <template slot="content">{{ $t('label.remove.ip.range') }}</template>
-                <a-button
-                  icon="delete"
-                  shape="round"
-                  type="danger"
-                  @click="handleDeleteIpRange(item, index)"></a-button>
-              </a-popover>
-            </div>
-          </div>
-          <a-divider v-if="index !== item.startip.length - 1" />
+    <a-table
+      class="table"
+      size="small"
+      :columns="columns"
+      :dataSource="items"
+      :rowKey="record => record.id"
+      :pagination="false"
+      :scroll="{ x: 800 }"
+    >
+      <template slot="vlan" slot-scope="text">
+        <div v-for="(item, index) in text" :key="index">
+          {{ item }}
         </div>
-      </a-list-item>
-    </a-list>
+      </template>
+      <template slot="startip" slot-scope="text">
+        <div v-for="(item, index) in text" :key="index">
+          {{ item }}
+        </div>
+      </template>
+      <template slot="endip" slot-scope="text">
+        <div v-for="(item, index) in text" :key="index">
+          {{ item }}
+        </div>
+      </template>
+      <template slot="forsystemvms" slot-scope="text, record">
+        <a-icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" v-if="record === '1'" />
+        <a-icon type="close-circle" theme="twoTone" twoToneColor="#f5222d" v-else />
+      </template>
+      <template slot="actions" slot-scope="record">
+        <div class="actions">
+          <div v-for="(item, index) in record.startip" :key="index">
+            <a-popover placement="bottom">
+              <template slot="content">{{ $t('label.remove.ip.range') }}</template>
+              <a-button
+                icon="delete"
+                shape="round"
+                type="danger"
+                size="small"
+                @click="handleDeleteIpRange(record, index)"></a-button>
+            </a-popover>
+          </div>
+        </div>
+      </template>
+    </a-table>
+    <a-pagination
+      class="row-element pagination"
+      size="small"
+      style="overflow-y: auto"
+      :current="page"
+      :pageSize="pageSize"
+      :total="items.length"
+      :showTotal="total => `Total ${total} items`"
+      :pageSizeOptions="['10', '20', '40', '80', '100']"
+      @change="changePage"
+      @showSizeChange="changePageSize"
+      showSizeChanger/>
 
     <a-modal v-model="addIpRangeModal" :title="$t('label.add.ip.range')" @ok="handleAddIpRange">
       <a-form
@@ -147,7 +153,47 @@ export default {
       domains: [],
       domainsLoading: false,
       addIpRangeModal: false,
-      defaultSelectedPod: null
+      defaultSelectedPod: null,
+      page: 1,
+      pageSize: 10,
+      columns: [
+        {
+          title: this.$t('podId'),
+          dataIndex: 'name'
+        },
+        {
+          title: this.$t('gateway'),
+          dataIndex: 'gateway'
+        },
+        {
+          title: this.$t('netmask'),
+          dataIndex: 'netmask'
+        },
+        {
+          title: this.$t('vlan'),
+          dataIndex: 'vlanid',
+          scopedSlots: { customRender: 'vlan' }
+        },
+        {
+          title: this.$t('startip'),
+          dataIndex: 'startip',
+          scopedSlots: { customRender: 'startip' }
+        },
+        {
+          title: this.$t('endip'),
+          dataIndex: 'endip',
+          scopedSlots: { customRender: 'endip' }
+        },
+        {
+          title: this.$t('System VMs'),
+          dataIndex: 'forsystemvms',
+          scopedSlots: { customRender: 'forsystemvms' }
+        },
+        {
+          title: this.$t('action'),
+          scopedSlots: { customRender: 'actions' }
+        }
+      ]
     }
   },
   beforeCreate () {
@@ -167,7 +213,9 @@ export default {
     fetchData () {
       this.componentLoading = true
       api('listPods', {
-        zoneid: this.resource.zoneid
+        zoneid: this.resource.zoneid,
+        page: this.page,
+        pagesize: this.pageSize
       }).then(response => {
         this.items = response.listpodsresponse.pod ? response.listpodsresponse.pod : []
       }).catch(error => {
@@ -190,13 +238,13 @@ export default {
         }
       }, 200)
     },
-    handleDeleteIpRange (item, index) {
+    handleDeleteIpRange (record, index) {
       this.componentLoading = true
       api('deleteManagementNetworkIpRange', {
-        podid: item.id,
-        startip: item.startip[index],
-        endip: item.endip[index],
-        vlan: item.vlanid[index]
+        podid: record.id,
+        startip: record.startip[index],
+        endip: record.endip[index],
+        vlan: record.vlanid[index]
       }).then(response => {
         this.$store.dispatch('AddAsyncJob', {
           title: `Successfully removed IP Range`,
@@ -280,6 +328,16 @@ export default {
           this.fetchData()
         })
       })
+    },
+    changePage (page, pageSize) {
+      this.page = page
+      this.pageSize = pageSize
+      this.fetchData()
+    },
+    changePageSize (currentPage, pageSize) {
+      this.page = currentPage
+      this.pageSize = pageSize
+      this.fetchData()
     }
   }
 }
@@ -348,5 +406,9 @@ export default {
     &__item {
       font-weight: bold;
     }
+  }
+
+  .pagination {
+    margin-top: 20px;
   }
 </style>

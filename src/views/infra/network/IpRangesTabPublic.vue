@@ -24,62 +24,57 @@
       {{ $t('label.add.ip.range') }}
     </a-button>
 
-    <a-list class="list">
-      <a-list-item v-for="(item, index) in items" :key="index">
-        <div class="list__item">
-          <div class="list__data">
-            <div class="list__col">
-              <div class="list__label">{{ $t('gateway') }}</div>
-              <div>{{ item.gateway }}</div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">{{ $t('netmask') }}</div>
-              <div>{{ item.netmask }}</div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">{{ $t('vlan') }}</div>
-              <div>{{ item.vlan }}</div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">{{ $t('startip') }}</div>
-              <div>{{ item.startip }}</div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">{{ $t('endip') }}</div>
-              <div>{{ item.endip }}</div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">{{ $t('account') }}</div>
-              <a-button @click="() => handleOpenAccountModal(item)">{{ `View ${$t('account')}` }}</a-button>
-            </div>
-          </div>
-          <div slot="actions" class="actions">
-            <a-popover placement="bottom">
-              <template slot="content">{{ $t('label.remove.ip.range') }}</template>
-              <a-button icon="delete" shape="round" type="danger" @click="handleDeleteIpRange(item.id)"></a-button>
-            </a-popover>
-            <a-popover v-if="item.account === 'system'" placement="bottom">
-              <template slot="content">{{ $t('label.add.account') }}</template>
-              <a-button
-                icon="user-add"
-                shape="round"
-                type="primary"
-                @click="() => handleOpenAddAccountModal(item)"></a-button>
-            </a-popover>
-            <a-popover
-              v-else
-              placement="bottom">
-              <template slot="content">{{ $t('label.release.account') }}</template>
-              <a-button
-                icon="user-delete"
-                shape="round"
-                type="danger"
-                @click="() => handleRemoveAccount(item.id)"></a-button>
-            </a-popover>
-          </div>
+    <a-table
+      class="table"
+      size="small"
+      :columns="columns"
+      :dataSource="items"
+      :rowKey="record => record.id"
+      :pagination="false"
+      :scroll="{ x: 800 }"
+    >
+      <template slot="account" slot-scope="record">
+        <a-button @click="() => handleOpenAccountModal(record)">{{ `View ${$t('account')}` }}</a-button>
+      </template>
+      <template slot="actions" slot-scope="record">
+        <div class="actions">
+          <a-popover v-if="record.account === 'system'" placement="bottom">
+            <template slot="content">{{ $t('label.add.account') }}</template>
+            <a-button
+              icon="user-add"
+              shape="round"
+              type="primary"
+              @click="() => handleOpenAddAccountModal(record)"></a-button>
+          </a-popover>
+          <a-popover
+            v-else
+            placement="bottom">
+            <template slot="content">{{ $t('label.release.account') }}</template>
+            <a-button
+              icon="user-delete"
+              shape="round"
+              type="danger"
+              @click="() => handleRemoveAccount(record.id)"></a-button>
+          </a-popover>
+          <a-popover placement="bottom">
+            <template slot="content">{{ $t('label.remove.ip.range') }}</template>
+            <a-button icon="delete" shape="round" type="danger" @click="handleDeleteIpRange(record.id)"></a-button>
+          </a-popover>
         </div>
-      </a-list-item>
-    </a-list>
+      </template>
+    </a-table>
+    <a-pagination
+      class="row-element pagination"
+      size="small"
+      style="overflow-y: auto"
+      :current="page"
+      :pageSize="pageSize"
+      :total="items.length"
+      :showTotal="total => `Total ${total} items`"
+      :pageSizeOptions="['10', '20', '40', '80', '100']"
+      @change="changePage"
+      @showSizeChange="changePageSize"
+      showSizeChanger/>
 
     <a-modal v-model="accountModal" v-if="selectedItem" @ok="accountModal = false">
       <div>
@@ -208,7 +203,39 @@ export default {
       domains: [],
       domainsLoading: false,
       addIpRangeModal: false,
-      showAccountFields: false
+      showAccountFields: false,
+      page: 1,
+      pageSize: 10,
+      columns: [
+        {
+          title: this.$t('gateway'),
+          dataIndex: 'gateway'
+        },
+        {
+          title: this.$t('netmask'),
+          dataIndex: 'netmask'
+        },
+        {
+          title: this.$t('vlan'),
+          dataIndex: 'vlan'
+        },
+        {
+          title: this.$t('startip'),
+          dataIndex: 'startip'
+        },
+        {
+          title: this.$t('endip'),
+          dataIndex: 'endip'
+        },
+        {
+          title: this.$t('account'),
+          scopedSlots: { customRender: 'account' }
+        },
+        {
+          title: this.$t('action'),
+          scopedSlots: { customRender: 'actions' }
+        }
+      ]
     }
   },
   beforeCreate () {
@@ -229,7 +256,9 @@ export default {
       this.componentLoading = true
       api('listVlanIpRanges', {
         networkid: this.networkid,
-        zoneid: this.resource.zoneid
+        zoneid: this.resource.zoneid,
+        page: this.page,
+        pagesize: this.pageSize
       }).then(response => {
         this.items = response.listvlaniprangesresponse.vlaniprange ? response.listvlaniprangesresponse.vlaniprange : []
       }).catch(error => {
@@ -370,6 +399,16 @@ export default {
           this.fetchData()
         })
       })
+    },
+    changePage (page, pageSize) {
+      this.page = page
+      this.pageSize = pageSize
+      this.fetchData()
+    },
+    changePageSize (currentPage, pageSize) {
+      this.page = currentPage
+      this.pageSize = pageSize
+      this.fetchData()
     }
   }
 }
@@ -413,7 +452,7 @@ export default {
   .actions {
     button {
       &:not(:last-child) {
-        margin-bottom: 10px;
+        margin-right: 10px;
       }
     }
   }
@@ -438,5 +477,9 @@ export default {
     &__item {
       font-weight: bold;
     }
+  }
+
+  .pagination {
+    margin-top: 20px;
   }
 </style>

@@ -24,48 +24,41 @@
       {{ $t('label.add.ip.range') }}
     </a-button>
 
-    <a-list class="list" itemLayout="vertical">
-      <a-list-item v-for="item in items" :key="item.id">
-        <div class="list__item">
-          <div class="list__data">
-            <div class="list__col">
-              <div class="list__label">{{ $t('podId') }}</div>
-              <div>{{ returnPodName(item.podid) }}</div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">{{ $t('gateway') }}</div>
-              <div>{{ item.gateway }}</div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">{{ $t('netmask') }}</div>
-              <div>{{ item.netmask }}</div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">{{ $t('vlan') }}</div>
-              <div>{{ item.vlan }}</div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">{{ $t('startip') }}</div>
-              <div>{{ item.startip }}</div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">{{ $t('endip') }}</div>
-              <div>{{ item.endip }}</div>
-            </div>
-          </div>
-          <div slot="actions" class="actions">
-            <a-popover placement="bottom">
-              <template slot="content">{{ $t('label.remove.ip.range') }}</template>
-              <a-button
-                icon="delete"
-                shape="round"
-                type="danger"
-                @click="handleDeleteIpRange(item.id)"></a-button>
-            </a-popover>
-          </div>
-        </div>
-      </a-list-item>
-    </a-list>
+    <a-table
+      class="table"
+      size="small"
+      :columns="columns"
+      :dataSource="items"
+      :rowKey="record => record.id"
+      :pagination="false"
+      :scroll="{ x: 800 }"
+    >
+      <template slot="name" slot-scope="record">
+        <div>{{ returnPodName(record.podid) }}</div>
+      </template>
+      <template slot="actions" slot-scope="record">
+        <a-popover placement="bottom">
+          <template slot="content">{{ $t('label.remove.ip.range') }}</template>
+          <a-button
+            icon="delete"
+            shape="round"
+            type="danger"
+            @click="handleDeleteIpRange(record.id)"></a-button>
+        </a-popover>
+      </template>
+    </a-table>
+    <a-pagination
+      class="row-element pagination"
+      size="small"
+      style="overflow-y: auto"
+      :current="page"
+      :pageSize="pageSize"
+      :total="items.length"
+      :showTotal="total => `Total ${total} items`"
+      :pageSizeOptions="['10', '20', '40', '80', '100']"
+      @change="changePage"
+      @showSizeChange="changePageSize"
+      showSizeChanger/>
 
     <a-modal v-model="addIpRangeModal" :title="$t('label.add.ip.range')" @ok="handleAddIpRange">
       <a-form
@@ -137,7 +130,39 @@ export default {
       domains: [],
       domainsLoading: false,
       addIpRangeModal: false,
-      defaultSelectedPod: null
+      defaultSelectedPod: null,
+      columns: [
+        {
+          title: this.$t('podId'),
+          scopedSlots: { customRender: 'name' }
+        },
+        {
+          title: this.$t('gateway'),
+          dataIndex: 'gateway'
+        },
+        {
+          title: this.$t('netmask'),
+          dataIndex: 'netmask'
+        },
+        {
+          title: this.$t('vlan'),
+          dataIndex: 'vlanid'
+        },
+        {
+          title: this.$t('startip'),
+          dataIndex: 'startip'
+        },
+        {
+          title: this.$t('endip'),
+          dataIndex: 'endip'
+        },
+        {
+          title: this.$t('action'),
+          scopedSlots: { customRender: 'actions' }
+        }
+      ],
+      page: 1,
+      pageSize: 10
     }
   },
   beforeCreate () {
@@ -158,7 +183,9 @@ export default {
       this.fetchPods()
       this.componentLoading = true
       api('listStorageNetworkIpRange', {
-        zoneid: this.resource.zoneid
+        zoneid: this.resource.zoneid,
+        page: this.page,
+        pageSize: this.pageSize
       }).then(response => {
         this.items = response.liststoragenetworkiprangeresponse.storagenetworkiprange ? response.liststoragenetworkiprangeresponse.storagenetworkiprange : []
       }).catch(error => {
@@ -286,6 +313,16 @@ export default {
           this.fetchData()
         })
       })
+    },
+    changePage (page, pageSize) {
+      this.page = page
+      this.pageSize = pageSize
+      this.fetchData()
+    },
+    changePageSize (currentPage, pageSize) {
+      this.page = currentPage
+      this.pageSize = pageSize
+      this.fetchData()
     }
   }
 }
@@ -354,5 +391,9 @@ export default {
     &__item {
       font-weight: bold;
     }
+  }
+
+  .pagination {
+    margin-top: 20px;
   }
 </style>
