@@ -18,66 +18,64 @@
 <template>
   <a-spin :spinning="fetchLoading">
     <a-button type="dashed" icon="plus" style="width: 100%" @click="handleOpenModal">Add Network</a-button>
-    <a-list class="list">
-      <a-list-item v-for="network in networks" :key="network.id" class="list__item">
-        <div class="list__item-outer-container">
-          <div class="list__item-container">
-            <div class="list__col">
-              <div class="list__label">
-                {{ $t('name') }}
-              </div>
-              <div>
-                <router-link :to="{ path: '/guestnetwork/' + network.id }">{{ network.name }} </router-link>
-                <a-tag v-if="network.broadcasturi">{{ network.broadcasturi }}</a-tag>
-              </div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">{{ $t('state') }}</div>
-              <div><status :text="network.state" displayText></status></div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">
-                {{ $t('CIDR') }}
-              </div>
-              <div>{{ network.cidr }}</div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">
-                {{ $t('aclid') }}
-              </div>
-              <div>
-                <router-link :to="{ path: '/acllist/' + network.aclid }">
-                  {{ network.aclid }}
-                </router-link>
-              </div>
-            </div>
 
-          </div>
-          <div class="list__item-container">
-            <div class="list__col">
-              <a-button icon="share-alt">
-                <router-link :to="{ path: '/ilb?networkid=' + network.id }"> Internal LB</router-link>
-              </a-button>
-            </div>
-            <div class="list__col">
-              <a-button icon="share-alt">
-                <router-link :to="{ path: '/publicip?forloadbalancing=true' + '&associatednetworkid=' + network.id }"> Public LB IP</router-link>
-              </a-button>
-            </div>
-            <div class="list__col">
-              <a-button icon="environment">
-                <router-link :to="{ path: '/publicip?isstaticnat=true' + '&associatednetworkid=' + network.id }"> Static NATS</router-link>
-              </a-button>
-            </div>
-            <div class="list__col">
-              <a-button icon="desktop">
-                <router-link :to="{ path: '/vm/?vpcid=' + resource.id + '&networkid=' + network.id }"> VMs</router-link>
-              </a-button>
-            </div>
-          </div>
+    <a-table
+      size="small"
+      style="overflow-y: auto; margin-top: 20px;"
+      :loading="fetchLoading"
+      :columns="columns"
+      :dataSource="networks"
+      :pagination="false"
+      :scroll="{ x: 1000 }"
+      :rowKey="record => record.id">
+      <template slot="name" slot-scope="record">
+        <router-link :to="{ path: '/guestnetwork/' + record.id }">{{ record.name }} </router-link>
+        <a-tag v-if="record.broadcasturi">{{ record.broadcasturi }}</a-tag>
+      </template>
+      <template slot="state" slot-scope="record">
+        <status :text="record.state" displayText></status>
+      </template>
+      <template slot="aclid" slot-scope="record">
+        <router-link :to="{ path: '/acllist/' + record.aclid }">{{ record.aclid }}</router-link>
+      </template>
+      <div slot="actions" slot-scope="record" class="actions">
+        <div class="list__col">
+          <a-button icon="share-alt">
+            <router-link :to="{ path: '/ilb?networkid=' + record.id }"> Internal LB</router-link>
+          </a-button>
         </div>
-      </a-list-item>
-    </a-list>
+        <div class="list__col">
+          <a-button icon="share-alt">
+            <router-link :to="{ path: '/publicip?forloadbalancing=true' + '&associatednetworkid=' + record.id }">
+              Public LB IP
+            </router-link>
+          </a-button>
+        </div>
+        <div class="list__col">
+          <a-button icon="environment">
+            <router-link :to="{ path: '/publicip?isstaticnat=true' + '&associatednetworkid=' + record.id }">
+              Static NATS
+            </router-link>
+          </a-button>
+        </div>
+        <div class="list__col">
+          <a-button icon="desktop">
+            <router-link :to="{ path: '/vm/?vpcid=' + resource.id + '&networkid=' + record.id }">VMs</router-link>
+          </a-button>
+        </div>
+      </div>
+    </a-table>
+    <a-pagination
+      class="pagination"
+      size="small"
+      :current="page"
+      :pageSize="pageSize"
+      :total="networks ? networks.length : 0"
+      :showTotal="total => `Total ${total} items`"
+      :pageSizeOptions="['10', '20', '40', '80', '100']"
+      @change="handleChangePage"
+      @showSizeChange="handleChangePageSize"
+      showSizeChanger/>
 
     <a-modal v-model="showCreateNetworkModal" :title="$t('label.add.new.tier')" @ok="handleAddNetworkSubmit">
       <a-spin :spinning="modalLoading">
@@ -149,7 +147,31 @@ export default {
       showCreateNetworkModal: false,
       networkOfferings: [],
       networkAclList: [],
-      modalLoading: false
+      modalLoading: false,
+      page: 1,
+      pageSize: 10,
+      columns: [
+        {
+          title: this.$t('name'),
+          scopedSlots: { customRender: 'name' }
+        },
+        {
+          title: this.$t('state'),
+          scopedSlots: { customRender: 'state' }
+        },
+        {
+          title: this.$t('CIDR'),
+          dataIndex: 'cidr'
+        },
+        {
+          title: this.$t('aclid'),
+          scopedSlots: { customRender: 'aclid' }
+        },
+        {
+          title: this.$t('action'),
+          scopedSlots: { customRender: 'actions' }
+        }
+      ]
     }
   },
   mounted () {
@@ -168,7 +190,11 @@ export default {
   methods: {
     fetchData () {
       this.fetchLoading = true
-      api('listNetworks', { vpcid: this.resource.id }).then(json => {
+      api('listNetworks', {
+        vpcid: this.resource.id,
+        page: this.page,
+        pageSize: this.pageSize
+      }).then(json => {
         this.networks = json.listnetworksresponse.network
       }).catch(error => {
         this.$notification.error({
@@ -267,6 +293,16 @@ export default {
           this.fetchData()
         })
       })
+    },
+    handleChangePage (page, pageSize) {
+      this.page = page
+      this.pageSize = pageSize
+      this.fetchData()
+    },
+    handleChangePageSize (currentPage, pageSize) {
+      this.page = currentPage
+      this.pageSize = pageSize
+      this.fetchData()
     }
   }
 }
@@ -309,4 +345,10 @@ export default {
     }
   }
 }
+.pagination {
+  margin-top: 20px;
+}
+  .actions {
+    display: flex;
+  }
 </style>
