@@ -17,7 +17,12 @@
 
 <template>
   <div class="form-layout">
-    <a-spin :spinning="loading">
+    <span v-if="uploadPercentage > 0">
+      <a-icon type="loading" />
+      Do not close this form, file upload is in progress...
+      <a-progress :percent="uploadPercentage" />
+    </span>
+    <a-spin :spinning="loading" v-else>
       <a-form
         :form="form"
         @submit="handleSubmit"
@@ -30,15 +35,21 @@
             :placeholder="$t('iso.url.description')" />
         </a-form-item>
         <a-form-item v-if="currentForm === 'Upload'" :label="$t('templateFileUpload')">
-          <a-upload
+          <a-upload-dragger
+            :multiple="false"
             :fileList="fileList"
             :remove="handleRemove"
             :beforeUpload="beforeUpload"
             v-decorator="['file', {
               rules: [{ required: true, message: 'Please enter input' }]
             }]">
-            <a-button> <a-icon type="upload" /> Select File </a-button>
-          </a-upload>
+            <p class="ant-upload-drag-icon">
+              <a-icon type="upload" />
+            </p>
+            <p class="ant-upload-text" v-if="fileList.length === 0">
+              Click or drag file to this area to upload
+            </p>
+          </a-upload-dragger>
         </a-form-item>
         <a-form-item :label="$t('name')">
           <a-input
@@ -179,6 +190,7 @@ export default {
       bootable: true,
       selectedZone: '',
       uploadParams: null,
+      uploadPercentage: 0,
       currentForm: this.action.currentAction.api === 'registerIso' ? 'Create' : 'Upload'
     }
   },
@@ -238,7 +250,7 @@ export default {
       this.fileList = newFileList
     },
     beforeUpload (file) {
-      this.fileList = [...this.fileList, file]
+      this.fileList = [file]
       return false
     },
     handleUpload () {
@@ -246,14 +258,15 @@ export default {
       if (this.fileList.length > 1) {
         this.$notification.error({
           message: 'ISO Upload Failed',
-          description: 'Only one ISO can be uploaded at a time'
+          description: 'Only one ISO can be uploaded at a time',
+          duration: 0
         })
       }
       const formData = new FormData()
       fileList.forEach(file => {
         formData.append('files[]', file)
       })
-      this.loading = true
+      this.uploadPercentage = 0
       axios.post(this.uploadParams.postURL,
         formData,
         {
@@ -263,17 +276,23 @@ export default {
             'X-expires': this.uploadParams.expires,
             'X-metadata': this.uploadParams.metadata
           },
-          timeout: 1000000
+          onUploadProgress: (progressEvent) => {
+            this.uploadPercentage = Number(parseFloat(100 * progressEvent.loaded / progressEvent.total).toFixed(1))
+          },
+          timeout: 86400000
         }).then((json) => {
         this.$notification.success({
           message: 'Upload Successful',
           description: 'This ISO file has been uploaded. Please check its status at Templates menu'
         })
+        this.closeAction()
       }).catch(e => {
         this.$notification.error({
           message: 'Upload Failed',
-          description: `Failed to upload ISO -  ${e}`
+          description: `Failed to upload ISO -  ${e}`,
+          duration: 0
         })
+        this.closeAction()
       })
     },
     handleSubmit (e) {
@@ -306,8 +325,8 @@ export default {
           }
         }
 
-        this.loading = true
         if (this.currentForm === 'Create') {
+          this.loading = true
           api('registerIso', params).then(json => {
             this.$emit('refresh-data')
             this.$notification.success({
@@ -317,14 +336,19 @@ export default {
           }).catch(error => {
             this.$notification.error({
               message: 'Request Failed',
-              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message,
+              duration: 0
             })
           }).finally(() => {
             this.loading = false
             this.closeAction()
           })
         } else {
+          if (this.fileList.length !== 1) {
+            return
+          }
           params.format = 'ISO'
+          this.loading = true
           api('getUploadParamsForIso', params).then(json => {
             this.uploadParams = (json.postuploadisoresponse && json.postuploadisoresponse.getuploadparams) ? json.postuploadisoresponse.getuploadparams : ''
             const response = this.handleUpload()
@@ -337,11 +361,11 @@ export default {
           }).catch(error => {
             this.$notification.error({
               message: 'Request Failed',
-              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message,
+              duration: 0
             })
           }).finally(() => {
             this.loading = false
-            this.closeAction()
           })
         }
       })
