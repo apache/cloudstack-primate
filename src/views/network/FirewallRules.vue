@@ -62,6 +62,7 @@
       :columns="columns"
       :dataSource="firewallRules"
       :pagination="false"
+      :scroll="{ x: 600 }"
       :rowKey="record => record.id">
       <template slot="protocol" slot-scope="record">
         {{ record.protocol | capitalise }}
