@@ -18,41 +18,39 @@
 <template>
   <a-spin :spinning="fetchLoading">
     <a-button type="dashed" icon="plus" style="width: 100%" @click="handleOpenModal">{{ $t('label.dedicate.vlan.vni.range') }}</a-button>
-    <a-list class="list">
-      <a-list-item v-for="item in items" :key="item.id" class="list__item">
-        <div class="list__item-outer-container">
-          <div class="list__item-container">
-            <div class="list__col">
-              <div class="list__label">{{ $t('vlanrange') }}</div>
-              <div>{{ item.guestvlanrange }}</div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">{{ $t('domain') }}</div>
-              <div>{{ item.domain }}</div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">{{ $t('account') }}</div>
-              <div>{{ item.account }}</div>
-            </div>
-          </div>
-          <div class="list__col">
-            <div class="list__label">{{ $t('id') }}</div>
-            <div>{{ item.id }}</div>
-          </div>
-        </div>
-        <div slot="actions">
-          <a-popconfirm
-            :title="`${$t('label.delete')}?`"
-            @confirm="handleDelete(item)"
-            okText="Yes"
-            cancelText="No"
-            placement="top"
-          >
-            <a-button icon="delete" type="danger" shape="round"></a-button>
-          </a-popconfirm>
-        </div>
-      </a-list-item>
-    </a-list>
+
+    <a-table
+      size="small"
+      style="overflow-y: auto; margin-top: 20px;"
+      :loading="fetchLoading"
+      :columns="columns"
+      :dataSource="items"
+      :pagination="false"
+      :scroll="{ x: 600 }"
+      :rowKey="record => record.id">
+      <template slot="actions" slot-scope="record">
+        <a-popconfirm
+          :title="`${$t('label.delete')}?`"
+          @confirm="handleDelete(record)"
+          okText="Yes"
+          cancelText="No"
+          placement="top"
+        >
+          <a-button icon="delete" type="danger" shape="round"></a-button>
+        </a-popconfirm>
+      </template>
+    </a-table>
+    <a-pagination
+      class="pagination"
+      size="small"
+      :current="page"
+      :pageSize="pageSize"
+      :total="items ? items.length : 0"
+      :showTotal="total => `Total ${total} items`"
+      :pageSizeOptions="['10', '20', '40', '80', '100']"
+      @change="handleChangePage"
+      @showSizeChange="handleChangePageSize"
+      showSizeChanger/>
 
     <a-modal v-model="modal" :title="$t('label.dedicate.vlan.vni.range')" @ok="handleSubmit">
       <a-spin :spinning="formLoading">
@@ -147,7 +145,31 @@ export default {
       accounts: [],
       projects: [],
       modal: false,
-      selectedScope: 'account'
+      selectedScope: 'account',
+      page: 1,
+      pageSize: 10,
+      columns: [
+        {
+          title: this.$t('vlanrange'),
+          dataIndex: 'guestvlanrange'
+        },
+        {
+          title: this.$t('domain'),
+          dataIndex: 'domain'
+        },
+        {
+          title: this.$t('account'),
+          dataIndex: 'account'
+        },
+        {
+          title: this.$t('id'),
+          dataIndex: 'id'
+        },
+        {
+          title: this.$t('action'),
+          scopedSlots: { customRender: 'actions' }
+        }
+      ]
     }
   },
   beforeCreate () {
@@ -167,7 +189,9 @@ export default {
     fetchData () {
       this.form.resetFields()
       api('listDedicatedGuestVlanRanges', {
-        physicalnetworkid: this.resource.id
+        physicalnetworkid: this.resource.id,
+        page: this.page,
+        pageSize: this.pageSize
       }).then(response => {
         this.items = response.listdedicatedguestvlanrangesresponse.dedicatedguestvlanrange
           ? response.listdedicatedguestvlanrangesresponse.dedicatedguestvlanrange : []
@@ -340,6 +364,16 @@ export default {
       this.modal = true
       this.formLoading = true
       this.fetchDomains()
+    },
+    handleChangePage (page, pageSize) {
+      this.page = page
+      this.pageSize = pageSize
+      this.fetchData()
+    },
+    handleChangePageSize (currentPage, pageSize) {
+      this.page = currentPage
+      this.pageSize = pageSize
+      this.fetchData()
     }
   }
 }
@@ -380,5 +414,9 @@ export default {
       }
     }
   }
+}
+
+.pagination {
+  margin-top: 20px;
 }
 </style>
