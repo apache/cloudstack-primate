@@ -17,330 +17,346 @@
 
 <template>
   <div class="form-layout">
-    <a-form layout="vertical" :form="form">
-      <div v-if="currentForm === 'Create'">
-        <a-row :gutter="12">
-          <a-form-item :label="$t('url')">
-            <a-input
-              v-decorator="['url', {
+    <span v-if="uploadPercentage > 0">
+      <a-icon type="loading" />
+      Do not close this form, file upload is in progress...
+      <a-progress :percent="uploadPercentage" />
+    </span>
+    <a-spin :spinning="loading" v-else>
+      <a-form
+        :form="form"
+        @submit="handleSubmit"
+        layout="vertical">
+        <div v-if="currentForm === 'Create'">
+          <a-row :gutter="12">
+            <a-form-item :label="$t('url')">
+              <a-input
+                v-decorator="['url', {
+                  rules: [{ required: true, message: 'Please enter input' }]
+                }]"
+                :placeholder="apiParams.url.description" />
+            </a-form-item>
+          </a-row>
+        </div>
+        <div v-if="currentForm === 'Upload'">
+          <a-form-item :label="$t('templateFileUpload')">
+            <a-upload-dragger
+              :multiple="false"
+              :fileList="fileList"
+              :remove="handleRemove"
+              :beforeUpload="beforeUpload"
+              v-decorator="['file', {
                 rules: [{ required: true, message: 'Please enter input' }]
+              }]">
+              <p class="ant-upload-drag-icon">
+                <a-icon type="upload" />
+              </p>
+              <p class="ant-upload-text" v-if="fileList.length === 0">
+                Click or drag file to this area to upload
+              </p>
+            </a-upload-dragger>
+          </a-form-item>
+        </div>
+        <a-row :gutter="12">
+          <a-form-item :label="$t('name')">
+            <a-input
+              v-decorator="['name', {
+                rules: [{ required: true, message: 'Please upload a template ' }]
               }]"
-              :placeholder="apiParams.url.description" />
+              :placeholder="apiParams.name.description" />
           </a-form-item>
         </a-row>
-      </div>
-      <div v-if="currentForm === 'Upload'">
-        <a-form-item :label="$t('templateFileUpload')">
-          <a-upload
-            :fileList="fileList"
-            :remove="handleRemove"
-            :beforeUpload="beforeUpload"
-            v-decorator="['file', {
-              rules: [{ required: true, message: 'Please enter input' }]
-            }]">
-            <a-button> <a-icon type="upload" /> Select File </a-button>
-          </a-upload>
-        </a-form-item>
-      </div>
-      <a-row :gutter="12">
-        <a-form-item :label="$t('name')">
-          <a-input
-            v-decorator="['name', {
-              rules: [{ required: true, message: 'Please upload a template ' }]
-            }]"
-            :placeholder="apiParams.name.description" />
-        </a-form-item>
-      </a-row>
-      <a-row :gutter="12">
-        <a-form-item :label="$t('displaytext')">
-          <a-input
-            v-decorator="['displaytext', {
-              rules: [{ required: true, message: 'Please enter input' }]
-            }]"
-            :placeholder="apiParams.displaytext.description" />
-        </a-form-item>
-      </a-row>
-      <div v-if="currentForm === 'Create'">
         <a-row :gutter="12">
-          <a-col :md="24" :lg="24">
-            <a-form-item
-              :label="$t('zoneids')"
-              :validate-status="zoneError"
-              :help="zoneErrorMessage">
+          <a-form-item :label="$t('displaytext')">
+            <a-input
+              v-decorator="['displaytext', {
+                rules: [{ required: true, message: 'Please enter input' }]
+              }]"
+              :placeholder="apiParams.displaytext.description" />
+          </a-form-item>
+        </a-row>
+        <div v-if="currentForm === 'Create'">
+          <a-row :gutter="12">
+            <a-col :md="24" :lg="24">
+              <a-form-item
+                :label="$t('zoneids')"
+                :validate-status="zoneError"
+                :help="zoneErrorMessage">
+                <a-select
+                  v-decorator="['zoneids', {
+                    rules: [
+                      {
+                        required: false,
+                        message: 'Please select option',
+                        type: 'array'
+                      }
+                    ]
+                  }]"
+                  :loading="zones.loading"
+                  mode="multiple"
+                  :placeholder="apiParams.zoneids.description"
+                  @change="handlerSelectZone">
+                  <a-select-option v-for="opt in zones.opts" :key="opt.name || opt.description">
+                    {{ opt.name || opt.description }}
+                  </a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+          </a-row>
+        </div>
+        <div v-else>
+          <a-row :gutter="12">
+            <a-col :md="24" :lg="24">
+              <a-form-item
+                :label="$t('zoneid')"
+                :validate-status="zoneError"
+                :help="zoneErrorMessage">
+                <a-select
+                  v-decorator="['zoneid', {
+                    initialValue: this.zoneSelected
+                  }]"
+                  @change="handlerSelectZone"
+                  :loading="zones.loading">
+                  <a-select-option :value="zone.id" v-for="zone in zones.opts" :key="zone.id">
+                    <div v-if="zone.name !== $t('label.all.zone')">
+                      {{ zone.name || zone.description }}
+                    </div>
+                  </a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+          </a-row>
+        </div>
+        <a-row :gutter="12">
+          <a-col :md="24" :lg="12">
+            <a-form-item :label="$t('hypervisor')">
               <a-select
-                v-decorator="['zoneids', {
+                v-decorator="['hypervisor', {
                   rules: [
                     {
-                      required: false,
-                      message: 'Please select option',
-                      type: 'array'
+                      required: true,
+                      message: 'Please select option'
                     }
                   ]
                 }]"
-                :loading="zones.loading"
-                mode="multiple"
-                :placeholder="apiParams.zoneids.description"
-                @change="handlerSelectZone">
-                <a-select-option v-for="opt in zones.opts" :key="opt.name || opt.description">
+                :loading="hyperVisor.loading"
+                :placeholder="apiParams.hypervisor.description"
+                @change="handlerSelectHyperVisor">
+                <a-select-option v-for="(opt, optIndex) in hyperVisor.opts" :key="optIndex">
+                  {{ opt.name || opt.description }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+          <a-col :md="24" :lg="12">
+            <a-form-item :label="$t('format')">
+              <a-select
+                v-decorator="['format', {
+                  rules: [
+                    {
+                      required: true,
+                      message: 'Please select option'
+                    }
+                  ]
+                }]"
+                :placeholder="apiParams.format.description">
+                <a-select-option v-for="opt in format.opts" :key="opt.id">
                   {{ opt.name || opt.description }}
                 </a-select-option>
               </a-select>
             </a-form-item>
           </a-col>
         </a-row>
-      </div>
-      <div v-else>
-        <a-row :gutter="12">
-          <a-col :md="24" :lg="24">
-            <a-form-item
-              :label="$t('zoneid')"
-              :validate-status="zoneError"
-              :help="zoneErrorMessage">
-              <a-select
-                v-decorator="['zoneid', {
-                  initialValue: this.zoneSelected
+        <a-row :gutter="12" v-if="allowed && hyperKVMShow && currentForm !== 'Upload'">
+          <a-col :md="24" :lg="12">
+            <a-form-item :label="$t('directdownload')">
+              <a-switch v-decorator="['directdownload']" @change="handleChangeDirect" />
+            </a-form-item>
+          </a-col>
+          <a-col :md="24" :lg="12" v-if="allowDirectDownload">
+            <a-form-item :label="$t('checksum')">
+              <a-input
+                v-decorator="['checksum', {
+                  rules: [{ required: false, message: 'Please enter input' }]
                 }]"
-                @change="handlerSelectZone"
-                :loading="zones.loading">
-                <a-select-option :value="zone.id" v-for="zone in zones.opts" :key="zone.id">
-                  <div v-if="zone.name !== $t('label.all.zone')">
-                    {{ zone.name || zone.description }}
-                  </div>
+                :placeholder="apiParams.checksum.description" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-row :gutter="12" v-if="allowed && hyperXenServerShow">
+          <a-form-item v-if="hyperXenServerShow" :label="$t('xenserverToolsVersion61plus')">
+            <a-switch
+              v-decorator="['xenserverToolsVersion61plus',{
+                initialValue: xenServerProvider
+              }]"
+              :default-checked="xenServerProvider" />
+          </a-form-item>
+        </a-row>
+        <a-row :gutter="12" v-if="hyperKVMShow || hyperVMWShow">
+          <a-col :md="24" :lg="24" v-if="hyperKVMShow">
+            <a-form-item :label="$t('rootDiskControllerType')">
+              <a-select
+                v-decorator="['rootDiskControllerType', {
+                  rules: [
+                    {
+                      required: true,
+                      message: 'Please select option'
+                    }
+                  ]
+                }]"
+                :loading="rootDisk.loading"
+                :placeholder="$t('rootdiskcontroller')">
+                <a-select-option v-for="opt in rootDisk.opts" :key="opt.id">
+                  {{ opt.name || opt.description }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+          <a-col :md="24" :lg="12" v-if="hyperVMWShow">
+            <a-form-item :label="$t('rootDiskControllerType')">
+              <a-select
+                v-decorator="['rootDiskControllerType', {
+                  rules: [
+                    {
+                      required: false,
+                      message: 'Please select option'
+                    }
+                  ]
+                }]"
+                :loading="rootDisk.loading"
+                :placeholder="$t('rootdiskcontroller')">
+                <a-select-option v-for="opt in rootDisk.opts" :key="opt.id">
+                  {{ opt.name || opt.description }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+          <a-col :md="24" :lg="12" v-if="hyperVMWShow">
+            <a-form-item :label="$t('nicAdapterType')">
+              <a-select
+                v-decorator="['nicAdapterType', {
+                  rules: [
+                    {
+                      required: false,
+                      message: 'Please select option'
+                    }
+                  ]
+                }]"
+                :placeholder="$t('nicadaptertype')">
+                <a-select-option v-for="opt in nicAdapterType.opts" :key="opt.id">
+                  {{ opt.name || opt.description }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+          <a-col :md="24" :lg="24">
+            <a-form-item v-if="hyperVMWShow" :label="$t('keyboardType')">
+              <a-select
+                v-decorator="['keyboardType', {
+                  rules: [
+                    {
+                      required: false,
+                      message: 'Please select option'
+                    }
+                  ]
+                }]"
+                :placeholder="$t('keyboard')">
+                <a-select-option v-for="opt in keyboardType.opts" :key="opt.id">
+                  {{ opt.name || opt.description }}
                 </a-select-option>
               </a-select>
             </a-form-item>
           </a-col>
         </a-row>
-      </div>
-      <a-row :gutter="12">
-        <a-col :md="24" :lg="12">
-          <a-form-item :label="$t('hypervisor')">
-            <a-select
-              v-decorator="['hypervisor', {
-                rules: [
-                  {
-                    required: true,
-                    message: 'Please select option'
-                  }
-                ]
-              }]"
-              :loading="hyperVisor.loading"
-              :placeholder="apiParams.hypervisor.description"
-              @change="handlerSelectHyperVisor">
-              <a-select-option v-for="(opt, optIndex) in hyperVisor.opts" :key="optIndex">
-                {{ opt.name || opt.description }}
-              </a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-        <a-col :md="24" :lg="12">
-          <a-form-item :label="$t('format')">
-            <a-select
-              v-decorator="['format', {
-                rules: [
-                  {
-                    required: true,
-                    message: 'Please select option'
-                  }
-                ]
-              }]"
-              :placeholder="apiParams.format.description">
-              <a-select-option v-for="opt in format.opts" :key="opt.id">
-                {{ opt.name || opt.description }}
-              </a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-      </a-row>
-      <a-row :gutter="12" v-if="allowed && hyperKVMShow && currentForm !== 'Upload'">
-        <a-col :md="24" :lg="12">
-          <a-form-item :label="$t('directdownload')">
-            <a-switch v-decorator="['directdownload']" @change="handleChangeDirect" />
-          </a-form-item>
-        </a-col>
-        <a-col :md="24" :lg="12" v-if="allowDirectDownload">
-          <a-form-item :label="$t('checksum')">
-            <a-input
-              v-decorator="['checksum', {
-                rules: [{ required: false, message: 'Please enter input' }]
-              }]"
-              :placeholder="apiParams.checksum.description" />
-          </a-form-item>
-        </a-col>
-      </a-row>
-      <a-row :gutter="12" v-if="allowed && hyperXenServerShow">
-        <a-form-item v-if="hyperXenServerShow" :label="$t('xenserverToolsVersion61plus')">
-          <a-switch
-            v-decorator="['xenserverToolsVersion61plus',{
-              initialValue: xenServerProvider
-            }]"
-            :default-checked="xenServerProvider" />
-        </a-form-item>
-      </a-row>
-      <a-row :gutter="12" v-if="hyperKVMShow || hyperVMWShow">
-        <a-col :md="24" :lg="24" v-if="hyperKVMShow">
-          <a-form-item :label="$t('rootDiskControllerType')">
-            <a-select
-              v-decorator="['rootDiskControllerType', {
-                rules: [
-                  {
-                    required: true,
-                    message: 'Please select option'
-                  }
-                ]
-              }]"
-              :loading="rootDisk.loading"
-              :placeholder="$t('rootdiskcontroller')">
-              <a-select-option v-for="opt in rootDisk.opts" :key="opt.id">
-                {{ opt.name || opt.description }}
-              </a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-        <a-col :md="24" :lg="12" v-if="hyperVMWShow">
-          <a-form-item :label="$t('rootDiskControllerType')">
-            <a-select
-              v-decorator="['rootDiskControllerType', {
-                rules: [
-                  {
-                    required: false,
-                    message: 'Please select option'
-                  }
-                ]
-              }]"
-              :loading="rootDisk.loading"
-              :placeholder="$t('rootdiskcontroller')">
-              <a-select-option v-for="opt in rootDisk.opts" :key="opt.id">
-                {{ opt.name || opt.description }}
-              </a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-        <a-col :md="24" :lg="12" v-if="hyperVMWShow">
-          <a-form-item :label="$t('nicAdapterType')">
-            <a-select
-              v-decorator="['nicAdapterType', {
-                rules: [
-                  {
-                    required: false,
-                    message: 'Please select option'
-                  }
-                ]
-              }]"
-              :placeholder="$t('nicadaptertype')">
-              <a-select-option v-for="opt in nicAdapterType.opts" :key="opt.id">
-                {{ opt.name || opt.description }}
-              </a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-        <a-col :md="24" :lg="24">
-          <a-form-item v-if="hyperVMWShow" :label="$t('keyboardType')">
-            <a-select
-              v-decorator="['keyboardType', {
-                rules: [
-                  {
-                    required: false,
-                    message: 'Please select option'
-                  }
-                ]
-              }]"
-              :placeholder="$t('keyboard')">
-              <a-select-option v-for="opt in keyboardType.opts" :key="opt.id">
-                {{ opt.name || opt.description }}
-              </a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-      </a-row>
-      <a-row :gutter="12">
-        <a-col :md="24" :lg="24">
-          <a-form-item :label="$t('ostypeid')">
-            <a-select
-              showSearch
-              v-decorator="['ostypeid', {
-                initialValue: defaultOsType,
-                rules: [
-                  {
-                    required: true,
-                    message: 'Please select option'
-                  }
-                ]
-              }]"
-              :loading="osTypes.loading"
-              :placeholder="apiParams.ostypeid.description">
-              <a-select-option v-for="opt in osTypes.opts" :key="opt.name || opt.description">
-                {{ opt.name || opt.description }}
-              </a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-      </a-row>
-      <a-row :gutter="12">
-        <a-col :md="24" :lg="24">
-          <a-form-item>
-            <a-checkbox-group
-              v-decorator="['groupenabled', { initialValue: ['requireshvm'] }]"
-              style="width: 100%;"
-            >
-              <a-row>
-                <a-col :span="12">
-                  <a-checkbox value="isextractable">
-                    {{ $t('isextractable') }}
-                  </a-checkbox>
-                </a-col>
-                <a-col :span="12">
-                  <a-checkbox value="passwordenabled">
-                    {{ $t('passwordenabled') }}
-                  </a-checkbox>
-                </a-col>
-              </a-row>
-              <a-row>
-                <a-col :span="12">
-                  <a-checkbox value="isdynamicallyscalable">
-                    {{ $t('isdynamicallyscalable') }}
-                  </a-checkbox>
-                </a-col>
-                <a-col :span="12">
-                  <a-checkbox value="sshkeyenabled">
-                    {{ $t('sshkeyenabled') }}
-                  </a-checkbox>
-                </a-col>
-              </a-row>
-              <a-row>
-                <a-col :span="12">
-                  <a-checkbox value="isrouting">
-                    {{ $t('isrouting') }}
-                  </a-checkbox>
-                </a-col>
-                <a-col :span="12">
-                  <a-checkbox value="ispublic">
-                    {{ $t('ispublic') }}
-                  </a-checkbox>
-                </a-col>
-              </a-row>
-              <a-row>
-                <a-col :span="12">
-                  <a-checkbox value="requireshvm">
-                    {{ $t('requireshvm') }}
-                  </a-checkbox>
-                </a-col>
-                <a-col :span="12">
-                  <a-checkbox value="isfeatured">
-                    {{ $t('isfeatured') }}
-                  </a-checkbox>
-                </a-col>
-              </a-row>
-            </a-checkbox-group>
-          </a-form-item>
-        </a-col>
-      </a-row>
+        <a-row :gutter="12">
+          <a-col :md="24" :lg="24">
+            <a-form-item :label="$t('ostypeid')">
+              <a-select
+                showSearch
+                v-decorator="['ostypeid', {
+                  initialValue: defaultOsType,
+                  rules: [
+                    {
+                      required: true,
+                      message: 'Please select option'
+                    }
+                  ]
+                }]"
+                :loading="osTypes.loading"
+                :placeholder="apiParams.ostypeid.description">
+                <a-select-option v-for="opt in osTypes.opts" :key="opt.name || opt.description">
+                  {{ opt.name || opt.description }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-row :gutter="12">
+          <a-col :md="24" :lg="24">
+            <a-form-item>
+              <a-checkbox-group
+                v-decorator="['groupenabled', { initialValue: ['requireshvm'] }]"
+                style="width: 100%;"
+              >
+                <a-row>
+                  <a-col :span="12">
+                    <a-checkbox value="isextractable">
+                      {{ $t('isextractable') }}
+                    </a-checkbox>
+                  </a-col>
+                  <a-col :span="12">
+                    <a-checkbox value="passwordenabled">
+                      {{ $t('passwordenabled') }}
+                    </a-checkbox>
+                  </a-col>
+                </a-row>
+                <a-row>
+                  <a-col :span="12">
+                    <a-checkbox value="isdynamicallyscalable">
+                      {{ $t('isdynamicallyscalable') }}
+                    </a-checkbox>
+                  </a-col>
+                  <a-col :span="12">
+                    <a-checkbox value="sshkeyenabled">
+                      {{ $t('sshkeyenabled') }}
+                    </a-checkbox>
+                  </a-col>
+                </a-row>
+                <a-row>
+                  <a-col :span="12">
+                    <a-checkbox value="isrouting">
+                      {{ $t('isrouting') }}
+                    </a-checkbox>
+                  </a-col>
+                  <a-col :span="12">
+                    <a-checkbox value="ispublic">
+                      {{ $t('ispublic') }}
+                    </a-checkbox>
+                  </a-col>
+                </a-row>
+                <a-row>
+                  <a-col :span="12">
+                    <a-checkbox value="requireshvm">
+                      {{ $t('requireshvm') }}
+                    </a-checkbox>
+                  </a-col>
+                  <a-col :span="12">
+                    <a-checkbox value="isfeatured">
+                      {{ $t('isfeatured') }}
+                    </a-checkbox>
+                  </a-col>
+                </a-row>
+              </a-checkbox-group>
+            </a-form-item>
+          </a-col>
+        </a-row>
 
-      <div :span="24" class="action-button">
-        <a-button @click="closeAction">{{ this.$t('Cancel') }}</a-button>
-        <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('OK') }}</a-button>
-      </div>
-    </a-form>
+        <div :span="24" class="action-button">
+          <a-button @click="closeAction">{{ this.$t('Cancel') }}</a-button>
+          <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('OK') }}</a-button>
+        </div>
+      </a-form>
+    </a-spin>
   </div>
 </template>
 
@@ -363,6 +379,7 @@ export default {
   },
   data () {
     return {
+      uploadPercentage: 0,
       uploading: false,
       fileList: [],
       zones: {},
@@ -434,22 +451,16 @@ export default {
       this.fileList = newFileList
     },
     beforeUpload (file) {
-      this.fileList = [...this.fileList, file]
+      this.fileList = [file]
       return false
     },
     handleUpload () {
       const { fileList } = this
-      if (this.fileList.length > 1) {
-        this.$notification.error({
-          message: 'Template Upload Failed',
-          description: 'Only one template can be uploaded at a time'
-        })
-      }
       const formData = new FormData()
       fileList.forEach(file => {
         formData.append('files[]', file)
       })
-      this.loading = true
+      this.uploadPercentage = 0
       axios.post(this.uploadParams.postURL,
         formData,
         {
@@ -458,11 +469,24 @@ export default {
             'X-signature': this.uploadParams.signature,
             'X-expires': this.uploadParams.expires,
             'X-metadata': this.uploadParams.metadata
-          }
+          },
+          onUploadProgress: (progressEvent) => {
+            this.uploadPercentage = Number(parseFloat(100 * progressEvent.loaded / progressEvent.total).toFixed(1))
+          },
+          timeout: 86400000
         }).then((json) => {
-        return json
+        this.$notification.success({
+          message: 'Upload Successful',
+          description: 'This template file has been uploaded. Please check its status at Templates menu'
+        })
+        this.closeAction()
       }).catch(e => {
-        console.log('error = ', e)
+        this.$notification.error({
+          message: 'Upload Failed',
+          description: `Failed to upload Template -  ${e}`,
+          duration: 0
+        })
+        this.closeAction()
       })
     },
     fetchZone () {
@@ -770,7 +794,6 @@ export default {
     },
     handleSubmit (e) {
       e.preventDefault()
-
       this.form.validateFields((err, values) => {
         if (err || this.zoneError !== '') {
           return
@@ -838,8 +861,8 @@ export default {
             }
           }
         }
-        this.loading = true
         if (this.currentForm === 'Create') {
+          this.loading = true
           api('registerTemplate', params).then(json => {
             this.$emit('refresh-data')
             this.$notification.success({
@@ -849,30 +872,33 @@ export default {
           }).catch(error => {
             this.$notification.error({
               message: 'Request Failed',
-              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message,
+              duration: 0
             })
           }).finally(() => {
             this.loading = false
             this.closeAction()
           })
         } else {
+          this.loading = true
+          if (this.fileList.length > 1) {
+            this.$notification.error({
+              message: 'Template Upload Failed',
+              description: 'Only one template can be uploaded at a time',
+              duration: 0
+            })
+          }
           api('getUploadParamsForTemplate', params).then(json => {
             this.uploadParams = (json.postuploadtemplateresponse && json.postuploadtemplateresponse.getuploadparams) ? json.postuploadtemplateresponse.getuploadparams : ''
-            const response = this.handleUpload()
-            if (response === 'upload successful') {
-              this.$notification.success({
-                message: 'upload successful',
-                description: 'upload successful'
-              })
-            }
+            this.handleUpload()
           }).catch(error => {
             this.$notification.error({
               message: 'Request Failed',
-              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message,
+              duration: 0
             })
           }).finally(() => {
             this.loading = false
-            this.closeAction()
           })
         }
       })

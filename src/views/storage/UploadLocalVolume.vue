@@ -17,75 +17,88 @@
 
 <template>
   <div class="form-layout">
-    <a-form
-      :form="form"
-      @submit="handleSubmit"
-      layout="vertical">
-      <a-form-item :label="$t('templateFileUpload')">
-        <a-upload
-          :fileList="fileList"
-          :remove="handleRemove"
-          :beforeUpload="beforeUpload"
-          v-decorator="['file', {
-            rules: [{ required: true, message: 'Please enter input' }]
-          }]">
-          <a-button> <a-icon type="upload" /> Select File </a-button>
-        </a-upload>
-      </a-form-item>
-      <a-form-item :label="$t('name')">
-        <a-input
-          v-decorator="['name', {
-            rules: [{ required: true, message: 'Please enter Volume name' }]
-          }]"
-          :placeholder="$t('volumename')" />
-      </a-form-item>
-      <a-form-item :label="$t('availabilityZone')">
-        <a-select
-          v-decorator="['zoneId', {
-            initialValue: zoneSelected,
-            rules: [
-              {
-                required: true,
-                message: 'Please select option'
-              }
-            ]
-          }]">
-          <a-select-option :value="zone.id" v-for="zone in zones" :key="zone.id">
-            {{ zone.name || zone.description }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item :label="$t('format')">
-        <a-select
-          v-decorator="['format', {
-            initialValue: formats[0],
-            rules: [
-              {
-                required: false,
-                message: 'Please select option'
-              }
-            ]
-          }]">
-          <a-select-option v-for="format in formats" :key="format">
-            {{ format }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item :label="$t('volumeChecksum')">
-        <a-tooltip placement="right">
-          <template slot="title">
-            Use Hash that you created at the start of the volume upload procedure
-          </template>
+    <span v-if="uploadPercentage > 0">
+      <a-icon type="loading" />
+      Do not close this form, file upload is in progress...
+      <a-progress :percent="uploadPercentage" />
+    </span>
+    <a-spin :spinning="loading" v-else>
+      <a-form
+        :form="form"
+        @submit="handleSubmit"
+        layout="vertical">
+        <a-form-item :label="$t('templateFileUpload')">
+          <a-upload-dragger
+            :multiple="false"
+            :fileList="fileList"
+            :remove="handleRemove"
+            :beforeUpload="beforeUpload"
+            v-decorator="['file', {
+              rules: [{ required: true, message: 'Please enter input' }]
+            }]">
+            <p class="ant-upload-drag-icon">
+              <a-icon type="upload" />
+            </p>
+            <p class="ant-upload-text" v-if="fileList.length === 0">
+              Click or drag file to this area to upload
+            </p>
+          </a-upload-dragger>
+        </a-form-item>
+        <a-form-item :label="$t('name')">
           <a-input
-            v-decorator="['checksum']"
-          />
-        </a-tooltip>
-      </a-form-item>
-      <div :span="24" class="action-button">
-        <a-button @click="closeAction">{{ this.$t('Cancel') }}</a-button>
-        <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('OK') }}</a-button>
-      </div>
-    </a-form>
+            v-decorator="['name', {
+              rules: [{ required: true, message: 'Please enter Volume name' }]
+            }]"
+            :placeholder="$t('volumename')" />
+        </a-form-item>
+        <a-form-item :label="$t('availabilityZone')">
+          <a-select
+            v-decorator="['zoneId', {
+              initialValue: zoneSelected,
+              rules: [
+                {
+                  required: true,
+                  message: 'Please select option'
+                }
+              ]
+            }]">
+            <a-select-option :value="zone.id" v-for="zone in zones" :key="zone.id">
+              {{ zone.name || zone.description }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item :label="$t('format')">
+          <a-select
+            v-decorator="['format', {
+              initialValue: formats[0],
+              rules: [
+                {
+                  required: false,
+                  message: 'Please select option'
+                }
+              ]
+            }]">
+            <a-select-option v-for="format in formats" :key="format">
+              {{ format }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item :label="$t('volumeChecksum')">
+          <a-tooltip placement="right">
+            <template slot="title">
+              Use Hash that you created at the start of the volume upload procedure
+            </template>
+            <a-input
+              v-decorator="['checksum']"
+            />
+          </a-tooltip>
+        </a-form-item>
+        <div :span="24" class="action-button">
+          <a-button @click="closeAction">{{ this.$t('Cancel') }}</a-button>
+          <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('OK') }}</a-button>
+        </div>
+      </a-form>
+    </a-spin>
   </div>
 </template>
 
@@ -102,7 +115,8 @@ export default {
       formats: ['RAW', 'VHD', 'VHDX', 'OVA', 'QCOW2'],
       zoneSelected: '',
       uploadParams: null,
-      loading: false
+      loading: false,
+      uploadPercentage: 0
     }
   },
   beforeCreate () {
@@ -155,7 +169,8 @@ export default {
           if (this.fileList.length > 1) {
             this.$notification.error({
               message: 'Volume Upload Failed',
-              description: 'Only one file can be uploaded at a time'
+              description: 'Only one file can be uploaded at a time',
+              duration: 0
             })
           }
           const formData = new FormData()
@@ -163,6 +178,7 @@ export default {
             formData.append('files[]', file)
           })
           this.loading = true
+          this.uploadPercentage = 0
           axios.post(this.uploadParams.postURL,
             formData,
             {
@@ -171,17 +187,24 @@ export default {
                 'X-signature': this.uploadParams.signature,
                 'X-expires': this.uploadParams.expires,
                 'X-metadata': this.uploadParams.metadata
-              }
+              },
+              onUploadProgress: (progressEvent) => {
+                this.uploadPercentage = Number(parseFloat(100 * progressEvent.loaded / progressEvent.total).toFixed(1))
+              },
+              timeout: 86400000
             }).then((json) => {
             this.$notification.success({
               message: 'Upload Successful',
               description: 'This Volume has been uploaded. Please check its status in the Volumes menu'
             })
+            this.closeAction()
           }).catch(e => {
             this.$notification.error({
               message: 'Upload Failed',
-              description: 'Failed to upload ISO'
+              description: `Failed to upload ISO -  ${e}`,
+              duration: 0
             })
+            this.closeAction()
           }).finally(() => {
             this.loading = false
             this.closeAction()
@@ -198,7 +221,11 @@ export default {
 
 <style scoped lang="less">
   .form-layout {
-    width: 500px;
+    width: 80vw;
+
+    @media (min-width: 700px) {
+      width: 550px;
+    }
   }
 
   .action-button {
