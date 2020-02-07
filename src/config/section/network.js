@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import store from '@/store'
 export default {
   name: 'network',
   title: 'Network',
@@ -47,7 +48,15 @@ export default {
       }, {
         name: 'Egress Rules',
         component: () => import('@/views/network/EgressConfigure.vue'),
-        show: () => true
+        show: (record) => { return record.type === 'Isolated' }
+      }, {
+        name: 'IP Addresses',
+        component: () => import('@/views/network/PublicIPAddresses.vue'),
+        show: (record) => { return record.type === 'Isolated' }
+      }, {
+        name: 'Virtual Appliances',
+        component: () => import('@/views/network/VirtualAppliances.vue'),
+        show: (record) => { return (record.type === 'Isolated' || record.type === 'Shared') && 'listRouters' in store.getters.apis }
       }],
       actions: [
         {
