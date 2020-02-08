@@ -400,7 +400,7 @@ export default {
           title: this.$t(key),
           dataIndex: key,
           scopedSlots: { customRender: key },
-          sorter: function (a, b) { return genericCompare(a[this.dataIndex], b[this.dataIndex]) }
+          sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
         })
       }
 
