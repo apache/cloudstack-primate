@@ -17,12 +17,8 @@
 
 <template>
   <a-spin :spinning="fetchLoading">
-    <a-tabs defaultActiveKey="0" :tabPosition="device === 'mobile' ? 'top' : 'left'" :animated="false">
+    <a-tabs :tabPosition="device === 'mobile' ? 'top' : 'left'" :animated="false">
       <a-tab-pane v-for="(item, index) in traffictypes" :tab="item.traffictype" :key="index">
-        <div style="margin-bottom: 10px;">
-          <div><strong>{{ $t('id') }}</strong></div>
-          <div>{{ item.id }}</div>
-        </div>
         <div
           v-for="(type, idx) in ['kvmnetworklabel', 'vmwarenetworklabel', 'xennetworklabel', 'hypervnetworklabel', 'ovm3networklabel']"
           :key="idx"
@@ -31,12 +27,20 @@
           <div>{{ item[type] || 'Use default gateway' }}</div>
         </div>
         <div v-if="item.traffictype === 'Public'">
+          <div style="margin-bottom: 10px;">
+            <div><strong>{{ $t('traffictype') }}</strong></div>
+            <div>{{ publicNetwork.traffictype }}</div>
+          </div>
+          <div style="margin-bottom: 10px;">
+            <div><strong>{{ $t('broadcastdomaintype') }}</strong></div>
+            <div>{{ publicNetwork.broadcastdomaintype }}</div>
+          </div>
           <a-divider />
-          <IpRangesTabPublic :resource="resource" :networkid="networkid" />
+          <IpRangesTabPublic :resource="resource" :loading="loading" :network="publicNetwork" />
         </div>
         <div v-if="item.traffictype === 'Management'">
           <a-divider />
-          <IpRangesTabManagement :resource="resource" />
+          <IpRangesTabManagement :resource="resource" :loading="loading" />
         </div>
         <div v-if="item.traffictype === 'Storage'">
           <a-divider />
@@ -86,7 +90,7 @@ export default {
     return {
       traffictypes: [],
       nsps: [],
-      networkid: null,
+      publicNetwork: {},
       fetchLoading: false
     }
   },
@@ -115,8 +119,13 @@ export default {
       })
 
       this.fetchLoading = true
-      api('listNetworkServiceProviders', { physicalnetworkid: this.resource.id }).then(json => {
-        this.nsps = json.listnetworkserviceprovidersresponse.networkserviceprovider
+      api('listNetworks', {
+        listAll: true,
+        trafficType: 'Public',
+        isSystem: true,
+        zoneId: this.resource.zoneid
+      }).then(json => {
+        this.publicNetwork = json.listnetworksresponse.network[0] || {}
       }).catch(error => {
         this.$notification.error({
           message: 'Request Failed',
@@ -127,13 +136,8 @@ export default {
       })
 
       this.fetchLoading = true
-      api('listNetworks', {
-        listAll: true,
-        trafficType: 'Public',
-        isSystem: true,
-        zoneId: this.resource.zoneid
-      }).then(json => {
-        this.networkid = json.listnetworksresponse.network[0].id
+      api('listNetworkServiceProviders', { physicalnetworkid: this.resource.id }).then(json => {
+        this.nsps = json.listnetworkserviceprovidersresponse.networkserviceprovider
       }).catch(error => {
         this.$notification.error({
           message: 'Request Failed',

@@ -18,20 +18,20 @@
 <template>
   <a-spin :spinning="componentLoading">
     <a-button
-      type="primary"
-      style="margin-bottom: 20px;"
+      type="dashed"
+      icon="plus"
+      style="margin-bottom: 20px; width: 100%"
       @click="handleOpenAddIpRangeModal">
       {{ $t('label.add.ip.range') }}
     </a-button>
 
     <a-table
-      class="table"
+      style="overflow-y: auto"
       size="small"
       :columns="columns"
       :dataSource="items"
       :rowKey="record => record.id"
       :pagination="false"
-      :scroll="{ x: 800 }"
     >
       <template slot="name" slot-scope="record">
         <div>{{ returnPodName(record.podid) }}</div>
@@ -172,10 +172,11 @@ export default {
     this.fetchData()
   },
   watch: {
-    resource (newData, oldData) {
-      if (!newData && this.resource.id) {
-        this.fetchData()
+    resource (newItem, oldItem) {
+      if (!newItem || !newItem.id) {
+        return
       }
+      this.fetchData()
     }
   },
   methods: {
@@ -346,7 +347,6 @@ export default {
     }
 
     &__label {
-      font-weight: bold;
     }
   }
 
@@ -389,7 +389,6 @@ export default {
     }
 
     &__item {
-      font-weight: bold;
     }
   }
 

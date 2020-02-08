@@ -18,23 +18,23 @@
 <template>
   <a-spin :spinning="componentLoading">
     <a-button
-      type="primary"
-      style="margin-bottom: 20px;"
+      type="dashed"
+      icon="plus"
+      style="margin-bottom: 20px; width: 100%"
       @click="handleOpenAddIpRangeModal">
       {{ $t('label.add.ip.range') }}
     </a-button>
 
     <a-table
-      class="table"
       size="small"
+      style="overflow-y: auto"
       :columns="columns"
       :dataSource="items"
       :rowKey="record => record.id"
       :pagination="false"
-      :scroll="{ x: 800 }"
     >
       <template slot="account" slot-scope="record">
-        <a-button @click="() => handleOpenAccountModal(record)">{{ `View ${$t('account')}` }}</a-button>
+        <a-button @click="() => handleOpenAccountModal(record)">{{ `[${record.domain}] ${record.account}` }}</a-button>
       </template>
       <template slot="actions" slot-scope="record">
         <div class="actions">
@@ -145,10 +145,15 @@
           </a-input>
         </a-form-item>
         <div class="form__item">
-          <div style="font-weight:bold; color: black;">{{ $t('label.set.reservation') }}</div>
+          <div style="color: black;">{{ $t('label.set.reservation') }}</div>
           <a-switch @change="handleShowAccountFields"></a-switch>
         </div>
         <div v-if="showAccountFields" style="margin-top: 20px;">
+          <p>(optional) Please specify an account to be associated with this IP range.</p>
+          <p>System VMs: Enable dedication of public IP range for SSVM and CPVM, account field disabled. Reservation strictness defined on 'system.vm.public.ip.reservation.mode.strictness'.</p>
+          <a-form-item :label="$t('System VMs')" class="form__item">
+            <a-switch v-decorator="['forsystemvms']"></a-switch>
+          </a-form-item>
           <a-spin :spinning="domainsLoading">
             <a-form-item :label="$t('account')" class="form__item">
               <a-input v-decorator="['account']"></a-input>
@@ -184,8 +189,8 @@ export default {
       type: Boolean,
       default: false
     },
-    networkid: {
-      type: String,
+    network: {
+      type: Object,
       required: true
     }
   },
@@ -245,17 +250,18 @@ export default {
     this.fetchData()
   },
   watch: {
-    resource (newData, oldData) {
-      if (!newData && this.resource.id) {
-        this.fetchData()
+    network (newItem, oldItem) {
+      if (!newItem || !newItem.id) {
+        return
       }
+      this.fetchData()
     }
   },
   methods: {
     fetchData () {
       this.componentLoading = true
       api('listVlanIpRanges', {
-        networkid: this.networkid,
+        networkid: this.network.id,
         zoneid: this.resource.zoneid,
         page: this.page,
         pagesize: this.pageSize
@@ -381,9 +387,10 @@ export default {
           netmask: values.netmask,
           startip: values.startip,
           endip: values.endip,
-          account: values.account,
-          domainid: values.domain,
-          forVirtualNetwork: true
+          forsystemvms: values.forsystemvms,
+          account: values.forsystemvms ? null : values.account,
+          domainid: values.forsystemvms ? null : values.domain,
+          forvirtualnetwork: true
         }).then(() => {
           this.$notification.success({
             message: 'Successfully added IP Range'
@@ -392,7 +399,8 @@ export default {
           this.$notification.error({
             message: `Error ${error.response.status}`,
             description: error.response.data.createvlaniprangeresponse
-              ? error.response.data.createvlaniprangeresponse.errortext : error.response.data.errorresponse.errortext
+              ? error.response.data.createvlaniprangeresponse.errortext : error.response.data.errorresponse.errortext,
+            duration: 0
           })
         }).finally(() => {
           this.componentLoading = false
@@ -472,10 +480,6 @@ export default {
         }
       }
 
-    }
-
-    &__item {
-      font-weight: bold;
     }
   }
 
