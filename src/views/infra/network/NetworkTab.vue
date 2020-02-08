@@ -24,8 +24,7 @@
           <div>{{ item.id }}</div>
         </div>
         <div
-          v-for="(type, idx) in ['kvmnetworklabel', 'vmwarenetworklabel', 'xennetworklabel', 'hypervnetworklabel',
-         'ovm3networklabel']"
+          v-for="(type, idx) in ['kvmnetworklabel', 'vmwarenetworklabel', 'xennetworklabel', 'hypervnetworklabel', 'ovm3networklabel']"
           :key="idx"
           style="margin-bottom: 10px;">
           <div><strong>{{ $t(type) }}</strong></div>
