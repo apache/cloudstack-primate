@@ -44,7 +44,7 @@
               rules: [{ required: true, message: 'Please enter input' }]
             }]">
             <p class="ant-upload-drag-icon">
-              <a-icon type="upload" />
+              <a-icon type="cloud-upload" />
             </p>
             <p class="ant-upload-text" v-if="fileList.length === 0">
               Click or drag file to this area to upload

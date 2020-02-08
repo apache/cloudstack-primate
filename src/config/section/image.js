@@ -48,7 +48,7 @@ export default {
         {
           api: 'registerTemplate',
           icon: 'plus',
-          label: 'Register template',
+          label: 'Register Template',
           listView: true,
           popup: true,
           component: () => import('@/views/image/RegisterOrUploadTemplate.vue')
@@ -88,7 +88,7 @@ export default {
         {
           api: 'updateTemplatePermissions',
           icon: 'reconciliation',
-          label: 'Update template permissions',
+          label: 'Update Template Permissions',
           dataView: true,
           popup: true,
           show: (record, store) => { return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) || record.templatetype !== 'BUILTIN') },
@@ -144,7 +144,7 @@ export default {
         {
           api: 'getUploadParamsForIso',
           icon: 'cloud-upload',
-          label: 'Upload Local Iso',
+          label: 'Upload Local ISO',
           listView: true,
           popup: true,
           component: () => import('@/views/image/RegisterOrUploadIso.vue')

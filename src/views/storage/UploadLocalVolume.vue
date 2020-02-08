@@ -37,7 +37,7 @@
               rules: [{ required: true, message: 'Please enter input' }]
             }]">
             <p class="ant-upload-drag-icon">
-              <a-icon type="upload" />
+              <a-icon type="cloud-upload" />
             </p>
             <p class="ant-upload-text" v-if="fileList.length === 0">
               Click or drag file to this area to upload
@@ -51,7 +51,7 @@
             }]"
             :placeholder="$t('volumename')" />
         </a-form-item>
-        <a-form-item :label="$t('availabilityZone')">
+        <a-form-item :label="$t('zone')">
           <a-select
             v-decorator="['zoneId', {
               initialValue: zoneSelected,
@@ -84,14 +84,10 @@
           </a-select>
         </a-form-item>
         <a-form-item :label="$t('volumeChecksum')">
-          <a-tooltip placement="right">
-            <template slot="title">
-              Use Hash that you created at the start of the volume upload procedure
-            </template>
-            <a-input
-              v-decorator="['checksum']"
-            />
-          </a-tooltip>
+          <a-input
+            v-decorator="['checksum']"
+            placeholder="Use the hash that you created at the start of the volume upload procedure"
+          />
         </a-form-item>
         <div :span="24" class="action-button">
           <a-button @click="closeAction">{{ this.$t('Cancel') }}</a-button>
