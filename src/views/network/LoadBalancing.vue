@@ -66,7 +66,6 @@
       :columns="columns"
       :dataSource="lbRules"
       :pagination="false"
-      :scroll="{ x: 1000 }"
       :rowKey="record => record.id">
       <template slot="algorithm" slot-scope="record">
         {{ returnAlgorithmName(record.algorithm) }}
@@ -90,8 +89,9 @@
             <div v-for="ip in instance.lbvmipaddresses" :key="ip" class="rule-instance-list__item">
               <div>
                 <a-icon type="desktop" />
-                <router-link :to="{ path: '/vm/' + record.virtualmachineid }"> {{
-                                                                          instance.loadbalancerruleinstance.displayname }}</router-link>
+                <router-link :to="{ path: '/vm/' + record.virtualmachineid }">
+                  {{ instance.loadbalancerruleinstance.displayname }}
+                </router-link>
               </div>
               <div>{{ ip }}</div>
               <div><status :text="instance.loadbalancerruleinstance.state" displayText /></div>
@@ -453,9 +453,7 @@ export default {
         page: this.page,
         pageSize: this.pageSize
       }).then(response => {
-        this.lbRules = response.listloadbalancerrulesresponse.loadbalancerrule
-          ? response.listloadbalancerrulesresponse.loadbalancerrule
-          : []
+        this.lbRules = response.listloadbalancerrulesresponse.loadbalancerrule || []
       }).then(() => {
         if (this.lbRules.length > 0) {
           setTimeout(() => {

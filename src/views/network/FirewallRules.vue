@@ -62,7 +62,6 @@
       :columns="columns"
       :dataSource="firewallRules"
       :pagination="false"
-      :scroll="{ x: 600 }"
       :rowKey="record => record.id">
       <template slot="protocol" slot-scope="record">
         {{ record.protocol | capitalise }}
@@ -209,7 +208,7 @@ export default {
         page: this.page,
         pageSize: this.pageSize
       }).then(response => {
-        this.firewallRules = response.listfirewallrulesresponse.firewallrule
+        this.firewallRules = response.listfirewallrulesresponse.firewallrule || []
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,

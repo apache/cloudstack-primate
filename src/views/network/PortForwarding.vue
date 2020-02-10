@@ -78,7 +78,6 @@
       :columns="columns"
       :dataSource="portForwardRules"
       :pagination="false"
-      :scroll="{ x: 600 }"
       :rowKey="record => record.id">
       <template slot="privateport" slot-scope="record">
         {{ record.privateport }} - {{ record.privateendport }}
@@ -93,7 +92,7 @@
         <div><a-icon type="desktop"/>
           <router-link
             :to="{ path: '/vm/' + record.virtualmachineid }">
-            {{ record.virtualmachinename }}</router-link> ({{record.vmguestip }})</div>
+            {{ record.virtualmachinename }}</router-link> ({{ record.vmguestip }})</div>
       </template>
       <template slot="actions" slot-scope="record">
         <div class="actions">
@@ -296,7 +295,7 @@ export default {
         page: this.page,
         pageSize: this.pageSize
       }).then(response => {
-        this.portForwardRules = response.listportforwardingrulesresponse.portforwardingrule
+        this.portForwardRules = response.listportforwardingrulesresponse.portforwardingrule || []
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
