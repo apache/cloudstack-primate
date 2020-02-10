@@ -277,46 +277,7 @@
         </a-modal>
       </a-tab-pane>
       <a-tab-pane tab="Virtual Routers" key="vr" v-if="'listRouters' in $store.getters.apis">
-        <a-list>
-          <a-list-item v-for="item in routers" :key="item.id">
-            <div class="list__item">
-              <div class="list__row">
-                <div class="list__col">
-                  <div class="list__label">{{ $t('name') }}</div>
-                  <div>
-                    <router-link :to="{ path: '/router/' + item.id }">
-                      {{ item.name }}
-                    </router-link>
-                  </div>
-                </div>
-                <div class="list__col">
-                  <div class="list__label">{{ $t('state') }}</div>
-                  <div><status :text="item.state" displayText></status></div>
-                </div>
-                <div class="list__col">
-                  <div class="list__label">{{ $t('publicip') }}</div>
-                  <div>{{ item.publicip }}</div>
-                </div>
-                <div class="list__col">
-                  <div class="list__label">{{ $t('redundantrouter') }}</div>
-                  <div>{{ item.isredundantrouter }}</div>
-                </div>
-                <div class="list__col">
-                  <div class="list__label">{{ $t('redundantstate') }}</div>
-                  <div>{{ item.redundantstate }}</div>
-                </div>
-                <div class="list__col">
-                  <div class="list__label">{{ $t('hostname') }}</div>
-                  <div>
-                    <router-link :to="{ path: '/host/' + item.hostid }">
-                      {{ item.hostname }}
-                    </router-link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </a-list-item>
-        </a-list>
+        <RoutersTab :resource="resource" :loading="loading" />
       </a-tab-pane>
     </a-tabs>
   </a-spin>
@@ -326,6 +287,7 @@
 import { api } from '@/api'
 import DetailsTab from '@/components/view/DetailsTab'
 import Status from '@/components/widgets/Status'
+import RoutersTab from './RoutersTab'
 import VpcTiersTab from './VpcTiersTab'
 import { mixinDevice } from '@/utils/mixin.js'
 
@@ -334,6 +296,7 @@ export default {
   components: {
     DetailsTab,
     Status,
+    RoutersTab,
     VpcTiersTab
   },
   mixins: [mixinDevice],
@@ -349,7 +312,6 @@ export default {
   },
   data () {
     return {
-      routers: [],
       fetchLoading: false,
       privateGateways: [],
       publicIpAddresses: [],
@@ -498,23 +460,7 @@ export default {
         case 'acl':
           this.fetchAclList()
           break
-        case 'vr':
-          this.fetchRouters()
-          break
       }
-    },
-    fetchRouters () {
-      this.fetchLoading = true
-      api('listRouters', { vpcid: this.resource.id, listAll: true }).then(json => {
-        this.routers = json.listroutersresponse.router
-      }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
-      }).finally(() => {
-        this.fetchLoading = false
-      })
     },
     fetchPrivateGateways () {
       this.fetchLoading = true

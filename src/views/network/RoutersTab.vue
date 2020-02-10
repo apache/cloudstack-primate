@@ -17,36 +17,38 @@
 
 <template>
   <a-table
-    class="table"
     size="small"
+    style="overflow-y: auto"
     :columns="columns"
     :dataSource="routers"
     :rowKey="item => item.id"
-    :pagination="true"
+    :pagination="false"
+    :loading="fetchLoading"
   >
     <template slot="name" slot-scope="text,item">
       <router-link :to="{ path: '/router/' + item.id }" >{{ text }}</router-link>
-    </template>
-    <template slot="type" slot-scope="text, item">
-      <span v-if="item.vpcid"> VPC </span>
-      <span v-if="item.projectid"> Project </span>
-      <span v-else> System </span>
     </template>
     <template slot="status" slot-scope="text, item">
       <status class="status" :text="item.state"/> <span> {{ item.state }} </span>
     </template>
     <template slot="requiresupgrade" slot-scope="text, item">
-      <span v-if="item.requiresupagrade === true"> Yes </span>
-      <span v-else> No </span>
+      {{ item.requiresupgrade ? $t('Yes') : $t('No') }}
+    </template>
+    <template slot="isredundantrouter" slot-scope="text, record">
+      {{ record.isredundantrouter ? record.redundantstate : record.isredundantrouter }}
+    </template>
+    <template slot="hostname" slot-scope="text, record">
+      <router-link :to="{ path: '/host/' + record.hostid }" >{{ record.hostname || record.hostid }}</router-link>
     </template>
   </a-table>
 </template>
+
 <script>
 import { api } from '@/api'
 import Status from '@/components/widgets/Status'
 
 export default {
-  name: 'VpcRouterTab',
+  name: 'RoutersTab',
   components: {
     Status
   },
@@ -62,6 +64,7 @@ export default {
   },
   data () {
     return {
+      fetchLoading: false,
       routers: [],
       columns: [
         {
@@ -70,30 +73,32 @@ export default {
           scopedSlots: { customRender: 'name' }
         },
         {
-          title: this.$t('ip'),
-          dataIndex: 'publicip'
-        },
-        {
-          title: 'Type',
-          scopedSlots: { customRender: 'type' }
-        },
-        {
-          title: this.$t('network'),
-          dataIndex: 'guestnetworkname'
-        },
-        {
-          title: this.$t('account'),
-          dataIndex: 'account'
-        },
-        {
           title: this.$t('status'),
           dataIndex: 'state',
           scopedSlots: { customRender: 'status' }
         },
         {
+          title: this.$t('ip'),
+          dataIndex: 'publicip'
+        },
+        {
+          title: this.$t('version'),
+          dataIndex: 'version'
+        },
+        {
           title: this.$t('requiresupgrade'),
           dataIndex: 'requiresupgrade',
           scopedSlots: { customRender: 'requiresupgrade' }
+        },
+        {
+          title: this.$t('isredundantrouter'),
+          dataIndex: 'isredundantrouter',
+          scopedSlots: { customRender: 'isredundantrouter' }
+        },
+        {
+          title: this.$t('hostname'),
+          dataIndex: 'hostname',
+          scopedSlots: { customRender: 'hostname' }
         }
       ]
     }
@@ -101,16 +106,32 @@ export default {
   mounted () {
     this.fetchData()
   },
+  watch: {
+    resource: function (newItem, oldItem) {
+      if (!newItem || !newItem.id) {
+        return
+      }
+      this.fetchData()
+    }
+  },
   methods: {
     fetchData () {
+      var params = {
+        listAll: true
+      }
+      if (this.$route.fullPath.startsWith('/vpc')) {
+        params.vpcid = this.resource.id
+      } else {
+        params.networkid = this.resource.id
+      }
       this.fetchLoading = true
-      api('listRouters', { networkid: this.resource.id, listAll: true }).then(json => {
-        this.routers = json.listroutersresponse.router
-        console.log('router = ', this.routers)
+      api('listRouters', params).then(json => {
+        this.routers = json.listroutersresponse.router || []
       }).catch(error => {
         this.$notification.error({
           message: 'Request Failed',
-          description: error.response.headers['x-description']
+          description: error.response.headers['x-description'],
+          duration: 0
         })
       }).finally(() => {
         this.fetchLoading = false
