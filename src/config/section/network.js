@@ -31,14 +31,6 @@ export default {
       columns: ['name', 'state', 'type', 'cidr', 'ip6cidr', 'broadcasturi', 'account', 'zonename'],
       details: ['name', 'id', 'description', 'type', 'traffictype', 'vpcid', 'vlan', 'broadcasturi', 'cidr', 'ip6cidr', 'netmask', 'gateway', 'ispersistent', 'restartrequired', 'reservediprange', 'redundantrouter', 'networkdomain', 'zonename', 'account', 'domain'],
       related: [{
-        name: 'publicip',
-        title: 'IP Addresses',
-        param: 'associatednetworkid'
-      }, {
-        name: 'router',
-        title: 'Routers',
-        param: 'networkid'
-      }, {
         name: 'vm',
         title: 'Instances',
         param: 'networkid'
