@@ -52,7 +52,7 @@ export default {
         show: (record) => { return record.type === 'Isolated' && 'listEgressFirewallRules' in store.getters.apis }
       }, {
         name: 'Public IP Addresses',
-        component: () => import('@/views/network/PublicIPAddresses.vue'),
+        component: () => import('@/views/network/IpAddressesTab.vue'),
         show: (record) => { return record.type === 'Isolated' && 'listPublicIpAddresses' in store.getters.apis }
       }, {
         name: 'Virtual Routers',

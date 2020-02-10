@@ -29,7 +29,7 @@
       <router-link :to="{ path: '/router/' + item.id }" >{{ text }}</router-link>
     </template>
     <template slot="status" slot-scope="text, item">
-      <status class="status" :text="item.state"/> <span> {{ item.state }} </span>
+      <status class="status" :text="item.state" displayText />
     </template>
     <template slot="requiresupgrade" slot-scope="text, item">
       {{ item.requiresupgrade ? $t('Yes') : $t('No') }}
