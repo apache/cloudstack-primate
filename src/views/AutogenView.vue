@@ -28,11 +28,12 @@
               <a-button
                 style="margin-top: 4px"
                 :loading="loading"
-                shape="circle"
+                shape="round"
                 size="small"
-                type="dashed"
                 icon="reload"
-                @click="fetchData()" />
+                @click="fetchData()">
+                {{ "Refresh" }}
+              </a-button>
             </a-tooltip>
           </breadcrumb>
         </a-col>
@@ -47,10 +48,11 @@
               :resource="resource"
               @exec-action="execAction"/>
             <a-input-search
-              style="width: 25vw; margin-left: 10px"
+              style="width: 20vw; margin-left: 10px"
               placeholder="Search"
               v-model="searchQuery"
               v-if="!dataView && !treeView"
+              allowClear
               @search="onSearch" />
           </span>
         </a-col>
@@ -74,6 +76,7 @@
             :is="currentAction.component"
             :resource="resource"
             :loading="loading"
+            :action="{currentAction}"
             v-bind="{currentAction}"
             @refresh-data="fetchData"
             @poll-action="pollActionCompletion"
@@ -228,6 +231,7 @@
         @change="changePage"
         @showSizeChange="changePageSize"
         showSizeChanger
+        showQuickJumper
         v-if="!treeView" />
       <tree-view
         v-if="treeView"
@@ -399,7 +403,7 @@ export default {
           title: this.$t(key),
           dataIndex: key,
           scopedSlots: { customRender: key },
-          sorter: function (a, b) { return genericCompare(a[this.dataIndex], b[this.dataIndex]) }
+          sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
         })
       }
 
