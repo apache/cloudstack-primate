@@ -19,23 +19,30 @@ export default {
   name: 'imagestore',
   title: 'Secondary Storages',
   icon: 'picture',
-  permission: [ 'listImageStores' ],
-  columns: [ 'name', 'url', 'protocol', 'scope', 'zonename' ],
-  details: [ 'name', 'id', 'url', 'protocol', 'provider', 'scope', 'zonename' ],
+  permission: ['listImageStores'],
+  columns: ['name', 'url', 'protocol', 'scope', 'zonename'],
+  details: ['name', 'id', 'url', 'protocol', 'provider', 'scope', 'zonename'],
+  tabs: [{
+    name: 'details',
+    component: () => import('@/components/view/DetailsTab.vue')
+  }, {
+    name: 'Settings',
+    component: () => import('@/components/view/SettingsTab.vue')
+  }],
   actions: [
     {
       api: 'addImageStore',
       icon: 'plus',
       label: 'label.add.secondary.storage',
       listView: true,
-      args: ['name', 'provider', 'zoneid', 'url', 'details']
+      popup: true,
+      component: () => import('@/views/infra/AddSecondaryStorage.vue')
     },
     {
       api: 'deleteImageStore',
       icon: 'delete',
       label: 'label.action.delete.secondary.storage',
-      dataView: true,
-      args: ['id']
+      dataView: true
     }
   ]
 }

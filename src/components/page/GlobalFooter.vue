@@ -18,8 +18,11 @@
 <template>
   <div class="footer">
     <div class="links">
-      <a href="https://github.com/apache/cloudstack-primate" target="_blank">
+      CloudStack Server {{ $store.getters.features.cloudstackversion }}
+      <a-divider type="vertical" />
+      <a href="https://github.com/apache/cloudstack-primate/issues/new/choose" target="_blank">
         <a-icon type="github"/>
+        Report Bug
       </a>
     </div>
   </div>
@@ -51,9 +54,6 @@ export default {
           color: rgba(0, 0, 0, .65);
         }
 
-        &:not(:last-child) {
-          margin-right: 40px;
-        }
       }
     }
     .copyright {

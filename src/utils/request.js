@@ -57,11 +57,11 @@ const err = (error) => {
 
 // request interceptor
 service.interceptors.request.use(config => {
-  const project = Vue.ls.get(CURRENT_PROJECT)
   if (config && config.params) {
-    config.params['response'] = 'json'
-    if (project && project.id) {
-      config.params['projectid'] = project.id
+    config.params.response = 'json'
+    const project = Vue.ls.get(CURRENT_PROJECT)
+    if (!config.params.projectid && project && project.id) {
+      config.params.projectid = project.id
     }
   }
   return config

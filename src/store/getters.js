@@ -25,10 +25,12 @@ const getters = {
   nickname: state => state.user.name,
   welcome: state => state.user.welcome,
   apis: state => state.user.apis,
+  features: state => state.user.features,
   userInfo: state => state.user.info,
   addRouters: state => state.permission.addRouters,
   multiTab: state => state.app.multiTab,
-  asyncJobIds: state => state.user.asyncJobIds
+  asyncJobIds: state => state.user.asyncJobIds,
+  isLdapEnabled: state => state.user.isLdapEnabled
 }
 
 export default getters

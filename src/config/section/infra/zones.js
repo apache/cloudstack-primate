@@ -19,9 +19,46 @@ export default {
   name: 'zone',
   title: 'Zones',
   icon: 'global',
-  permission: [ 'listZonesMetrics', 'listZones' ],
-  columns: [ 'name', 'state', 'networktype', 'clusters', 'cpuused', 'cpumaxdeviation', 'cpuallocated', 'cputotal', 'memoryused', 'memorymaxdeviation', 'memoryallocated', 'memorytotal' ],
-  details: [ 'name', 'id', 'allocationstate', 'networktype', 'guestcidraddress', 'localstorageenabled', 'securitygroupsenabled', 'dns1', 'dns2', 'internaldns1', 'internaldns2' ],
+  permission: ['listZonesMetrics', 'listZones'],
+  columns: ['name', 'state', 'networktype', 'clusters', 'cpuused', 'cpumaxdeviation', 'cpuallocated', 'cputotal', 'memoryused', 'memorymaxdeviation', 'memoryallocated', 'memorytotal', 'order'],
+  details: ['name', 'id', 'allocationstate', 'networktype', 'guestcidraddress', 'localstorageenabled', 'securitygroupsenabled', 'dns1', 'dns2', 'internaldns1', 'internaldns2'],
+  related: [{
+    name: 'pod',
+    title: 'Pods',
+    param: 'zoneid'
+  }, {
+    name: 'cluster',
+    title: 'Clusters',
+    param: 'zoneid'
+  }, {
+    name: 'host',
+    title: 'Hosts',
+    param: 'zoneid'
+  }, {
+    name: 'storagepool',
+    title: 'Primate Storage',
+    param: 'zoneid'
+  }, {
+    name: 'imagestore',
+    title: 'Secondary Storage',
+    param: 'zoneid'
+  }],
+  tabs: [{
+    name: 'details',
+    component: () => import('@/components/view/DetailsTab.vue')
+  }, {
+    name: 'Physical Networks',
+    component: () => import('@/views/infra/zone/PhysicalNetworksTab.vue')
+  }, {
+    name: 'System VMs',
+    component: () => import('@/views/infra/zone/SystemVmsTab.vue')
+  }, {
+    name: 'resources',
+    component: () => import('@/views/infra/zone/ZoneResources.vue')
+  }, {
+    name: 'settings',
+    component: () => import('@/components/view/SettingsTab.vue')
+  }],
   actions: [
     {
       api: 'createZone',
@@ -36,7 +73,7 @@ export default {
       icon: 'edit',
       label: 'Edit Zone',
       dataView: true,
-      args: ['id', 'name', 'dns1', 'dns2', 'ip6dns1', 'ip6dns2', 'internaldns1', 'internaldns2', 'guestcidraddress', 'domain', 'localstorageenabled'],
+      args: ['name', 'dns1', 'dns2', 'ip6dns1', 'ip6dns2', 'internaldns1', 'internaldns2', 'guestcidraddress', 'domain', 'localstorageenabled'],
       show: (record) => { return record.networktype === 'Advanced' }
     },
     {
@@ -44,7 +81,7 @@ export default {
       icon: 'edit',
       label: 'Edit Zone',
       dataView: true,
-      args: ['id', 'name', 'dns1', 'dns2', 'ip6dns1', 'ip6dns2', 'internaldns1', 'internaldns2', 'domain', 'localstorageenabled'],
+      args: ['name', 'dns1', 'dns2', 'ip6dns1', 'ip6dns2', 'internaldns1', 'internaldns2', 'domain', 'localstorageenabled'],
       show: (record) => { return record.networktype === 'Basic' }
     },
     {
@@ -52,7 +89,6 @@ export default {
       icon: 'pause-circle',
       label: 'label.action.disable.zone',
       dataView: true,
-      args: ['id'],
       defaultArgs: { allocationstate: 'Disabled' },
       show: (record) => { return record.allocationstate === 'Enabled' }
     },
@@ -61,35 +97,23 @@ export default {
       icon: 'play-circle',
       label: 'label.action.enable.zone',
       dataView: true,
-      args: [ 'id' ],
       defaultArgs: { allocationstate: 'Enabled' },
       show: (record) => { return record.allocationstate === 'Disabled' }
-    },
-    {
-      api: 'dedicateZone',
-      icon: 'user-add',
-      label: 'label.dedicate.zone',
-      dataView: true,
-      args: ['zoneid', 'domainid', 'account'],
-      show: (record) => { return !record.domainid }
-    },
-    {
-      api: 'releaseDedicatedZone',
-      icon: 'user-delete',
-      label: 'label.release.dedicated.zone',
-      dataView: true,
-      args: ['zoneid'],
-      show: (record) => { return record.domainid }
     },
     {
       api: 'enableOutOfBandManagementForZone',
       icon: 'plus-circle',
       label: 'label.outofbandmanagement.enable',
       dataView: true,
-      args: ['zoneid'],
       show: (record) => {
         return !record.resourcedetails || !record.resourcedetails.outOfBandManagementEnabled ||
           record.resourcedetails.outOfBandManagementEnabled === 'false'
+      },
+      args: ['zoneid'],
+      mapping: {
+        zoneid: {
+          value: (record) => { return record.id }
+        }
       }
     },
     {
@@ -97,10 +121,15 @@ export default {
       icon: 'minus-circle',
       label: 'label.outofbandmanagement.disable',
       dataView: true,
-      args: ['zoneid'],
       show: (record) => {
         return record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
           record.resourcedetails.outOfBandManagementEnabled === 'true'
+      },
+      args: ['zoneid'],
+      mapping: {
+        zoneid: {
+          value: (record) => { return record.id }
+        }
       }
     },
     {
@@ -108,10 +137,15 @@ export default {
       icon: 'eye',
       label: 'label.ha.enable',
       dataView: true,
-      args: ['zoneid'],
       show: (record) => {
         return !record.resourcedetails || !record.resourcedetails.resourceHAEnabled ||
           record.resourcedetails.resourceHAEnabled === 'false'
+      },
+      args: ['zoneid'],
+      mapping: {
+        zoneid: {
+          value: (record) => { return record.id }
+        }
       }
     },
     {
@@ -119,10 +153,15 @@ export default {
       icon: 'eye-invisible',
       label: 'label.ha.disable',
       dataView: true,
-      args: ['zoneid'],
       show: (record) => {
         return record.resourcedetails && record.resourcedetails.resourceHAEnabled &&
           record.resourcedetails.resourceHAEnabled === 'true'
+      },
+      args: ['zoneid'],
+      mapping: {
+        zoneid: {
+          value: (record) => { return record.id }
+        }
       }
     },
     {
@@ -130,31 +169,45 @@ export default {
       icon: 'block',
       label: 'label.add.vmware.datacenter',
       dataView: true,
+      show: record => !record.vmwaredc,
       args: ['zoneid', 'name', 'vcenter', 'username', 'password'],
-      show: (record) => { return !record.vmwaredcid }
+      mapping: {
+        zoneid: {
+          value: (record) => { return record.id }
+        }
+      }
     },
     {
       api: 'updateVmwareDc',
       icon: 'block',
       label: 'label.update.vmware.datacenter',
       dataView: true,
-      args: ['zoneid', 'name', 'vcenter', 'username', 'password', 'isrecursive'],
-      show: (record) => { return record.vmwaredcid }
+      show: record => record.vmwaredc,
+      args: ['zoneid', 'name', 'vcenter', 'username', 'password'],
+      mapping: {
+        zoneid: {
+          value: (record) => { return record.id }
+        }
+      }
     },
     {
       api: 'removeVmwareDc',
       icon: 'minus-square',
       label: 'label.remove.vmware.datacenter',
       dataView: true,
+      show: record => record.vmwaredc,
       args: ['zoneid'],
-      show: (record) => { return record.vmwaredcid }
+      mapping: {
+        zoneid: {
+          value: (record) => { return record.id }
+        }
+      }
     },
     {
       api: 'deleteZone',
       icon: 'delete',
       label: 'label.action.delete.zone',
-      dataView: true,
-      args: ['id']
+      dataView: true
     }
   ]
 }

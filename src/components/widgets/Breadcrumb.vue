@@ -22,30 +22,45 @@
         v-if="item && item.name"
         :to="{ path: item.path === '' ? '/' : item.path }"
       >
-        <a-icon v-if="index == 0" :type="item.meta.icon" />
+        <a-icon v-if="index == 0" :type="item.meta.icon" style="font-size: 16px" @click="resetToMainView" />
         {{ $t(item.meta.title) }}
       </router-link>
       <span v-else-if="$route.params.id">
         {{ $route.params.id }}
-        <a-button shape="circle" type="dashed" size="small" v-clipboard:copy="$route.params.id">
-          <a-icon type="copy" style="margin-left: -1px; margin-top: 1px"/>
-        </a-button>
       </span>
-      <span v-else>{{ $t(item.meta.title) }}</span>
+      <span v-else>
+        {{ $t(item.meta.title) }}
+      </span>
+      <span v-if="index === (breadList.length - 1)" style="margin-left: 5px">
+        <a-tooltip placement="bottom">
+          <template slot="title">
+            {{ "Open Documentation" }}
+          </template>
+          <a
+            v-if="item.meta.docHelp"
+            style="margin-right: 12px"
+            :href="docBase + '/' + $route.meta.docHelp"
+            target="_blank">
+            <a-icon type="question-circle-o"></a-icon>
+          </a>
+        </a-tooltip>
+        <slot name="end">
+        </slot>
+      </span>
     </a-breadcrumb-item>
   </a-breadcrumb>
 </template>
 
 <script>
+import config from '@/config/settings'
 
 export default {
   name: 'Breadcrumb',
-  components: {
-  },
   data () {
     return {
       name: '',
-      breadList: []
+      breadList: [],
+      docBase: config.docBase
     }
   },
   created () {
@@ -61,8 +76,15 @@ export default {
       this.name = this.$route.name
       this.breadList = []
       this.$route.matched.forEach((item) => {
+        if (item && item.parent && item.parent.name !== 'index' && !item.path.endsWith(':id')) {
+          this.breadList.pop()
+        }
         this.breadList.push(item)
       })
+    },
+    resetToMainView () {
+      this.$store.dispatch('SetProject', {})
+      this.$store.dispatch('ToggleTheme', 'light')
     }
   }
 }
@@ -75,7 +97,6 @@ export default {
 }
 
 .ant-breadcrumb .anticon {
-  margin-left: 8px;
   vertical-align: text-bottom;
 }
 </style>

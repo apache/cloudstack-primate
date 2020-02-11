@@ -19,15 +19,21 @@ export default {
   name: 'offering',
   title: 'Offerings',
   icon: 'shopping',
-  permission: [ 'listServiceOfferings' ],
+  permission: ['listServiceOfferings'],
   children: [
     {
       name: 'computeoffering',
       title: 'Compute Offerings',
       icon: 'cloud',
-      permission: [ 'listServiceOfferings' ],
-      columns: [ 'name', 'displaytext', 'cpunumber', 'cpuspeed', 'memory', 'tags', 'domain', 'zone' ],
-      details: [ 'name', 'id', 'displaytext', 'offerha', 'provisioningtype', 'storagetype', 'iscustomized', 'limitcpuuse', 'cpunumber', 'cpuspeed', 'memory', 'tags', 'domain', 'zone', 'created' ],
+      permission: ['listServiceOfferings'],
+      params: { isrecursive: 'true' },
+      columns: ['name', 'displaytext', 'cpunumber', 'cpuspeed', 'memory', 'tags', 'domain', 'zone', 'order'],
+      details: ['name', 'id', 'displaytext', 'offerha', 'provisioningtype', 'storagetype', 'iscustomized', 'limitcpuuse', 'cpunumber', 'cpuspeed', 'memory', 'tags', 'domain', 'zone', 'created'],
+      related: [{
+        name: 'vm',
+        title: 'Instances',
+        param: 'serviceofferingid'
+      }],
       actions: [{
         api: 'createServiceOffering',
         icon: 'plus',
@@ -40,54 +46,65 @@ export default {
         icon: 'edit',
         label: 'Edit Offering',
         dataView: true,
-        args: ['id', 'name', 'displaytext']
+        args: ['name', 'displaytext']
+      }, {
+        api: 'updateServiceOffering',
+        icon: 'lock',
+        label: 'Update Offering Access',
+        dataView: true,
+        popup: true,
+        component: () => import('@/views/offering/UpdateOfferingAccess.vue')
       }, {
         api: 'deleteServiceOffering',
         icon: 'delete',
         label: 'Delete Offering',
-        dataView: true,
-        args: ['id']
+        dataView: true
       }]
     },
     {
       name: 'systemoffering',
       title: 'System Offerings',
       icon: 'setting',
-      permission: [ 'listServiceOfferings', 'listInfrastructure' ],
-      params: { 'issystem': 'true' },
-      columns: [ 'name', 'systemvmtype', 'cpunumber', 'cpuspeed', 'memory', 'storagetype', 'tags' ],
-      details: [ 'name', 'id', 'displaytext', 'systemvmtype', 'provisioningtype', 'storagetype', 'iscustomized', 'limitcpuuse', 'cpunumber', 'cpuspeed', 'memory', 'tags', 'domain', 'zone', 'created' ],
+      permission: ['listServiceOfferings', 'listInfrastructure'],
+      params: { issystem: 'true', isrecursive: 'true' },
+      columns: ['name', 'systemvmtype', 'cpunumber', 'cpuspeed', 'memory', 'storagetype', 'tags', 'order'],
+      details: ['name', 'id', 'displaytext', 'systemvmtype', 'provisioningtype', 'storagetype', 'iscustomized', 'limitcpuuse', 'cpunumber', 'cpuspeed', 'memory', 'tags', 'domain', 'zone', 'created'],
       actions: [{
         api: 'createServiceOffering',
         icon: 'plus',
         label: 'Add Offering',
         listView: true,
-        params: { 'issystem': 'true' },
+        params: { issystem: 'true' },
         popup: true,
-        component: () => import('@/views/offering/AddSystemOffering.vue')
+        component: () => import('@/views/offering/AddComputeOffering.vue')
       }, {
         api: 'updateServiceOffering',
         icon: 'edit',
         label: 'Edit Offering',
         dataView: true,
-        params: { 'issystem': 'true' },
-        args: ['id', 'name', 'displaytext']
+        params: { issystem: 'true' },
+        args: ['name', 'displaytext']
       }, {
         api: 'deleteServiceOffering',
         icon: 'delete',
         label: 'Delete Offering',
         dataView: true,
-        params: { 'issystem': 'true' },
-        args: ['id']
+        params: { issystem: 'true' }
       }]
     },
     {
       name: 'diskoffering',
       title: 'Disk Offerings',
       icon: 'hdd',
-      permission: [ 'listDiskOfferings' ],
-      columns: [ 'name', 'displaytext', 'disksize', 'tags', 'domain', 'zone' ],
-      details: [ 'name', 'id', 'displaytext', 'disksize', 'provisioningtype', 'storagetype', 'iscustomized', 'tags', 'domain', 'zone', 'created' ],
+      permission: ['listDiskOfferings'],
+      params: { isrecursive: 'true' },
+      columns: ['name', 'displaytext', 'disksize', 'tags', 'domain', 'zone', 'order'],
+      details: ['name', 'id', 'displaytext', 'disksize', 'provisioningtype', 'storagetype', 'iscustomized', 'tags', 'domain', 'zone', 'created'],
+      related: [{
+        name: 'volume',
+        title: 'Volumes',
+        param: 'diskofferingid'
+      }],
       actions: [{
         api: 'createDiskOffering',
         icon: 'plus',
@@ -100,22 +117,29 @@ export default {
         icon: 'edit',
         label: 'Edit Offering',
         dataView: true,
-        args: ['id', 'name', 'displaytext']
+        args: ['name', 'displaytext']
+      }, {
+        api: 'updateDiskOffering',
+        icon: 'lock',
+        label: 'Update Offering Access',
+        dataView: true,
+        popup: true,
+        component: () => import('@/views/offering/UpdateOfferingAccess.vue')
       }, {
         api: 'deleteDiskOffering',
         icon: 'delete',
         label: 'Delete Offering',
-        dataView: true,
-        args: ['id']
+        dataView: true
       }]
     },
     {
       name: 'networkoffering',
       title: 'Network Offerings',
       icon: 'wifi',
-      permission: [ 'listNetworkOfferings' ],
-      columns: [ 'name', 'state', 'guestiptype', 'traffictype', 'networkrate', 'tags', 'domain', 'zone' ],
-      details: [ 'name', 'id', 'displaytext', 'guestiptype', 'traffictype', 'networkrate', 'ispersistent', 'egressdefaultpolicy', 'availability', 'conservemode', 'specifyvlan', 'specifyipranges', 'supportspublicaccess', 'supportsstrechedl2subnet', 'service', 'tags', 'domain', 'zone' ],
+      permission: ['listNetworkOfferings'],
+      params: { isrecursive: 'true' },
+      columns: ['name', 'state', 'guestiptype', 'traffictype', 'networkrate', 'tags', 'domain', 'zone'],
+      details: ['name', 'id', 'displaytext', 'guestiptype', 'traffictype', 'networkrate', 'ispersistent', 'egressdefaultpolicy', 'availability', 'conservemode', 'specifyvlan', 'specifyipranges', 'supportspublicaccess', 'supportsstrechedl2subnet', 'service', 'tags', 'domain', 'zone'],
       actions: [{
         api: 'createNetworkOffering',
         icon: 'plus',
@@ -128,23 +152,59 @@ export default {
         icon: 'edit',
         label: 'Edit Offering',
         dataView: true,
-        args: ['id', 'name', 'displaytext', 'availability']
+        args: ['name', 'displaytext', 'availability']
+      }, {
+        api: 'updateNetworkOffering',
+        icon: 'play-circle',
+        label: 'Enable Offering',
+        dataView: true,
+        show: (record) => { return record.state === 'Disabled' },
+        args: ['state'],
+        mapping: {
+          state: {
+            value: (record) => { return 'Enabled' }
+          }
+        }
+      }, {
+        api: 'updateNetworkOffering',
+        icon: 'pause-circle',
+        label: 'Disable Offering',
+        dataView: true,
+        show: (record) => { return record.state === 'Enabled' },
+        args: ['state'],
+        mapping: {
+          state: {
+            value: (record) => { return 'Disabled' }
+          }
+        }
+      }, {
+        api: 'updateNetworkOffering',
+        icon: 'lock',
+        label: 'Update Offering Access',
+        dataView: true,
+        popup: true,
+        component: () => import('@/views/offering/UpdateOfferingAccess.vue')
       }, {
         api: 'deleteNetworkOffering',
         icon: 'delete',
         label: 'Delete Offering',
-        dataView: true,
-        args: ['id']
+        dataView: true
       }]
     },
     {
       name: 'vpcoffering',
       title: 'VPC Offerings',
       icon: 'deployment-unit',
-      permission: [ 'listVPCOfferings' ],
+      permission: ['listVPCOfferings'],
+      params: { isrecursive: 'true' },
       resourceType: 'VpcOffering',
-      columns: [ 'name', 'state', 'displaytext', 'domain', 'zone' ],
-      details: [ 'name', 'id', 'displaytext', 'distributedvpcrouter', 'service', 'tags', 'domain', 'zone', 'created' ],
+      columns: ['name', 'state', 'displaytext', 'domain', 'zone'],
+      details: ['name', 'id', 'displaytext', 'distributedvpcrouter', 'service', 'tags', 'domain', 'zone', 'created'],
+      related: [{
+        name: 'vpc',
+        title: 'VPCs',
+        param: 'vpcofferingid'
+      }],
       actions: [{
         api: 'createVPCOffering',
         icon: 'plus',
@@ -157,13 +217,43 @@ export default {
         icon: 'edit',
         label: 'Edit Offering',
         dataView: true,
-        args: ['id', 'name', 'displaytext']
+        args: ['name', 'displaytext']
+      }, {
+        api: 'updateVPCOffering',
+        icon: 'play-circle',
+        label: 'Enable Offering',
+        dataView: true,
+        show: (record) => { return record.state === 'Disabled' },
+        args: ['state'],
+        mapping: {
+          state: {
+            value: (record) => { return 'Enabled' }
+          }
+        }
+      }, {
+        api: 'updateVPCOffering',
+        icon: 'pause-circle',
+        label: 'Disable Offering',
+        dataView: true,
+        show: (record) => { return record.state === 'Enabled' },
+        args: ['state'],
+        mapping: {
+          state: {
+            value: (record) => { return 'Disabled' }
+          }
+        }
+      }, {
+        api: 'updateVPCOffering',
+        icon: 'lock',
+        label: 'Update Offering Access',
+        dataView: true,
+        popup: true,
+        component: () => import('@/views/offering/UpdateOfferingAccess.vue')
       }, {
         api: 'deleteVPCOffering',
         icon: 'delete',
         label: 'Delete Offering',
-        dataView: true,
-        args: ['id']
+        dataView: true
       }]
     }
   ]

@@ -16,45 +16,27 @@
 // under the License.
 
 <template>
-  <div>
-    <a-button style="margin-bottom: 15px; float: right">
-      Add Setting
-    </a-button>
-    <setting-table
-      :columns="[{
-        title: $t('name'),
-        dataIndex: 'name',
-        width: '40%'
-      },{
-        title: $t('value'),
-        dataIndex: 'value',
-        width: '40%',
-        scopedSlots: { customRender: 'value' }
-      }]"
-      :items="Object.keys(resource.details).map(k => { return { name: k, value: resource.details[k] } })"
-      :loading="loading"
-    >
-    </setting-table>
-  </div>
+  <a-select
+    :value="defaultValue"
+    @change="handleChange">
+    <a-select-option value="allow">Allow</a-select-option>
+    <a-select-option value="deny">Deny</a-select-option>
+  </a-select>
 </template>
 
 <script>
-import SettingTable from '@/components/view/SettingTable'
-
 export default {
-  name: 'SettingsTab',
-  components: {
-    SettingTable
-  },
   props: {
-    resource: {
-      type: Object,
+    defaultValue: {
+      type: String,
       required: true
-    },
-    loading: {
-      type: Boolean,
-      default: false
+    }
+  },
+  methods: {
+    handleChange (e) {
+      this.$emit('change', e)
     }
   }
+
 }
 </script>

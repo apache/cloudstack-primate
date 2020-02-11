@@ -17,72 +17,71 @@
 
 <template>
   <a-table
-    size="small"
-    :scroll="{ x: 'true' }"
-    :loading="loading"
     :columns="columns"
     :dataSource="items"
-    :rowKey="record => record.id || record.name || record.key"
-    :pagination="false"
-    :rowClassName="getRowClassName"
-    bordered
+    :rowKey="record => record.id"
+    :pagination="{showSizeChanger: true}"
+    :rowSelection="rowSelection"
+    size="middle"
   >
-    <template slot="value" slot-scope="text, record">
-      <span style="float: left; margin-right: 5px" v-if="record">
-        <a-button size="small" shape="circle">
-          <a-icon type="close" />
-        </a-button>
-        <a-button size="small" shape="circle">
-          <a-icon type="edit" />
-        </a-button>
-      </span>
-      <span>{{ text }}</span>
-    </template>
   </a-table>
 </template>
 
 <script>
+import _ from 'lodash'
+
 export default {
-  name: 'SettingTable',
+  name: 'AffinityGroupSelection',
   props: {
-    columns: {
-      type: Array,
-      required: true
-    },
     items: {
       type: Array,
-      required: true
+      default: () => []
     },
-    loading: {
-      type: Boolean,
-      default: false
+    value: {
+      type: Array,
+      default: () => []
     }
   },
   data () {
     return {
+      columns: [
+        {
+          dataIndex: 'name',
+          title: this.$t('Affinity Groups'),
+          width: '40%'
+        },
+        {
+          dataIndex: 'description',
+          title: this.$t('description'),
+          width: '60%'
+        }
+      ],
+      selectedRowKeys: []
     }
   },
-  methods: {
-    getRowClassName (record, index) {
-      if (index % 2 === 0) {
-        return 'light-row'
+  computed: {
+    rowSelection () {
+      return {
+        type: 'checkbox',
+        selectedRowKeys: this.selectedRowKeys,
+        onChange: (rows) => {
+          this.$emit('select-affinity-group-item', rows)
+        }
       }
-      return 'dark-row'
+    }
+  },
+  watch: {
+    value (newValue, oldValue) {
+      if (newValue && !_.isEqual(newValue, oldValue)) {
+        this.selectedRowKeys = newValue
+      }
     }
   }
 }
 </script>
 
-<style scoped>
-/deep/ .ant-table-thead {
-  background-color: #f9f9f9;
-}
-
-/deep/ .light-row {
-  background-color: #fff;
-}
-
-/deep/ .dark-row {
-  background-color: #f9f9f9;
-}
+<style lang="less" scoped>
+  .ant-table-wrapper {
+    margin: 2rem 0;
+  }
 </style>

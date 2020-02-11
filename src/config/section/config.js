@@ -19,22 +19,23 @@ export default {
   name: 'config',
   title: 'Configuration',
   icon: 'setting',
-  permission: [ 'listConfigurations' ],
+  permission: ['listConfigurations'],
   children: [
     {
       name: 'globalsetting',
       title: 'Global Settings',
       icon: 'setting',
-      permission: [ 'listConfigurations' ],
-      columns: [ 'name', 'description', 'category', 'value' ],
-      details: [ 'name', 'category', 'description', 'value' ]
+      permission: ['listConfigurations'],
+      columns: ['name', 'description', 'category', 'value', 'actions'],
+      details: ['name', 'category', 'description', 'value']
     },
     {
       name: 'ldapsetting',
       title: 'LDAP Configuration',
       icon: 'team',
-      permission: [ 'listLdapConfigurations' ],
-      columns: [ 'hostname', 'port' ],
+      permission: ['listLdapConfigurations'],
+      columns: ['hostname', 'port', 'domainid'],
+      details: ['hostname', 'port', 'domainid'],
       actions: [
         {
           api: 'addLdapConfiguration',
@@ -44,6 +45,18 @@ export default {
           args: [
             'hostname', 'port'
           ]
+        },
+        {
+          api: 'deleteLdapConfiguration',
+          icon: 'delete',
+          label: 'label.remove.ldap',
+          dataView: true,
+          args: ['hostname'],
+          mapping: {
+            hostname: {
+              value: (record) => { return record.hostname }
+            }
+          }
         }
       ]
     },
@@ -51,8 +64,8 @@ export default {
       name: 'hypervisorcapability',
       title: 'Hypervisor Capabilities',
       icon: 'database',
-      permission: [ 'listHypervisorCapabilities' ],
-      columns: [ 'hypervisor', 'hypervisorversion', 'maxguestlimit', 'maxdatavolumeslimit', 'maxhostspercluster' ],
+      permission: ['listHypervisorCapabilities'],
+      columns: ['hypervisor', 'hypervisorversion', 'maxguestlimit', 'maxdatavolumeslimit', 'maxhostspercluster'],
       actions: [
         {
           api: 'updateHypervisorCapabilities',

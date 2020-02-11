@@ -24,7 +24,7 @@ import storage from '@/config/section/storage'
 import network from '@/config/section/network'
 import image from '@/config/section/image'
 import project from '@/config/section/project'
-import monitor from '@/config/section/monitor'
+import event from '@/config/section/event'
 import iam from '@/config/section/iam'
 import infra from '@/config/section/infra'
 import offering from '@/config/section/offering'
@@ -35,7 +35,8 @@ export function generateRouterMap (section) {
   var map = {
     name: section.name,
     path: '/' + section.name,
-    meta: { title: section.title, keepAlive: true, icon: section.icon },
+    hidden: section.hidden,
+    meta: { title: section.title, keepAlive: true, icon: section.icon, docHelp: section.docHelp },
     component: RouteView
   }
 
@@ -48,29 +49,35 @@ export function generateRouterMap (section) {
       var route = {
         name: child.name,
         path: '/' + child.name,
+        hidden: child.hidden,
         meta: {
           title: child.title,
           name: child.name,
           keepAlive: true,
           icon: child.icon,
+          docHelp: child.docHelp,
           permission: child.permission,
           resourceType: child.resourceType,
           params: child.params ? child.params : {},
           columns: child.columns,
           details: child.details,
           related: child.related,
-          actions: child.actions
+          actions: child.actions,
+          treeView: child.treeView ? child.treeView : false,
+          tabs: child.treeView ? child.tabs : {}
         },
         component: component,
         hideChildrenInMenu: true,
         children: [
           {
             path: '/' + child.name + '/:id',
+            hidden: child.hidden,
             meta: {
               title: child.title,
               name: child.name,
               keepAlive: true,
               icon: child.icon,
+              docHelp: child.docHelp,
               permission: child.permission,
               resourceType: child.resourceType,
               params: child.params ? child.params : {},
@@ -91,15 +98,15 @@ export function generateRouterMap (section) {
           map.children.push({
             name: action.api,
             icon: child.icon,
+            hidden: true,
             path: '/action/' + action.api,
             meta: {
               title: child.title,
               name: child.name,
               keepAlive: true,
-              permission: [ action.api ]
+              permission: [action.api]
             },
-            component: action.component,
-            hidden: true
+            component: action.component
           })
         })
       }
@@ -116,6 +123,8 @@ export function generateRouterMap (section) {
         name: section.name,
         keepAlive: true,
         icon: section.icon,
+        docHelp: section.docHelp,
+        hidden: section.hidden,
         permission: section.permission,
         resourceType: section.resourceType,
         params: section.params ? section.params : {},
@@ -158,7 +167,27 @@ export const asyncRouterMap = [
       {
         path: '/dashboard',
         name: 'dashboard',
-        meta: { title: 'Dashboard', keepAlive: true, icon: 'dashboard' },
+        meta: {
+          title: 'Dashboard',
+          keepAlive: true,
+          icon: 'dashboard',
+          tabs: [
+            {
+              name: 'Dashboard',
+              component: () => import('@/views/dashboard/UsageDashboardChart')
+            },
+            {
+              name: 'accounts',
+              show: (record, route, user) => { return record.account === user.account || ['Admin', 'DomainAdmin'].includes(user.roletype) },
+              component: () => import('@/views/project/AccountsTab')
+            },
+            {
+              name: 'resources',
+              show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
+              component: () => import('@/views/project/ResourcesTab.vue')
+            }
+          ]
+        },
         component: () => import('@/views/dashboard/Dashboard')
       },
 
@@ -167,7 +196,7 @@ export const asyncRouterMap = [
       generateRouterMap(network),
       generateRouterMap(image),
       generateRouterMap(project),
-      generateRouterMap(monitor),
+      generateRouterMap(event),
       generateRouterMap(iam),
       generateRouterMap(infra),
       generateRouterMap(offering),
@@ -184,21 +213,21 @@ export const asyncRouterMap = [
         children: [
           {
             path: '/exception/403',
-            name: 'Exception403',
+            name: '403',
             hidden: true,
             component: () => import(/* webpackChunkName: "fail" */ '@/views/exception/403'),
             meta: { title: '403' }
           },
           {
             path: '/exception/404',
-            name: 'Exception404',
+            name: '404',
             hidden: true,
             component: () => import(/* webpackChunkName: "fail" */ '@/views/exception/404'),
             meta: { title: '404' }
           },
           {
             path: '/exception/500',
-            name: 'Exception500',
+            name: '500',
             hidden: true,
             component: () => import(/* webpackChunkName: "fail" */ '@/views/exception/500'),
             meta: { title: '500' }

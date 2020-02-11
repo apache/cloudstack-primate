@@ -16,25 +16,45 @@
 // under the License.
 
 <template>
-  <div>
-    TODO: IP configure view: firewall, pf, lb
-  </div>
+  <a-tooltip placement="bottom">
+    <template slot="title">
+      Delete rule
+    </template>
+    <a-popconfirm
+      title="Delete Rule?"
+      @confirm="handleDelete"
+    >
+      <a-button type="danger" shape="circle">
+        <a-icon type="delete" />
+      </a-button>
+    </a-popconfirm>
+  </a-tooltip>
 </template>
 
 <script>
-
 export default {
-  name: '',
-  components: {
-  },
-  data () {
-    return {
+  name: 'RuleDelete',
+  props: {
+    record: {
+      type: Object,
+      required: true
     }
   },
   methods: {
+    handleDelete () {
+      this.$emit('delete')
+    }
   }
 }
 </script>
 
-<style scoped>
+<style
+  scoped
+  lang="scss"
+>
+  .anticon-delete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 </style>

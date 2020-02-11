@@ -16,13 +16,13 @@
 // under the License.
 
 <template>
-  <div style="padding-top: 12px" class="page-header-index-wide page-header-wrapper-grid-content-main">
+  <div class="page-header-index-wide page-header-wrapper-grid-content-main">
     <a-row :gutter="12">
-      <a-col :md="24" :lg="9" style="margin-bottom: 12px">
+      <a-col :md="24" :lg="7" style="margin-bottom: 12px">
         <slot name="left">
         </slot>
       </a-col>
-      <a-col :md="24" :lg="15">
+      <a-col :md="24" :lg="17">
         <slot name="right">
         </slot>
       </a-col>

@@ -18,7 +18,7 @@
 import Vue from 'vue'
 import md5 from 'md5'
 import { login, logout, api } from '@/api'
-import { ACCESS_TOKEN, CURRENT_PROJECT, ASYNC_JOB_IDS } from '@/store/mutation-types'
+import { ACCESS_TOKEN, CURRENT_PROJECT, DEFAULT_THEME, ASYNC_JOB_IDS } from '@/store/mutation-types'
 import { welcome } from '@/utils/util'
 
 const user = {
@@ -29,8 +29,10 @@ const user = {
     avatar: '',
     info: {},
     apis: {},
+    features: {},
     project: {},
-    asyncJobIds: []
+    asyncJobIds: [],
+    isLdapEnabled: false
   },
 
   mutations: {
@@ -54,9 +56,18 @@ const user = {
     SET_APIS: (state, apis) => {
       state.apis = apis
     },
+    SET_FEATURES: (state, features) => {
+      state.features = features
+    },
     SET_ASYNC_JOB_IDS: (state, jobsJsonArray) => {
       Vue.ls.set(ASYNC_JOB_IDS, jobsJsonArray)
       state.asyncJobIds = jobsJsonArray
+    },
+    SET_LDAP: (state, isLdapEnabled) => {
+      state.isLdapEnabled = isLdapEnabled
+    },
+    RESET_THEME: (state) => {
+      Vue.ls.set(DEFAULT_THEME, 'light')
     }
   },
 
@@ -83,7 +94,6 @@ const user = {
 
     GetInfo ({ commit }) {
       return new Promise((resolve, reject) => {
-        // Discover allowed APIs
         api('listApis').then(response => {
           const apis = {}
           const apiList = response.listapisresponse.api
@@ -101,7 +111,6 @@ const user = {
           reject(error)
         })
 
-        // Find user info
         api('listUsers').then(response => {
           const result = response.listusersresponse.user[0]
           commit('SET_INFO', result)
@@ -114,6 +123,20 @@ const user = {
         }).catch(error => {
           reject(error)
         })
+
+        api('listCapabilities').then(response => {
+          const result = response.listcapabilitiesresponse.capability
+          commit('SET_FEATURES', result)
+        }).catch(error => {
+          reject(error)
+        })
+
+        api('listLdapConfigurations').then(response => {
+          const ldapEnable = (response.ldapconfigurationresponse.count > 0)
+          commit('SET_LDAP', ldapEnable)
+        }).catch(error => {
+          reject(error)
+        })
       })
     },
     Logout ({ commit, state }) {
@@ -121,6 +144,7 @@ const user = {
         commit('SET_TOKEN', '')
         commit('SET_PROJECT', {})
         commit('SET_APIS', {})
+        commit('RESET_THEME')
         Vue.ls.remove(CURRENT_PROJECT)
         Vue.ls.remove(ACCESS_TOKEN)
         Vue.ls.remove(ASYNC_JOB_IDS)

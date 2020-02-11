@@ -21,7 +21,7 @@
       <capacity-dashboard/>
     </div>
     <div v-else>
-      <usage-dashboard/>
+      <usage-dashboard :resource="$store.getters.project" :showProject="project" />
     </div>
   </div>
 </template>
@@ -44,7 +44,7 @@ export default {
     }
   },
   mounted () {
-    this.showCapacityDashboard = store.getters.apis.hasOwnProperty('listCapacity')
+    this.showCapacityDashboard = Object.prototype.hasOwnProperty.call(store.getters.apis, 'listCapacity')
     this.project = store.getters.project !== undefined && store.getters.project.id !== undefined
     this.$store.watch(
       (state, getters) => getters.project,

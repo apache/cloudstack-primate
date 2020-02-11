@@ -24,11 +24,16 @@ export default {
       name: 'template',
       title: 'Templates',
       icon: 'save',
-      permission: [ 'listTemplates' ],
+      permission: ['listTemplates'],
+      params: { templatefilter: 'executable' },
       resourceType: 'Template',
-      params: { 'templatefilter': 'executable' },
-      columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain'],
+      columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain', 'order'],
       details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'directdownload', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created'],
+      related: [{
+        name: 'vm',
+        title: 'Instances',
+        param: 'templateid'
+      }],
       tabs: [{
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
@@ -37,57 +42,70 @@ export default {
         component: () => import('@/views/image/TemplateZones.vue')
       }, {
         name: 'settings',
-        component: () => import('@/views/image/TemplateSettings.vue')
+        component: () => import('@/components/view/DetailSettings')
       }],
       actions: [
         {
           api: 'registerTemplate',
           icon: 'plus',
-          label: 'Create template',
+          label: 'Register Template',
           listView: true,
-          args: ['url', 'name', 'displaytext', 'directdownload', 'zoneids', 'hypervisor', 'format', 'ostypeid', 'checksum', 'isextractable', 'passwordenabled', 'sshkeyenabled', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'isrouting', 'requireshvm']
+          popup: true,
+          component: () => import('@/views/image/RegisterOrUploadTemplate.vue')
         },
         {
-          api: 'getUploadParamsForVolume',
+          api: 'getUploadParamsForTemplate',
           icon: 'cloud-upload',
           label: 'Upload Local Template',
           listView: true,
           popup: true,
-          component: () => import('@/views/image/UploadLocalTemplate.vue')
+          component: () => import('@/views/image/RegisterOrUploadTemplate.vue')
         },
         {
           api: 'updateTemplate',
           icon: 'edit',
           label: 'label.edit',
           dataView: true,
-          args: ['id', 'name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable', 'isrouting']
+          args: ['name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable', 'isrouting']
         },
         {
           api: 'extractTemplate',
           icon: 'cloud-download',
           label: 'Download Template',
           dataView: true,
-          args: ['id', 'zoneid', 'mode']
+          show: (record) => { return record && record.isextractable },
+          args: ['zoneid', 'mode'],
+          mapping: {
+            zoneid: {
+              value: (record) => { return record.zoneid }
+            },
+            mode: {
+              value: (record) => { return 'HTTP_DOWNLOAD' }
+            }
+          },
+          response: (result) => { return `Please click <a href="${result.template.url}" target="_blank">${result.template.url}</a> to download.` }
         },
         {
           api: 'updateTemplatePermissions',
           icon: 'reconciliation',
-          label: 'Update template permissions',
+          label: 'Update Template Permissions',
           dataView: true,
-          args: ['id', 'op', 'accounts', 'projectids']
+          popup: true,
+          show: (record, store) => { return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) || record.templatetype !== 'BUILTIN') },
+          component: () => import('@/views/image/UpdateTemplatePermissions')
         },
         {
           api: 'copyTemplate',
           icon: 'copy',
           label: 'Copy Template',
-          args: ['id', 'sourcezoneid', 'destzoneids'],
+          args: ['sourcezoneid', 'destzoneids'],
           dataView: true
         },
         {
           api: 'deleteTemplate',
           icon: 'delete',
           label: 'Delete Template',
-          args: ['id', 'zoneid'],
+          args: ['zoneid'],
           dataView: true,
           groupAction: true
         }
@@ -97,59 +115,83 @@ export default {
       name: 'iso',
       title: 'ISOs',
       icon: 'usb',
-      permission: [ 'listIsos' ],
+      permission: ['listIsos'],
+      params: { isofilter: 'executable' },
       resourceType: 'ISO',
       columns: ['name', 'ostypename', 'account', 'domain'],
       details: ['name', 'id', 'displaytext', 'checksum', 'ostypename', 'size', 'bootable', 'isready', 'directdownload', 'isextractable', 'ispublic', 'isfeatured', 'crosszones', 'account', 'domain', 'created'],
+      related: [{
+        name: 'vm',
+        title: 'Instances',
+        param: 'isoid'
+      }],
+      tabs: [{
+        name: 'details',
+        component: () => import('@/components/view/DetailsTab.vue')
+      }, {
+        name: 'zones',
+        component: () => import('@/views/image/IsoZones.vue')
+      }],
       actions: [
         {
           api: 'registerIso',
           icon: 'plus',
           label: 'Register ISO',
           listView: true,
-          args: ['url', 'name', 'displaytext', 'directdownload', 'zoneid', 'bootable', 'ostypeid', 'isextractable', 'ispublic', 'isfeatured']
+          popup: true,
+          component: () => import('@/views/image/RegisterOrUploadIso.vue')
         },
         {
           api: 'getUploadParamsForIso',
           icon: 'cloud-upload',
-          label: 'Upload Local Iso',
+          label: 'Upload Local ISO',
           listView: true,
           popup: true,
-          component: () => import('@/views/image/UploadLocalIso.vue')
+          component: () => import('@/views/image/RegisterOrUploadIso.vue')
         },
         {
           api: 'updateIso',
           icon: 'edit',
           label: 'label.edit',
           dataView: true,
-          args: ['id', 'name', 'displaytext', 'bootable', 'ostypeid', 'isdynamicallyscalable', 'isrouting']
+          args: ['name', 'displaytext', 'bootable', 'ostypeid', 'isdynamicallyscalable', 'isrouting']
         },
         {
           api: 'extractIso',
           icon: 'cloud-download',
           label: 'Download ISO',
           dataView: true,
-          args: ['id', 'zoneid', 'mode']
+          show: (record) => { return record && record.isextractable },
+          args: ['zoneid', 'mode'],
+          mapping: {
+            zoneid: {
+              value: (record) => { return record.zoneid }
+            },
+            mode: {
+              value: (record) => { return 'HTTP_DOWNLOAD' }
+            }
+          },
+          response: (result) => { return `Please click <a href="${result.iso.url}" target="_blank">${result.iso.url}</a> to download.` }
         },
         {
           api: 'updateIsoPermissions',
           icon: 'reconciliation',
           label: 'Update ISO Permissions',
           dataView: true,
-          args: ['id', 'op', 'accounts', 'projectids']
+          args: ['op', 'accounts', 'projectids']
         },
         {
           api: 'copyIso',
           icon: 'copy',
           label: 'Copy ISO',
-          args: ['id', 'sourcezoneid', 'destzoneids'],
+          args: ['sourcezoneid', 'destzoneids'],
           dataView: true
         },
         {
           api: 'deleteIso',
           icon: 'delete',
           label: 'Delete ISO',
-          args: ['id', 'zoneid'],
+          args: ['zoneid'],
           dataView: true,
           groupAction: true
         }

@@ -22,10 +22,10 @@
     :columns="columns"
     :dataSource="items"
     :rowKey="record => record.id || record.name"
-    :scroll="{ x: '100%' }"
     :pagination="false"
-    :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
+    :rowSelection="['vm', 'event', 'alert'].includes($route.name) ? {selectedRowKeys: selectedRowKeys, onChange: onSelectChange} : null"
     :rowClassName="getRowClassName"
+    style="overflow-y: auto"
   >
     <template slot="footer">
       <span v-if="hasSelected">
@@ -33,10 +33,43 @@
       </span>
     </template>
 
-    <a slot="name" slot-scope="text, record" href="javascript:;" style="display: inline-flex">
-      <console :resource="record" size="small" />&nbsp;&nbsp;
-      <router-link :to="{ path: $route.path + '/' + record.id }" v-if="record.id">{{ text }}</router-link>
-      <router-link :to="{ path: $route.path + '/' + record.name }" v-else>{{ text }}</router-link>
+    <!--
+    <div slot="expandedRowRender" slot-scope="resource">
+      <info-card :resource="resource" style="margin-left: 0px; width: 50%">
+        <div slot="actions" style="padding-top: 12px">
+          <a-tooltip
+            v-for="(action, actionIndex) in $route.meta.actions"
+            :key="actionIndex"
+            placement="bottom">
+            <template slot="title">
+              {{ $t(action.label) }}
+            </template>
+            <a-button
+              v-if="action.api in $store.getters.apis && action.dataView &&
+                ('show' in action ? action.show(resource, $store.getters.userInfo) : true)"
+              :icon="action.icon"
+              :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
+              shape="circle"
+              style="margin-right: 5px; margin-top: 12px"
+              @click="$parent.execAction(action)"
+            >
+            </a-button>
+          </a-tooltip>
+        </div>
+      </info-card>
+    </div>
+    -->
+
+    <a slot="name" slot-scope="text, record" href="javascript:;">
+      <div style="min-width: 120px">
+        <span v-if="$route.path.startsWith('/project')" style="margin-right: 5px">
+          <a-button type="dashed" size="small" shape="circle" icon="login" @click="changeProject(record)" />
+        </span>
+        <os-logo v-if="record.ostypename" :osName="record.ostypename" size="1x" style="margin-right: 5px" />
+        <console :resource="record" size="small" />
+        <router-link :to="{ path: $route.path + '/' + record.id }" v-if="record.id">{{ text }}</router-link>
+        <router-link :to="{ path: $route.path + '/' + record.name }" v-else>{{ text }}</router-link>
+      </div>
     </a>
     <a slot="displayname" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
@@ -51,10 +84,19 @@
         <a-tag>source-nat</a-tag>
       </span>
     </a>
+    <a slot="publicip" slot-scope="text, record" href="javascript:;">
+      <router-link :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
+    </a>
+    <a slot="traffictype" slot-scope="text, record" href="javascript:;">
+      <router-link :to="{ path: $route.path + '/' + record.id + '?physicalnetworkid=' + record.physicalnetworkid }">{{ text }}</router-link>
+    </a>
     <a slot="vmname" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: '/vm/' + record.virtualmachineid }">{{ text }}</router-link>
     </a>
     <template slot="state" slot-scope="text">
+      <status :text="text ? text : ''" displayText />
+    </template>
+    <template slot="agentstate" slot-scope="text">
       <status :text="text ? text : ''" displayText />
     </template>
     <a slot="guestnetworkname" slot-scope="text, record" href="javascript:;">
@@ -71,7 +113,9 @@
       <router-link :to="{ path: '/domain/' + record.domainid }">{{ text }}</router-link>
     </a>
     <a slot="hostname" slot-scope="text, record" href="javascript:;">
-      <router-link :to="{ path: '/host/' + record.hostid }">{{ text }}</router-link>
+      <router-link v-if="record.hostid" :to="{ path: '/host/' + record.hostid }">{{ text }}</router-link>
+      <router-link v-else-if="record.hostname" :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
+      <span v-else>{{ text }}</span>
     </a>
     <a slot="clustername" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: '/cluster/' + record.clusterid }">{{ text }}</router-link>
@@ -82,18 +126,83 @@
     <a slot="zonename" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: '/zone/' + record.zoneid }">{{ text }}</router-link>
     </a>
+
+    <div slot="order" slot-scope="text, record" class="shift-btns">
+      <a-tooltip placement="top">
+        <template slot="title">Move to top</template>
+        <a-button
+          shape="round"
+          icon="double-left"
+          @click="moveItemTop(record)"
+          class="shift-btn shift-btn--rotated"></a-button>
+      </a-tooltip>
+      <a-tooltip placement="top">
+        <template slot="title">Move to bottom</template>
+        <a-button
+          shape="round"
+          icon="double-right"
+          @click="moveItemBottom(record)"
+          class="shift-btn shift-btn--rotated"></a-button>
+      </a-tooltip>
+      <a-tooltip placement="top">
+        <template slot="title">Move up one row</template>
+        <a-button shape="round" icon="caret-up" @click="moveItemUp(record)" class="shift-btn"></a-button>
+      </a-tooltip>
+      <a-tooltip placement="top">
+        <template slot="title">Move down one row</template>
+        <a-button shape="round" icon="caret-down" @click="moveItemDown(record)" class="shift-btn"></a-button>
+      </a-tooltip>
+    </div>
+
+    <template slot="value" slot-scope="text, record">
+      <a-input
+        v-if="editableValueKey === record.key"
+        :defaultValue="record.value"
+        v-model="editableValue"
+        @keydown.esc="editableValueKey = null"
+        @pressEnter="saveValue(record)">
+      </a-input>
+      <div v-else style="width: 200px; word-break: break-all">
+        {{ text }}
+      </div>
+    </template>
+    <template slot="actions" slot-scope="text, record">
+      <a-button
+        shape="circle"
+        v-if="editableValueKey !== record.key"
+        icon="edit"
+        @click="editValue(record)" />
+      <a-button
+        shape="circle"
+        @click="saveValue(record)"
+        v-if="editableValueKey === record.key" >
+        <a-icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />
+      </a-button>
+      <a-button
+        shape="circle"
+        size="default"
+        @click="editableValueKey = null"
+        v-if="editableValueKey === record.key" >
+        <a-icon type="close-circle" theme="twoTone" twoToneColor="#f5222d" />
+      </a-button>
+    </template>
   </a-table>
 </template>
 
 <script>
+import { api } from '@/api'
 import Console from '@/components/widgets/Console'
+import OsLogo from '@/components/widgets/OsLogo'
 import Status from '@/components/widgets/Status'
+import InfoCard from '@/components/view/InfoCard'
 
 export default {
   name: 'ListView',
   components: {
     Console,
-    Status
+    OsLogo,
+    Status,
+    InfoCard
   },
   props: {
     columns: {
@@ -109,9 +218,12 @@ export default {
       default: false
     }
   },
+  inject: ['parentFetchData', 'parentToggleLoading'],
   data () {
     return {
-      selectedRowKeys: []
+      selectedRowKeys: [],
+      editableValueKey: null,
+      editableValue: ''
     }
   },
   computed: {
@@ -129,6 +241,120 @@ export default {
     onSelectChange (selectedRowKeys) {
       console.log('selectedRowKeys changed: ', selectedRowKeys)
       this.selectedRowKeys = selectedRowKeys
+    },
+    changeProject (project) {
+      this.$store.dispatch('SetProject', project)
+      this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
+      this.$message.success(`Switched to "${project.name}"`)
+      this.$router.push({ name: 'dashboard' })
+    },
+    saveValue (record) {
+      api('updateConfiguration', {
+        name: record.name,
+        value: this.editableValue
+      }).then(() => {
+        this.editableValueKey = null
+
+        this.$message.success('Setting Updated: ' + record.name)
+        this.$notification.warning({
+          message: 'Status',
+          description: 'Please restart your management server(s) for your new settings to take effect.'
+        })
+      }).catch(error => {
+        console.error(error)
+        this.$message.error('There was an error saving this setting.')
+      })
+        .finally(() => {
+          this.$emit('refresh')
+        })
+    },
+    editValue (record) {
+      this.editableValueKey = record.key
+      this.editableValue = record.value
+    },
+    handleUpdateOrder (id, index) {
+      this.parentToggleLoading()
+      let apiString = ''
+      switch (this.$route.name) {
+        case 'template':
+          apiString = 'updateTemplate'
+          break
+        case 'iso':
+          apiString = 'updateIso'
+          break
+        case 'zone':
+          apiString = 'updateZone'
+          break
+        case 'computeoffering':
+        case 'systemoffering':
+          apiString = 'updateServiceOffering'
+          break
+        case 'diskoffering':
+          apiString = 'updateDiskOffering'
+          break
+        case 'networkoffering':
+          apiString = 'updateNetworkOffering'
+          break
+        case 'vpcoffering':
+          apiString = 'updateVPCOffering'
+          break
+        default:
+          apiString = 'updateTemplate'
+      }
+
+      api(apiString, {
+        id,
+        sortKey: index
+      }).catch(error => {
+        console.error(error)
+      }).finally(() => {
+        this.parentFetchData()
+        this.parentToggleLoading()
+      })
+    },
+    moveItemUp (record) {
+      const data = this.items
+      const index = data.findIndex(item => item.id === record.id)
+      if (index === 0) return
+
+      data.splice(index - 1, 0, data.splice(index, 1)[0])
+
+      data.forEach((item, index) => {
+        this.handleUpdateOrder(item.id, index + 1)
+      })
+    },
+    moveItemDown (record) {
+      const data = this.items
+      const index = data.findIndex(item => item.id === record.id)
+      if (index === data.length - 1) return
+
+      data.splice(index + 1, 0, data.splice(index, 1)[0])
+
+      data.forEach((item, index) => {
+        this.handleUpdateOrder(item.id, index + 1)
+      })
+    },
+    moveItemTop (record) {
+      const data = this.items
+      const index = data.findIndex(item => item.id === record.id)
+      if (index === 0) return
+
+      data.unshift(data.splice(index, 1)[0])
+
+      data.forEach((item, index) => {
+        this.handleUpdateOrder(item.id, index + 1)
+      })
+    },
+    moveItemBottom (record) {
+      const data = this.items
+      const index = data.findIndex(item => item.id === record.id)
+      if (index === data.length - 1) return
+
+      data.push(data.splice(index, 1)[0])
+
+      data.forEach((item, index) => {
+        this.handleUpdateOrder(item.id, index + 1)
+      })
     }
   }
 }
@@ -139,6 +365,10 @@ export default {
   background-color: #f9f9f9;
 }
 
+/deep/ .ant-table-small > .ant-table-content > .ant-table-body {
+  margin: 0;
+}
+
 /deep/ .light-row {
   background-color: #fff;
 }
@@ -146,4 +376,28 @@ export default {
 /deep/ .dark-row {
   background-color: #f9f9f9;
 }
+</style>
+
+<style scoped lang="scss">
+  .shift-btns {
+    display: flex;
+  }
+  .shift-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+
+    &:not(:last-child) {
+      margin-right: 5px;
+    }
+
+    &--rotated {
+      font-size: 10px;
+      transform: rotate(90deg);
+    }
+
+  }
 </style>

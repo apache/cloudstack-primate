@@ -19,10 +19,26 @@ export default {
   name: 'project',
   title: 'Projects',
   icon: 'project',
-  permission: [ 'listProjects' ],
+  permission: ['listProjects'],
   resourceType: 'Project',
   columns: ['name', 'state', 'displaytext', 'account', 'domain'],
   details: ['name', 'id', 'displaytext', 'projectaccountname', 'vmtotal', 'cputotal', 'memorytotal', 'volumetotal', 'iptotal', 'vpctotal', 'templatetotal', 'primarystoragetotal', 'account', 'domain'],
+  tabs: [
+    {
+      name: 'details',
+      component: () => import('@/components/view/DetailsTab.vue')
+    },
+    {
+      name: 'accounts',
+      show: (record, route, user) => { return record.account === user.account || ['Admin', 'DomainAdmin'].includes(user.roletype) },
+      component: () => import('@/views/project/AccountsTab.vue')
+    },
+    {
+      name: 'resources',
+      show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
+      component: () => import('@/views/project/ResourcesTab.vue')
+    }
+  ],
   actions: [
     {
       api: 'createProject',
@@ -32,18 +48,38 @@ export default {
       args: ['name', 'displaytext']
     },
     {
+      api: 'updateProjectInvitation',
+      icon: 'key',
+      label: 'label.enter.token',
+      listView: true,
+      popup: true,
+      component: () => import('@/views/project/InvitationTokenTemplate.vue')
+    },
+    {
+      api: 'listProjectInvitations',
+      icon: 'team',
+      label: 'label.project.invitation',
+      listView: true,
+      popup: true,
+      showBadge: true,
+      badgeNum: 0,
+      param: {
+        state: 'Pending'
+      },
+      component: () => import('@/views/project/InvitationsTemplate.vue')
+    },
+    {
       api: 'updateProject',
       icon: 'edit',
       label: 'Edit Project',
       dataView: true,
-      args: ['id', 'displaytext']
+      args: ['displaytext']
     },
     {
       api: 'activateProject',
       icon: 'play-circle',
       label: 'Activate Project',
       dataView: true,
-      args: ['id'],
       show: (record) => { return record.state === 'Suspended' }
     },
     {
@@ -51,7 +87,6 @@ export default {
       icon: 'pause-circle',
       label: 'Suspend Project',
       dataView: true,
-      args: ['id'],
       show: (record) => { return record.state !== 'Suspended' }
     },
     {
@@ -59,14 +94,19 @@ export default {
       icon: 'user-add',
       label: 'Add Account to Project',
       dataView: true,
-      args: ['projectid', 'account', 'email']
+      args: ['projectid', 'account', 'email'],
+      show: (record, store) => { return record.account === store.userInfo.account || ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) },
+      mapping: {
+        projectid: {
+          value: (record) => { return record.id }
+        }
+      }
     },
     {
       api: 'deleteProject',
       icon: 'delete',
       label: 'Delete Project',
-      dataView: true,
-      args: ['id']
+      dataView: true
     }
   ]
 }

@@ -19,16 +19,15 @@ export default {
   name: 'systemvm',
   title: 'System VMs',
   icon: 'thunderbolt',
-  permission: [ 'listSystemVms' ],
-  columns: [ 'name', 'state', 'agentstate', 'systemvmtype', 'publicip', 'privateip', 'linklocalip', 'hostname', 'zonename' ],
-  details: [ 'name', 'id', 'agentstate', 'systemvmtype', 'publicip', 'privateip', 'linklocalip', 'gateway', 'hostname', 'zonename', 'created', 'activeviewersessions' ],
+  permission: ['listSystemVms'],
+  columns: ['name', 'state', 'agentstate', 'systemvmtype', 'publicip', 'privateip', 'linklocalip', 'hostname', 'zonename'],
+  details: ['name', 'id', 'agentstate', 'systemvmtype', 'publicip', 'privateip', 'linklocalip', 'gateway', 'hostname', 'zonename', 'created', 'activeviewersessions'],
   actions: [
     {
       api: 'startSystemVm',
       icon: 'caret-right',
       label: 'label.action.start.systemvm',
       dataView: true,
-      args: ['id'],
       show: (record) => { return record.state === 'Stopped' }
     },
     {
@@ -36,15 +35,14 @@ export default {
       icon: 'stop',
       label: 'label.action.stop.systemvm',
       dataView: true,
-      args: ['id'],
-      show: (record) => { return record.state === 'Running' }
+      show: (record) => { return record.state === 'Running' },
+      args: ['forced']
     },
     {
       api: 'rebootSystemVm',
       icon: 'sync',
       label: 'label.action.reboot.systemvm',
       dataView: true,
-      args: ['id'],
       show: (record) => { return record.state === 'Running' }
     },
     {
@@ -52,31 +50,43 @@ export default {
       icon: 'arrows-alt',
       label: 'label.change.service.offering',
       dataView: true,
-      args: ['id', 'serviceofferingid'],
-      show: (record) => { return record.hypervisor === 'VMWare' || record.state === 'Stopped' }
+      show: (record) => { return record.hypervisor !== 'KVM' },
+      args: ['serviceofferingid']
     },
     {
       api: 'migrateSystemVm',
       icon: 'drag',
       label: 'label.action.migrate.systemvm',
       dataView: true,
+      show: (record) => { return record.state === 'Running' },
       args: ['virtualmachineid', 'hostid'],
-      show: (record) => { return record.state === 'Running' }
+      mapping: {
+        virtualmachineid: {
+          value: (record) => { return record.id }
+        }
+      }
     },
     {
       api: 'runDiagnostics',
       icon: 'reconciliation',
       label: 'label.action.run.diagnostics',
       dataView: true,
+      show: (record) => { return record.state === 'Running' },
       args: ['targetid', 'type', 'ipaddress', 'params'],
-      show: (record) => { return record.state === 'Running' }
+      mapping: {
+        targetid: {
+          value: (record) => { return record.id }
+        },
+        type: {
+          options: ['ping', 'traceroute', 'arping']
+        }
+      }
     },
     {
       api: 'destroySystemVm',
       icon: 'delete',
       label: 'label.action.destroy.systemvm',
       dataView: true,
-      args: ['id'],
       show: (record) => { return ['Running', 'Error', 'Stopped'].includes(record.state) }
     }
   ]

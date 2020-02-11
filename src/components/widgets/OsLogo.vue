@@ -16,23 +16,28 @@
 // under the License.
 
 <template>
-  <a-tooltip placement="right">
+  <a-tooltip placement="bottom">
     <template slot="title">
       {{ name }}
     </template>
-    <font-awesome-icon :icon="['fab', logo]" :size="size" style="color: #666;" />
+    <font-awesome-icon :icon="['fab', logo]" :size="size" style="color: #666;" v-if="logo !== 'debian'" />
+    <debian-icon v-else-if="logo === 'debian'" :style="{ height: size === '4x' ? '56px' : '16px', width: size === '4x' ? '56px' : '16px', marginBottom: '-4px' }" />
   </a-tooltip>
 </template>
 
 <script>
 import { api } from '@/api'
+import DebianIcon from '@/assets/icons/debian.svg?inline'
 
 export default {
   name: 'OsLogo',
+  components: {
+    DebianIcon
+  },
   props: {
     osId: {
       type: String,
-      required: true
+      default: ''
     },
     osName: {
       type: String,
@@ -76,7 +81,7 @@ export default {
         return
       }
       this.name = 'linux'
-      api('listOsTypes', { 'id': osId }).then(json => {
+      api('listOsTypes', { id: osId }).then(json => {
         if (json && json.listostypesresponse && json.listostypesresponse.ostype && json.listostypesresponse.ostype.length > 0) {
           this.discoverOsLogo(json.listostypesresponse.ostype[0].description)
         } else {
@@ -89,6 +94,8 @@ export default {
       const osname = name.toLowerCase()
       if (osname.includes('centos')) {
         this.osLogo = 'centos'
+      } else if (osname.includes('debian')) {
+        this.osLogo = 'debian'
       } else if (osname.includes('ubuntu')) {
         this.osLogo = 'ubuntu'
       } else if (osname.includes('suse')) {
