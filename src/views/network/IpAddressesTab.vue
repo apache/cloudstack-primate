@@ -26,10 +26,7 @@
       :columns="columns"
       :dataSource="ips"
       :rowKey="item => item.id"
-      :pagination="true" >
-
-      <!-- FIXME: pagination should be separately handled due to cloudstack api limitation -->
-
+      :pagination="false" >
       <template slot="ipaddress" slot-scope="text, record">
         <router-link :to="{ path: '/publicip/' + record.id }" >{{ text }} </router-link>
         <a-tag v-if="record.issourcenat === true">source-nat</a-tag>
@@ -53,6 +50,18 @@
           @click="releaseIpAddress(record)" />
       </template>
     </a-table>
+    <a-divider/>
+    <a-pagination
+      class="row-element pagination"
+      size="small"
+      :current="page"
+      :pageSize="pageSize"
+      :total="ipCount"
+      :showTotal="total => `Total ${total} items`"
+      :pageSizeOptions="['10', '20', '40', '80', '100']"
+      @change="changePage"
+      @showSizeChange="changePageSize"
+      showSizeChanger/>
   </a-spin>
 </template>
 <script>
@@ -76,6 +85,9 @@ export default {
   },
   data () {
     return {
+      ipCount: 0,
+      page: 1,
+      pageSize: 10,
       columns: [
         {
           title: this.$t('ipaddress'),
@@ -128,13 +140,25 @@ export default {
       this.fetchLoading = true
       api('listPublicIpAddresses', {
         listall: true,
-        associatednetworkid: this.resource.id
+        associatednetworkid: this.resource.id,
+        page: this.page,
+        pagesize: this.pageSize
       }).then(json => {
         this.ips = json.listpublicipaddressesresponse.publicipaddress || []
-        // TODO: get count as well
+        this.ipCount = json.listpublicipaddressesresponse.count
       }).finally(() => {
         this.fetchLoading = false
       })
+    },
+    changePage (page, pageSize) {
+      this.page = page
+      this.pageSize = pageSize
+      this.fetchData()
+    },
+    changePageSize (currentPage, pageSize) {
+      this.page = currentPage
+      this.pageSize = pageSize
+      this.fetchData()
     },
     acquireIpAddress () {
       this.fetchLoading = true
