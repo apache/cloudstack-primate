@@ -23,11 +23,11 @@
       :columns="listVMCols"
       :dataSource="vms"
       :rowKey="item => item.id"
-      :pagination="true"
+      :pagination="false"
     >
       <template slot="name" slot-scope="text, record">
         {{ record.name }}
-        <a-card v-if="selected === true" title="Use VM IP">
+        <a-card v-if="selected === true" size="small" title="Use VM IP">
           <div v-for="nic in record.nic" :key="nic.id">
             <a-radio @click="vmIpSelected(record, nic)">{{ nic.ipaddress }}</a-radio>
           </div>
@@ -40,6 +40,18 @@
         <a-checkbox @change="handleChange"></a-checkbox>
       </template>
     </a-table>
+    <a-divider/>
+    <a-pagination
+      class="row-element pagination"
+      size="small"
+      :current="page"
+      :pageSize="pageSize"
+      :total="vmCounts"
+      :showTotal="total => `Total ${total} items`"
+      :pageSizeOptions="['10', '20', '40', '80', '100']"
+      @change="changePage"
+      @showSizeChange="changePageSize"
+      showSizeChanger/>
     <div class="actions">
       <a-button @click="closeModal">
         {{ $t('Cancel') }}
@@ -68,6 +80,9 @@ export default {
   },
   data () {
     return {
+      page: 1,
+      pageSize: 10,
+      vmCounts: 0,
       vms: [],
       selected: false,
       params: {},
@@ -131,10 +146,13 @@ export default {
     fetchVirtualMachines () {
       api('listVirtualMachines', {
         listAll: true,
-        networkid: this.resource.networkid
+        networkid: this.resource.networkid,
+        page: this.page,
+        pageSize: this.pageSize
       }).then(response => {
         var vms = response.listvirtualmachinesresponse.virtualmachine || []
         this.vms = this.differenceBy(vms, this.assignedVMs, 'id')
+        this.vmCounts = this.vms.length
       })
     },
     vmIpSelected (vm, nic) {
@@ -174,6 +192,16 @@ export default {
       }).finally(() => {
         this.closeModal()
       })
+    },
+    changePage (page, pageSize) {
+      this.page = page
+      this.pageSize = pageSize
+      this.fetchData()
+    },
+    changePageSize (currentPage, pageSize) {
+      this.page = currentPage
+      this.pageSize = pageSize
+      this.fetchData()
     }
   }
 }

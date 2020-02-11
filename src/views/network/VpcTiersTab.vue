@@ -17,7 +17,7 @@
 
 <template>
   <a-spin :spinning="fetchLoading">
-    <a-button type="dashed" icon="plus" style="width: 100%" @click="handleOpenModal">Add Network</a-button>
+    <a-button type="dashed" icon="plus" style="width: 100%;margin-bottom: 20px;" @click="handleOpenModal">Add Network</a-button>
     <a-list class="list">
       <a-list-item v-for="(network, idx) in networks" :key="idx" class="list__item">
         <div class="list__item-outer-container">
@@ -63,13 +63,25 @@
                 :columns="internalLbCols"
                 :dataSource="internalLB[network.id]"
                 :rowKey="item => item.id"
-                :pagination="{showSizeChanger: true, pageSize: 5, simple: true}">
+                :pagination="false">
                 <template slot="name" slot-scope="text, item">
                   <router-link
                     :to="{ path: '/ilb/'+item.id}">{{ item.name }}
                   </router-link>
                 </template>
               </a-table>
+              <a-divider/>
+              <a-pagination
+                class="row-element pagination"
+                size="small"
+                :current="page"
+                :pageSize="pageSize"
+                :total="itemCounts.internalLB[network.id]"
+                :showTotal="total => `Total ${total} items`"
+                :pageSizeOptions="['10', '20', '40', '80', '100']"
+                @change="changePage"
+                @showSizeChange="changePageSize"
+                showSizeChanger/>
               <a-button type="primary" icon="plus" style="float: right;margin:10px" @click="handleAddInternalLB(network.id)">{{ $t('label.add.internal.lb') }}</a-button>
             </a-collapse-panel>
             <a-collapse-panel header="Public LB IP" key="2" :style="customStyle">
@@ -79,13 +91,25 @@
                 :columns="LBPublicIPCols"
                 :dataSource="LBPublicIPs[network.id]"
                 :rowKey="item => item.id"
-                :pagination="true">
+                :pagination="false">
                 <template slot="name" slot-scope="text, item">
                   <router-link
                     :to="{ path: '/publicip/'+item.id}">{{ item.name }}
                   </router-link>
                 </template>
               </a-table>
+              <a-divider/>
+              <a-pagination
+                class="row-element pagination"
+                size="small"
+                :current="page"
+                :pageSize="pageSize"
+                :total="itemCounts.publicIps[network.id]"
+                :showTotal="total => `Total ${total} items`"
+                :pageSizeOptions="['10', '20', '40', '80', '100']"
+                @change="changePage"
+                @showSizeChange="changePageSize"
+                showSizeChanger/>
             </a-collapse-panel>
             <a-collapse-panel header="Static NATS" key="3" :style="customStyle">
               <a-table
@@ -94,13 +118,25 @@
                 :columns="StaticNatCols"
                 :dataSource="staticNats[network.id]"
                 :rowKey="item => item.id"
-                :pagination="true">
+                :pagination="false">
                 <template slot="name" slot-scope="text, item">
                   <router-link
                     :to="{ path: '/publicip/'+item.id}">{{ item.name }}
                   </router-link>
                 </template>
               </a-table>
+              <a-divider/>
+              <a-pagination
+                class="row-element pagination"
+                size="small"
+                :current="page"
+                :pageSize="pageSize"
+                :total="itemCounts.publicIps[network.id]"
+                :showTotal="total => `Total ${total} items`"
+                :pageSizeOptions="['10', '20', '40', '80', '100']"
+                @change="changePage"
+                @showSizeChange="changePageSize"
+                showSizeChanger/>
             </a-collapse-panel>
             <a-collapse-panel header="VMs" key="4" :style="customStyle">
               <a-table
@@ -109,13 +145,25 @@
                 :columns="vmCols"
                 :dataSource="vms[network.id]"
                 :rowKey="item => item.id"
-                :pagination="true">
+                :pagination="false">
                 <template slot="name" slot-scope="text, item">
                   <router-link
                     :to="{ path: '/vm/'+item.id}">{{ item.name }}
                   </router-link>
                 </template>
               </a-table>
+              <a-divider/>
+              <a-pagination
+                class="row-element pagination"
+                size="small"
+                :current="page"
+                :pageSize="pageSize"
+                :total="itemCounts.vms[network.id]"
+                :showTotal="total => `Total ${total} items`"
+                :pageSizeOptions="['10', '20', '40', '80', '100']"
+                @change="changePage"
+                @showSizeChange="changePageSize"
+                showSizeChanger/>
             </a-collapse-panel>
           </a-collapse>
         </div>
@@ -314,7 +362,15 @@ export default {
           dataIndex: 'nic[0].ipaddress'
         }
       ],
-      customStyle: 'border-radius: 4px;margin-bottom: -5px;'
+      customStyle: 'border-radius: 4px;margin-bottom: -5px;',
+      page: 1,
+      pageSize: 10,
+      itemCounts: {
+        internalLB: {},
+        publicIps: {},
+        snats: {},
+        vms: {}
+      }
     }
   },
   mounted () {
@@ -397,9 +453,12 @@ export default {
     },
     fetchLoadBalancers (id) {
       api('listLoadBalancers', {
-        networkid: id
+        networkid: id,
+        page: this.page,
+        pagesize: this.pageSize
       }).then(json => {
         this.internalLB[id] = json.listloadbalancersresponse.loadbalancer || []
+        this.itemCounts.internalLB[id] = json.listloadbalancersresponse.count
       })
     },
     fetchLBPublicIPs (id, op) {
@@ -415,22 +474,28 @@ export default {
       api('listPublicIpAddresses', {
         listAll: true,
         [variableKey]: variableValue,
-        associatednetworkid: id
+        associatednetworkid: id,
+        page: this.page,
+        pagesize: this.pageSize
       }).then(json => {
         if (op === 'LB') {
           this.LBPublicIPs[id] = json.listpublicipaddressesresponse.publicipaddress || []
         } else {
           this.staticNats[id] = json.listpublicipaddressesresponse.publicipaddress || []
         }
+        this.itemCounts.publicIps[id] = json.listpublicipaddressesresponse.count
       })
     },
     fetchVMs (id) {
       api('listVirtualMachines', {
         listAll: true,
         vpcid: this.resource.id,
-        networkid: id
+        networkid: id,
+        page: this.page,
+        pagesize: this.pageSize
       }).then(json => {
         this.vms[id] = json.listvirtualmachinesresponse.virtualmachine || []
+        this.itemCounts.vms[id] = json.listvirtualmachinesresponse.count
       })
     },
     closeModal () {
@@ -535,6 +600,16 @@ export default {
           this.fetchData()
         })
       })
+    },
+    changePage (page, pageSize) {
+      this.page = page
+      this.pageSize = pageSize
+      this.fetchData()
+    },
+    changePageSize (currentPage, pageSize) {
+      this.page = currentPage
+      this.pageSize = pageSize
+      this.fetchData()
     }
   }
 }
