@@ -24,15 +24,15 @@
     :rowKey="record => record.id"
     size="middle"
   >
-    <template v-slot:ipAddress="text">
+    <template slot="ipAddress">
       <a-input
-        :value="text"
-      ></a-input>
+        style="width: 150px;"
+        :placeholder="$t('ipAddress')"/>
     </template>
-    <template v-slot:macAddress="text">
+    <template slot="macAddress">
       <a-input
-        :value="text"
-      ></a-input>
+        style="width: 150px;"
+        :placeholder="$t('macAddress')"/>
     </template>
   </a-table>
 </template>

@@ -32,7 +32,7 @@
                     <a-form-item :label="this.$t('name')">
                       <a-input
                         v-decorator="['name']"
-                        :placeholder="this.$t('vm.name.description')"
+                        :placeholder="apiParams.name.description"
                       />
                     </a-form-item>
                     <a-form-item :label="this.$t('zoneid')">
@@ -40,7 +40,7 @@
                         v-decorator="['zoneid', {
                           rules: [{ required: true, message: 'Please select option' }]
                         }]"
-                        :placeholder="this.$t('vm.zone.description')"
+                        :placeholder="apiParams.zoneid.description"
                         :options="zoneSelectOptions"
                         @change="onSelectZoneId"
                         :loading="loading.zones"
@@ -511,6 +511,11 @@ export default {
     this.form.getFieldDecorator('isoid', { initialValue: [], preserve: true })
     this.form.getFieldDecorator('networkids', { initialValue: [], preserve: true })
     this.form.getFieldDecorator('keypair', { initialValue: undefined, preserve: true })
+    this.apiParams = {}
+    this.apiDeployVirtualMachine = this.$store.getters.apis.deployVirtualMachine || {}
+    this.apiDeployVirtualMachine.params.forEach(param => {
+      this.apiParams[param.name] = param
+    })
   },
   created () {
     this.fetchData()

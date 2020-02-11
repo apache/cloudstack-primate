@@ -16,30 +16,30 @@
 // under the License.
 
 <template>
-  <a-tabs :defaultActiveKey="Object.keys(osTypes)[0]" v-if="view === TAB_VIEW">
-    <a-button icon="search" slot="tabBarExtraContent" @click="() => toggleView(FILTER_VIEW)"/>
-    <a-tab-pane v-for="(osList, osName) in osTypes" :key="osName">
-      <span slot="tab">
-        <os-logo :os-name="osName"></os-logo>
-      </span>
-      <a-spin :spinning="loading">
+  <a-spin :spinning="loading">
+    <a-tabs :defaultActiveKey="Object.keys(osTypes)[0]" v-if="view === TAB_VIEW">
+      <a-button icon="search" slot="tabBarExtraContent" @click="() => toggleView(FILTER_VIEW)"/>
+      <a-tab-pane v-for="(osList, osName) in osTypes" :key="osName">
+        <span slot="tab">
+          <os-logo :os-name="osName"></os-logo>
+        </span>
         <TemplateIsoRadioGroup
           :osList="osList"
           :input-decorator="inputDecorator"
         ></TemplateIsoRadioGroup>
-      </a-spin>
-    </a-tab-pane>
-  </a-tabs>
-  <div v-else>
-    <a-input class="search-input" v-model="filter">
-      <a-icon slot="prefix" type="search"/>
-      <a-icon slot="addonAfter" type="close" @click="toggleView(TAB_VIEW)"/>
-    </a-input>
-    <TemplateIsoRadioGroup
-      :osList="filteredItems"
-      :input-decorator="inputDecorator"
-    ></TemplateIsoRadioGroup>
-  </div>
+      </a-tab-pane>
+    </a-tabs>
+    <div v-else>
+      <a-input class="search-input" v-model="filter">
+        <a-icon slot="prefix" type="search"/>
+        <a-icon slot="addonAfter" type="close" @click="toggleView(TAB_VIEW)"/>
+      </a-input>
+      <TemplateIsoRadioGroup
+        :osList="filteredItems"
+        :input-decorator="inputDecorator"
+      ></TemplateIsoRadioGroup>
+    </div>
+  </a-spin>
 </template>
 
 <script>
