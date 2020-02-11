@@ -115,26 +115,13 @@
                 <a-collapse
                   :accordion="false"
                 >
-                  <a-collapse-panel
-                    :header="$t('existingNetworks')"
-                  >
-                    <network-selection
-                      :items="options.networks"
-                      :value="networkOfferingIds"
-                      :loading="loading.networks"
-                      @select-network-item="($event) => updateNetworks($event)"
-                      @handle-search-filter="($event) => handleSearchFilter('networks', $event)"
-                    ></network-selection>
-                  </a-collapse-panel>
-
-                  <a-collapse-panel
-                    :header="$t('addNewNetworks')"
-                  >
-                    <network-creation
-                      :zoneId="zoneId"
-                      @handle-update-network="updateDataCreatedNetworks">
-                    </network-creation>
-                  </a-collapse-panel>
+                  <network-selection
+                    :items="options.networks"
+                    :value="networkOfferingIds"
+                    :loading="loading.networks"
+                    @select-network-item="($event) => updateNetworks($event)"
+                    @handle-search-filter="($event) => handleSearchFilter('networks', $event)"
+                  ></network-selection>
                 </a-collapse>
 
                 <network-configuration
