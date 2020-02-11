@@ -361,7 +361,8 @@ export default {
       }).catch(error => {
         this.$notification.error({
           message: 'Request Failed',
-          description: error.response.headers['x-description']
+          description: error.response.headers['x-description'],
+          duration: 0
         })
       }).finally(() => {
         this.fetchLoading = false
@@ -386,7 +387,8 @@ export default {
       }).catch(error => {
         this.$notification.error({
           message: 'Request Failed',
-          description: error.response.headers['x-description']
+          description: error.response.headers['x-description'],
+          duration: 0
         })
       }).finally(() => {
         this.fetchLoading = false
@@ -397,9 +399,7 @@ export default {
       api('listLoadBalancers', {
         networkid: id
       }).then(json => {
-        if (json && json.listloadbalancersresponse && json.listloadbalancersresponse.loadbalancer) {
-          this.internalLB[id] = json.listloadbalancersresponse.loadbalancer
-        }
+        this.internalLB[id] = json.listloadbalancersresponse.loadbalancer || []
       })
     },
     fetchLBPublicIPs (id, op) {
@@ -417,10 +417,10 @@ export default {
         [variableKey]: variableValue,
         associatednetworkid: id
       }).then(json => {
-        if (json && json.listpublicipaddressesresponse && json.listpublicipaddressesresponse.publicipaddress && op === 'LB') {
-          this.LBPublicIPs[id] = json.listpublicipaddressesresponse.publicipaddress
-        } else if (json && json.listpublicipaddressesresponse && json.listpublicipaddressesresponse.publicipaddress && op === 'SNAT') {
-          this.staticNats[id] = json.listpublicipaddressesresponse.publicipaddress
+        if (op === 'LB') {
+          this.LBPublicIPs[id] = json.listpublicipaddressesresponse.publicipaddress || []
+        } else {
+          this.staticNats[id] = json.listpublicipaddressesresponse.publicipaddress || []
         }
       })
     },
@@ -430,9 +430,7 @@ export default {
         vpcid: this.resource.id,
         networkid: id
       }).then(json => {
-        if (json && json.listvirtualmachinesresponse && json.listvirtualmachinesresponse.virtualmachine) {
-          this.vms[id] = json.listvirtualmachinesresponse.virtualmachine
-        }
+        this.vms[id] = json.listvirtualmachinesresponse.virtualmachine || []
       })
     },
     closeModal () {
@@ -479,7 +477,8 @@ export default {
         }).catch(error => {
           this.$notification.error({
             message: 'Request Failed',
-            description: error.response.headers['x-description']
+            description: error.response.headers['x-description'],
+            duration: 0
           })
         }).finally(() => {
           this.fetchLoading = false

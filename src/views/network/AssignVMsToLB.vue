@@ -122,9 +122,7 @@ export default {
       api('listLoadBalancers', {
         id: this.resource.id
       }).then(response => {
-        if (response && response.listloadbalancersresponse && response.listloadbalancersresponse.loadbalancer) {
-          this.assignedVMs = response.listloadbalancersresponse.loadbalancer[0].loadbalancerinstance
-        }
+        this.assignedVMs = response.listloadbalancersresponse.loadbalancer[0].loadbalancerinstance || []
       })
     },
     differenceBy (array1, array2, key) {
@@ -135,10 +133,8 @@ export default {
         listAll: true,
         networkid: this.resource.networkid
       }).then(response => {
-        if (response && response.listvirtualmachinesresponse && response.listvirtualmachinesresponse.virtualmachine) {
-          var vms = response.listvirtualmachinesresponse.virtualmachine
-          this.vms = this.differenceBy(vms, this.assignedVMs, 'id')
-        }
+        var vms = response.listvirtualmachinesresponse.virtualmachine || []
+        this.vms = this.differenceBy(vms, this.assignedVMs, 'id')
       })
     },
     vmIpSelected (vm, nic) {
