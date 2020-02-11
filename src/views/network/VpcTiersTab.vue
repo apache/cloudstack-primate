@@ -19,7 +19,7 @@
   <a-spin :spinning="fetchLoading">
     <a-button type="dashed" icon="plus" style="width: 100%" @click="handleOpenModal">Add Network</a-button>
     <a-list class="list">
-      <a-list-item v-for="network in networks" :key="network.id" class="list__item">
+      <a-list-item v-for="(network, idx) in networks" :key="idx" class="list__item">
         <div class="list__item-outer-container">
           <div class="list__item-container">
             <div class="list__col">
@@ -51,30 +51,73 @@
                 </router-link>
               </div>
             </div>
-
           </div>
-          <div class="list__item-container">
-            <div class="list__col">
-              <a-button icon="share-alt">
-                <router-link :to="{ path: '/ilb?networkid=' + network.id }"> Internal LB</router-link>
-              </a-button>
-            </div>
-            <div class="list__col">
-              <a-button icon="share-alt">
-                <router-link :to="{ path: '/publicip?forloadbalancing=true' + '&associatednetworkid=' + network.id }"> Public LB IP</router-link>
-              </a-button>
-            </div>
-            <div class="list__col">
-              <a-button icon="environment">
-                <router-link :to="{ path: '/publicip?isstaticnat=true' + '&associatednetworkid=' + network.id }"> Static NATS</router-link>
-              </a-button>
-            </div>
-            <div class="list__col">
-              <a-button icon="desktop">
-                <router-link :to="{ path: '/vm/?vpcid=' + resource.id + '&networkid=' + network.id }"> VMs</router-link>
-              </a-button>
-            </div>
-          </div>
+          <a-collapse defaultActiveKey="1" :bordered="false">
+            <template v-slot:expandIcon="props">
+              <a-icon type="caret-right" :rotate="props.isActive ? 90 : 0" />
+            </template>
+            <a-collapse-panel header="Internal LB" key="1" :style="customStyle">
+              <a-table
+                class="table"
+                size="small"
+                :columns="internalLbCols"
+                :dataSource="internalLB[network.id]"
+                :rowKey="item => item.id"
+                :pagination="{showSizeChanger: true, pageSize: 5, simple: true}">
+                <template slot="name" slot-scope="text, item">
+                  <router-link
+                    :to="{ path: '/ilb/'+item.id}">{{ item.name }}
+                  </router-link>
+                </template>
+              </a-table>
+              <a-button type="primary" icon="plus" style="float: right;margin:10px" @click="handleAddInternalLB(network.id)">{{ $t('label.add.internal.lb') }}</a-button>
+            </a-collapse-panel>
+            <a-collapse-panel header="Public LB IP" key="2" :style="customStyle">
+              <a-table
+                class="table"
+                size="small"
+                :columns="LBPublicIPCols"
+                :dataSource="LBPublicIPs[network.id]"
+                :rowKey="item => item.id"
+                :pagination="true">
+                <template slot="name" slot-scope="text, item">
+                  <router-link
+                    :to="{ path: '/publicip/'+item.id}">{{ item.name }}
+                  </router-link>
+                </template>
+              </a-table>
+            </a-collapse-panel>
+            <a-collapse-panel header="Static NATS" key="3" :style="customStyle">
+              <a-table
+                class="table"
+                size="small"
+                :columns="StaticNatCols"
+                :dataSource="staticNats[network.id]"
+                :rowKey="item => item.id"
+                :pagination="true">
+                <template slot="name" slot-scope="text, item">
+                  <router-link
+                    :to="{ path: '/publicip/'+item.id}">{{ item.name }}
+                  </router-link>
+                </template>
+              </a-table>
+            </a-collapse-panel>
+            <a-collapse-panel header="VMs" key="4" :style="customStyle">
+              <a-table
+                class="table"
+                size="small"
+                :columns="vmCols"
+                :dataSource="vms[network.id]"
+                :rowKey="item => item.id"
+                :pagination="true">
+                <template slot="name" slot-scope="text, item">
+                  <router-link
+                    :to="{ path: '/vm/'+item.id}">{{ item.name }}
+                  </router-link>
+                </template>
+              </a-table>
+            </a-collapse-panel>
+          </a-collapse>
         </div>
       </a-list-item>
     </a-list>
@@ -120,6 +163,48 @@
       </a-spin>
     </a-modal>
 
+    <a-modal v-model="showAddInternalLB" :title="$t('label.add.internal.lb')" @ok="handleAddInternalLBSubmit">
+      <a-spin :spinning="modalLoading">
+        <a-form @submit.prevent="handleAddInternalLBSubmit" :form="form">
+          <a-form-item :label="$t('name')">
+            <a-input
+              placeholder="Unique name for Internal LB"
+              v-decorator="['name', { rules: [{ required: true, message: 'Please specify a name for the Internal LB'}] }]"/>
+          </a-form-item>
+          <a-form-item :label="$t('description')">
+            <a-input
+              placeholder="Brief description of the Internal LB"
+              v-decorator="['description']"/>
+          </a-form-item>
+          <a-form-item :label="$t('sourceipaddress')">
+            <a-input
+              placeholder="Brief description of the Internal LB"
+              v-decorator="['sourceIP']"/>
+          </a-form-item>
+          <a-form-item :label="$t('sourceport')">
+            <a-input
+              v-decorator="['sourcePort', { rules: [{ required: true, message: 'Please specify a Source Port'}] }]"/>
+          </a-form-item>
+          <a-form-item :label="$t('instanceport')">
+            <a-input
+              v-decorator="['instancePort', { rules: [{ required: true, message: 'Please specify a Instance Port'}] }]"/>
+          </a-form-item>
+          <a-form-item :label="$t('algorithm')">
+            <a-select
+              v-decorator="[
+                'algorithm',
+                {
+                  initialValue: 'Source',
+                  rules: [{ required: true, message: 'required'}]
+                }]">
+              <a-select-option v-for="(key, idx) in Object.keys(algorithms)" :key="idx" :value="algorithms[key]">
+                {{ key }}
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-form>
+      </a-spin>
+    </a-modal>
   </a-spin>
 </template>
 
@@ -145,11 +230,91 @@ export default {
   data () {
     return {
       networks: [],
+      networkid: '',
       fetchLoading: false,
       showCreateNetworkModal: false,
+      showAddInternalLB: false,
       networkOfferings: [],
       networkAclList: [],
-      modalLoading: false
+      modalLoading: false,
+      internalLB: {},
+      LBPublicIPs: {},
+      staticNats: {},
+      vms: {},
+      algorithms: {
+        Source: 'source',
+        'Round-robin': 'roundrobin',
+        'Least connections': 'leastconn'
+      },
+      internalLbCols: [
+        {
+          title: this.$t('name'),
+          dataIndex: 'name',
+          scopedSlots: { customRender: 'name' }
+        },
+        {
+          title: this.$t('sourceipaddress'),
+          dataIndex: 'sourceipaddress'
+        },
+        {
+          title: this.$t('algorithm'),
+          dataIndex: 'algorithm'
+        },
+        {
+          title: this.$t('account'),
+          dataIndex: 'account'
+        }
+      ],
+      LBPublicIPCols: [
+        {
+          title: this.$t('ip'),
+          dataIndex: 'ipaddress',
+          scopedSlots: { customRender: 'ipaddress' }
+        },
+        {
+          title: this.$t('state'),
+          dataIndex: 'state'
+        },
+        {
+          title: this.$t('networkid'),
+          dataIndex: 'associatedNetworkName'
+        },
+        {
+          title: this.$t('vm'),
+          dataIndex: 'virtualmachinename'
+        }
+      ],
+      StaticNatCols: [
+        {
+          title: this.$t('ips'),
+          dataIndex: 'ipaddress',
+          scopedSlots: { customRender: 'ipaddress' }
+        },
+        {
+          title: this.$t('zoneid'),
+          dataIndex: 'zonename'
+        },
+        {
+          title: this.$t('networkid'),
+          dataIndex: 'associatedNetworkName'
+        },
+        {
+          title: this.$t('state'),
+          dataIndex: 'state'
+        }
+      ],
+      vmCols: [
+        {
+          title: this.$t('name'),
+          dataIndex: 'name',
+          scopedSlots: { customRender: 'name' }
+        },
+        {
+          title: this.$t('ip'),
+          dataIndex: 'nic[0].ipaddress'
+        }
+      ],
+      customStyle: 'border-radius: 4px;margin-bottom: -5px;'
     }
   },
   mounted () {
@@ -168,13 +333,17 @@ export default {
   methods: {
     fetchData () {
       this.fetchLoading = true
+      var i = 0
       api('listNetworks', { vpcid: this.resource.id }).then(json => {
         this.networks = json.listnetworksresponse.network
-      }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+      }).then(() => {
+        for (i = 0; i < this.networks.length; i++) {
+          var id = this.networks[i].id
+          this.fetchLoadBalancers(id)
+          this.fetchLBPublicIPs(id, 'LB')
+          this.fetchLBPublicIPs(id, 'SNAT')
+          this.fetchVMs(id)
+        }
       }).finally(() => {
         this.fetchLoading = false
       })
@@ -224,11 +393,61 @@ export default {
         this.modalLoading = false
       })
     },
+    fetchLoadBalancers (id) {
+      api('listLoadBalancers', {
+        networkid: id
+      }).then(json => {
+        if (json && json.listloadbalancersresponse && json.listloadbalancersresponse.loadbalancer) {
+          this.internalLB[id] = json.listloadbalancersresponse.loadbalancer
+        }
+      })
+    },
+    fetchLBPublicIPs (id, op) {
+      var variableKey = null
+      var variableValue = null
+      if (op === 'LB') {
+        variableKey = 'forloadbalancing'
+        variableValue = true
+      } else {
+        variableKey = 'isstaticnat'
+        variableValue = true
+      }
+      api('listPublicIpAddresses', {
+        listAll: true,
+        [variableKey]: variableValue,
+        associatednetworkid: id
+      }).then(json => {
+        if (json && json.listpublicipaddressesresponse && json.listpublicipaddressesresponse.publicipaddress && op === 'LB') {
+          this.LBPublicIPs[id] = json.listpublicipaddressesresponse.publicipaddress
+        } else if (json && json.listpublicipaddressesresponse && json.listpublicipaddressesresponse.publicipaddress && op === 'SNAT') {
+          this.staticNats[id] = json.listpublicipaddressesresponse.publicipaddress
+        }
+      })
+    },
+    fetchVMs (id) {
+      api('listVirtualMachines', {
+        listAll: true,
+        vpcid: this.resource.id,
+        networkid: id
+      }).then(json => {
+        if (json && json.listvirtualmachinesresponse && json.listvirtualmachinesresponse.virtualmachine) {
+          this.vms[id] = json.listvirtualmachinesresponse.virtualmachine
+        }
+      })
+    },
+    closeModal () {
+      this.$emit('close-action')
+    },
     handleOpenModal () {
       this.form = this.$form.createForm(this)
       this.fetchNetworkAclList()
       this.fetchNetworkOfferings()
       this.showCreateNetworkModal = true
+    },
+    handleAddInternalLB (id) {
+      this.form = this.$form.createForm(this)
+      this.showAddInternalLB = true
+      this.networkid = id
     },
     handleAddNetworkSubmit () {
       this.fetchLoading = true
@@ -264,6 +483,56 @@ export default {
           })
         }).finally(() => {
           this.fetchLoading = false
+          this.fetchData()
+        })
+      })
+    },
+    handleAddInternalLBSubmit () {
+      this.fetchLoading = true
+      this.modalLoading = true
+      this.form.validateFields((errors, values) => {
+        if (errors) {
+          this.fetchLoading = false
+          return
+        }
+        api('createLoadBalancer', {
+          name: values.name,
+          sourceport: values.sourcePort,
+          instanceport: values.instancePort,
+          algorithm: values.algorithm,
+          networkid: this.networkid,
+          sourceipaddressnetworkid: this.networkid,
+          scheme: 'Internal'
+        }).then(response => {
+          this.$store.dispatch('AddAsyncJob', {
+            title: `Creating Internal LB`,
+            jobid: response.createloadbalancerresponse.jobid,
+            description: values.name,
+            status: 'progress'
+          })
+          this.$pollJob({
+            jobId: response.createloadbalancerresponse.jobid,
+            successMessage: `Successfully created Internal LB`,
+            successMethod: () => {
+              this.fetchData()
+            },
+            errorMessage: 'Failed to create Internal LB' + response,
+            errorMethod: () => {
+              this.fetchData()
+            },
+            loadingMessage: `Creation of Internal LB is in progress`,
+            catchMessage: 'Error encountered while fetching async job result',
+            catchMethod: () => {
+              this.fetchData()
+            }
+          })
+        }).catch(error => {
+          console.error(error)
+          this.$message.error('Failed to create Internal LB')
+        }).finally(() => {
+          this.fetchLoading = false
+          this.modalLoading = false
+          this.showAddInternalLB = false
           this.fetchData()
         })
       })
@@ -307,6 +576,10 @@ export default {
         margin-bottom: 10px;
       }
     }
+  }
+
+  .blue {
+
   }
 }
 </style>

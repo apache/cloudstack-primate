@@ -440,7 +440,9 @@ export default {
           api: 'assignToLoadBalancerRule',
           icon: 'plus',
           label: 'Assign VMs',
-          dataView: true
+          dataView: true,
+          popup: true,
+          component: () => import('@/views/network/AssignVMsToLB.vue')
         },
         {
           api: 'deleteLoadBalancer',
