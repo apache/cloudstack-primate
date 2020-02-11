@@ -46,6 +46,30 @@
                         :loading="loading.zones"
                       ></a-select>
                     </a-form-item>
+                    <a-form-item :label="this.$t('podId')">
+                      <a-select
+                        v-decorator="['podid']"
+                        :placeholder="apiParams.podid.description"
+                        :options="podSelectOptions"
+                        :loading="loading.pods"
+                      ></a-select>
+                    </a-form-item>
+                    <a-form-item :label="this.$t('clusterid')">
+                      <a-select
+                        v-decorator="['clusterid']"
+                        :placeholder="apiParams.clusterid.description"
+                        :options="clusterSelectOptions"
+                        :loading="loading.clusters"
+                      ></a-select>
+                    </a-form-item>
+                    <a-form-item :label="this.$t('hostId')">
+                      <a-select
+                        v-decorator="['hostid']"
+                        :placeholder="apiParams.hostid.description"
+                        :options="hostSelectOptions"
+                        :loading="loading.hosts"
+                      ></a-select>
+                    </a-form-item>
                     <a-button
                       v-if="current < 6"
                       type="primary"
@@ -305,7 +329,10 @@ export default {
         zones: [],
         affinityGroups: [],
         networks: [],
-        sshKeyPairs: []
+        sshKeyPairs: [],
+        pods: [],
+        clusters: [],
+        hosts: []
       },
       loading: {
         deploy: false,
@@ -315,7 +342,11 @@ export default {
         diskOfferings: false,
         affinityGroups: false,
         networks: false,
-        sshKeyPairs: false
+        sshKeyPairs: false,
+        zones: false,
+        pods: false,
+        clusters: false,
+        hosts: false
       },
       instanceConfig: [],
       template: {},
@@ -421,6 +452,26 @@ export default {
             pageSize: 10,
             keyword: undefined
           }
+        },
+        pods: {
+          list: 'listPods',
+          options: {
+            zoneid: _.get(this.zone, 'id')
+          }
+        },
+        clusters: {
+          list: 'listClusters',
+          options: {
+            zoneid: _.get(this.zone, 'id')
+          }
+        },
+        hosts: {
+          list: 'listHosts',
+          options: {
+            zoneid: _.get(this.zone, 'id'),
+            state: 'Up',
+            type: 'Routing'
+          }
         }
       }
     },
@@ -432,6 +483,30 @@ export default {
         return {
           label: zone.name,
           value: zone.id
+        }
+      })
+    },
+    podSelectOptions () {
+      return this.options.pods.map((pod) => {
+        return {
+          label: pod.name,
+          value: pod.id
+        }
+      })
+    },
+    clusterSelectOptions () {
+      return this.options.clusters.map((cluster) => {
+        return {
+          label: cluster.name,
+          value: cluster.id
+        }
+      })
+    },
+    hostSelectOptions () {
+      return this.options.hosts.map((host) => {
+        return {
+          label: host.name,
+          value: host.id
         }
       })
     }
@@ -523,6 +598,9 @@ export default {
   methods: {
     fetchData () {
       this.fetchOptions(this.params.zones, 'zones')
+      this.fetchOptions(this.params.pods, 'pods')
+      this.fetchOptions(this.params.clusters, 'clusters')
+      this.fetchOptions(this.params.hosts, 'hosts')
       Vue.nextTick().then(() => {
         this.instanceConfig = this.form.getFieldsValue() // ToDo: maybe initialize with some other defaults
       })
