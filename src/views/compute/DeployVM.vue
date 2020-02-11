@@ -25,126 +25,209 @@
             @submit="handleSubmit"
             layout="vertical"
           >
-            <a-collapse
-              :accordion="false"
-              :bordered="false"
-              defaultActiveKey="basic"
-            >
-              <a-collapse-panel :header="this.$t('BasicSetup')" key="basic">
-                <a-form-item :label="this.$t('name')">
-                  <a-input
-                    v-decorator="['name']"
-                    :placeholder="this.$t('vm.name.description')"
-                  />
-                </a-form-item>
+            <a-steps direction="vertical" size="small" :current="current">
+              <a-step :title="this.$t('BasicSetup')" :status="current > steps.BASIC ? 'finish' : ''">
+                <template slot="description">
+                  <div :class="{ 'hidden': current !== steps.BASIC }">
+                    <a-form-item :label="this.$t('name')">
+                      <a-input
+                        v-decorator="['name']"
+                        :placeholder="this.$t('vm.name.description')"
+                      />
+                    </a-form-item>
+                    <a-form-item :label="this.$t('zoneid')">
+                      <a-select
+                        v-decorator="['zoneid', {
+                          rules: [{ required: true, message: 'Please select option' }]
+                        }]"
+                        :placeholder="this.$t('vm.zone.description')"
+                        :options="zoneSelectOptions"
+                        @change="onSelectZoneId"
+                        :loading="loading.zones"
+                      ></a-select>
+                    </a-form-item>
+                    <a-button
+                      v-if="current < 6"
+                      type="primary"
+                      @click="handleNext"
+                      style="float: right">
+                      Next
+                    </a-button>
+                  </div>
+                </template>
+              </a-step>
+              <a-step
+                :title="this.$t('templateIso')"
+                :status="current > steps.TEMPLATE_ISO ? 'finish' : ''">
+                <template slot="description">
+                  <div
+                    v-if="stepMove > steps.BASIC"
+                    :class="{ 'hidden': current !== steps.TEMPLATE_ISO }">
+                    <a-collapse
+                      :accordion="true"
+                      defaultActiveKey="templates"
+                    >
+                      <a-collapse-panel :header="this.$t('Templates')" key="templates">
+                        <template-iso-selection
+                          input-decorator="templateid"
+                          :items="options.templates"
+                          :loading="loading.templates"
+                        ></template-iso-selection>
+                        <disk-size-selection input-decorator="rootdisksize" />
+                      </a-collapse-panel>
 
-                <a-form-item :label="this.$t('zoneid')">
-                  <a-select
-                    v-decorator="['zoneid', {
-                      rules: [{ required: true, message: 'Please select option' }]
-                    }]"
-                    :placeholder="this.$t('vm.zone.description')"
-                    :options="zoneSelectOptions"
-                    @change="onSelectZoneId"
-                  ></a-select>
-                </a-form-item>
-              </a-collapse-panel>
-
-              <a-collapse-panel :header="this.$t('templateIso')" key="templates-isos">
-                <a-collapse
-                  :accordion="true"
-                  defaultActiveKey="templates"
-                  @change="onTemplatesIsosCollapseChange"
-                >
-                  <a-collapse-panel :header="this.$t('Templates')" key="templates">
-                    <template-iso-selection
-                      input-decorator="templateid"
-                      :items="options.templates"
-                      :loading="loading.templates"
-                    ></template-iso-selection>
+                      <a-collapse-panel :header="this.$t('ISOs')" key="isos">
+                        <template-iso-selection
+                          input-decorator="isoid"
+                          :items="options.isos"
+                          :loading="loading.isos"
+                        ></template-iso-selection>
+                      </a-collapse-panel>
+                    </a-collapse>
+                    <a-button style="margin-left: 8px" @click="handlePrev">
+                      Previous
+                    </a-button>
+                    <a-button type="primary" @click="handleNext" style="float: right">
+                      Next
+                    </a-button>
+                  </div>
+                </template>
+              </a-step>
+              <a-step
+                :title="this.$t('serviceOfferingId')"
+                :status="current > steps.COMPUTE ? 'finish' : ''">
+                <template slot="description">
+                  <div
+                    slot="description"
+                    v-if="stepMove > steps.TEMPLATE_ISO"
+                    :class="{ 'hidden': current !== steps.COMPUTE }">
+                    <compute-selection
+                      :compute-items="options.serviceOfferings"
+                      :value="serviceOffering ? serviceOffering.id : ''"
+                      :loading="loading.serviceOfferings"
+                      @select-compute-item="($event) => updateComputeOffering($event)"
+                      @handle-search-filter="($event) => handleSearchFilter('serviceOfferings', $event)"
+                    ></compute-selection>
+                    <a-button style="margin-left: 8px" @click="handlePrev">
+                      Previous
+                    </a-button>
+                    <a-button type="primary" @click="handleNext" style="float: right">
+                      Next
+                    </a-button>
+                  </div>
+                </template>
+              </a-step>
+              <a-step
+                :title="this.$t('diskOfferingId')"
+                :status="current > steps.DISK_OFFERING ? 'finish' : ''">
+                <template slot="description">
+                  <div
+                    v-if="stepMove > steps.COMPUTE"
+                    :class="{ 'hidden': current !== steps.DISK_OFFERING }">
+                    <disk-offering-selection
+                      :items="options.diskOfferings"
+                      :value="diskOffering ? diskOffering.id : ''"
+                      :loading="loading.diskOfferings"
+                      @select-disk-offering-item="($event) => updateDiskOffering($event)"
+                      @handle-search-filter="($event) => handleSearchFilter('diskOfferings', $event)"
+                    ></disk-offering-selection>
                     <disk-size-selection
-                      input-decorator="rootdisksize"
+                      v-if="diskOffering && diskOffering.iscustomized"
+                      input-decorator="size"
                     ></disk-size-selection>
-                  </a-collapse-panel>
-
-                  <a-collapse-panel :header="this.$t('ISOs')" key="isos">
-                    <template-iso-selection
-                      input-decorator="isoid"
-                      :items="options.isos"
-                      :loading="loading.isos"
-                    ></template-iso-selection>
-                  </a-collapse-panel>
-                </a-collapse>
-              </a-collapse-panel>
-
-              <a-collapse-panel :header="this.$t('serviceOfferingId')" key="compute">
-                <compute-selection
-                  :compute-items="options.serviceOfferings"
-                  :value="serviceOffering ? serviceOffering.id : ''"
-                  :loading="loading.serviceOfferings"
-                  @select-compute-item="($event) => updateComputeOffering($event)"
-                  @handle-search-filter="($event) => handleSearchFilter('serviceOfferings', $event)"
-                ></compute-selection>
-              </a-collapse-panel>
-
-              <a-collapse-panel :header="this.$t('diskOfferingId')" key="disk">
-                <disk-offering-selection
-                  :items="options.diskOfferings"
-                  :value="diskOffering ? diskOffering.id : ''"
-                  :loading="loading.diskOfferings"
-                  @select-disk-offering-item="($event) => updateDiskOffering($event)"
-                  @handle-search-filter="($event) => handleSearchFilter('diskOfferings', $event)"
-                ></disk-offering-selection>
-                <disk-size-selection
-                  v-if="diskOffering && diskOffering.iscustomized"
-                  input-decorator="size"
-                ></disk-size-selection>
-              </a-collapse-panel>
-
-              <a-collapse-panel :header="this.$t('Affinity Groups')" key="affinity">
-                <affinity-group-selection
-                  :items="options.affinityGroups"
-                  :value="affinityGroupIds"
-                  :loading="loading.affinityGroups"
-                  @select-affinity-group-item="($event) => updateAffinityGroups($event)"
-                  @handle-search-filter="($event) => handleSearchFilter('affinityGroups', $event)"
-                ></affinity-group-selection>
-              </a-collapse-panel>
-
-              <a-collapse-panel :header="this.$t('networks')" key="networks">
-                <a-collapse
-                  :accordion="false"
-                >
-                  <network-selection
-                    :items="options.networks"
-                    :value="networkOfferingIds"
-                    :loading="loading.networks"
-                    @select-network-item="($event) => updateNetworks($event)"
-                    @handle-search-filter="($event) => handleSearchFilter('networks', $event)"
-                  ></network-selection>
-                </a-collapse>
-
-                <network-configuration
-                  v-if="networks.length > 0"
-                  :items="networks"
-                ></network-configuration>
-              </a-collapse-panel>
-
-              <a-collapse-panel :header="this.$t('sshKeyPairs')" key="sshKeyPairs">
-                <ssh-key-pair-selection
-                  :items="options.sshKeyPairs"
-                  :value="sshKeyPair ? sshKeyPair.name : ''"
-                  :loading="loading.sshKeyPairs"
-                  @select-ssh-key-pair-item="($event) => updateSshKeyPairs($event)"
-                  @handle-search-filter="($event) => handleSearchFilter('sshKeyPairs', $event)"
-                ></ssh-key-pair-selection>
-              </a-collapse-panel>
-            </a-collapse>
-
-            <div class="card-footer">
+                    <a-button style="margin-left: 8px" @click="handlePrev">
+                      Previous
+                    </a-button>
+                    <a-button type="primary" @click="handleNext" style="float: right">
+                      Next
+                    </a-button>
+                  </div>
+                </template>
+              </a-step>
+              <a-step
+                :title="this.$t('Affinity Groups')"
+                :status="current > steps.AFFINITY_GROUP ? 'finish' : ''">
+                <template slot="description">
+                  <div
+                    v-if="stepMove > steps.DISK_OFFERING"
+                    :class="{ 'hidden': current !== steps.AFFINITY_GROUP }">
+                    <affinity-group-selection
+                      :items="options.affinityGroups"
+                      :value="affinityGroupIds"
+                      :loading="loading.affinityGroups"
+                      @select-affinity-group-item="($event) => updateAffinityGroups($event)"
+                      @handle-search-filter="($event) => handleSearchFilter('affinityGroups', $event)"
+                    ></affinity-group-selection>
+                    <a-button style="margin-left: 8px" @click="handlePrev">
+                      Previous
+                    </a-button>
+                    <a-button type="primary" @click="handleNext" style="float: right">
+                      Next
+                    </a-button>
+                  </div>
+                </template>
+              </a-step>
+              <a-step
+                :title="this.$t('networks')"
+                :status="current > steps.NETWORK ? 'finish' : ''">
+                <template slot="description">
+                  <div
+                    v-if="stepMove > steps.AFFINITY_GROUP"
+                    :class="{ 'hidden': current !== steps.NETWORK }">
+                    <network-selection
+                      :items="options.networks"
+                      :value="networkOfferingIds"
+                      :loading="loading.networks"
+                      :zoneId="zoneId"
+                      @select-network-item="($event) => updateNetworks($event)"
+                      @handle-search-filter="($event) => handleSearchFilter('networks', $event)"
+                    ></network-selection>
+                    <network-configuration
+                      v-if="networks.length > 0"
+                      :items="networks"
+                    ></network-configuration>
+                    <a-button style="margin-left: 8px" @click="handlePrev">
+                      Previous
+                    </a-button>
+                    <a-button type="primary" @click="handleNext" style="float: right">
+                      Next
+                    </a-button>
+                  </div>
+                </template>
+              </a-step>
+              <a-step
+                :title="this.$t('sshKeyPairs')"
+                :status="current > steps.SSH_KEY_PAIR ? 'finish' : ''">
+                <template slot="description">
+                  <div
+                    v-if="stepMove > steps.NETWORK"
+                    :class="{ 'hidden': current !== steps.SSH_KEY_PAIR }">
+                    <ssh-key-pair-selection
+                      :items="options.sshKeyPairs"
+                      :value="sshKeyPair ? sshKeyPair.name : ''"
+                      :loading="loading.sshKeyPairs"
+                      @select-ssh-key-pair-item="($event) => updateSshKeyPairs($event)"
+                      @handle-search-filter="($event) => handleSearchFilter('sshKeyPairs', $event)"
+                    />
+                    <a-button style="margin-left: 8px" @click="handlePrev">
+                      Previous
+                    </a-button>
+                    <a-button type="primary" @click="handleNext" style="float: right">
+                      Next
+                    </a-button>
+                  </div>
+                </template>
+              </a-step>
+            </a-steps>
+            <div class="card-footer" v-if="current > steps.SSH_KEY_PAIR">
               <!-- ToDo extract as component -->
-              <a-button @click="() => this.$router.back()">{{ this.$t('cancel') }}</a-button>
-              <a-button type="primary" @click="handleSubmit">{{ this.$t('submit') }}</a-button>
+              <a-button @click="() => this.$router.back()" :loading="loading.deploy">
+                {{ this.$t('cancel') }}
+              </a-button>
+              <a-button type="primary" @click="handleSubmit" :loading="loading.deploy">
+                <a-icon type="poweroff" />
+                {{ this.$t('Launch VM') }}
+              </a-button>
             </div>
           </a-form>
         </a-card>
@@ -211,6 +294,8 @@ export default {
   data () {
     return {
       zoneId: '',
+      current: 0,
+      stepMove: 0,
       vm: {},
       options: {
         templates: [],
@@ -223,6 +308,7 @@ export default {
         sshKeyPairs: []
       },
       loading: {
+        deploy: false,
         templates: false,
         isos: false,
         serviceOfferings: false,
@@ -246,7 +332,17 @@ export default {
         'selfexecutable',
         'sharedexecutable'
       ],
-      templateIsoKey: ''
+      templateIsoKey: '',
+      steps: {
+        BASIC: 0,
+        TEMPLATE_ISO: 1,
+        COMPUTE: 2,
+        DISK_OFFERING: 3,
+        AFFINITY_GROUP: 4,
+        NETWORK: 5,
+        SSH_KEY_PAIR: 6
+      },
+      initDataConfig: {}
     }
   },
   computed: {
@@ -341,6 +437,11 @@ export default {
     }
   },
   watch: {
+    '$route' (to, from) {
+      if (to.name === 'deployVirtualMachine') {
+        this.resetData()
+      }
+    },
     instanceConfig (instanceConfig) {
       this.template = _.find(this.options.templates, (option) => option.id === instanceConfig.templateid)
       this.iso = _.find(this.options.isos, (option) => option.id === instanceConfig.isoid)
@@ -412,12 +513,22 @@ export default {
     this.form.getFieldDecorator('keypair', { initialValue: undefined, preserve: true })
   },
   created () {
-    _.each(this.params, this.fetchOptions)
-    Vue.nextTick().then(() => {
-      this.instanceConfig = this.form.getFieldsValue() // ToDo: maybe initialize with some other defaults
-    })
+    this.fetchData()
   },
   methods: {
+    fetchData () {
+      this.fetchOptions(this.params.zones, 'zones')
+      Vue.nextTick().then(() => {
+        this.instanceConfig = this.form.getFieldsValue() // ToDo: maybe initialize with some other defaults
+      })
+    },
+    resetData () {
+      this.vm = {}
+      this.current = 0
+      this.stepMove = 0
+      this.form.resetFields()
+      this.fetchData()
+    },
     updateComputeOffering (id) {
       this.form.setFieldsValue({
         computeofferingid: id
@@ -582,25 +693,73 @@ export default {
         this.loading.isos = false
       })
     },
-    onTemplatesIsosCollapseChange (key) {
-      this.templateIsoKey = key
-      if (key === 'isos' && this.options.isos.length === 0) {
-        this.fetchAllIsos()
-      }
-    },
     onSelectZoneId (value) {
+      this.current = 0
       this.zoneId = value
-      this.$nextTick(() => {
-        if (this.options.isos.length !== 0) {
-          this.fetchAllIsos()
-        }
-        this.fetchOptions(this.params.templates, 'templates')
-        this.fetchOptions(this.params.networks, 'networks')
-      })
     },
     handleSearchFilter (name, options) {
       this.params[name].options = { ...options }
       this.fetchOptions(this.params[name], name)
+    },
+    handleNext () {
+      switch (this.current) {
+        case this.steps.BASIC:
+          this.validateFormFields('zoneid').then((flag) => {
+            if (flag) {
+              this.current++
+              this.stepMove = this.current
+              this.fetchOptions(this.params.templates, 'templates')
+              this.fetchAllIsos()
+            }
+          })
+          break
+        case this.steps.TEMPLATE_ISO:
+          this.validateFormFields('templateid').then((flag) => {
+            if (flag) {
+              this.current++
+              this.stepMove = this.current
+              this.fetchOptions(this.params.serviceOfferings, 'serviceOfferings')
+            }
+          })
+          break
+        case this.steps.COMPUTE:
+          this.current++
+          this.stepMove = this.current
+          this.fetchOptions(this.params.diskOfferings, 'diskOfferings')
+          break
+        case this.steps.DISK_OFFERING:
+          this.current++
+          this.stepMove = this.current
+          this.fetchOptions(this.params.affinityGroups, 'affinityGroups')
+          break
+        case this.steps.AFFINITY_GROUP:
+          this.current++
+          this.stepMove = this.current
+          this.fetchOptions(this.params.networks, 'networks')
+          break
+        case this.steps.NETWORK:
+          this.current++
+          this.stepMove = this.current
+          this.fetchOptions(this.params.sshKeyPairs, 'sshKeyPairs')
+          break
+        default:
+          this.current++
+          this.stepMove = this.current
+          break
+      }
+    },
+    handlePrev () {
+      this.current--
+    },
+    validateFormFields (field) {
+      return new Promise((resolve) => {
+        this.form.validateFields([field], (err, values) => {
+          if (!err) {
+            resolve(true)
+          }
+          resolve(false)
+        })
+      })
     },
     createNetworks (zoneId) {
       return new Promise((resolve, reject) => {
@@ -673,5 +832,9 @@ export default {
     border: 1px solid @border-color-split;
     border-radius: @border-radius-base !important;
     margin: 0 0 1.2rem;
+  }
+
+  .hidden {
+    display: none;
   }
 </style>
