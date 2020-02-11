@@ -16,22 +16,24 @@
 // under the License.
 
 <template>
-  <div>
+  <div :loading="loading">
     <a-form :form="form" @submit="submitCreateVolume" layout="vertical" class="form">
-      <a-form-item :label="$t('Name')">
+      <a-form-item class="form__item" :label="$t('Name')">
         <a-input
+          class="form__input"
           v-decorator="['name', {
             rules: [{ required: true, message: 'Please enter input' }]
           }]"
           :placeholder="$t('Volume Name')"
         >></a-input>
       </a-form-item>
-      <a-form-item :label="$t('Zone')">
+      <a-form-item class="form__item" :label="$t('Zone')">
         <a-select
-          style="width: 100%;"
+          class="form__input"
           @change="val => fetchDiskOfferings(val)"
           v-decorator="['zoneid', {
             rules: [{ required: true, message: 'Please select an option' }]}]"
+          :loading="loading"
           :placeholder="$t('Select Zone')"
         >
           <a-select-option
@@ -42,11 +44,12 @@
         </a-select>
       </a-form-item>
 
-      <a-form-item :label="$t('Offering')">
+      <a-form-item class="form__item" :label="$t('Offering')">
         <a-select
-          style="width: 100%;"
+          class="form__input"
           v-decorator="['diskofferingid', {
             rules: [{ required: true, message: 'Please select an option' }]}]"
+          :loading="loading"
           :placeholder="$t('Offering Type')"
           @change="val => isCustomDiskOffering = val == customDiskOfferingId"
         >
@@ -58,20 +61,21 @@
         </a-select>
       </a-form-item>
 
-      <template v-if="isCustomDiskOffering">
-        <a-form-item :label="$t('Size')">
-          <a-input
-            type="number"
+      <span v-if="isCustomDiskOffering">
+        <a-form-item class="form__item" :label="$t('Size (GB)')">
+          <a-input-number
+            class="form__input"
+            style="width: 100%;"
             v-decorator="['size', {
               rules: [{ required: true, message: 'Please enter a number' }]}]"
             :placeholder="$t('Enter Size')"
-          ></a-input>
+          ></a-input-number>
         </a-form-item>
-      </template>
+      </span>
 
       <a-divider />
 
-      <div class="actions">
+      <div class="form__footer">
         <a-button @click="closeModal">{{ $t('Cancel') }}</a-button>
         <a-button type="primary" @click="submitCreateVolume">{{ $t('OK') }}</a-button>
       </div>
@@ -112,7 +116,7 @@ export default {
       this.loading = true
       api('listZones')
         .then(json => {
-          this.zones = json.listzonesresponse.zone
+          this.zones = json.listzonesresponse.zone || []
         })
         .finally(() => {
           this.loading = false
@@ -120,11 +124,12 @@ export default {
       this.fetchDiskOfferings(null)
     },
     fetchDiskOfferings (zoneid) {
+      this.loading = true
       api('listDiskOfferings', {
         zoneId: zoneid
       })
         .then(json => {
-          this.diskOfferings = json.listdiskofferingsresponse.diskoffering
+          this.diskOfferings = json.listdiskofferingsresponse.diskoffering || []
           for (var diskOffering of this.diskOfferings) {
             if (diskOffering.name === 'Custom') {
               this.customDiskOfferingId = diskOffering.id
@@ -186,14 +191,28 @@ export default {
 
 <style lang="less" scoped>
 .form {
+
+  width: 400px;
+
+  @media (max-width: 800px) {
+    width: 95vw;
+  }
+
   &__input {
     margin-right: 10px;
   }
 
-  &__label {
-    margin-bottom: 5px;
-    font-weight: bold;
-  }
+  &__footer {
+      display: flex;
+      justify-content: flex-end;
+      padding-right: 20px;
+
+      button {
+        &:not(:last-child) {
+          padding-right: 20px;
+        }
+      }
+    }
 
   &__item {
     display: flex;
