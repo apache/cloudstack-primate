@@ -16,7 +16,7 @@
 // under the License.
 
 <template>
-  <div>
+  <div class="form">
     <a-steps :current="currentStep" labelPlacement="vertical" :onChange="onChange()">
       <a-step v-for="(item, index) in steps" :key="item.title" :title="item.title" @click="stepClicked(index)"></a-step>
     </a-steps>
@@ -127,7 +127,16 @@ export default {
   }
 }
 </script>
-<style scoped>
+
+<style scoped lang="scss">
+
+  .form {
+    width: 95vw;
+    @media (min-width: 1000px) {
+      width: 800px;
+    }
+  }
+
   .steps-content {
     border: 1px dashed #e9e9e9;
     border-radius: 6px;

@@ -171,15 +171,15 @@ export default {
     this.form = this.$form.createForm(this, {
       onFieldsChange: (_, changedFields) => {
         if (this.networkOfferings && changedFields.networkOfferingId) {
-          changedFields['networkOfferings'] = this.networkofferings
-          changedFields['networkOfferingSelected'] = this.networkOfferings[changedFields.networkOfferingId.value]
+          changedFields.networkOfferings = this.networkofferings
+          changedFields.networkOfferingSelected = this.networkOfferings[changedFields.networkOfferingId.value]
         }
         if (this.hypervisors && changedFields.hypervisor) {
-          changedFields['hypervisors'] = this.hypervisors
+          changedFields.hypervisors = this.hypervisors
           this.availableNetworkOfferings = this.getAvailableNetworkOfferings(changedFields.hypervisor)
         }
         if (this.domains && changedFields.domain) {
-          changedFields['domains'] = this.domains
+          changedFields.domains = this.domains
         }
         this.$emit('fieldsChanged', changedFields)
       }
@@ -187,33 +187,33 @@ export default {
   },
   mounted () {
     this.form.setFieldsValue({
-      'name': this.name,
-      'ipv4Dns1': this.ipv4Dns1,
-      'ipv4Dns2': this.ipv4Dns2,
-      'ipv6Dns1': this.ipv6Dns1,
-      'ipv6Dns2': this.ipv6Dns2,
-      'internalDns1': this.internalDns1,
-      'internalDns2': this.internalDns2,
-      'hypervisor': this.currentHypervisor,
-      'networkOfferingId': this.currentNetworkOfferingId,
-      'networkDomain': this.networkDomain,
-      'guestcidraddress': this.guestcidraddress,
-      'isDedicated': this.isDedicated,
-      'domain': this.domain,
-      'account': this.account,
-      'localstorageenabled': this.localstorageenabled,
-      'localstorageenabledforsystemvm': this.localstorageenabledforsystemvm
+      name: this.name,
+      ipv4Dns1: this.ipv4Dns1,
+      ipv4Dns2: this.ipv4Dns2,
+      ipv6Dns1: this.ipv6Dns1,
+      ipv6Dns2: this.ipv6Dns2,
+      internalDns1: this.internalDns1,
+      internalDns2: this.internalDns2,
+      hypervisor: this.currentHypervisor,
+      networkOfferingId: this.currentNetworkOfferingId,
+      networkDomain: this.networkDomain,
+      guestcidraddress: this.guestcidraddress,
+      isDedicated: this.isDedicated,
+      domain: this.domain,
+      account: this.account,
+      localstorageenabled: this.localstorageenabled,
+      localstorageenabledforsystemvm: this.localstorageenabledforsystemvm
     })
 
     var cForm = this.form
     api('listHypervisors').then(json => {
       this.hypervisors = json.listhypervisorsresponse.hypervisor
       cForm.setFieldsValue({
-        'hypervisor': this.currentHypervisor
+        hypervisor: this.currentHypervisor
       })
     })
 
-    api('listNetworkOfferings', { 'state': 'Enabled', 'guestiptype': 'Shared' }).then(json => {
+    api('listNetworkOfferings', { state: 'Enabled', guestiptype: 'Shared' }).then(json => {
       this.networkOfferings = {}
       json.listnetworkofferingsresponse.networkoffering.forEach(offering => {
         this.setupNetworkOfferingAdditionalFlags(offering)
@@ -223,17 +223,17 @@ export default {
       this.availableNetworkOfferings = this.getAvailableNetworkOfferings(this.currentHypervisor)
 
       cForm.setFieldsValue({
-        'networkOfferingId': this.currentNetworkOfferingId
+        networkOfferingId: this.currentNetworkOfferingId
       })
     })
 
-    api('listDomains', { 'listAll': true }).then(json => {
+    api('listDomains', { listAll: true }).then(json => {
       this.domains = {}
       json.listdomainsresponse.domain.forEach(dom => {
         this.domains[dom.id] = dom
       })
       cForm.setFieldsValue({
-        'domain': this.domain
+        domain: this.domain
       })
     })
   },

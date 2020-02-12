@@ -123,12 +123,12 @@ export default {
         }
       ],
       publicTrafficDescription: {
-        'advanced': 'Public traffic is generated when VMs in the cloud access the internet. Publicly-accessible IPs must be allocated for this purpose. End users can use the CloudStack UI to acquire these IPs to implement NAT between their guest network and their public network.<br/><br/>Provide at least one range of IP addresses for internet traffic.',
-        'basic': 'Public traffic is generated when VMs in the cloud access the Internet or provide services to clients over the Internet. Publicly accessible IPs must be allocated for this purpose. When a instance is created, an IP from this set of Public IPs will be allocated to the instance in addition to the guest IP address. Static 1-1 NAT will be set up automatically between the public IP and the guest IP. End users can also use the CloudStack UI to acquire additional IPs to implement static NAT between their instances and the public IP.'
+        advanced: 'Public traffic is generated when VMs in the cloud access the internet. Publicly-accessible IPs must be allocated for this purpose. End users can use the CloudStack UI to acquire these IPs to implement NAT between their guest network and their public network.<br/><br/>Provide at least one range of IP addresses for internet traffic.',
+        basic: 'Public traffic is generated when VMs in the cloud access the Internet or provide services to clients over the Internet. Publicly accessible IPs must be allocated for this purpose. When a instance is created, an IP from this set of Public IPs will be allocated to the instance in addition to the guest IP address. Static 1-1 NAT will be set up automatically between the public IP and the guest IP. End users can also use the CloudStack UI to acquire additional IPs to implement static NAT between their instances and the public IP.'
       },
       guestTrafficDescription: {
-        'advanced': 'Guest network traffic is communication between end-user virtual machines. Specify a range of VLAN IDs to carry guest traffic for each physical network.',
-        'basic': 'Guest network traffic is communication between end-user virtual machines. Specify a range of IP addresses that CloudStack can assign to guest VMs. Make sure this range does not overlap the reserved system IP range.'
+        advanced: 'Guest network traffic is communication between end-user virtual machines. Specify a range of VLAN IDs to carry guest traffic for each physical network.',
+        basic: 'Guest network traffic is communication between end-user virtual machines. Specify a range of IP addresses that CloudStack can assign to guest VMs. Make sure this range does not overlap the reserved system IP range.'
       },
       podSetupDescription: 'Each zone must contain in one or more pods, and we will add the first pod now. A pod contains hosts and primary storage servers, which you will add in a later step. First, configure a range of reserved IP addresses for CloudStack\'s internal management traffic. The reserved IP range must be unique for each zone in the cloud.',
       storageTrafficDescription: 'Traffic between CloudStack\'s internal resources, including any components that communicate with the Management Server, such as hosts and CloudStack system VMs. Please configure storage traffic here.',

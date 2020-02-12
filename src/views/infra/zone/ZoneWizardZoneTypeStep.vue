@@ -69,8 +69,8 @@ export default {
       wrapperCol: { span: 14 }
     },
     zoneDescription: {
-      'Basic': 'Basic zone provides a single network where each VM instance is assigned an IP directly from the network. Guest isolation can be provided through layer-3 means such as security groups (IP address source filtering).',
-      'Advanced': 'Advanced zone is for more sophisticated network topologies. This network model provides the most flexibility in defining guest networks and providing custom network offerings such as firewall, VPN, or load balancer support.'
+      Basic: 'Basic zone provides a single network where each VM instance is assigned an IP directly from the network. Guest isolation can be provided through layer-3 means such as security groups (IP address source filtering).',
+      Advanced: 'Advanced zone is for more sophisticated network topologies. This network model provides the most flexibility in defining guest networks and providing custom network offerings such as firewall, VPN, or load balancer support.'
     }
   }),
   beforeCreate () {
@@ -82,8 +82,8 @@ export default {
   },
   mounted () {
     this.form.setFieldsValue({
-      'zoneType': this.zoneType,
-      'securityGroupsEnabled': this.securityGroupsEnabled
+      zoneType: this.zoneType,
+      securityGroupsEnabled: this.securityGroupsEnabled
     })
   },
   computed: {

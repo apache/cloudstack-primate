@@ -69,7 +69,6 @@
           @cancel="closeAction"
           :confirmLoading="currentAction.loading"
           :footer="null"
-          width="700px"
           centered
           width="auto"
         >

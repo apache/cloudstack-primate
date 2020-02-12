@@ -166,15 +166,15 @@ export default {
         }
       ],
       zoneDescription: {
-        'Basic': 'When adding a basic zone, you can set up one physical network, which corresponds to a NIC on the hypervisor. The network carries several types of traffic.',
-        'Advanced': 'When adding an advanced zone, you need to set up one or more physical networks. Each network corresponds to a NIC on the hypervisor. Each physical network can carry one or more types of traffic, with certain restrictions on how they may be combined.'
+        Basic: 'When adding a basic zone, you can set up one physical network, which corresponds to a NIC on the hypervisor. The network carries several types of traffic.',
+        Advanced: 'When adding an advanced zone, you need to set up one or more physical networks. Each network corresponds to a NIC on the hypervisor. Each physical network can carry one or more types of traffic, with certain restrictions on how they may be combined.'
       },
       hasUnusedPhysicalNetwork: false,
       trafficColors: {
-        'public': 'orange',
-        'guest': 'green',
-        'management': 'geekblue',
-        'storage': 'red'
+        public: 'orange',
+        guest: 'green',
+        management: 'geekblue',
+        storage: 'red'
       },
       showEditTraffic: false,
       trafficInEdit: null,
@@ -359,7 +359,7 @@ export default {
     },
     emitPhysicalNetworks () {
       if (this.physicalNetworks) {
-        this.$emit('fieldsChanged', { 'physicalNetworks': this.physicalNetworks })
+        this.$emit('fieldsChanged', { physicalNetworks: this.physicalNetworks })
       }
     }
   }
