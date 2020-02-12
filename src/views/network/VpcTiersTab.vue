@@ -63,7 +63,8 @@
                 :columns="internalLbCols"
                 :dataSource="internalLB[network.id]"
                 :rowKey="item => item.id"
-                :pagination="false">
+                :pagination="false"
+                :loading="fetchLoading">
                 <template slot="name" slot-scope="text, item">
                   <router-link
                     :to="{ path: '/ilb/'+item.id}">{{ item.name }}
@@ -91,7 +92,8 @@
                 :columns="LBPublicIPCols"
                 :dataSource="LBPublicIPs[network.id]"
                 :rowKey="item => item.id"
-                :pagination="false">
+                :pagination="false"
+                :loading="fetchLoading">
                 <template slot="name" slot-scope="text, item">
                   <router-link
                     :to="{ path: '/publicip/'+item.id}">{{ item.name }}
@@ -118,7 +120,8 @@
                 :columns="StaticNatCols"
                 :dataSource="staticNats[network.id]"
                 :rowKey="item => item.id"
-                :pagination="false">
+                :pagination="false"
+                :loading="fetchLoading">
                 <template slot="name" slot-scope="text, item">
                   <router-link
                     :to="{ path: '/publicip/'+item.id}">{{ item.name }}
@@ -145,13 +148,20 @@
                 :columns="vmCols"
                 :dataSource="vms[network.id]"
                 :rowKey="item => item.id"
-                :pagination="false">
+                :pagination="false"
+                :loading="fetchLoading">
                 <template slot="name" slot-scope="text, item">
                   <router-link
                     :to="{ path: '/vm/'+item.id}">{{ item.name }}
                   </router-link>
                 </template>
+                <template slot="ip" slot-scope="text, item">
+                  <div v-for="nic in item.nic" :key="nic.id">
+                    {{ nic.isdefault === true ? nic.ipaddress : '' }}
+                  </div>
+                </template>
               </a-table>
+              <a-divider/>
               <a-pagination
                 class="row-element pagination"
                 size="small"
@@ -358,7 +368,7 @@ export default {
         },
         {
           title: this.$t('ip'),
-          dataIndex: 'nic[0].ipaddress'
+          scopedSlots: { customRender: 'ip' }
         }
       ],
       customStyle: 'border-radius: 4px;margin-bottom: -5px;',
@@ -451,6 +461,7 @@ export default {
       })
     },
     fetchLoadBalancers (id) {
+      this.fetchLoading = true
       api('listLoadBalancers', {
         networkid: id,
         page: this.page,
@@ -458,6 +469,8 @@ export default {
       }).then(json => {
         this.internalLB[id] = json.listloadbalancersresponse.loadbalancer || []
         this.itemCounts.internalLB[id] = json.listloadbalancersresponse.count
+      }).finally(() => {
+        this.fetchLoading = false
       })
     },
     fetchLBPublicIPs (id, op) {
@@ -470,6 +483,7 @@ export default {
         variableKey = 'isstaticnat'
         variableValue = true
       }
+      this.fetchLoading = true
       api('listPublicIpAddresses', {
         listAll: true,
         [variableKey]: variableValue,
@@ -483,9 +497,12 @@ export default {
           this.staticNats[id] = json.listpublicipaddressesresponse.publicipaddress || []
         }
         this.itemCounts.publicIps[id] = json.listpublicipaddressesresponse.count
+      }).finally(() => {
+        this.fetchLoading = false
       })
     },
     fetchVMs (id) {
+      this.fetchLoading = true
       api('listVirtualMachines', {
         listAll: true,
         vpcid: this.resource.id,
@@ -495,6 +512,8 @@ export default {
       }).then(json => {
         this.vms[id] = json.listvirtualmachinesresponse.virtualmachine || []
         this.itemCounts.vms[id] = json.listvirtualmachinesresponse.count
+      }).finally(() => {
+        this.fetchLoading = false
       })
     },
     closeModal () {
@@ -545,7 +564,6 @@ export default {
             duration: 0
           })
         }).finally(() => {
-          this.fetchLoading = false
           this.fetchData()
         })
       })
@@ -593,7 +611,6 @@ export default {
           console.error(error)
           this.$message.error('Failed to create Internal LB')
         }).finally(() => {
-          this.fetchLoading = false
           this.modalLoading = false
           this.showAddInternalLB = false
           this.fetchData()

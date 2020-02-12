@@ -23,6 +23,7 @@
       :columns="listVMCols"
       :dataSource="vms"
       :rowKey="item => item.id"
+      :loading="fetchLoading"
       :pagination="false"
     >
       <template slot="name" slot-scope="text, record">
@@ -88,6 +89,7 @@ export default {
       params: {},
       assignedVMs: [],
       index: 0,
+      fetchLoading: false,
       listVMCols: [
         {
           title: this.$t('name'),
@@ -134,16 +136,20 @@ export default {
       this.fetchVirtualMachines()
     },
     fetchLoadBalancers () {
+      this.fetchLoading = true
       api('listLoadBalancers', {
         id: this.resource.id
       }).then(response => {
         this.assignedVMs = response.listloadbalancersresponse.loadbalancer[0].loadbalancerinstance || []
+      }).finally(() => {
+        this.fetchLoading = false
       })
     },
     differenceBy (array1, array2, key) {
       return array1.filter(a => !array2.some(b => b[key] === a[key]))
     },
     fetchVirtualMachines () {
+      this.fetchLoading = true
       api('listVirtualMachines', {
         listAll: true,
         networkid: this.resource.networkid,
@@ -153,6 +159,8 @@ export default {
         var vms = response.listvirtualmachinesresponse.virtualmachine || []
         this.vms = this.differenceBy(vms, this.assignedVMs, 'id')
         this.vmCounts = this.vms.length
+      }).finally(() => {
+        this.fetchLoading = false
       })
     },
     vmIpSelected (vm, nic) {
@@ -168,6 +176,7 @@ export default {
     },
     handleSubmit () {
       this.params.id = this.resource.id
+      this.fetchLoading = true
       api('assignToLoadBalancerRule', this.params).then(response => {
         this.$pollJob({
           jobId: response.assigntoloadbalancerruleresponse.jobid,
@@ -177,6 +186,7 @@ export default {
           },
           errorMessage: `Failed to assign VMs to ${this.resource.name}`,
           errorMethod: () => {
+            this.fetchLoading = false
             this.fetchData()
           },
           loadingMessage: `Assigning VMs to ${this.resource.name}`,
@@ -190,6 +200,7 @@ export default {
           duration: 0
         })
       }).finally(() => {
+        this.fetchLoading = false
         this.closeModal()
       })
     },
