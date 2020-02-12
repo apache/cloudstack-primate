@@ -261,6 +261,7 @@ export default {
       this.listStorageProviders()
     },
     getInfraData () {
+      this.loading = true
       api('listZones').then(json => {
         this.zones = json.listzonesresponse.zone || []
         this.zoneSelected = this.zones[0].id || ''
@@ -290,22 +291,30 @@ export default {
             })
           })
         })
+      }).finally(() => {
+        this.loading = false
       })
     },
     listStorageProviders () {
+      this.loading = true
       api('listStorageProviders', { type: 'primary' }).then(json => {
         var providers = json.liststorageprovidersresponse.dataStoreProvider || []
         for (var i = 0; i < providers.length; i++) {
           this.providers.push(providers[i].name)
         }
+      }).finally(() => {
+        this.loading = false
       })
     },
     listStorageTags () {
+      this.loading = true
       api('listStorageTags').then(json => {
         var storagetags = json.liststoragetagsresponse.storagetag || []
         for (var i = 0; i < storagetags.length; i++) {
           this.storagetags.push(storagetags[i].name)
         }
+      }).finally(() => {
+        this.loading = false
       })
     },
     fetchHypervisor (value) {
@@ -551,6 +560,7 @@ export default {
         }
         var storagetags = this.storagetags.map(tag => tag).join(',')
         params.storagetags = storagetags
+        this.loading = true
         api('createStoragePool', params).then(json => {
           this.$notification.success({
             message: this.$t('label.add.primary.storage'),
