@@ -78,10 +78,14 @@ export default {
     rowSelection () {
       return {
         type: 'radio',
-        selectedRowKeys: this.selectedRowKeys,
         onSelect: (row) => {
           this.$emit('select-default-network-item', row.key)
-        }
+        },
+        getCheckboxProps: record => ({
+          props: {
+            defaultChecked: (record.name === this.items[0].name)
+          }
+        })
       }
     }
   },

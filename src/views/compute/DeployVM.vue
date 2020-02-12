@@ -25,10 +25,10 @@
             @submit="handleSubmit"
             layout="vertical"
           >
-            <a-steps direction="vertical" size="small" :current="current">
-              <a-step :title="this.$t('BasicSetup')" :status="current > steps.BASIC ? 'finish' : ''">
+            <a-steps direction="vertical" size="small">
+              <a-step :title="this.$t('BasicSetup')" status="process">
                 <template slot="description">
-                  <div :class="{ 'hidden': current !== steps.BASIC }">
+                  <div style="margin-top: 15px">
                     <a-form-item :label="this.$t('name')">
                       <a-input
                         v-decorator="['name']"
@@ -70,26 +70,18 @@
                         :loading="loading.hosts"
                       ></a-select>
                     </a-form-item>
-                    <a-button
-                      v-if="current < 6"
-                      type="primary"
-                      @click="handleNext"
-                      style="float: right">
-                      Next
-                    </a-button>
                   </div>
                 </template>
               </a-step>
               <a-step
                 :title="this.$t('templateIso')"
-                :status="current > steps.TEMPLATE_ISO ? 'finish' : ''">
+                :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
-                  <div
-                    v-if="stepMove > steps.BASIC"
-                    :class="{ 'hidden': current !== steps.TEMPLATE_ISO }">
+                  <div v-if="zoneSelected">
                     <a-collapse
                       :accordion="true"
                       defaultActiveKey="templates"
+                      @change="onTemplatesIsosCollapseChange"
                     >
                       <a-collapse-panel :header="this.$t('Templates')" key="templates">
                         <template-iso-selection
@@ -108,23 +100,14 @@
                         ></template-iso-selection>
                       </a-collapse-panel>
                     </a-collapse>
-                    <a-button style="margin-left: 8px" @click="handlePrev">
-                      Previous
-                    </a-button>
-                    <a-button type="primary" @click="handleNext" style="float: right">
-                      Next
-                    </a-button>
                   </div>
                 </template>
               </a-step>
               <a-step
                 :title="this.$t('serviceOfferingId')"
-                :status="current > steps.COMPUTE ? 'finish' : ''">
+                :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
-                  <div
-                    slot="description"
-                    v-if="stepMove > steps.TEMPLATE_ISO"
-                    :class="{ 'hidden': current !== steps.COMPUTE }">
+                  <div v-if="zoneSelected">
                     <compute-selection
                       :compute-items="options.serviceOfferings"
                       :value="serviceOffering ? serviceOffering.id : ''"
@@ -132,22 +115,14 @@
                       @select-compute-item="($event) => updateComputeOffering($event)"
                       @handle-search-filter="($event) => handleSearchFilter('serviceOfferings', $event)"
                     ></compute-selection>
-                    <a-button style="margin-left: 8px" @click="handlePrev">
-                      Previous
-                    </a-button>
-                    <a-button type="primary" @click="handleNext" style="float: right">
-                      Next
-                    </a-button>
                   </div>
                 </template>
               </a-step>
               <a-step
                 :title="this.$t('diskOfferingId')"
-                :status="current > steps.DISK_OFFERING ? 'finish' : ''">
+                :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
-                  <div
-                    v-if="stepMove > steps.COMPUTE"
-                    :class="{ 'hidden': current !== steps.DISK_OFFERING }">
+                  <div v-if="zoneSelected">
                     <disk-offering-selection
                       :items="options.diskOfferings"
                       :value="diskOffering ? diskOffering.id : ''"
@@ -159,22 +134,14 @@
                       v-if="diskOffering && diskOffering.iscustomized"
                       input-decorator="size"
                     ></disk-size-selection>
-                    <a-button style="margin-left: 8px" @click="handlePrev">
-                      Previous
-                    </a-button>
-                    <a-button type="primary" @click="handleNext" style="float: right">
-                      Next
-                    </a-button>
                   </div>
                 </template>
               </a-step>
               <a-step
                 :title="this.$t('Affinity Groups')"
-                :status="current > steps.AFFINITY_GROUP ? 'finish' : ''">
+                :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
-                  <div
-                    v-if="stepMove > steps.DISK_OFFERING"
-                    :class="{ 'hidden': current !== steps.AFFINITY_GROUP }">
+                  <div v-if="zoneSelected">
                     <affinity-group-selection
                       :items="options.affinityGroups"
                       :value="affinityGroupIds"
@@ -182,22 +149,14 @@
                       @select-affinity-group-item="($event) => updateAffinityGroups($event)"
                       @handle-search-filter="($event) => handleSearchFilter('affinityGroups', $event)"
                     ></affinity-group-selection>
-                    <a-button style="margin-left: 8px" @click="handlePrev">
-                      Previous
-                    </a-button>
-                    <a-button type="primary" @click="handleNext" style="float: right">
-                      Next
-                    </a-button>
                   </div>
                 </template>
               </a-step>
               <a-step
                 :title="this.$t('networks')"
-                :status="current > steps.NETWORK ? 'finish' : ''">
+                :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
-                  <div
-                    v-if="stepMove > steps.AFFINITY_GROUP"
-                    :class="{ 'hidden': current !== steps.NETWORK }">
+                  <div v-if="zoneSelected">
                     <network-selection
                       :items="options.networks"
                       :value="networkOfferingIds"
@@ -210,22 +169,14 @@
                       v-if="networks.length > 0"
                       :items="networks"
                     ></network-configuration>
-                    <a-button style="margin-left: 8px" @click="handlePrev">
-                      Previous
-                    </a-button>
-                    <a-button type="primary" @click="handleNext" style="float: right">
-                      Next
-                    </a-button>
                   </div>
                 </template>
               </a-step>
               <a-step
                 :title="this.$t('sshKeyPairs')"
-                :status="current > steps.SSH_KEY_PAIR ? 'finish' : ''">
+                :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
-                  <div
-                    v-if="stepMove > steps.NETWORK"
-                    :class="{ 'hidden': current !== steps.SSH_KEY_PAIR }">
+                  <div v-if="zoneSelected">
                     <ssh-key-pair-selection
                       :items="options.sshKeyPairs"
                       :value="sshKeyPair ? sshKeyPair.name : ''"
@@ -233,17 +184,11 @@
                       @select-ssh-key-pair-item="($event) => updateSshKeyPairs($event)"
                       @handle-search-filter="($event) => handleSearchFilter('sshKeyPairs', $event)"
                     />
-                    <a-button style="margin-left: 8px" @click="handlePrev">
-                      Previous
-                    </a-button>
-                    <a-button type="primary" @click="handleNext" style="float: right">
-                      Next
-                    </a-button>
                   </div>
                 </template>
               </a-step>
             </a-steps>
-            <div class="card-footer" v-if="current > steps.SSH_KEY_PAIR">
+            <div class="card-footer">
               <!-- ToDo extract as component -->
               <a-button @click="() => this.$router.back()" :loading="loading.deploy">
                 {{ this.$t('cancel') }}
@@ -318,8 +263,7 @@ export default {
   data () {
     return {
       zoneId: '',
-      current: 0,
-      stepMove: 0,
+      zoneSelected: false,
       vm: {},
       options: {
         templates: [],
@@ -580,10 +524,10 @@ export default {
         this.vm = this.instanceConfig
       }
     })
-    this.form.getFieldDecorator('computeofferingid', { initialValue: [], preserve: true })
-    this.form.getFieldDecorator('diskofferingid', { initialValue: [], preserve: true })
+    this.form.getFieldDecorator('computeofferingid', { initialValue: undefined, preserve: true })
+    this.form.getFieldDecorator('diskofferingid', { initialValue: undefined, preserve: true })
     this.form.getFieldDecorator('affinitygroupids', { initialValue: [], preserve: true })
-    this.form.getFieldDecorator('isoid', { initialValue: [], preserve: true })
+    this.form.getFieldDecorator('isoid', { initialValue: undefined, preserve: true })
     this.form.getFieldDecorator('networkids', { initialValue: [], preserve: true })
     this.form.getFieldDecorator('keypair', { initialValue: undefined, preserve: true })
     this.apiParams = {}
@@ -607,8 +551,7 @@ export default {
     },
     resetData () {
       this.vm = {}
-      this.current = 0
-      this.stepMove = 0
+      this.zoneSelected = false
       this.form.resetFields()
       this.fetchData()
     },
@@ -650,6 +593,9 @@ export default {
         const deployVmData = {}
         // step 1 : select zone
         deployVmData.zoneid = values.zoneid
+        deployVmData.podid = values.podid
+        deployVmData.clusterid = values.clusterid
+        deployVmData.hostid = values.hostid
         // step 2: select template/iso
         if (this.templateIsoKey === 'templates') {
           deployVmData.templateid = values.templateid
@@ -777,106 +723,18 @@ export default {
       })
     },
     onSelectZoneId (value) {
-      this.current = 0
       this.zoneId = value
+      this.zoneSelected = true
+      _.each(this.params, this.fetchOptions)
+    },
+    onTemplatesIsosCollapseChange (key) {
+      if (key === 'isos' && this.options.isos.length === 0) {
+        this.fetchAllIsos()
+      }
     },
     handleSearchFilter (name, options) {
       this.params[name].options = { ...options }
       this.fetchOptions(this.params[name], name)
-    },
-    handleNext () {
-      switch (this.current) {
-        case this.steps.BASIC:
-          this.validateFormFields('zoneid').then((flag) => {
-            if (flag) {
-              this.current++
-              this.stepMove = this.current
-              this.fetchOptions(this.params.templates, 'templates')
-              this.fetchAllIsos()
-            }
-          })
-          break
-        case this.steps.TEMPLATE_ISO:
-          this.validateFormFields('templateid').then((flag) => {
-            if (flag) {
-              this.current++
-              this.stepMove = this.current
-              this.fetchOptions(this.params.serviceOfferings, 'serviceOfferings')
-            }
-          })
-          break
-        case this.steps.COMPUTE:
-          this.current++
-          this.stepMove = this.current
-          this.fetchOptions(this.params.diskOfferings, 'diskOfferings')
-          break
-        case this.steps.DISK_OFFERING:
-          this.current++
-          this.stepMove = this.current
-          this.fetchOptions(this.params.affinityGroups, 'affinityGroups')
-          break
-        case this.steps.AFFINITY_GROUP:
-          this.current++
-          this.stepMove = this.current
-          this.fetchOptions(this.params.networks, 'networks')
-          break
-        case this.steps.NETWORK:
-          this.current++
-          this.stepMove = this.current
-          this.fetchOptions(this.params.sshKeyPairs, 'sshKeyPairs')
-          break
-        default:
-          this.current++
-          this.stepMove = this.current
-          break
-      }
-    },
-    handlePrev () {
-      this.current--
-    },
-    validateFormFields (field) {
-      return new Promise((resolve) => {
-        this.form.validateFields([field], (err, values) => {
-          if (!err) {
-            resolve(true)
-          }
-          resolve(false)
-        })
-      })
-    },
-    createNetworks (zoneId) {
-      return new Promise((resolve, reject) => {
-        if (this.networksAdd.length === 0) {
-          resolve()
-          return
-        }
-        const promises = []
-        this.networksAdd.forEach((item) => {
-          const params = {}
-          params.zoneid = zoneId
-          params.name = item.name
-          params.displayText = item.name
-          params.networkOfferingId = item.networkOfferingId
-          params.vpcid = item.vpcid
-
-          promises.push(this.createNetwork(params))
-        })
-        Promise.all(promises).then(response => {
-          resolve(response)
-        }).catch(error => {
-          reject(error)
-        })
-      })
-    },
-    createNetwork (params) {
-      return new Promise((resolve, reject) => {
-        api('createNetwork', params).then(json => {
-          const networkRes = _.get(json, 'createnetworkresponse.network', [])
-          resolve(networkRes.id)
-        }).catch(error => {
-          reject(error)
-        })
-      })
     }
   }
 }
@@ -915,9 +773,5 @@ export default {
     border: 1px solid @border-color-split;
     border-radius: @border-radius-base !important;
     margin: 0 0 1.2rem;
-  }
-
-  .hidden {
-    display: none;
   }
 </style>
