@@ -220,7 +220,6 @@ export default {
   data () {
     return {
       hypervisors: ['KVM', 'VMware', 'Hyperv', 'Any'],
-      // protocols: ['nfs', 'SMB', 'preSetup', 'ocfs2', 'SharedMountPoint', 'CLVM', 'RBD', 'vmfs', 'iscsi', 'Gluster', 'custom'],
       protocols: [],
       providers: [],
       scope: 'Cluster',
@@ -263,42 +262,30 @@ export default {
     },
     getInfraData () {
       api('listZones').then(json => {
-        if (json && json.listzonesresponse && json.listzonesresponse.zone) {
-          this.zones = json.listzonesresponse.zone
-          if (this.zones.length > 0) {
-            this.zoneSelected = this.zones[0].id
-          }
-        }
+        this.zones = json.listzonesresponse.zone || []
+        this.zoneSelected = this.zones[0].id || ''
       }).then(() => {
         api('listPods', {
           zoneid: this.zoneSelected
         }).then(json => {
-          if (json && json.listpodsresponse && json.listpodsresponse.pod) {
-            this.pods = json.listpodsresponse.pod
-            if (this.pods.length > 0) {
-              this.podSelected = this.pods[0].id
-            }
-          }
+          this.pods = json.listpodsresponse.pod || []
+          this.podSelected = this.pods[0].id || ''
         }).then(() => {
           api('listClusters', {
             podid: this.podSelected
           }).then(json => {
-            if (json && json.listclustersresponse && json.listclustersresponse.cluster) {
-              this.clusters = json.listclustersresponse.cluster
-              if (this.clusters.length > 0) {
-                this.clusterSelected = this.clusters[0].id
-                this.fetchHypervisor()
-              }
+            this.clusters = json.listclustersresponse.cluster || []
+            if (this.clusters.length > 0) {
+              this.clusterSelected = this.clusters[0].id
+              this.fetchHypervisor()
             }
           }).then(() => {
             api('listHosts', {
               clusterid: this.clusterSelected
             }).then(json => {
-              if (json && json.listhostsresponse && json.listhostsresponse.host) {
-                this.hosts = json.listhostsresponse.host
-                if (this.hosts.length > 0) {
-                  this.hostSelected = this.hosts[0].id
-                }
+              this.hosts = json.listhostsresponse.host || []
+              if (this.hosts.length > 0) {
+                this.hostSelected = this.hosts[0].id
               }
             })
           })
@@ -307,21 +294,17 @@ export default {
     },
     listStorageProviders () {
       api('listStorageProviders', { type: 'primary' }).then(json => {
-        if (json && json.liststorageprovidersresponse && json.liststorageprovidersresponse.dataStoreProvider) {
-          var providers = json.liststorageprovidersresponse.dataStoreProvider
-          for (var i = 0; i < providers.length; i++) {
-            this.providers.push(providers[i].name)
-          }
+        var providers = json.liststorageprovidersresponse.dataStoreProvider || []
+        for (var i = 0; i < providers.length; i++) {
+          this.providers.push(providers[i].name)
         }
       })
     },
     listStorageTags () {
       api('listStorageTags').then(json => {
-        if (json && json.liststoragetagsresponse && json.liststoragetagsresponse.storagetag) {
-          var storagetags = json.liststoragetagsresponse.storagetag
-          for (var i = 0; i < storagetags.length; i++) {
-            this.storagetags.push(storagetags[i].name)
-          }
+        var storagetags = json.liststoragetagsresponse.storagetag || []
+        for (var i = 0; i < storagetags.length; i++) {
+          this.storagetags.push(storagetags[i].name)
         }
       })
     },
