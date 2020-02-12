@@ -152,7 +152,6 @@
                   </router-link>
                 </template>
               </a-table>
-              <a-divider/>
               <a-pagination
                 class="row-element pagination"
                 size="small"
