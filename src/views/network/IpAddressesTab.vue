@@ -56,7 +56,7 @@
       size="small"
       :current="page"
       :pageSize="pageSize"
-      :total="ipCount"
+      :total="totalIps"
       :showTotal="total => `Total ${total} items`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="changePage"
@@ -85,7 +85,7 @@ export default {
   },
   data () {
     return {
-      ipCount: 0,
+      totalIps: 0,
       page: 1,
       pageSize: 10,
       columns: [
@@ -137,15 +137,21 @@ export default {
   },
   methods: {
     fetchData () {
-      this.fetchLoading = true
-      api('listPublicIpAddresses', {
+      const params = {
         listall: true,
-        associatednetworkid: this.resource.id,
         page: this.page,
         pagesize: this.pageSize
-      }).then(json => {
+      }
+      if (this.$route.path.startsWith('/vpc')) {
+        params.vpcid = this.resource.id
+        params.forvirtualnetwork = true
+      } else {
+        params.associatednetworkid = this.resource.id
+      }
+      this.fetchLoading = true
+      api('listPublicIpAddresses', params).then(json => {
+        this.totalIps = json.listpublicipaddressesresponse.count || 0
         this.ips = json.listpublicipaddressesresponse.publicipaddress || []
-        this.ipCount = json.listpublicipaddressesresponse.count
       }).finally(() => {
         this.fetchLoading = false
       })
@@ -161,10 +167,14 @@ export default {
       this.fetchData()
     },
     acquireIpAddress () {
+      const params = {}
+      if (this.$route.path.startsWith('/vpc')) {
+        params.vpcid = this.resource.id
+      } else {
+        params.networkid = this.resource.id
+      }
       this.fetchLoading = true
-      api('associateIpAddress', {
-        networkid: this.resource.id
-      }).then(response => {
+      api('associateIpAddress', params).then(response => {
         this.$pollJob({
           jobId: response.associateipaddressresponse.jobid,
           successMessage: `Successfully acquired IP for ${this.resource.name}`,
@@ -175,7 +185,7 @@ export default {
           errorMethod: () => {
             this.fetchData()
           },
-          loadingMessage: `Acquiring IP for network ${this.resource.name} is in progress`,
+          loadingMessage: `Acquiring IP for ${this.resource.name} is in progress`,
           catchMessage: 'Error encountered while fetching async job result'
         })
       }).catch(error => {
@@ -202,7 +212,7 @@ export default {
           errorMethod: () => {
             this.fetchData()
           },
-          loadingMessage: `Releasing IP for network ${this.resource.name} is in progress`,
+          loadingMessage: `Releasing IP for ${this.resource.name} is in progress`,
           catchMessage: 'Error encountered while fetching async job result'
         })
       }).catch(error => {
@@ -217,5 +227,6 @@ export default {
   }
 }
 </script>
+
 <style lang="scss" scoped>
 </style>
