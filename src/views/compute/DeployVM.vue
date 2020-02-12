@@ -168,6 +168,8 @@
                     <network-configuration
                       v-if="networks.length > 0"
                       :items="networks"
+                      @update-network-config="($event) => updateNetworkConfig($event)"
+                      @select-default-network-item="($event) => updateDefaultNetworks($event)"
                     ></network-configuration>
                   </div>
                 </template>
@@ -317,7 +319,9 @@ export default {
         NETWORK: 5,
         SSH_KEY_PAIR: 6
       },
-      initDataConfig: {}
+      initDataConfig: {},
+      defaultNetwork: '',
+      networkConfig: []
     }
   },
   computed: {
@@ -575,6 +579,12 @@ export default {
         networkids: ids
       })
     },
+    updateDefaultNetworks (id) {
+      this.defaultNetwork = id
+    },
+    updateNetworkConfig (networks) {
+      this.networkConfig = networks
+    },
     updateSshKeyPairs (name) {
       this.form.setFieldsValue({
         keypair: name
@@ -618,6 +628,13 @@ export default {
         if (values.networkids && values.networkids.length > 0) {
           for (let i = 0; i < values.networkids.length; i++) {
             deployVmData['iptonetworklist[' + i + '].networkid'] = values.networkids[i]
+            if (this.networkConfig.length > 0) {
+              const networkConfig = this.networkConfig.filter((item) => item.key === values.networkids[i])
+              if (networkConfig && networkConfig.length > 0) {
+                deployVmData['iptonetworklist[' + i + '].ip'] = networkConfig[0].ipAddress ? networkConfig[0].ipAddress : undefined
+                deployVmData['iptonetworklist[' + i + '].mac'] = networkConfig[0].macAddress ? networkConfig[0].macAddress : undefined
+              }
+            }
           }
         }
         // step 7: select ssh key pair

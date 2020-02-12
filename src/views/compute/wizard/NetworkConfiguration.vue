@@ -24,15 +24,17 @@
     :rowKey="record => record.id"
     size="middle"
   >
-    <template slot="ipAddress">
+    <template slot="ipAddress" slot-scope="text, record">
       <a-input
         style="width: 150px;"
-        :placeholder="$t('ipAddress')"/>
+        :placeholder="$t('ipAddress')"
+        @change="($event) => updateNetworkData('ipAddress', record.id, $event.target.value)" />
     </template>
-    <template slot="macAddress">
+    <template slot="macAddress" slot-scope="text, record">
       <a-input
         style="width: 150px;"
-        :placeholder="$t('macAddress')"/>
+        :placeholder="$t('macAddress')"
+        @change="($event) => updateNetworkData('macAddress', record.id, $event.target.value)" />
     </template>
   </a-table>
 </template>
@@ -52,6 +54,7 @@ export default {
   },
   data () {
     return {
+      networks: [],
       columns: [
         {
           dataIndex: 'name',
@@ -74,12 +77,15 @@ export default {
       selectedRowKeys: []
     }
   },
+  created () {
+    this.$emit('select-default-network-item', this.items[0].id)
+  },
   computed: {
     rowSelection () {
       return {
         type: 'radio',
         onSelect: (row) => {
-          this.$emit('select-default-network-item', row.key)
+          this.$emit('select-default-network-item', row.id)
         },
         getCheckboxProps: record => ({
           props: {
@@ -94,6 +100,25 @@ export default {
       if (newValue && newValue !== oldValue) {
         this.selectedRowKeys = [newValue]
       }
+    }
+  },
+  methods: {
+    updateNetworkData (name, key, value) {
+      if (this.networks.length === 0) {
+        const networkItem = {}
+        networkItem.key = key
+        networkItem[name] = value
+        this.networks.push(networkItem)
+        this.$emit('update-network-config', this.networks)
+        return
+      }
+
+      this.networks.filter((item, index) => {
+        if (item.key === key) {
+          this.$set(this.networks[index], name, value)
+        }
+      })
+      this.$emit('update-network-config', this.networks)
     }
   }
 }
