@@ -667,9 +667,5 @@ export default {
       }
     }
   }
-
-  .blue {
-
-  }
 }
 </style>

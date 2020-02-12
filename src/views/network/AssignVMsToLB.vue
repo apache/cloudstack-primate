@@ -19,6 +19,7 @@
   <div>
     <a-table
       class="table"
+      style="overflow-y: auto"
       size="small"
       :columns="listVMCols"
       :dataSource="vms"
@@ -220,14 +221,14 @@ export default {
 
 <style lang="scss" scoped>
 .actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
 
-    button {
-      &:not(:last-child) {
-        margin-right: 10px;
-      }
+  button {
+    &:not(:last-child) {
+      margin-right: 10px;
     }
   }
+}
 </style>
