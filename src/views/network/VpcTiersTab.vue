@@ -57,6 +57,9 @@
               <a-icon type="caret-right" :rotate="props.isActive ? 90 : 0" />
             </template>
             <a-collapse-panel header="Internal LB" key="1" :style="customStyle">
+              <a-button style="margin-bottom: 15px" type="primary" @click="handleAddInternalLB(network.id)">
+                <a-icon type="plus"></a-icon> {{ $t('label.add.internal.lb') }}
+              </a-button>
               <a-table
                 class="table"
                 size="small"
@@ -78,63 +81,6 @@
                 :current="page"
                 :pageSize="pageSize"
                 :total="itemCounts.internalLB[network.id]"
-                :showTotal="total => `Total ${total} items`"
-                :pageSizeOptions="['10', '20', '40', '80', '100']"
-                @change="changePage"
-                @showSizeChange="changePageSize"
-                showSizeChanger/>
-              <a-button type="primary" icon="plus" style="float: right;margin:10px" @click="handleAddInternalLB(network.id)">{{ $t('label.add.internal.lb') }}</a-button>
-            </a-collapse-panel>
-            <a-collapse-panel header="Public LB IP" key="2" :style="customStyle">
-              <a-table
-                class="table"
-                size="small"
-                :columns="LBPublicIPCols"
-                :dataSource="LBPublicIPs[network.id]"
-                :rowKey="item => item.id"
-                :pagination="false"
-                :loading="fetchLoading">
-                <template slot="name" slot-scope="text, item">
-                  <router-link
-                    :to="{ path: '/publicip/'+item.id}">{{ item.name }}
-                  </router-link>
-                </template>
-              </a-table>
-              <a-divider/>
-              <a-pagination
-                class="row-element pagination"
-                size="small"
-                :current="page"
-                :pageSize="pageSize"
-                :total="itemCounts.publicIps[network.id]"
-                :showTotal="total => `Total ${total} items`"
-                :pageSizeOptions="['10', '20', '40', '80', '100']"
-                @change="changePage"
-                @showSizeChange="changePageSize"
-                showSizeChanger/>
-            </a-collapse-panel>
-            <a-collapse-panel header="Static NATS" key="3" :style="customStyle">
-              <a-table
-                class="table"
-                size="small"
-                :columns="StaticNatCols"
-                :dataSource="staticNats[network.id]"
-                :rowKey="item => item.id"
-                :pagination="false"
-                :loading="fetchLoading">
-                <template slot="name" slot-scope="text, item">
-                  <router-link
-                    :to="{ path: '/publicip/'+item.id}">{{ item.name }}
-                  </router-link>
-                </template>
-              </a-table>
-              <a-divider/>
-              <a-pagination
-                class="row-element pagination"
-                size="small"
-                :current="page"
-                :pageSize="pageSize"
-                :total="itemCounts.publicIps[network.id]"
                 :showTotal="total => `Total ${total} items`"
                 :pageSizeOptions="['10', '20', '40', '80', '100']"
                 @change="changePage"
@@ -397,27 +343,17 @@ export default {
   },
   methods: {
     fetchData () {
-      this.fetchLoading = true
-      var i = 0
-      api('listNetworks', { vpcid: this.resource.id }).then(json => {
-        this.networks = json.listnetworksresponse.network
-      }).then(() => {
-        for (i = 0; i < this.networks.length; i++) {
-          var id = this.networks[i].id
-          this.fetchLoadBalancers(id)
-          this.fetchLBPublicIPs(id, 'LB')
-          this.fetchLBPublicIPs(id, 'SNAT')
-          this.fetchVMs(id)
-        }
-      }).finally(() => {
-        this.fetchLoading = false
-      })
+      this.networks = this.resource.network
+      for (const network of this.networks) {
+        this.fetchLoadBalancers(network.id)
+        this.fetchVMs(network.id)
+      }
     },
     fetchNetworkAclList () {
       this.fetchLoading = true
       this.modalLoading = true
       api('listNetworkACLLists', { vpcid: this.resource.id }).then(json => {
-        this.networkAclList = json.listnetworkacllistsresponse.networkacllist
+        this.networkAclList = json.listnetworkacllistsresponse.networkacllist || []
         this.$nextTick(function () {
           this.form.setFieldsValue({
             acl: this.networkAclList[0].id
@@ -443,7 +379,7 @@ export default {
         supportedServices: 'SourceNat',
         state: 'Enabled'
       }).then(json => {
-        this.networkOfferings = json.listnetworkofferingsresponse.networkoffering
+        this.networkOfferings = json.listnetworkofferingsresponse.networkoffering || []
         this.$nextTick(function () {
           this.form.setFieldsValue({
             networkOffering: this.networkOfferings[0].id
@@ -468,35 +404,8 @@ export default {
         pagesize: this.pageSize
       }).then(json => {
         this.internalLB[id] = json.listloadbalancersresponse.loadbalancer || []
-        this.itemCounts.internalLB[id] = json.listloadbalancersresponse.count
-      }).finally(() => {
-        this.fetchLoading = false
-      })
-    },
-    fetchLBPublicIPs (id, op) {
-      var variableKey = null
-      var variableValue = null
-      if (op === 'LB') {
-        variableKey = 'forloadbalancing'
-        variableValue = true
-      } else {
-        variableKey = 'isstaticnat'
-        variableValue = true
-      }
-      this.fetchLoading = true
-      api('listPublicIpAddresses', {
-        listAll: true,
-        [variableKey]: variableValue,
-        associatednetworkid: id,
-        page: this.page,
-        pagesize: this.pageSize
-      }).then(json => {
-        if (op === 'LB') {
-          this.LBPublicIPs[id] = json.listpublicipaddressesresponse.publicipaddress || []
-        } else {
-          this.staticNats[id] = json.listpublicipaddressesresponse.publicipaddress || []
-        }
-        this.itemCounts.publicIps[id] = json.listpublicipaddressesresponse.count
+        this.itemCounts.internalLB[id] = json.listloadbalancersresponse.count || 0
+        this.$forceUpdate()
       }).finally(() => {
         this.fetchLoading = false
       })
@@ -511,7 +420,8 @@ export default {
         pagesize: this.pageSize
       }).then(json => {
         this.vms[id] = json.listvirtualmachinesresponse.virtualmachine || []
-        this.itemCounts.vms[id] = json.listvirtualmachinesresponse.count
+        this.itemCounts.vms[id] = json.listvirtualmachinesresponse.count || 0
+        this.$forceUpdate()
       }).finally(() => {
         this.fetchLoading = false
       })

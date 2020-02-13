@@ -17,43 +17,58 @@
 
 <template>
   <div>
-    <a-table
-      class="table"
-      style="overflow-y: auto"
-      size="small"
-      :columns="listVMCols"
-      :dataSource="vms"
-      :rowKey="item => item.id"
-      :loading="fetchLoading"
-      :pagination="false"
-    >
-      <template slot="name" slot-scope="text, record">
-        {{ record.name }}
-        <a-card v-if="selected === true" size="small" title="Use VM IP">
-          <div v-for="nic in record.nic" :key="nic.id">
-            <a-radio @click="vmIpSelected(record, nic)">{{ nic.ipaddress }}</a-radio>
-          </div>
-        </a-card>
-      </template>
-      <template slot="state" slot-scope="text, record">
-        <status :text="record.state" displayText></status>
-      </template>
-      <template slot="select">
-        <a-checkbox @change="handleChange"></a-checkbox>
-      </template>
-    </a-table>
-    <a-divider/>
-    <a-pagination
-      class="row-element pagination"
-      size="small"
-      :current="page"
-      :pageSize="pageSize"
-      :total="vmCounts"
-      :showTotal="total => `Total ${total} items`"
-      :pageSizeOptions="['10', '20', '40', '80', '100']"
-      @change="changePage"
-      @showSizeChange="changePageSize"
-      showSizeChanger/>
+    <a-icon v-if="fetchLoading" type="loading"></a-icon>
+    <div>
+      <div class="vm-modal__header">
+        <span style="min-width: 200px;">{{ $t('name') }}</span>
+        <span>{{ $t('instancename') }}</span>
+        <span>{{ $t('displayname') }}</span>
+        <span>{{ $t('ip') }}</span>
+        <span>{{ $t('account') }}</span>
+        <span>{{ $t('zonenamelabel') }}</span>
+        <span>{{ $t('state') }}</span>
+        <span>{{ $t('select') }}</span>
+      </div>
+
+      <a-checkbox-group style="width: 100%;">
+        <div v-for="(vm, index) in vms" :key="index" class="vm-modal__item">
+          <span style="min-width: 200px;">
+            <span>
+              {{ vm.name }}
+            </span>
+            <a-icon v-if="addVmModalNicLoading" type="loading"></a-icon>
+            <a-select
+              v-else-if="!addVmModalNicLoading && iLb.virtualmachineid[index] === vm.id"
+              mode="multiple"
+              v-model="iLb.vmguestip[index]"
+            >
+              <a-select-option v-for="(nic, nicIndex) in nics[index]" :key="nic" :value="nic">
+                {{ nic }}{{ nicIndex === 0 ? ' (Primary)' : null }}
+              </a-select-option>
+            </a-select>
+          </span>
+          <span>{{ vm.instancename }}</span>
+          <span>{{ vm.displayname }}</span>
+          <span></span>
+          <span>{{ vm.account }}</span>
+          <span>{{ vm.zonename }}</span>
+          <span>{{ vm.state }}</span>
+          <a-checkbox :value="vm.id" @change="e => fetchNics(e, index)" />
+        </div>
+        <a-divider/>
+        <a-pagination
+          class="row-element pagination"
+          size="small"
+          :current="page"
+          :pageSize="pageSize"
+          :total="vmCounts"
+          :showTotal="total => `Total ${total} items`"
+          :pageSizeOptions="['10', '20', '40', '80', '100']"
+          @change="changePage"
+          @showSizeChange="changePageSize"
+          showSizeChanger/>
+      </a-checkbox-group>
+    </div>
     <div class="actions">
       <a-button @click="closeModal">
         {{ $t('Cancel') }}
@@ -85,47 +100,16 @@ export default {
       page: 1,
       pageSize: 10,
       vmCounts: 0,
+      addVmModalNicLoading: false,
       vms: [],
-      selected: false,
+      nics: [],
       params: {},
       assignedVMs: [],
-      index: 0,
-      fetchLoading: false,
-      listVMCols: [
-        {
-          title: this.$t('name'),
-          dataIndex: 'name',
-          scopedSlots: { customRender: 'name' }
-        },
-        {
-          title: this.$t('instancename'),
-          dataIndex: 'instancename'
-        },
-        {
-          title: this.$t('displayname'),
-          dataIndex: 'displayname'
-        },
-        {
-          title: this.$t('host')
-        },
-        {
-          title: this.$t('accountId'),
-          dataIndex: 'account'
-        },
-        {
-          title: this.$t('zoneId'),
-          dataIndex: 'zonename'
-        },
-        {
-          title: this.$t('state'),
-          dataIndex: 'state',
-          scopedSlots: { customRender: 'state' }
-        },
-        {
-          title: this.$t('select'),
-          scopedSlots: { customRender: 'select' }
-        }
-      ]
+      iLb: {
+        virtualmachineid: [],
+        vmguestip: []
+      },
+      fetchLoading: false
     }
   },
   mounted () {
@@ -155,27 +139,63 @@ export default {
         listAll: true,
         networkid: this.resource.networkid,
         page: this.page,
-        pageSize: this.pageSize
+        pagesize: this.pageSize
       }).then(response => {
         var vms = response.listvirtualmachinesresponse.virtualmachine || []
         this.vms = this.differenceBy(vms, this.assignedVMs, 'id')
-        this.vmCounts = this.vms.length
+        this.vmCounts = this.vms.length || 0
+        this.vms.forEach((vm, index) => {
+          this.iLb.virtualmachineid[index] = null
+          this.nics[index] = null
+          this.iLb.vmguestip[index] = null
+        })
       }).finally(() => {
         this.fetchLoading = false
       })
     },
-    vmIpSelected (vm, nic) {
-      this.params['vmidipmap[' + this.index + '].vmid'] = vm.id
-      this.params['vmidipmap[' + this.index + '].vmip'] = nic.ipaddress
-      this.index++
+    fetchNics (e, index) {
+      if (!e.target.checked) {
+        this.iLb.virtualmachineid[index] = null
+        this.nics[index] = null
+        this.iLb.vmguestip[index] = null
+        return
+      }
+      this.iLb.virtualmachineid[index] = e.target.value
+      this.addVmModalNicLoading = true
+      api('listNics', {
+        virtualmachineid: e.target.value,
+        networkid: this.resource.associatednetworkid
+      }).then(response => {
+        if (!response.listnicsresponse.nic[0]) return
+        const newItem = []
+        newItem.push(response.listnicsresponse.nic[0].ipaddress)
+        if (response.listnicsresponse.nic[0].secondaryip) {
+          newItem.push(...response.listnicsresponse.nic[0].secondaryip.map(ip => ip.ipaddress))
+        }
+        this.nics[index] = newItem
+        this.iLb.vmguestip[index] = this.nics[index][0]
+        this.addVmModalNicLoading = false
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}` || 'Error',
+          description: error.response.data.errorresponse.errortext || 'Error'
+        })
+        this.closeModal()
+      })
     },
     closeModal () {
       this.$emit('close-action')
     },
-    handleChange (e) {
-      this.selected = e.target.checked
-    },
     handleSubmit () {
+      var j = 0
+      this.params = {}
+      for (var i = 0; i < this.iLb.virtualmachineid.length; i++) {
+        if (this.iLb.virtualmachineid[i] !== null) {
+          this.params['vmidipmap[' + j + '].vmid'] = this.iLb.virtualmachineid[i]
+          this.params['vmidipmap[' + j + '].vmip'] = this.iLb.vmguestip[i]
+          j++
+        }
+      }
       this.params.id = this.resource.id
       this.fetchLoading = true
       api('assignToLoadBalancerRule', this.params).then(response => {
@@ -220,6 +240,32 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+.vm-modal {
+
+  &__header {
+    display: flex;
+
+    span {
+      flex: 1;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+  }
+
+  &__item {
+    display: flex;
+    margin-top: 10px;
+
+    span,
+    label {
+      display: block;
+      flex: 1;
+      margin-right: 10px;
+    }
+  }
+}
+
 .actions {
   display: flex;
   justify-content: flex-end;
