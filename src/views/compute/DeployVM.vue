@@ -640,7 +640,7 @@ export default {
         deployVmData.name = values.name
         deployVmData.displayname = values.name
         const title = this.$t('Launch Virtual Machine')
-        const description = this.$t('zone') + ' ' + values.zoneid
+        const description = deployVmData.name ? deployVmData.name : values.zoneid
         this.loading.deploy = true
         api('deployVirtualMachine', deployVmData).then(response => {
           const jobId = response.deployvirtualmachineresponse.jobid
@@ -648,7 +648,12 @@ export default {
             this.$pollJob({
               jobId,
               successMethod: result => {
-                const successDescription = result.jobresult.snapshot.name
+                let successDescription = ''
+                if (result.jobresult.virtualmachine.name) {
+                  successDescription = result.jobresult.virtualmachine.name
+                } else {
+                  successDescription = result.jobresult.virtualmachine.id
+                }
                 this.$store.dispatch('AddAsyncJob', {
                   title: title,
                   jobid: jobId,
