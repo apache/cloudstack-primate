@@ -239,14 +239,12 @@ import TemplateIsoSelection from '@views/compute/wizard/TemplateIsoSelection'
 import AffinityGroupSelection from '@views/compute/wizard/AffinityGroupSelection'
 import NetworkSelection from '@views/compute/wizard/NetworkSelection'
 import NetworkConfiguration from '@views/compute/wizard/NetworkConfiguration'
-import NetworkCreation from '@views/compute/wizard/NetworksCreation'
 import SshKeyPairSelection from '@views/compute/wizard/SshKeyPairSelection'
 
 export default {
   name: 'Wizard',
   components: {
     SshKeyPairSelection,
-    NetworkCreation,
     NetworkConfiguration,
     NetworkSelection,
     AffinityGroupSelection,
