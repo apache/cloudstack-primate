@@ -205,7 +205,7 @@
       </a-col>
       <a-col :md="24" :lg="7" v-if="!isMobile()">
         <a-affix :offsetTop="75">
-          <info-card :resource="vm" :title="this.$t('yourInstance')">
+          <info-card class="vm-info-card" :resource="vm" :title="this.$t('yourInstance')">
             <!-- ToDo: Refactor this, maybe move everything to the info-card component -->
             <div slot="details" v-if="diskSize" style="margin-bottom: 12px;">
               <a-icon type="hdd"></a-icon>
@@ -793,5 +793,19 @@ export default {
     border: 1px solid @border-color-split;
     border-radius: @border-radius-base !important;
     margin: 0 0 1.2rem;
+  }
+
+  .vm-info-card {
+    .resource-detail-item__label {
+      font-weight: normal;
+    }
+
+    .resource-detail-item__details {
+      a {
+        color: rgba(0, 0, 0, 0.65);
+        cursor: default;
+        pointer-events: none;
+      }
+    }
   }
 </style>
