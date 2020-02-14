@@ -77,29 +77,39 @@
                 :title="this.$t('templateIso')"
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
-                  <div v-if="zoneSelected">
-                    <a-collapse
-                      :accordion="true"
-                      defaultActiveKey="templates"
-                      @change="onTemplatesIsosCollapseChange"
-                    >
-                      <a-collapse-panel :header="this.$t('Templates')" key="templates">
-                        <template-iso-selection
-                          input-decorator="templateid"
-                          :items="options.templates"
-                          :loading="loading.templates"
-                        ></template-iso-selection>
-                        <disk-size-selection input-decorator="rootdisksize" />
-                      </a-collapse-panel>
-
-                      <a-collapse-panel :header="this.$t('ISOs')" key="isos">
-                        <template-iso-selection
-                          input-decorator="isoid"
-                          :items="options.isos"
-                          :loading="loading.isos"
-                        ></template-iso-selection>
-                      </a-collapse-panel>
-                    </a-collapse>
+                  <div v-if="zoneSelected" style="margin-top: 15px">
+                    <a-card
+                      :title="this.$t('Templates')"
+                      :loading="loading.templates">
+                      <template-iso-selection
+                        input-decorator="templateid"
+                        :items="options.templates"
+                        :selected="templateIsoKey"
+                        @update-template-iso="updateFieldValue"
+                      ></template-iso-selection>
+                      <disk-size-selection
+                        input-decorator="rootdisksize"
+                        @update-disk-size="updateFieldValue"/>
+                    </a-card>
+                    <a-card
+                      :title="this.$t('ISOs')"
+                      :loading="loading.isos">
+                      <template-iso-selection
+                        input-decorator="isoid"
+                        :items="options.isos"
+                        :selected="templateIsoKey"
+                        @update-template-iso="updateFieldValue"
+                      ></template-iso-selection>
+                    </a-card>
+                    <a-form-item class="form-item-hidden">
+                      <a-input v-decorator="['templateid']"/>
+                    </a-form-item>
+                    <a-form-item class="form-item-hidden">
+                      <a-input v-decorator="['isoid']"/>
+                    </a-form-item>
+                    <a-form-item class="form-item-hidden">
+                      <a-input v-decorator="['rootdisksize']"/>
+                    </a-form-item>
                   </div>
                 </template>
               </a-step>
@@ -133,7 +143,10 @@
                     <disk-size-selection
                       v-if="diskOffering && diskOffering.iscustomized"
                       input-decorator="size"
-                    ></disk-size-selection>
+                      @update-disk-size="updateFieldValue" />
+                    <a-form-item class="form-item-hidden">
+                      <a-input v-decorator="['size']"/>
+                    </a-form-item>
                   </div>
                 </template>
               </a-step>
@@ -307,7 +320,6 @@ export default {
         'selfexecutable',
         'sharedexecutable'
       ],
-      templateIsoKey: '',
       steps: {
         BASIC: 0,
         TEMPLATE_ISO: 1,
@@ -319,7 +331,8 @@ export default {
       },
       initDataConfig: {},
       defaultNetwork: '',
-      networkConfig: []
+      networkConfig: [],
+      templateIsoKey: 'templateid'
     }
   },
   computed: {
@@ -557,6 +570,25 @@ export default {
       this.form.resetFields()
       this.fetchData()
     },
+    updateFieldValue (name, value) {
+      if (name === 'templateid') {
+        this.templateIsoKey = 'templateid'
+        this.form.setFieldsValue({
+          templateid: value,
+          isoid: undefined
+        })
+      } else if (name === 'isoid') {
+        this.templateIsoKey = 'isoid'
+        this.form.setFieldsValue({
+          isoid: value,
+          templateid: undefined
+        })
+      } else {
+        this.form.setFieldsValue({
+          [name]: value
+        })
+      }
+    },
     updateComputeOffering (id) {
       this.form.setFieldsValue({
         computeofferingid: id
@@ -605,10 +637,10 @@ export default {
         deployVmData.clusterid = values.clusterid
         deployVmData.hostid = values.hostid
         // step 2: select template/iso
-        if (this.templateIsoKey === 'templates') {
+        if (this.templateIsoKey === 'templateid') {
           deployVmData.templateid = values.templateid
         } else {
-          deployVmData.templateid = values.templateid
+          deployVmData.templateid = values.isoid
         }
         if (values.rootdisksize && values.rootdisksize > 0) {
           deployVmData.rootdisksize = values.rootdisksize
@@ -676,7 +708,12 @@ export default {
         })
       })
     },
-    fetchOptions (param, name) {
+    fetchOptions (param, name, exclude) {
+      if (exclude && exclude.length > 0) {
+        if (exclude.includes(name)) {
+          return
+        }
+      }
       this.loading[name] = true
       param.loading = true
       param.opts = []
@@ -745,7 +782,17 @@ export default {
     onSelectZoneId (value) {
       this.zoneId = value
       this.zoneSelected = true
-      _.each(this.params, this.fetchOptions)
+      this.form.setFieldsValue({
+        clusterid: undefined,
+        podid: undefined,
+        hostid: undefined,
+        templateid: undefined,
+        isoid: undefined
+      })
+      _.each(this.params, (param, name) => {
+        this.fetchOptions(param, name, ['zones'])
+      })
+      this.fetchAllIsos()
     },
     onTemplatesIsosCollapseChange (key) {
       if (key === 'isos' && this.options.isos.length === 0) {
@@ -807,5 +854,9 @@ export default {
         pointer-events: none;
       }
     }
+  }
+
+  .form-item-hidden {
+    display: none;
   }
 </style>

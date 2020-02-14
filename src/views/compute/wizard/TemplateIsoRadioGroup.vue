@@ -17,37 +17,38 @@
 
 <template>
   <a-form-item>
-    <a-radio-group
-      v-for="(os, osIndex) in osList"
-      :key="osIndex"
-      class="radio-group"
-      v-decorator="[inputDecorator, {
-        rules: [{ required: true, message: 'Please select option' }]
-      }]"
-    >
-      <a-radio
-        class="radio-group__radio"
-        :value="os.id"
+    <div class="form-item-scroll">
+      <a-radio-group
+        v-for="(os, osIndex) in osList"
+        :key="osIndex"
+        class="radio-group"
+        v-model="value"
+        @change="($event) => updateSelectionTemplateIso($event.target.value)"
       >
-        {{ os.displaytext }}&nbsp;
-        <a-tag
-          :visible="os.ispublic && !os.isfeatured"
-          color="blue"
-        >{{ $t('isPublic') }}</a-tag>
-        <a-tag
-          :visible="os.isfeatured"
-          color="green"
-        >{{ $t('isFeatured') }}</a-tag>
-        <a-tag
-          :visible="isSelf(os)"
-          color="orange"
-        >{{ $t('isSelf') }}</a-tag>
-        <a-tag
-          :visible="isShared(os)"
-          color="cyan"
-        >{{ $t('isShared') }}</a-tag>
-      </a-radio>
-    </a-radio-group>
+        <a-radio
+          class="radio-group__radio"
+          :value="os.id"
+        >
+          {{ os.displaytext }}&nbsp;
+          <a-tag
+            :visible="os.ispublic && !os.isfeatured"
+            color="blue"
+          >{{ $t('isPublic') }}</a-tag>
+          <a-tag
+            :visible="os.isfeatured"
+            color="green"
+          >{{ $t('isFeatured') }}</a-tag>
+          <a-tag
+            :visible="isSelf(os)"
+            color="orange"
+          >{{ $t('isSelf') }}</a-tag>
+          <a-tag
+            :visible="isShared(os)"
+            color="cyan"
+          >{{ $t('isShared') }}</a-tag>
+        </a-radio>
+      </a-radio-group>
+    </div>
   </a-form-item>
 </template>
 
@@ -64,6 +65,35 @@ export default {
     inputDecorator: {
       type: String,
       default: ''
+    },
+    selected: {
+      type: String,
+      default: ''
+    }
+  },
+  data () {
+    return {
+      value: ''
+    }
+  },
+  created () {
+    if (this.inputDecorator === 'templateid') {
+      this.value = this.osList[0].id
+      this.$emit('emit-update-template-iso', this.inputDecorator, this.value)
+    }
+  },
+  watch: {
+    selected (newValue, oldValue) {
+      if (newValue !== this.inputDecorator) {
+        this.value = ''
+      }
+    },
+    osList (newData, oldData) {
+      if (newData && newData.length > 0) {
+        this.osList = newData
+        this.value = this.osList[0].id
+        this.$emit('emit-update-template-iso', this.inputDecorator, this.value)
+      }
     }
   },
   methods: {
@@ -72,6 +102,9 @@ export default {
     },
     isSelf (item) {
       return !item.ispublic && (item.account === store.getters.userInfo.account)
+    },
+    updateSelectionTemplateIso (id) {
+      this.$emit('emit-update-template-iso', this.inputDecorator, id)
     }
   }
 }
@@ -88,5 +121,10 @@ export default {
 
   .ant-tag {
     margin-left: 0.4rem;
+  }
+
+  .form-item-scroll {
+    max-height: 19vh;
+    overflow-y: auto;
   }
 </style>

@@ -16,30 +16,32 @@
 // under the License.
 
 <template>
-  <a-spin :spinning="loading">
-    <a-tabs :defaultActiveKey="Object.keys(osTypes)[0]" v-if="view === TAB_VIEW">
-      <a-button icon="search" slot="tabBarExtraContent" @click="() => toggleView(FILTER_VIEW)"/>
-      <a-tab-pane v-for="(osList, osName) in osTypes" :key="osName">
-        <span slot="tab">
-          <os-logo :os-name="osName"></os-logo>
-        </span>
-        <TemplateIsoRadioGroup
-          :osList="osList"
-          :input-decorator="inputDecorator"
-        ></TemplateIsoRadioGroup>
-      </a-tab-pane>
-    </a-tabs>
-    <div v-else>
-      <a-input class="search-input" v-model="filter">
-        <a-icon slot="prefix" type="search"/>
-        <a-icon slot="addonAfter" type="close" @click="toggleView(TAB_VIEW)"/>
-      </a-input>
+  <a-tabs :defaultActiveKey="Object.keys(osTypes)[0]" v-if="view === TAB_VIEW">
+    <a-button icon="search" slot="tabBarExtraContent" @click="() => toggleView(FILTER_VIEW)"/>
+    <a-tab-pane v-for="(osList, osName) in osTypes" :key="osName">
+      <span slot="tab">
+        <os-logo :os-name="osName"></os-logo>
+      </span>
       <TemplateIsoRadioGroup
-        :osList="filteredItems"
+        :osList="osList"
         :input-decorator="inputDecorator"
+        :selected="selected"
+        @emit-update-template-iso="updateTemplateIso"
       ></TemplateIsoRadioGroup>
-    </div>
-  </a-spin>
+    </a-tab-pane>
+  </a-tabs>
+  <div v-else>
+    <a-input class="search-input" v-model="filter">
+      <a-icon slot="prefix" type="search"/>
+      <a-icon slot="addonAfter" type="close" @click="toggleView(TAB_VIEW)"/>
+    </a-input>
+    <TemplateIsoRadioGroup
+      :osList="filteredItems"
+      :input-decorator="inputDecorator"
+      :selected="selected"
+      @emit-update-template-iso="updateTemplateIso"
+    ></TemplateIsoRadioGroup>
+  </div>
 </template>
 
 <script>
@@ -63,9 +65,9 @@ export default {
       type: String,
       default: ''
     },
-    loading: {
-      type: Boolean,
-      default: false
+    selected: {
+      type: String,
+      default: ''
     }
   },
   data () {
@@ -114,6 +116,9 @@ export default {
   methods: {
     toggleView (view) {
       this.view = view
+    },
+    updateTemplateIso (name, id) {
+      this.$emit('update-template-iso', name, id)
     }
   }
 }
