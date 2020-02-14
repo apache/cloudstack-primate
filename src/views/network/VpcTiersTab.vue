@@ -52,42 +52,11 @@
               </div>
             </div>
           </div>
-          <a-collapse defaultActiveKey="1" :bordered="false">
+          <a-collapse :bordered="false" style="margin-left: -18px">
             <template v-slot:expandIcon="props">
               <a-icon type="caret-right" :rotate="props.isActive ? 90 : 0" />
             </template>
-            <a-collapse-panel header="Internal LB" key="1" :style="customStyle">
-              <a-button style="margin-bottom: 15px" type="primary" @click="handleAddInternalLB(network.id)">
-                <a-icon type="plus"></a-icon> {{ $t('label.add.internal.lb') }}
-              </a-button>
-              <a-table
-                class="table"
-                size="small"
-                :columns="internalLbCols"
-                :dataSource="internalLB[network.id]"
-                :rowKey="item => item.id"
-                :pagination="false"
-                :loading="fetchLoading">
-                <template slot="name" slot-scope="text, item">
-                  <router-link
-                    :to="{ path: '/ilb/'+item.id}">{{ item.name }}
-                  </router-link>
-                </template>
-              </a-table>
-              <a-divider/>
-              <a-pagination
-                class="row-element pagination"
-                size="small"
-                :current="page"
-                :pageSize="pageSize"
-                :total="itemCounts.internalLB[network.id]"
-                :showTotal="total => `Total ${total} items`"
-                :pageSizeOptions="['10', '20', '40', '80', '100']"
-                @change="changePage"
-                @showSizeChange="changePageSize"
-                showSizeChanger/>
-            </a-collapse-panel>
-            <a-collapse-panel header="VMs" key="4" :style="customStyle">
+            <a-collapse-panel :header="$t('Instances')" key="vm" :style="customStyle">
               <a-table
                 class="table"
                 size="small"
@@ -114,6 +83,41 @@
                 :current="page"
                 :pageSize="pageSize"
                 :total="itemCounts.vms[network.id]"
+                :showTotal="total => `Total ${total} items`"
+                :pageSizeOptions="['10', '20', '40', '80', '100']"
+                @change="changePage"
+                @showSizeChange="changePageSize"
+                showSizeChanger/>
+            </a-collapse-panel>
+            <a-collapse-panel
+              key="ilb"
+              :header="$t('Internal LB')"
+              :style="customStyle"
+              :disabled="!showIlb(network)" >
+              <a-button icon="plus" type="dashed" style="margin-bottom: 15px; width: 100%" @click="handleAddInternalLB(network.id)">
+                {{ $t('label.add.internal.lb') }}
+              </a-button>
+              <a-table
+                class="table"
+                size="small"
+                :columns="internalLbCols"
+                :dataSource="internalLB[network.id]"
+                :rowKey="item => item.id"
+                :pagination="false"
+                :loading="fetchLoading">
+                <template slot="name" slot-scope="text, item">
+                  <router-link
+                    :to="{ path: '/ilb/'+item.id}">{{ item.name }}
+                  </router-link>
+                </template>
+              </a-table>
+              <a-divider/>
+              <a-pagination
+                class="row-element pagination"
+                size="small"
+                :current="page"
+                :pageSize="pageSize"
+                :total="itemCounts.internalLB[network.id]"
                 :showTotal="total => `Total ${total} items`"
                 :pageSizeOptions="['10', '20', '40', '80', '100']"
                 @change="changePage"
@@ -317,7 +321,7 @@ export default {
           scopedSlots: { customRender: 'ip' }
         }
       ],
-      customStyle: 'border-radius: 4px;margin-bottom: -5px;',
+      customStyle: 'margin-bottom: -10px; border-bottom-style: none',
       page: 1,
       pageSize: 10,
       itemCounts: {
@@ -342,6 +346,9 @@ export default {
     this.form = this.$form.createForm(this)
   },
   methods: {
+    showIlb (network) {
+      return network.service.filter(s => (s.name === 'Lb') && (s.capability.filter(c => c.name === 'LbSchemes' && c.value === 'Internal').length > 0)).length > 0 || false
+    },
     fetchData () {
       this.networks = this.resource.network
       for (const network of this.networks) {
