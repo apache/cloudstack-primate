@@ -20,14 +20,18 @@
     <a-button type="dashed" icon="plus" style="width: 100%; margin-bottom: 15px" @click="acquireIpAddress">
       {{ $t("label.acquire.new.ip") }}
     </a-button>
-    <div v-if="$route.path.startsWith('/vpc')">Select Tier:
+    <div v-if="$route.path.startsWith('/vpc')">
+      Select Tier:
       <a-select
+        style="width: 40%; margin-left: 15px;margin-bottom: 15px"
         :loading="fetchLoading"
-        :defaultValue="defaultNetwork"
-        style="width: 20vh;margin-left: 15px;margin-bottom: 15px"
+        defaultActiveFirstOption
+        :value="vpcTier"
         @change="handleTierSelect"
-        v-model="vpcTier"
-        placeholder="Select a tier">
+      >
+        <a-select-option key="all" value="">
+          {{ $t('Show All') }}
+        </a-select-option>
         <a-select-option v-for="network in networksList" :key="network.id" :value="network.id">
           {{ network.name }}
         </a-select-option>
@@ -37,7 +41,7 @@
       size="small"
       style="overflow-y: auto"
       :columns="columns"
-      :dataSource="$route.path.startsWith('/vpc') ? ipsTiers : ips"
+      :dataSource="ips"
       :rowKey="item => item.id"
       :pagination="false" >
       <template slot="ipaddress" slot-scope="text, record">
@@ -52,6 +56,10 @@
       <template slot="virtualmachineid" slot-scope="text, record">
         <a-icon type="desktop" v-if="record.virtualmachineid" />
         <router-link :to="{ path: '/vm/' + record.virtualmachineid }" > {{ record.virtualmachinename || record.virtualmachineid }} </router-link>
+      </template>
+
+      <template slot="associatednetworkname" slot-scope="text, record">
+        <router-link :to="{ path: '/guestnetwork/' + record.associatednetworkid }" > {{ record.associatednetworkname || record.associatednetworkid }} </router-link>
       </template>
 
       <template slot="action" slot-scope="text, record">
@@ -107,7 +115,6 @@ export default {
       page: 1,
       pageSize: 10,
       totalIps: 0,
-      totalTierIps: 0,
       tiersSelect: false,
       columns: [
         {
@@ -127,7 +134,8 @@ export default {
         },
         {
           title: this.$t('Network'),
-          dataIndex: 'associatednetworkname'
+          dataIndex: 'associatednetworkname',
+          scopedSlots: { customRender: 'associatednetworkname' }
         },
         {
           title: '',
@@ -154,12 +162,13 @@ export default {
         page: this.page,
         pagesize: this.pageSize
       }
-      console.log(this.resource)
       if (this.$route.path.startsWith('/vpc')) {
+        this.networksList = this.resource.network
         params.vpcid = this.resource.id
         params.forvirtualnetwork = true
-        this.fetchNetworks()
-        return
+        if (this.vpcTier) {
+          params.associatednetworkid = this.vpcTier
+        }
       } else {
         params.associatednetworkid = this.resource.id
       }
@@ -171,36 +180,9 @@ export default {
         this.fetchLoading = false
       })
     },
-    fetchNetworks () {
-      this.fetchLoading = true
-      api('listNetworks', {
-        vpcid: this.resource.id,
-        domainid: this.resource.domainid,
-        account: this.resource.account
-      }).then(response => {
-        this.networksList = response.listnetworksresponse.network || []
-        this.defaultNetwork = response.listnetworksresponse.network[0].id || ''
-        console.log('net list = ', this.defaultNetwork)
-      }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
-      }).finally(() => {
-        this.fetchLoading = false
-      })
-    },
     handleTierSelect (tier) {
-      api('listPublicIpAddresses', {
-        associatednetworkid: tier,
-        vpcid: this.resource.id
-      }).then(json => {
-        this.totalTierIps = json.listpublicipaddressesresponse.count || 0
-        this.ipsTiers = json.listpublicipaddressesresponse.publicipaddress || []
-      }).finally(() => {
-        this.fetchLoading = false
-        this.fetchNetworks()
-      })
+      this.vpcTier = tier
+      this.fetchData()
     },
     changePage (page, pageSize) {
       this.page = page
@@ -216,7 +198,7 @@ export default {
       const params = {}
       if (this.$route.path.startsWith('/vpc')) {
         params.vpcid = this.resource.id
-        if (this.vpcTier !== '') {
+        if (this.vpcTier) {
           params.networkid = this.vpcTier
         }
       } else {
