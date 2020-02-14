@@ -30,6 +30,7 @@
       :pagination="{showSizeChanger: true}"
       :rowSelection="rowSelection"
       @change="handleTableChange"
+      :scroll="{ y: 225 }"
     >
       <a-list
         slot="expandedRowRender"

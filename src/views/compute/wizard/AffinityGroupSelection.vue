@@ -30,6 +30,7 @@
       :pagination="{showSizeChanger: true}"
       :rowSelection="rowSelection"
       size="middle"
+      :scroll="{ y: 225 }"
     >
     </a-table>
   </div>

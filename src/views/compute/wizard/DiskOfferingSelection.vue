@@ -30,6 +30,7 @@
       :rowSelection="rowSelection"
       size="middle"
       @change="handleTableChange"
+      :scroll="{ y: 225 }"
     >
       <span slot="diskSizeTitle"><a-icon type="hdd" /> {{ $t('disksize') }}</span>
       <span slot="iopsTitle"><a-icon type="rocket" /> {{ $t('minMaxIops') }}</span>

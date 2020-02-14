@@ -30,6 +30,7 @@
       :rowSelection="rowSelection"
       size="middle"
       @change="handleTableChange"
+      :scroll="{ y: 225 }"
     >
       <template v-slot:account><a-icon type="user" /> {{ $t('account') }}</template>
       <template v-slot:domain><a-icon type="block" /> {{ $t('domain') }}</template>

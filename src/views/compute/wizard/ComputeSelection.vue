@@ -30,6 +30,7 @@
       :loading="loading"
       size="middle"
       @change="handleTableChange"
+      :scroll="{ y: 225 }"
     >
       <span slot="cpuTitle"><a-icon type="appstore" /> {{ $t('cpu') }}</span>
       <span slot="ramTitle"><a-icon type="bulb" /> {{ $t('memory') }}</span>
