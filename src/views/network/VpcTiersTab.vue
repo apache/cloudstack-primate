@@ -57,6 +57,9 @@
               <a-icon type="caret-right" :rotate="props.isActive ? 90 : 0" />
             </template>
             <a-collapse-panel :header="$t('Instances')" key="vm" :style="customStyle">
+              <a-button icon="plus" type="dashed" style="margin-bottom: 15px; width: 100%" @click="$router.push({ path: '/action/deployVirtualMachine?networkid=' + network.id })">
+                {{ $t('Add Instance') }}
+              </a-button>
               <a-table
                 class="table"
                 size="small"
@@ -89,11 +92,7 @@
                 @showSizeChange="changePageSize"
                 showSizeChanger/>
             </a-collapse-panel>
-            <a-collapse-panel
-              key="ilb"
-              :header="$t('Internal LB')"
-              :style="customStyle"
-              :disabled="!showIlb(network)" >
+            <a-collapse-panel :header="$t('Internal LB')" key="ilb" :style="customStyle" :disabled="!showIlb(network)" >
               <a-button icon="plus" type="dashed" style="margin-bottom: 15px; width: 100%" @click="handleAddInternalLB(network.id)">
                 {{ $t('label.add.internal.lb') }}
               </a-button>
