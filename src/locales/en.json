@@ -1067,7 +1067,7 @@
 "defaultNetwork": "Default network",
 "cpu": "CPU",
 "ram": "RAM",
-"ok": "Ok",
+"ok": "OK",
 "minMaxIops": "Min IOPS / Max IOPS",
 "isSelf": "Self",
 "isShared": "Shared",

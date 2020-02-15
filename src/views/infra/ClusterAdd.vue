@@ -18,7 +18,6 @@
 <template>
   <a-spin :spinning="loading">
     <div class="form">
-
       <div class="form__item">
         <div class="form__label"><span class="required">* </span>{{ $t('zonenamelabel') }}</div>
         <a-select v-model="zoneId" @change="fetchPods">
@@ -35,10 +34,10 @@
         <div class="form__label">{{ $t('hypervisor') }}</div>
         <a-select v-model="hypervisor" @change="resetAllFields">
           <a-select-option
-            v-for="hypervisor in hypervisorsList"
-            :value="hypervisor.name"
-            :key="hypervisor.name">
-            {{ hypervisor.name }}
+            v-for="hv in hypervisorsList"
+            :value="hv.name"
+            :key="hv.name">
+            {{ hv.name }}
           </a-select-option>
         </a-select>
       </div>
@@ -61,18 +60,6 @@
         <a-input :placeholder="placeholder.clustername" v-model="clustername"></a-input>
       </div>
 
-      <div class="form__item">
-        <div class="form__label">{{ $t('isDedicated') }}</div>
-        <a-checkbox @change="showDedicated = !showDedicated" />
-      </div>
-
-      <template v-if="showDedicated">
-        <DedicateDomain
-          @domainChange="id => domainId = id"
-          @accountChange="id => dedicatedAccount = id"
-          :error="domainError" />
-      </template>
-
       <template v-if="hypervisor === 'VMware'">
         <div class="form__item">
           <div class="form__label">{{ $t('vCenterHost') }}</div>
@@ -93,7 +80,18 @@
           <div class="form__label">{{ $t('vCenterDataCenter') }}</div>
           <a-input v-model="dataCenter"></a-input>
         </div>
+      </template>
 
+      <div class="form__item">
+        <div class="form__label">{{ $t('isDedicated') }}</div>
+        <a-checkbox @change="toggleDedicated" />
+      </div>
+
+      <template v-if="showDedicated">
+        <DedicateDomain
+          @domainChange="id => dedicatedDomainId = id"
+          @accountChange="id => dedicatedAccount = id"
+          :error="domainError" />
       </template>
 
       <a-divider></a-divider>
@@ -143,7 +141,7 @@ export default {
       hypervisorsList: [],
       podsList: [],
       showDedicated: false,
-      domainId: null,
+      dedicatedDomainId: null,
       dedicatedAccount: null,
       domainError: false,
       params: [],
@@ -157,36 +155,37 @@ export default {
   },
   methods: {
     fetchData () {
-      this.loading = true
       this.fetchZones()
       this.fetchHypervisors()
       this.params = this.$store.getters.apis.addCluster.params
       Object.keys(this.placeholder).forEach(item => { this.returnPlaceholder(item) })
     },
     fetchZones () {
+      this.loading = true
       api('listZones').then(response => {
-        this.zonesList = response.listzonesresponse.zone
-        this.zoneId = this.zonesList[0].id
-        this.loading = false
+        this.zonesList = response.listzonesresponse.zone || []
+        this.zoneId = this.zonesList[0].id || null
         this.fetchPods()
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
+      }).finally(() => {
         this.loading = false
       })
     },
     fetchHypervisors () {
+      this.loading = true
       api('listHypervisors').then(response => {
-        this.hypervisorsList = response.listhypervisorsresponse.hypervisor
-        this.hypervisor = this.hypervisorsList[0].name
-        this.loading = false
+        this.hypervisorsList = response.listhypervisorsresponse.hypervisor || []
+        this.hypervisor = this.hypervisorsList[0].name || null
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
+      }).finally(() => {
         this.loading = false
       })
     },
@@ -195,22 +194,21 @@ export default {
       api('listPods', {
         zoneid: this.zoneId
       }).then(response => {
-        if (response.listpodsresponse.pod) {
-          this.podsList = response.listpodsresponse.pod
-          this.podId = this.podsList[0].id
-        } else {
-          this.podsList = []
-          this.podId = null
-        }
-        this.loading = false
+        this.podsList = response.listpodsresponse.pod || []
+        this.podId = this.podsList[0].id || null
       }).catch(error => {
-        console.log(error)
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
+      }).finally(() => {
         this.loading = false
       })
+    },
+    toggleDedicated () {
+      this.dedicatedDomainId = null
+      this.dedicatedAccount = null
+      this.showDedicated = !this.showDedicated
     },
     handleSubmitForm () {
       if (!this.clustername) {
@@ -247,19 +245,17 @@ export default {
         password: this.password,
         url: this.url
       }).then(response => {
-        if (response.addclusterresponse.cluster[0].id) {
-          this.dedicateCluster(response.addclusterresponse.cluster[0].id)
+        const cluster = response.addclusterresponse.cluster[0] || {}
+        if (cluster.id && this.showDedicated) {
+          this.dedicateCluster(cluster.id)
         }
-        this.loading = false
-        this.parentFetchData()
-        this.fetchPods()
-        this.parentToggleLoading()
-        this.$parent.$parent.close()
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
-          description: error.response.data.addclusterresponse.errortext
+          description: error.response.data.addclusterresponse.errortext,
+          duration: 0
         })
+      }).finally(() => {
         this.loading = false
         this.parentFetchData()
         this.parentToggleLoading()
@@ -270,7 +266,7 @@ export default {
       this.loading = true
       api('dedicateCluster', {
         clusterId,
-        domainId: this.domainId,
+        domainId: this.dedicatedDomainId,
         account: this.dedicatedAccount
       }).then(response => {
         this.$pollJob({
@@ -281,7 +277,7 @@ export default {
             this.$store.dispatch('AddAsyncJob', {
               title: 'Successfully dedicated cluster',
               jobid: response.dedicateclusterresponse.jobid,
-              description: `Domain ID: ${this.dedicatedDomainId}`,
+              description: `Domain ID: ${this.dedicateddedicatedDomainId}`,
               status: 'progress'
             })
           },
@@ -298,13 +294,13 @@ export default {
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
+          description: error.response.data.errorresponse.errortext,
+          duration: 0
         })
         this.loading = false
       })
     },
     resetAllFields () {
-      this.clustername = null
       this.clustertype = 'CloudManaged'
       this.username = null
       this.password = null
@@ -329,7 +325,6 @@ export default {
 
     &__label {
       margin-bottom: 5px;
-      font-weight: bold;
     }
 
     &__item {
@@ -343,7 +338,6 @@ export default {
         width: 400px;
       }
     }
-
   }
 
   .actions {
@@ -355,7 +349,6 @@ export default {
         margin-right: 10px;
       }
     }
-
   }
 
   .required {
@@ -367,8 +360,6 @@ export default {
       &--visible {
         display: block;
       }
-
     }
-
   }
 </style>
