@@ -29,17 +29,19 @@
       </div>
     </a-list-item>
     <DedicateData :resource="resource" v-if="dedicatedSectionActive" />
+    <VmwareData :resource="resource" v-if="$route.meta.name === 'zone' && 'listVmwareDcs' in $store.getters.apis" />
   </a-list>
 </template>
 
 <script>
-
 import DedicateData from './DedicateData'
+import VmwareData from './VmwareData'
 
 export default {
   name: 'DetailsTab',
   components: {
-    DedicateData
+    DedicateData,
+    VmwareData
   },
   props: {
     resource: {
@@ -53,15 +55,19 @@ export default {
   },
   data () {
     return {
+      dedicatedRoutes: ['zone', 'pod', 'cluster', 'host'],
       dedicatedSectionActive: false
     }
   },
+  mounted () {
+    this.dedicatedSectionActive = this.dedicatedRoutes.includes(this.$route.meta.name)
+  },
   created () {
-    this.dedicatedSectionActive = ['zone', 'pod', 'cluster', 'host'].includes(this.$route.meta.name)
+    this.dedicatedSectionActive = this.dedicatedRoutes.includes(this.$route.meta.name)
   },
   watch: {
     $route () {
-      this.dedicatedSectionActive = ['zone', 'pod', 'cluster', 'host'].includes(this.$route.meta.name)
+      this.dedicatedSectionActive = this.dedicatedRoutes.includes(this.$route.meta.name)
     }
   }
 }

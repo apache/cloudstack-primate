@@ -71,7 +71,6 @@
           <div class="resource-detail-item__details">
             <status class="status" :text="resource.state || resource.status"/>
             <span>{{ resource.state || resource.status }}</span>
-            <console style="margin-left: 5px" :resource="resource" size="default" v-if="resource.id" />
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.id">
@@ -424,6 +423,16 @@
           <div class="resource-detail-item__details">
             <a-icon type="calendar" />{{ resource.created }}
           </div>
+        </div>
+        <div class="resource-detail-item" v-if="resource.affinitygroup && resource.affinitygroup.length > 0">
+          <a-icon type="swap" />
+          <span
+            v-for="(group, index) in resource.affinitygroup"
+            :key="group.id"
+          >
+            <router-link :to="{ path: '/affinitygroup/' + group.id }">{{ group.name }}</router-link>
+            <span v-if="index + 1 < resource.affinitygroup.length">, </span>
+          </span>
         </div>
       </div>
 

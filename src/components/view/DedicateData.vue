@@ -16,36 +16,32 @@
 // under the License.
 
 <template>
-  <div>
+  <a-list-item v-if="dedicatedDomainId">
     <div>
-      <a-list-item v-if="dedicatedDomainId">
-        <div>
-          <div style="margin-bottom: 10px;">
-            <strong>{{ $t('dedicated') }}</strong>
-            <div>Yes</div>
-          </div>
-          <p>
-            <strong>{{ $t('domainid') }}</strong><br/>
-            <router-link :to="{ path: '/domain/' + dedicatedDomainId }">{{ dedicatedDomainId }}</router-link>
-          </p>
-          <p v-if="dedicatedAccountId">
-            <strong>{{ $t('account') }}</strong><br/>
-            <router-link :to="{ path: '/account/' + dedicatedAccountId }">{{ dedicatedAccountId }}</router-link>
-          </p>
-          <a-button style="margin-top: 10px;" type="danger" @click="handleRelease">
-            {{ releaseButtonLabel }}
-          </a-button>
-        </div>
-      </a-list-item>
-      <a-list-item v-else>
-        <div>
-          <strong>{{ $t('dedicated') }}</strong>
-          <div>No</div>
-          <a-button type="primary" style="margin-top: 10px;" @click="modalActive = true">
-            {{ dedicatedButtonLabel }}
-          </a-button>
-        </div>
-      </a-list-item>
+      <div style="margin-bottom: 10px;">
+        <strong>{{ $t('dedicated') }}</strong>
+        <div>Yes</div>
+      </div>
+      <p>
+        <strong>{{ $t('domainid') }}</strong><br/>
+        <router-link :to="{ path: '/domain/' + dedicatedDomainId }">{{ dedicatedDomainId }}</router-link>
+      </p>
+      <p v-if="dedicatedAccountId">
+        <strong>{{ $t('account') }}</strong><br/>
+        <router-link :to="{ path: '/account/' + dedicatedAccountId }">{{ dedicatedAccountId }}</router-link>
+      </p>
+      <a-button style="margin-top: 10px; margin-bottom: 10px;" type="danger" @click="handleRelease">
+        {{ releaseButtonLabel }}
+      </a-button>
+    </div>
+  </a-list-item>
+  <a-list-item v-else>
+    <div>
+      <strong>{{ $t('dedicated') }}</strong>
+      <div>No</div>
+      <a-button type="primary" style="margin-top: 10px; margin-bottom: 10px;" @click="modalActive = true">
+        {{ dedicatedButtonLabel }}
+      </a-button>
     </div>
     <DedicateModal
       :resource="resource"
@@ -53,7 +49,7 @@
       :label="dedicatedModalLabel"
       @close="modalActive = false"
       :fetchData="fetchData" />
-  </div>
+  </a-list-item>
 </template>
 
 <script>
@@ -120,7 +116,7 @@ export default {
         zoneid: this.resource.id
       }).then(response => {
         if (response.listdedicatedzonesresponse.dedicatedzone &&
-          response.listdedicatedzonesresponse.dedicatedzone.length > 0) {
+            response.listdedicatedzonesresponse.dedicatedzone.length > 0) {
           this.dedicatedDomainId = response.listdedicatedzonesresponse.dedicatedzone[0].domainid
           this.dedicatedAccountId = response.listdedicatedzonesresponse.dedicatedzone[0].accountid
         }
@@ -136,7 +132,7 @@ export default {
         podid: this.resource.id
       }).then(response => {
         if (response.listdedicatedpodsresponse.dedicatedpod &&
-          response.listdedicatedpodsresponse.dedicatedpod.length > 0) {
+            response.listdedicatedpodsresponse.dedicatedpod.length > 0) {
           this.dedicatedDomainId = response.listdedicatedpodsresponse.dedicatedpod[0].domainid
           this.dedicatedAccountId = response.listdedicatedpodsresponse.dedicatedpod[0].accountid
         }
@@ -152,7 +148,7 @@ export default {
         clusterid: this.resource.id
       }).then(response => {
         if (response.listdedicatedclustersresponse.dedicatedcluster &&
-          response.listdedicatedclustersresponse.dedicatedcluster.length > 0) {
+            response.listdedicatedclustersresponse.dedicatedcluster.length > 0) {
           this.dedicatedDomainId = response.listdedicatedclustersresponse.dedicatedcluster[0].domainid
           this.dedicatedAccountId = response.listdedicatedclustersresponse.dedicatedcluster[0].accountid
         }
@@ -168,7 +164,7 @@ export default {
         hostid: this.resource.id
       }).then(response => {
         if (response.listdedicatedhostsresponse.dedicatedhost &&
-          response.listdedicatedhostsresponse.dedicatedhost.length > 0) {
+            response.listdedicatedhostsresponse.dedicatedhost.length > 0) {
           this.dedicatedDomainId = response.listdedicatedhostsresponse.dedicatedhost[0].domainid
           this.dedicatedAccountId = response.listdedicatedhostsresponse.dedicatedhost[0].accountid
         }

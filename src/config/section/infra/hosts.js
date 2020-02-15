@@ -128,8 +128,8 @@ export default {
       label: 'label.outofbandmanagement.enable',
       dataView: true,
       show: (record) => {
-        return !record.resourcedetails || !record.resourcedetails.outOfBandManagementEnabled ||
-          record.resourcedetails.outOfBandManagementEnabled === 'false'
+        return !record.outofbandmanagement || !record.outofbandmanagement.enabled ||
+          record.outofbandmanagement.enabled === false
       },
       args: ['hostid'],
       mapping: {
@@ -144,8 +144,8 @@ export default {
       label: 'label.outofbandmanagement.disable',
       dataView: true,
       show: (record) => {
-        return record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
-          record.resourcedetails.outOfBandManagementEnabled === 'true'
+        return record.outofbandmanagement && record.outofbandmanagement.enabled &&
+          record.outofbandmanagement.enabled === true
       },
       args: ['hostid'],
       mapping: {
@@ -160,8 +160,8 @@ export default {
       label: 'label.outofbandmanagement.action.issue',
       dataView: true,
       show: (record) => {
-        return record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
-          record.resourcedetails.outOfBandManagementEnabled === 'true'
+        return record.outofbandmanagement && record.outofbandmanagement.enabled &&
+        record.outofbandmanagement.enabled === true
       },
       args: ['hostid', 'action'],
       mapping: {
@@ -176,8 +176,8 @@ export default {
       label: 'label.outofbandmanagement.changepassword',
       dataView: true,
       show: (record) => {
-        return record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
-          record.resourcedetails.outOfBandManagementEnabled === 'true'
+        return record.outofbandmanagement && record.outofbandmanagement.enabled &&
+          record.outofbandmanagement.enabled === true
       },
       args: ['hostid', 'password'],
       mapping: {
@@ -208,8 +208,7 @@ export default {
       label: 'label.ha.enable',
       dataView: true,
       show: (record) => {
-        return !record.resourcedetails || !record.resourcedetails.resourceHAEnabled ||
-          record.resourcedetails.resourceHAEnabled === 'false'
+        return !record.hostha || !record.hostha.haenable || record.hostha.haenable === false
       },
       args: ['hostid'],
       mapping: {
@@ -224,8 +223,8 @@ export default {
       label: 'label.ha.disable',
       dataView: true,
       show: (record) => {
-        return record.resourcedetails && record.resourcedetails.resourceHAEnabled &&
-          record.resourcedetails.resourceHAEnabled === 'true'
+        return record.hostha && record.hostha.haenable &&
+        record.hostha.haenable === true
       },
       args: ['hostid'],
       mapping: {
