@@ -81,22 +81,18 @@
       <a-form-item class="form__item" :label="$t('reservedSystemEndIp')">
         <a-input
           :placeholder="placeholder.endip"
-          v-decorator="[
-            'endip',
-            {
-              rules: [{ required: true, message: 'required' }]
-            }]"
+          v-decorator="['endip']"
         />
       </a-form-item>
 
       <div class="form__item">
         <div class="form__label">{{ $t('isDedicated') }}</div>
-        <a-checkbox @change="showDedicated = !showDedicated" />
+        <a-checkbox @change="toggleDedicate" />
       </div>
 
       <template v-if="showDedicated">
         <DedicateDomain
-          @domainChange="id => domainId = id"
+          @domainChange="id => dedicatedDomainId = id"
           @accountChange="id => dedicatedAccount = id"
           :error="domainError" />
       </template>
@@ -105,7 +101,7 @@
 
       <div class="actions">
         <a-button @click="() => this.$parent.$parent.close()">{{ $t('cancel') }}</a-button>
-        <a-button @click="handleSubmit" type="primary">{{ $t('ok') }}</a-button>
+        <a-button @click="handleSubmit" type="primary">{{ $t('OK') }}</a-button>
       </div>
 
     </a-form>
@@ -133,10 +129,10 @@ export default {
       loading: false,
       zonesList: [],
       zoneId: null,
-      domainId: null,
+      showDedicated: false,
+      dedicatedDomainId: null,
       dedicatedAccount: null,
       domainError: false,
-      showDedicated: false,
       params: [],
       placeholder: {
         name: null,
@@ -173,24 +169,28 @@ export default {
         this.loading = false
       })
     },
+    toggleDedicate () {
+      this.showDedicated = !this.showDedicated
+      this.dedicatedDomainId = null
+      this.dedicatedAccount = null
+    },
     handleSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
         if (err) return
-        console.log(values)
-        this.loading = true
 
+        this.loading = true
         api('createPod', {
           zoneId: values.zoneid,
           name: values.name,
           gateway: values.gateway,
           netmask: values.netmask,
-          startIp: values.startip,
-          endIp: values.endip
+          startip: values.startip,
+          endip: values.endip
         }).then(response => {
-          // RESPONSE
-          if (response.addpodresponse.pod[0].id) {
-            this.dedicatePod(response.addpodresponse.pod[0].id)
+          const pod = response.createpodresponse.pod || {}
+          if (pod && pod.id && this.showDedicated) {
+            this.dedicatePod(pod.id)
           }
           this.loading = false
           this.parentFetchData()
@@ -198,7 +198,8 @@ export default {
         }).catch(error => {
           this.$notification.error({
             message: `Error ${error.response.status}`,
-            description: error.response.data.createpodresponse.errortext
+            description: error.response.data.createpodresponse.errortext,
+            duration: 0
           })
           this.loading = false
           this.parentFetchData()
@@ -208,9 +209,9 @@ export default {
     },
     dedicatePod (podId) {
       this.loading = true
-      api('dedicateCluster', {
+      api('dedicatePod', {
         podId,
-        domainId: this.domainId,
+        domainid: this.dedicatedDomainId,
         account: this.dedicatedAccount
       }).then(response => {
         this.$pollJob({
@@ -238,7 +239,8 @@ export default {
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
+          description: error.response.data.errorresponse.errortext,
+          duration: 0
         })
         this.loading = false
       })
@@ -257,7 +259,6 @@ export default {
 
     &__label {
       margin-bottom: 5px;
-      font-weight: bold;
     }
 
     &__item {
