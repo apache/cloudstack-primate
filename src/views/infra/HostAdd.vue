@@ -100,6 +100,18 @@
         </a-select>
       </div>
 
+      <div class="form__item">
+        <div class="form__label">{{ $t('isDedicated') }}</div>
+        <a-checkbox @change="toggleDedicated" />
+      </div>
+
+      <template v-if="showDedicated">
+        <DedicateDomain
+          @domainChange="id => dedicatedDomainId = id"
+          @accountChange="id => dedicatedAccount = id"
+          :error="domainError" />
+      </template>
+
       <a-divider></a-divider>
 
       <div class="actions">
@@ -113,9 +125,13 @@
 
 <script>
 import { api } from '@/api'
+import DedicateDomain from '../../components/view/DedicateDomain'
 
 export default {
   name: 'HostAdd',
+  components: {
+    DedicateDomain
+  },
   props: {
     resource: {
       type: Object,
@@ -148,6 +164,10 @@ export default {
       agentport: null,
       selectedCluster: null,
       selectedClusterHyperVisorType: null,
+      showDedicated: false,
+      dedicatedDomainId: null,
+      dedicatedAccount: null,
+      domainError: false,
       params: [],
       placeholder: {
         username: null,
@@ -161,23 +181,23 @@ export default {
   },
   methods: {
     fetchData () {
-      this.loading = true
       this.fetchZones()
       this.fetchHostTags()
       this.params = this.$store.getters.apis.addHost.params
       Object.keys(this.placeholder).forEach(item => { this.returnPlaceholder(item) })
     },
     fetchZones () {
+      this.loading = true
       api('listZones').then(response => {
-        this.zonesList = response.listzonesresponse.zone
-        this.zoneId = this.zonesList[0].id
-        this.loading = false
+        this.zonesList = response.listzonesresponse.zone || []
+        this.zoneId = this.zonesList[0].id || null
         this.fetchPods()
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
+      }).finally(() => {
         this.loading = false
       })
     },
@@ -186,23 +206,17 @@ export default {
       api('listPods', {
         zoneid: this.zoneId
       }).then(response => {
-        if (response.listpodsresponse.pod) {
-          this.podsList = response.listpodsresponse.pod
-          this.podId = this.podsList[0].id
-        } else {
-          this.podsList = []
-          this.podId = ''
-        }
+        this.podsList = response.listpodsresponse.pod || []
+        this.podId = this.podsList[0].id || null
         this.fetchClusters()
-        this.loading = false
       }).catch(error => {
-        console.log(error)
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
         this.podsList = []
         this.podId = ''
+      }).finally(() => {
         this.loading = false
       })
     },
@@ -211,15 +225,11 @@ export default {
       api('listClusters', {
         podid: this.podId
       }).then(response => {
-        if (response.listclustersresponse.cluster) {
-          this.clustersList = response.listclustersresponse.cluster
-          this.clusterId = this.clustersList[0].id
+        this.clustersList = response.listclustersresponse.cluster || []
+        this.clusterId = this.clustersList[0].id || null
+        if (this.clusterId) {
           this.handleChangeCluster()
-        } else {
-          this.clustersList = []
-          this.clusterId = null
         }
-        this.loading = false
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
@@ -227,30 +237,32 @@ export default {
         })
         this.clustersList = []
         this.clusterId = null
+      }).finally(() => {
         this.loading = false
       })
     },
     fetchHostTags () {
       this.loading = true
       api('listHostTags').then(response => {
-        if (response.listhosttagsresponse.hosttag) {
-          this.hostTagsList = response.listhosttagsresponse.hosttag
-        } else {
-          this.hostTagsList = []
-        }
-        this.loading = false
+        this.hostTagsList = response.listhosttagsresponse.hosttag || []
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.listhosttagsresponse.errortext
         })
         this.hostTagsList = []
+      }).finally(() => {
         this.loading = false
       })
     },
     handleChangeCluster () {
       this.selectedCluster = this.clustersList.find(i => i.id === this.clusterId)
       this.selectedClusterHyperVisorType = this.selectedCluster.hypervisortype
+    },
+    toggleDedicated () {
+      this.dedicatedDomainId = null
+      this.dedicatedAccount = null
+      this.showDedicated = !this.showDedicated
     },
     handleSubmitForm () {
       const requiredFields = document.querySelectorAll('.required-field')
@@ -305,12 +317,56 @@ export default {
 
       this.loading = true
       api('addHost', {}, 'POST', args).then(response => {
-        // RESPONSE
-        this.loading = false
+        const host = response.addhostresponse.host[0] || {}
+        if (host.id && this.showDedicated) {
+          this.dedicateHost(host.id)
+        }
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
-          description: error.response.data.addhostresponse.errortext
+          description: error.response.data.addhostresponse.errortext,
+          duration: 0
+        })
+      }).finally(() => {
+        this.loading = false
+        this.parentFetchData()
+        this.$parent.$parent.close()
+      })
+    },
+    dedicateHost (hostId) {
+      this.loading = true
+      api('dedicateHost', {
+        hostId,
+        domainId: this.dedicatedDomainId,
+        account: this.dedicatedAccount
+      }).then(response => {
+        this.$pollJob({
+          jobId: response.dedicatehostresponse.jobid,
+          successMessage: `Successfully dedicated host`,
+          successMethod: () => {
+            this.loading = false
+            this.$store.dispatch('AddAsyncJob', {
+              title: 'Successfully dedicated host',
+              jobid: response.dedicatehostresponse.jobid,
+              description: `Domain ID: ${this.dedicatedDomainId}`,
+              status: 'progress'
+            })
+          },
+          errorMessage: 'Failed to dedicate host',
+          errorMethod: () => {
+            this.loading = false
+          },
+          loadingMessage: `Dedicating host...`,
+          catchMessage: 'Error encountered while fetching async job result',
+          catchMethod: () => {
+            this.loading = false
+          }
+        })
+      }).catch(error => {
+        this.$notification.error({
+          message: `Error ${error.response.status}`,
+          description: error.response.data.errorresponse.errortext,
+          duration: 0
         })
         this.loading = false
       })
@@ -328,7 +384,6 @@ export default {
   .form {
     &__label {
       margin-bottom: 5px;
-      font-weight: bold;
     }
     &__item {
       margin-bottom: 20px;
