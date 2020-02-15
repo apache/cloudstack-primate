@@ -151,14 +151,13 @@ export default {
   },
   methods: {
     fetchData () {
-      this.loading = true
       this.fetchZones()
     },
     fetchZones () {
+      this.loading = true
       api('listZones').then(response => {
-        this.zonesList = response.listzonesresponse.zone
+        this.zonesList = response.listzonesresponse.zone || []
         this.zoneId = this.zonesList[0].id
-        this.loading = false
         this.params = this.$store.getters.apis.createPod.params
         Object.keys(this.placeholder).forEach(item => { this.returnPlaceholder(item) })
       }).catch(error => {
@@ -166,6 +165,7 @@ export default {
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
+      }).finally(() => {
         this.loading = false
       })
     },
