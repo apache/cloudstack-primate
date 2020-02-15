@@ -15,25 +15,49 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//* import all  ## official ant ##  variables; mixins and styles
-@import "~ant-design-vue/lib/style/themes/default";
-@import "~ant-design-vue/lib/style/core/index";
+<template>
+  <a-spin :spinning="fetchLoading">
+    IP Ranges Tab here
+  </a-spin>
+</template>
 
-//* import all  ## custom ##  variables, mixins and styles
+<script>
 
+export default {
+  name: 'IpRangesTab',
+  props: {
+    resource: {
+      type: Object,
+      required: true
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
+  data () {
+    return {
+      fetchLoading: false
+    }
+  },
+  mounted () {
+    this.fetchData()
+  },
+  watch: {
+    loading (newData, oldData) {
+      if (!newData && this.resource.id) {
+        this.fetchData()
+      }
+    }
+  },
+  methods: {
+    fetchData () {
+      // List existing IP range etc.
+    }
+  }
+}
+</script>
 
-@import "variables/prefixes";
+<style lang="less" scoped>
 
-@import "common/common";
-
-@import "layout/ant";
-@import "layout/inverted-mode";
-@import "ant-overwrite/ant-layout-header";
-@import "ant-overwrite/ant-progress";
-@import "ant-overwrite/ant-form";
-
-@import "frame/content";
-@import "frame/search";
-@import "frame/top-menu";
-
-@import "objects/table";
+</style>

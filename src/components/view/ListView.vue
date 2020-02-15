@@ -33,6 +33,7 @@
       </span>
     </template>
 
+    <!--
     <div slot="expandedRowRender" slot-scope="resource">
       <info-card :resource="resource" style="margin-left: 0px; width: 50%">
         <div slot="actions" style="padding-top: 12px">
@@ -57,6 +58,7 @@
         </div>
       </info-card>
     </div>
+    -->
 
     <a slot="name" slot-scope="text, record" href="javascript:;">
       <div style="min-width: 120px">
@@ -85,10 +87,16 @@
     <a slot="publicip" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
     </a>
+    <a slot="traffictype" slot-scope="text, record" href="javascript:;">
+      <router-link :to="{ path: $route.path + '/' + record.id + '?physicalnetworkid=' + record.physicalnetworkid }">{{ text }}</router-link>
+    </a>
     <a slot="vmname" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: '/vm/' + record.virtualmachineid }">{{ text }}</router-link>
     </a>
     <template slot="state" slot-scope="text">
+      <status :text="text ? text : ''" displayText />
+    </template>
+    <template slot="agentstate" slot-scope="text">
       <status :text="text ? text : ''" displayText />
     </template>
     <a slot="guestnetworkname" slot-scope="text, record" href="javascript:;">

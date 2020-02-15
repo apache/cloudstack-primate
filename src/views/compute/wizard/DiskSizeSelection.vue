@@ -15,25 +15,41 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//* import all  ## official ant ##  variables; mixins and styles
-@import "~ant-design-vue/lib/style/themes/default";
-@import "~ant-design-vue/lib/style/core/index";
+<template>
+  <a-form-item :label="this.$t('diskSize')">
+    <a-row>
+      <a-col :span="10">
+        <a-slider
+          :min="0"
+          :max="1024"
+          v-decorator="[inputDecorator]"
+        />
+      </a-col>
+      <a-col :span="4">
+        <a-input-number
+          v-decorator="[inputDecorator, {
+            rules: [{ required: false, message: 'Please enter a number' }]
+          }]"
+          :formatter="value => `${value} GB`"
+          :parser="value => value.replace(' GB', '')"
+        />
+      </a-col>
+    </a-row>
+  </a-form-item>
+</template>
 
-//* import all  ## custom ##  variables, mixins and styles
+<script>
+export default {
+  name: 'DiskSizeSelection',
+  props: {
+    inputDecorator: {
+      type: String,
+      default: ''
+    }
+  }
+}
+</script>
 
+<style scoped>
 
-@import "variables/prefixes";
-
-@import "common/common";
-
-@import "layout/ant";
-@import "layout/inverted-mode";
-@import "ant-overwrite/ant-layout-header";
-@import "ant-overwrite/ant-progress";
-@import "ant-overwrite/ant-form";
-
-@import "frame/content";
-@import "frame/search";
-@import "frame/top-menu";
-
-@import "objects/table";
+</style>
