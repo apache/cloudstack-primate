@@ -17,43 +17,47 @@
 
 <template>
   <a-spin :spinning="fetchLoading">
-    <!-- TODO: implement support for config drive, vpc router, ilbvm, virtual router -->
     <a-tabs :tabPosition="device === 'mobile' ? 'top' : 'left'" :animated="false">
-      <a-tab-pane v-for="nsp in Object.values(nsps).sort(sortFunc)" :key="nsp.name">
+      <a-tab-pane v-for="nsp in hardcodedNsps" :key="nsp">
         <span slot="tab">
-          {{ nsp.name }}
-          <status :text="nsp.state" style="margin-bottom: 6px; margin-left: 6px" />
+          {{ nsp }}
+          <status :text="nsp in nsps ? nsps[nsp].state : 'Disabled'" style="margin-bottom: 6px; margin-left: 6px" />
         </span>
-        <!-- <router-link :to="{ path: '/nsp/' + nsp.id + '?name=' + nsp.name + '&physicalnetworkid=' + resource.id }">{{ nsp.name }} </router-link> -->
         <a-list size="small" :dataSource="details">
           <a-list-item
             slot="renderItem"
-            slot-scope="item"
-            v-if="item in nsp && nsp[item].length"
-          >
+            slot-scope="item">
             <div>
               <strong>{{ $t(item) }}</strong>
               <br />
-              <div>
-                <status :text="nsp.state" v-if="item === 'state'" style="margin-bottom: 6px" />
-                {{ Array.isArray(nsp[item]) ? nsp[item].join(", ") : nsp[item] }}
+              <div v-if="item === 'name'">
+                <span v-if="nsp in nsps">
+                  <router-link :to="{ path: '/nsp/' + nsps[nsp].id + '?name=' + nsps[nsp].name + '&physicalnetworkid=' + resource.id }">
+                    {{ nsps[nsp].name }}
+                  </router-link>
+                </span>
+                <span v-else>
+                  {{ nsp }}
+                </span>
+              </div>
+              <div v-else-if="item === 'state'">
+                <status :text="nsp in nsps ? nsps[nsp].state : 'Disabled'" displayText />
+              </div>
+              <div v-else-if="item === 'id'">
+                <span v-if="nsp in nsps"> {{ nsps[nsp].id }} </span>
+              </div>
+              <div v-else-if="item === 'servicelist'">
+                <span v-if="nsp in nsps"> {{ nsps[nsp].servicelist.join(', ') }} </span>
               </div>
             </div>
           </a-list-item>
         </a-list>
-        <a-button
-          v-if="nsp.id"
-          type="primary"
-          style="margin-top: 10px; margin-bottom: 10px;"
-          @click="toggleServiceProvider(nsp)"
-        >{{ toggleState(nsp.state).slice(0, -1) }}</a-button>
       </a-tab-pane>
     </a-tabs>
   </a-spin>
 </template>
 
 <script>
-import Vue from 'vue'
 import { api } from '@/api'
 import { mixinDevice } from '@/utils/mixin.js'
 import Status from '@/components/widgets/Status'
@@ -77,10 +81,27 @@ export default {
   data () {
     return {
       nsps: {},
-      details: ['name', 'id', 'state', 'servicelist'],
-      hardcodedNsps: ['PaloAlto', 'Ovs', 'Netscaler', 'VirtualRouter', 'NiciraNvp', 'BigSwitchBcf', 'BaremetalDhcpProvider',
-        'BaremetalPxeProvider', 'Opendaylight', 'F5BigIp', 'JuniperSRX', 'SecurityGroupProvider', 'BrocadeVcs', 'GloboDns', 'ConfigDrive',
-        'InternalLbVm', 'VpcVirtualRouter'],
+      details: ['name', 'state', 'id', 'servicelist'],
+      hardcodedNsps: [
+        'BaremetalDhcpProvider',
+        'BaremetalPxeProvider',
+        'BigSwitchBcf',
+        'BrocadeVcs',
+        'CiscoVnmc',
+        'ConfigDrive',
+        'F5BigIp',
+        'GloboDns',
+        'InternalLbVm',
+        'JuniperSRX',
+        'Netscaler',
+        'NiciraNvp',
+        'Opendaylight',
+        'Ovs',
+        'PaloAlto',
+        'SecurityGroupProvider',
+        'VirtualRouter',
+        'VpcVirtualRouter'
+      ],
       fetchLoading: false
     }
   },
@@ -97,74 +118,25 @@ export default {
   methods: {
     fetchData () {
       this.fetchServiceProvider()
-      for (var nsp of this.hardcodedNsps) {
-        this.fetchServiceProvider(nsp)
-      }
     },
     fetchServiceProvider (name) {
       this.fetchLoading = true
-      api('listNetworkServiceProviders', { physicalnetworkid: this.resource.id, name: name })
-        .then(json => {
-          var data = json.listnetworkserviceprovidersresponse.networkserviceprovider || []
-          if (data.length) {
-            for (var key in data) {
-              Vue.set(this.nsps, data[key].name, data[key])
-            }
-          } else {
-            this.nsps[name] = {
-              name: name,
-              state: 'Disabled'
-            }
+      api('listNetworkServiceProviders', { physicalnetworkid: this.resource.id, name: name }).then(json => {
+        var sps = json.listnetworkserviceprovidersresponse.networkserviceprovider || []
+        if (sps.length > 0) {
+          for (const sp of sps) {
+            this.nsps[sp.name] = sp
           }
+        }
+      }).catch(error => {
+        this.$notification.error({
+          message: 'Request Failed',
+          description: error,
+          duration: 0
         })
-        .catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: error
-          })
-        })
-        .finally(() => {
-          this.fetchLoading = false
-        })
-    },
-    sortFunc (a, b) {
-      if (a.state === b.state) {
-        return a.name > b.name
-      }
-      return a.state < b.state
-    },
-    toggleState (state) {
-      return state === 'Enabled' ? 'Disabled' : 'Enabled'
-    },
-    toggleServiceProvider (nsp) {
-      api('updateNetworkServiceProvider', {
-        id: nsp.id,
-        state: this.toggleState(nsp.state)
+      }).finally(() => {
+        this.fetchLoading = false
       })
-        .then(response => {
-          this.$pollJob({
-            jobId: response.updatenetworkserviceproviderresponse.jobid,
-            successMessage: 'Successfully updated ' + nsp.name,
-            successMethod: () => {
-              this.fetchData()
-            },
-            errorMessage: 'Updating ' + nsp.name + ' failed',
-            errorMethod: () => {
-              this.fetchData()
-            },
-            loadingMessage: 'Updating ' + nsp.name + '...',
-            catchMessage: 'Error encountered while fetching async job result',
-            catchMethod: () => {
-              this.fetchData()
-            }
-          })
-        })
-        .catch(error => {
-          this.$notification.error({
-            message: `Error ${error}`,
-            description: error
-          })
-        })
     }
   }
 }
