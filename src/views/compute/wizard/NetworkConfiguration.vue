@@ -23,6 +23,7 @@
     :rowSelection="rowSelection"
     :rowKey="record => record.id"
     size="middle"
+    :scroll="{ y: 225 }"
   >
     <template slot="ipAddress" slot-scope="text, record">
       <a-input
