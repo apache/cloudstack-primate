@@ -227,7 +227,7 @@
         :pageSize="pageSize"
         :total="itemCount"
         :showTotal="total => `Total ${total} items`"
-        :pageSizeOptions="['10', '20', '40', '80', '100']"
+        :pageSizeOptions="['20', '40', '80', '100', '500']"
         @change="changePage"
         @showSizeChange="changePageSize"
         showSizeChanger
@@ -289,7 +289,7 @@ export default {
       items: [],
       itemCount: 0,
       page: 1,
-      pageSize: 10,
+      pageSize: 20,
       searchQuery: '',
       resource: {},
       selectedRowKeys: [],

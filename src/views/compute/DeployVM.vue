@@ -32,7 +32,6 @@
                     <a-form-item :label="this.$t('name')">
                       <a-input
                         v-decorator="['name']"
-                        :placeholder="apiParams.name.description"
                       />
                     </a-form-item>
                     <a-form-item :label="this.$t('zoneid')">
@@ -40,7 +39,6 @@
                         v-decorator="['zoneid', {
                           rules: [{ required: true, message: 'Please select option' }]
                         }]"
-                        :placeholder="apiParams.zoneid.description"
                         :options="zoneSelectOptions"
                         @change="onSelectZoneId"
                         :loading="loading.zones"
@@ -49,7 +47,6 @@
                     <a-form-item :label="this.$t('podId')">
                       <a-select
                         v-decorator="['podid']"
-                        :placeholder="apiParams.podid.description"
                         :options="podSelectOptions"
                         :loading="loading.pods"
                       ></a-select>
@@ -57,7 +54,6 @@
                     <a-form-item :label="this.$t('clusterid')">
                       <a-select
                         v-decorator="['clusterid']"
-                        :placeholder="apiParams.clusterid.description"
                         :options="clusterSelectOptions"
                         :loading="loading.clusters"
                       ></a-select>
@@ -65,7 +61,6 @@
                     <a-form-item :label="this.$t('hostId')">
                       <a-select
                         v-decorator="['hostid']"
-                        :placeholder="apiParams.hostid.description"
                         :options="hostSelectOptions"
                         :loading="loading.hosts"
                       ></a-select>
