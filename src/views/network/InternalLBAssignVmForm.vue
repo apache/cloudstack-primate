@@ -20,12 +20,12 @@
     <div>
       <div class="vm-modal__header">
         <span style="min-width: 200px;">{{ $t('name') }}</span>
+        <span>{{ $t('state') }}</span>
         <span>{{ $t('instancename') }}</span>
         <span>{{ $t('displayname') }}</span>
         <span>{{ $t('ip') }}</span>
         <span>{{ $t('account') }}</span>
         <span>{{ $t('zonenamelabel') }}</span>
-        <span>{{ $t('state') }}</span>
         <span>{{ $t('select') }}</span>
       </div>
 
@@ -46,12 +46,12 @@
               </a-select-option>
             </a-select>
           </span>
+          <span><status :text="vm.state" displayText /></span>
           <span>{{ vm.instancename }}</span>
           <span>{{ vm.displayname }}</span>
           <span></span>
           <span>{{ vm.account }}</span>
           <span>{{ vm.zonename }}</span>
-          <span>{{ vm.state }}</span>
           <a-checkbox :value="vm.id" @change="e => fetchNics(e, index)" />
         </div>
         <a-divider/>
