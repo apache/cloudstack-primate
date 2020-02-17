@@ -79,27 +79,29 @@
                 <template slot="description">
                   <div v-if="zoneSelected" style="margin-top: 15px">
                     <a-card
-                      :title="this.$t('Templates')"
-                      :loading="loading.templates">
-                      <template-iso-selection
-                        input-decorator="templateid"
-                        :items="options.templates"
-                        :selected="templateIsoKey"
-                        @update-template-iso="updateFieldValue"
-                      ></template-iso-selection>
-                      <disk-size-selection
-                        input-decorator="rootdisksize"
-                        @update-disk-size="updateFieldValue"/>
-                    </a-card>
-                    <a-card
-                      :title="this.$t('ISOs')"
-                      :loading="loading.isos">
-                      <template-iso-selection
-                        input-decorator="isoid"
-                        :items="options.isos"
-                        :selected="templateIsoKey"
-                        @update-template-iso="updateFieldValue"
-                      ></template-iso-selection>
+                      :tabList="tabList"
+                      :activeTabKey="tabKey"
+                      @tabChange="key => onTabChange(key, 'tabKey')">
+                      <p v-if="tabKey === 'templateid'">
+                        <template-iso-selection
+                          input-decorator="templateid"
+                          :items="options.templates"
+                          :selected="tabKey"
+                          @update-template-iso="updateFieldValue"
+                          v-if="options.templates.length > 0"
+                        ></template-iso-selection>
+                        <disk-size-selection
+                          input-decorator="rootdisksize"
+                          @update-disk-size="updateFieldValue"/>
+                      </p>
+                      <p v-else>
+                        <template-iso-selection
+                          input-decorator="isoid"
+                          :items="options.isos"
+                          :selected="tabKey"
+                          @update-template-iso="updateFieldValue"
+                        ></template-iso-selection>
+                      </p>
                     </a-card>
                     <a-form-item class="form-item-hidden">
                       <a-input v-decorator="['templateid']"/>
@@ -209,7 +211,7 @@
                 {{ this.$t('cancel') }}
               </a-button>
               <a-button type="primary" @click="handleSubmit" :loading="loading.deploy">
-                <a-icon type="poweroff" />
+                <a-icon type="rocket" />
                 {{ this.$t('Launch VM') }}
               </a-button>
             </div>
@@ -332,7 +334,17 @@ export default {
       initDataConfig: {},
       defaultNetwork: '',
       networkConfig: [],
-      templateIsoKey: 'templateid'
+      tabList: [
+        {
+          key: 'templateid',
+          tab: this.$t('Templates')
+        },
+        {
+          key: 'isoid',
+          tab: this.$t('ISOs')
+        }
+      ],
+      tabKey: 'templateid'
     }
   },
   computed: {
@@ -572,13 +584,13 @@ export default {
     },
     updateFieldValue (name, value) {
       if (name === 'templateid') {
-        this.templateIsoKey = 'templateid'
+        this.tabKey = 'templateid'
         this.form.setFieldsValue({
           templateid: value,
           isoid: undefined
         })
       } else if (name === 'isoid') {
-        this.templateIsoKey = 'isoid'
+        this.tabKey = 'isoid'
         this.form.setFieldsValue({
           isoid: value,
           templateid: undefined
@@ -595,6 +607,12 @@ export default {
       })
     },
     updateDiskOffering (id) {
+      if (id === '0') {
+        this.form.setFieldsValue({
+          diskofferingid: undefined
+        })
+        return
+      }
       this.form.setFieldsValue({
         diskofferingid: id
       })
@@ -616,6 +634,12 @@ export default {
       this.networkConfig = networks
     },
     updateSshKeyPairs (name) {
+      if (name === this.$t('noselect')) {
+        this.form.setFieldsValue({
+          keypair: undefined
+        })
+        return
+      }
       this.form.setFieldsValue({
         keypair: name
       })
@@ -637,7 +661,7 @@ export default {
         deployVmData.clusterid = values.clusterid
         deployVmData.hostid = values.hostid
         // step 2: select template/iso
-        if (this.templateIsoKey === 'templateid') {
+        if (this.tabKey === 'templateid') {
           deployVmData.templateid = values.templateid
         } else {
           deployVmData.templateid = values.isoid
@@ -792,16 +816,16 @@ export default {
       _.each(this.params, (param, name) => {
         this.fetchOptions(param, name, ['zones'])
       })
-      this.fetchAllIsos()
-    },
-    onTemplatesIsosCollapseChange (key) {
-      if (key === 'isos' && this.options.isos.length === 0) {
-        this.fetchAllIsos()
-      }
     },
     handleSearchFilter (name, options) {
       this.params[name].options = { ...options }
       this.fetchOptions(this.params[name], name)
+    },
+    onTabChange (key, type) {
+      this[type] = key
+      if (key === 'isoid') {
+        this.fetchAllIsos()
+      }
     }
   }
 }

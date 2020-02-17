@@ -16,31 +16,24 @@
 // under the License.
 
 <template>
-  <a-tabs :defaultActiveKey="Object.keys(osTypes)[0]" v-if="view === TAB_VIEW">
-    <a-button icon="search" slot="tabBarExtraContent" @click="() => toggleView(FILTER_VIEW)"/>
-    <a-tab-pane v-for="(osList, osName) in osTypes" :key="osName">
-      <span slot="tab">
-        <os-logo :os-name="osName"></os-logo>
-      </span>
-      <TemplateIsoRadioGroup
-        :osList="osList"
-        :input-decorator="inputDecorator"
-        :selected="selected"
-        @emit-update-template-iso="updateTemplateIso"
-      ></TemplateIsoRadioGroup>
-    </a-tab-pane>
-  </a-tabs>
-  <div v-else>
-    <a-input class="search-input" v-model="filter">
-      <a-icon slot="prefix" type="search"/>
-      <a-icon slot="addonAfter" type="close" @click="toggleView(TAB_VIEW)"/>
-    </a-input>
-    <TemplateIsoRadioGroup
-      :osList="filteredItems"
-      :input-decorator="inputDecorator"
-      :selected="selected"
-      @emit-update-template-iso="updateTemplateIso"
-    ></TemplateIsoRadioGroup>
+  <div>
+    <a-input-search
+      class="search-input"
+      placeholder="Search"
+      v-model="filter" />
+    <a-tabs style="width: 100%;" :defaultActiveKey="Object.keys(osTypes)[0]">
+      <a-tab-pane v-for="(osList, osName) in osTypes" :key="osName">
+        <span slot="tab">
+          <os-logo :os-name="osName"></os-logo>
+        </span>
+        <TemplateIsoRadioGroup
+          :osList="filteredItems"
+          :input-decorator="inputDecorator"
+          :selected="selected"
+          @emit-update-template-iso="updateTemplateIso"
+        ></TemplateIsoRadioGroup>
+      </a-tab-pane>
+    </a-tabs>
   </div>
 </template>
 
@@ -107,7 +100,7 @@ export default {
     },
     filter (filterString) {
       if (filterString !== '') {
-        this.filteredItems = this.filteredItems.filter((item) => item.displaytext.toLowerCase().includes(filterString))
+        this.filteredItems = this.items.filter((item) => item.displaytext.toLowerCase().includes(filterString.toLowerCase()))
       } else {
         this.filteredItems = this.items
       }
@@ -126,7 +119,11 @@ export default {
 
 <style lang="less" scoped>
   .search-input {
-    margin: 0.5rem 0 1rem;
+    width: 25vw;
+    z-index: 8;
+    position: absolute;
+    top: 11px;
+    right: 10px;
   }
 
   /deep/.ant-tabs-nav-scroll {

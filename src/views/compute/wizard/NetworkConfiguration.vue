@@ -18,7 +18,7 @@
 <template>
   <a-table
     :columns="columns"
-    :dataSource="items"
+    :dataSource="dataItems"
     :pagination="{showSizeChanger: true}"
     :rowSelection="rowSelection"
     :rowKey="record => record.id"
@@ -74,24 +74,24 @@ export default {
           scopedSlots: { customRender: 'macAddress' }
         }
       ],
-      selectedRowKeys: []
+      selectedRowKeys: [],
+      dataItems: []
     }
   },
+  beforeCreate () {
+    this.dataItems = []
+  },
   created () {
-    this.$emit('select-default-network-item', this.items[0].id)
+    this.dataItems = this.items
+    this.selectedRowKeys = [this.dataItems[0].id]
+    this.$emit('select-default-network-item', this.selectedRowKeys)
   },
   computed: {
     rowSelection () {
       return {
         type: 'radio',
-        onSelect: (row) => {
-          this.$emit('select-default-network-item', row.id)
-        },
-        getCheckboxProps: record => ({
-          props: {
-            defaultChecked: (record.name === this.items[0].name)
-          }
-        })
+        selectedRowKeys: this.selectedRowKeys,
+        onChange: this.onSelectRow
       }
     }
   },
@@ -100,9 +100,22 @@ export default {
       if (newValue && newValue !== oldValue) {
         this.selectedRowKeys = [newValue]
       }
+    },
+    items (newData, oldData) {
+      if (newData && newData.length > 0) {
+        this.dataItems = newData
+        const keyEx = this.dataItems.filter((item) => this.selectedRowKeys.includes(item.id))
+        if (!keyEx || keyEx.length === 0) {
+          this.selectedRowKeys = [this.dataItems[0].id]
+        }
+      }
     }
   },
   methods: {
+    onSelectRow (value) {
+      this.selectedRowKeys = value
+      this.$emit('select-default-network-item', value[0])
+    },
     updateNetworkData (name, key, value) {
       if (this.networks.length === 0) {
         const networkItem = {}

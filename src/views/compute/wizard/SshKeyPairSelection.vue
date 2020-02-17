@@ -75,8 +75,17 @@ export default {
           width: '30%'
         }
       ],
-      selectedRowKeys: []
+      selectedRowKeys: [this.$t('noselect')],
+      dataItems: []
     }
+  },
+  created () {
+    this.dataItems = []
+    this.dataItems.push({
+      name: this.$t('noselect'),
+      account: '-',
+      domain: '-'
+    })
   },
   computed: {
     options () {
@@ -87,7 +96,7 @@ export default {
       }
     },
     tableSource () {
-      return this.items.map((item) => {
+      return this.dataItems.map((item) => {
         return {
           key: item.name,
           name: item.name,
@@ -100,9 +109,7 @@ export default {
       return {
         type: 'radio',
         selectedRowKeys: this.selectedRowKeys,
-        onSelect: (row) => {
-          this.$emit('select-ssh-key-pair-item', row.key)
-        }
+        onChange: this.onSelectRow
       }
     }
   },
@@ -111,9 +118,18 @@ export default {
       if (newValue && newValue !== oldValue) {
         this.selectedRowKeys = [newValue]
       }
+    },
+    items (newData, oldData) {
+      if (newData && newData.length > 0) {
+        this.dataItems = this.dataItems.concat(newData)
+      }
     }
   },
   methods: {
+    onSelectRow (value) {
+      this.selectedRowKeys = value
+      this.$emit('select-ssh-key-pair-item', value[0])
+    },
     handleSearch (value) {
       this.filter = value
       this.options.keyword = this.filter

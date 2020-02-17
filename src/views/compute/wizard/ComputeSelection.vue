@@ -100,9 +100,7 @@ export default {
       return {
         type: 'radio',
         selectedRowKeys: this.selectedRowKeys,
-        onSelect: (row) => {
-          this.$emit('select-compute-item', row.key)
-        }
+        onChange: this.onSelectRow
       }
     }
   },
@@ -114,6 +112,10 @@ export default {
     }
   },
   methods: {
+    onSelectRow (value) {
+      this.selectedRowKeys = value
+      this.$emit('select-compute-item', value[0])
+    },
     handleSearch (value) {
       this.filter = value
       this.options.keyword = this.filter

@@ -36,12 +36,14 @@
       <span slot="iopsTitle"><a-icon type="rocket" /> {{ $t('minMaxIops') }}</span>
       <template slot="diskSize" slot-scope="text, record">
         <div v-if="record.isCustomized">{{ $t('isCustomized') }}</div>
-        <div v-else>{{ record.diskSize }} GB</div>
+        <div v-else-if="record.diskSize">{{ record.diskSize }} GB</div>
+        <div v-else>-</div>
       </template>
       <template slot="iops" slot-scope="text, record">
         <span v-if="record.miniops && record.maxiops">{{ record.miniops }} - {{ record.maxiops }}</span>
         <span v-else-if="record.miniops && !record.maxiops">{{ record.miniops }}</span>
         <span v-else-if="!record.miniops && record.maxiops">{{ record.maxiops }}</span>
+        <span v-else>-</span>
       </template>
     </a-table>
   </div>
@@ -86,8 +88,20 @@ export default {
           scopedSlots: { customRender: 'iops' }
         }
       ],
-      selectedRowKeys: []
+      selectedRowKeys: ['0'],
+      dataItems: []
     }
+  },
+  created () {
+    this.dataItems = []
+    this.dataItems.push({
+      id: '0',
+      name: this.$t('noselect'),
+      diskSize: undefined,
+      miniops: undefined,
+      maxiops: undefined,
+      isCustomized: undefined
+    })
   },
   computed: {
     options () {
@@ -98,7 +112,7 @@ export default {
       }
     },
     tableSource () {
-      return this.items.map((item) => {
+      return this.dataItems.map((item) => {
         return {
           key: item.id,
           name: item.name,
@@ -113,9 +127,7 @@ export default {
       return {
         type: 'radio',
         selectedRowKeys: this.selectedRowKeys,
-        onSelect: (row) => {
-          this.$emit('select-disk-offering-item', row.key)
-        }
+        onChange: this.onSelectRow
       }
     }
   },
@@ -124,9 +136,18 @@ export default {
       if (newValue && newValue !== oldValue) {
         this.selectedRowKeys = [newValue]
       }
+    },
+    items (newData, oldData) {
+      if (newData && newData.length > 0) {
+        this.dataItems = this.dataItems.concat(newData)
+      }
     }
   },
   methods: {
+    onSelectRow (value) {
+      this.selectedRowKeys = value
+      this.$emit('select-disk-offering-item', value[0])
+    },
     handleSearch (value) {
       this.filter = value
       this.options.keyword = this.filter
