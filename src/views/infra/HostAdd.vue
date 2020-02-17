@@ -56,18 +56,18 @@
       </div>
 
       <div class="form__item required-field">
-        <div class="form__label"><span class="required">* </span>{{ $t('hostnamelabel') }}</div>
+        <div class="form__label"><span class="required">* </span>{{ selectedClusterHyperVisorType === 'VMware' ? $t('vcenterHost') : $t('hostnamelabel') }}</div>
         <span class="required required-label">Required</span>
         <a-input v-model="hostname"></a-input>
       </div>
 
-      <div class="form__item required-field">
+      <div class="form__item required-field" v-if="selectedClusterHyperVisorType !== 'VMware'">
         <div class="form__label"><span class="required">* </span>{{ $t('username') }}</div>
         <span class="required required-label">Required</span>
         <a-input :placeholder="placeholder.username" v-model="username"></a-input>
       </div>
 
-      <div class="form__item required-field">
+      <div class="form__item required-field" v-if="selectedClusterHyperVisorType !== 'VMware'">
         <div class="form__label"><span class="required">* </span>{{ $t('password') }}</div>
         <span class="required required-label">Required</span>
         <a-input :placeholder="placeholder.password" type="password" v-model="password"></a-input>
@@ -154,11 +154,6 @@ export default {
       podsList: [],
       hostTagsList: [],
       url: null,
-      vcenterHost: null,
-      cpunumber: null,
-      cpuspeed: null,
-      memory: null,
-      hostmac: null,
       agentusername: null,
       agentpassword: null,
       agentport: null,
@@ -281,17 +276,12 @@ export default {
       if (this.selectedClusterHyperVisorType === 'VMware') {
         this.username = ''
         this.password = ''
-        if (this.vcenterHost.indexOf('http://') === -1) {
-          this.url = `http://${this.vcenterHost}`
-        } else {
-          this.url = this.vcenterHost
-        }
+      }
+
+      if (this.hostname.indexOf('http://') === -1) {
+        this.url = `http://${this.hostname}`
       } else {
-        if (this.hostname.indexOf('http://') === -1) {
-          this.url = `http://${this.hostname}`
-        } else {
-          this.url = this.hostname
-        }
+        this.url = this.hostname
       }
 
       const args = {
@@ -304,11 +294,6 @@ export default {
         username: this.username,
         password: this.password,
         url: this.url,
-        vcenterHost: this.vcenterHost,
-        cpunumber: this.cpunumber,
-        cpuspeed: this.cpuspeed,
-        memory: this.memory,
-        hostmac: this.hostmac,
         agentusername: this.agentusername,
         agentpassword: this.agentpassword,
         agentport: this.agentport
