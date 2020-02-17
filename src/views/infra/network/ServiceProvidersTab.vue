@@ -131,7 +131,7 @@ export default {
       }).catch(error => {
         this.$notification.error({
           message: 'Request Failed',
-          description: error,
+          description: error.response.headers['x-description'],
           duration: 0
         })
       }).finally(() => {
