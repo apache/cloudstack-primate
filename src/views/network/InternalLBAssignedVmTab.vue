@@ -30,7 +30,7 @@
       </template>
       <template slot="ipaddress" slot-scope="text, record">
         <span v-for="nic in record.nic" :key="nic.id">
-          {{ nic.ipaddress}} <br/>
+          {{ nic.ipaddress }} <br/>
         </span>
       </template>
       <template slot="remove" slot-scope="text, record">
