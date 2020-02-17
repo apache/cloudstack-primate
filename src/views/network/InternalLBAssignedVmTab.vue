@@ -19,14 +19,19 @@
   <a-spin :spinning="fetchLoading">
     <a-table
       size="small"
-      style="overflow-y: auto"
+      style="overflow-y: auto; margin-bottom: 15px"
       :columns="columns"
-      :dataSource="assignedVMs"
+      :dataSource="assignedVms"
       :rowKey="item => item.id"
       :pagination="false"
     >
-      <template slot="name" slot-scope="text, record">
-        <router-link :to="{ path: '/vm/' + record.id }">{{ text }}</router-link>
+      <template slot="displayname" slot-scope="text, record">
+        <router-link :to="{ path: '/vm/' + record.id }">{{ record.displayname || record.name }}</router-link>
+      </template>
+      <template slot="ipaddress" slot-scope="text, record">
+        <span v-for="nic in record.nic" :key="nic.id">
+          {{ nic.ipaddress}} <br/>
+        </span>
       </template>
       <template slot="remove" slot-scope="text, record">
         <a-button
@@ -36,55 +41,49 @@
           @click="removeVmFromLB(record)" />
       </template>
       <a-divider />
-      <a-pagination
-        class="row-element pagination"
-        size="small"
-        :current="page"
-        :pageSize="pageSize"
-        :total="this.assignedVMs.length"
-        :showTotal="total => `Total ${total} items`"
-        :pageSizeOptions="['10', '20', '40', '80', '100']"
-        @change="changePage"
-        @showSizeChange="changePageSize"
-        showSizeChanger
-      />
     </a-table>
+    <a-pagination
+      class="row-element pagination"
+      size="small"
+      :current="page"
+      :pageSize="pageSize"
+      :total="totalInstances"
+      :showTotal="total => `Total ${total} items`"
+      :pageSizeOptions="['10', '20', '40', '80', '100']"
+      @change="changePage"
+      @showSizeChange="changePageSize"
+      showSizeChanger
+    />
   </a-spin>
 </template>
 <script>
 import { api } from '@/api'
 
 export default {
-  name: 'AssignedVMs',
+  name: 'InternalLBAssignedVmTab',
   props: {
     resource: {
       type: Object,
       required: true
     }
   },
-  watch: {
-    resource: function (newItem, oldItem) {
-      if (!newItem || !newItem.id) {
-        return
-      }
-      this.fetchData()
-    }
-  },
   data () {
     return {
       fetchLoading: false,
-      assignedVMs: [],
+      assignedVms: [],
       page: 1,
       pageSize: 10,
+      totalInstances: 0,
       columns: [
         {
           title: this.$t('name'),
-          dataIndex: 'name',
-          scopedSlots: { customRender: 'name' }
+          dataIndex: 'displayname',
+          scopedSlots: { customRender: 'displayname' }
         },
         {
-          title: this.$t('host'),
-          dataIndex: 'ipaddress'
+          title: this.$t('ipaddress'),
+          dataIndex: 'ipaddress',
+          scopedSlots: { customRender: 'ipaddress' }
         },
         {
           title: '',
@@ -96,35 +95,47 @@ export default {
   mounted () {
     this.fetchData()
   },
+  watch: {
+    resource: function (newItem, oldItem) {
+      if (!newItem || !newItem.id) {
+        return
+      }
+      this.fetchData()
+    }
+  },
   methods: {
     fetchData () {
       this.fetchLoading = true
-      api('listLoadBalancers', {
+      api('listLoadBalancerRuleInstances', {
         id: this.resource.id,
         page: this.page,
         pagesize: this.pageSize
       }).then(response => {
-        this.assignedVMs = response.listloadbalancersresponse.loadbalancer[0].loadbalancerinstance || []
+        this.totalInstances = response.listloadbalancerruleinstancesresponse.count || 0
+        this.assignedVms = response.listloadbalancerruleinstancesresponse.loadbalancerruleinstance || []
       }).finally(() => {
         this.fetchLoading = false
       })
     },
-    removeVmFromLB (vmDetails) {
+    removeVmFromLB (vm) {
+      this.fetchLoading = true
       api('removeFromLoadBalancerRule', {
         id: this.resource.id,
-        virtualmachineids: vmDetails.id
+        virtualmachineids: vm.id
       }).then(response => {
         this.$pollJob({
           jobId: response.removefromloadbalancerruleresponse.jobid,
-          successMessage: `Successfully removed IP ${vmDetails.name} from ${this.resource.name}`,
+          successMessage: `Successfully removed IP ${vm.name} from ${this.resource.name}`,
           successMethod: () => {
+            this.fetchLoading = false
             this.fetchData()
           },
-          errorMessage: `Failed to remove ${vmDetails.name} from the LB`,
+          errorMessage: `Failed to remove ${vm.name} from the LB`,
           errorMethod: () => {
+            this.fetchLoading = false
             this.fetchData()
           },
-          loadingMessage: `Removing ${vmDetails.name} from LB is in progress`,
+          loadingMessage: `Removing ${vm.name} from LB is in progress`,
           catchMessage: 'Error encountered while fetching async job result'
         })
       })

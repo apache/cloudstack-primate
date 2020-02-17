@@ -435,7 +435,7 @@ export default {
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
         name: 'Assigned VMs',
-        component: () => import('@/views/network/AssignedVMs.vue'),
+        component: () => import('@/views/network/InternalLBAssignedVmTab.vue'),
         show: () => true
       }],
       actions: [
@@ -468,7 +468,7 @@ export default {
           label: 'Assign VMs',
           dataView: true,
           popup: true,
-          component: () => import('@/views/network/AssignVMsToLB.vue')
+          component: () => import('@/views/network/InternalLBAssignVmForm.vue')
         },
         {
           api: 'deleteLoadBalancer',

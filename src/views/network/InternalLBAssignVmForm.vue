@@ -16,8 +16,7 @@
 // under the License.
 
 <template>
-  <div>
-    <a-icon v-if="fetchLoading" type="loading"></a-icon>
+  <a-spin :spinning="fetchLoading">
     <div>
       <div class="vm-modal__header">
         <span style="min-width: 200px;">{{ $t('name') }}</span>
@@ -77,7 +76,7 @@
         {{ $t('OK') }}
       </a-button>
     </div>
-  </div>
+  </a-spin>
 </template>
 
 <script>
@@ -85,7 +84,7 @@ import { api } from '@/api'
 import Status from '@/components/widgets/Status'
 
 export default {
-  name: 'AssignVMsToLB',
+  name: 'InternalLBAssignVmForm',
   components: {
     Status
   },
@@ -203,18 +202,16 @@ export default {
           jobId: response.assigntoloadbalancerruleresponse.jobid,
           successMessage: `Successfully assigned VMs to ${this.resource.name}`,
           successMethod: () => {
-            this.fetchData()
+            this.$emit('refresh-data')
           },
           errorMessage: `Failed to assign VMs to ${this.resource.name}`,
           errorMethod: () => {
-            this.fetchLoading = false
-            this.fetchData()
+            this.$emit('refresh-data')
           },
           loadingMessage: `Assigning VMs to ${this.resource.name}`,
           catchMessage: 'Error encountered while fetching async job result'
         })
       }).catch(error => {
-        this.fetchLoading = false
         this.$notification.error({
           message: `Error ${error.response.status}`,
           description: error.response.data.errorresponse.errortext,
@@ -222,6 +219,7 @@ export default {
         })
       }).finally(() => {
         this.fetchLoading = false
+        this.$emit('refresh-data')
         this.closeModal()
       })
     },
