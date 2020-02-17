@@ -871,7 +871,7 @@ export default {
       font-weight: normal;
     }
 
-    .resource-detail-item__details {
+    .resource-detail-item__details, .resource-detail-item {
       a {
         color: rgba(0, 0, 0, 0.65);
         cursor: default;
