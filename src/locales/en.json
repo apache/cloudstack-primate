@@ -1082,5 +1082,8 @@
 "existingNetworks": "Existing networks",
 "sshKeyPairs": "SSH keypairs",
 "wednesday": "Wednesday",
-"noselect": "No thanks"
+"noselect": "No thanks",
+"groupname": "Add to group",
+"keyboard": "Keyboard language",
+"userdata": "Userdata"
 }

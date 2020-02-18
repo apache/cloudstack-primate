@@ -65,6 +65,24 @@
                         :loading="loading.hosts"
                       ></a-select>
                     </a-form-item>
+                    <a-form-item :label="this.$t('groupname')">
+                      <a-select
+                        v-decorator="['group']"
+                        :options="groupsSelectOptions"
+                        :loading="loading.groups"
+                      ></a-select>
+                    </a-form-item>
+                    <a-form-item :label="this.$t('keyboard')">
+                      <a-select
+                        v-decorator="['keyboard']"
+                        :options="keyboardSelectOptions"
+                      ></a-select>
+                    </a-form-item>
+                    <a-form-item :label="this.$t('userdata')">
+                      <a-textarea
+                        v-decorator="['userdata']">
+                      </a-textarea>
+                    </a-form-item>
                   </div>
                 </template>
               </a-step>
@@ -286,7 +304,9 @@ export default {
         sshKeyPairs: [],
         pods: [],
         clusters: [],
-        hosts: []
+        hosts: [],
+        groups: [],
+        keyboards: []
       },
       loading: {
         deploy: false,
@@ -300,7 +320,8 @@ export default {
         zones: false,
         pods: false,
         clusters: false,
-        hosts: false
+        hosts: false,
+        groups: false
       },
       instanceConfig: [],
       template: {},
@@ -438,6 +459,9 @@ export default {
             state: 'Up',
             type: 'Routing'
           }
+        },
+        groups: {
+          list: 'listInstanceGroups'
         }
       }
     },
@@ -473,6 +497,22 @@ export default {
         return {
           label: host.name,
           value: host.id
+        }
+      })
+    },
+    keyboardSelectOptions () {
+      return this.options.keyboards.map((keyboard) => {
+        return {
+          label: this.$t(keyboard.description),
+          value: keyboard.id
+        }
+      })
+    },
+    groupsSelectOptions () {
+      return this.options.groups.map((group) => {
+        return {
+          label: group.name,
+          value: group.id
         }
       })
     }
@@ -567,9 +607,40 @@ export default {
       this.fetchOptions(this.params.pods, 'pods')
       this.fetchOptions(this.params.clusters, 'clusters')
       this.fetchOptions(this.params.hosts, 'hosts')
+      this.fetchOptions(this.params.groups, 'groups')
+      this.fetchKeyboard()
       Vue.nextTick().then(() => {
         this.instanceConfig = this.form.getFieldsValue() // ToDo: maybe initialize with some other defaults
       })
+    },
+    fetchKeyboard () {
+      const keyboardType = []
+      keyboardType.push({
+        id: '',
+        description: ''
+      })
+      keyboardType.push({
+        id: 'us',
+        description: 'label.standard.us.keyboard'
+      })
+      keyboardType.push({
+        id: 'uk',
+        description: 'label.uk.keyboard'
+      })
+      keyboardType.push({
+        id: 'fr',
+        description: 'label.french.azerty.keyboard'
+      })
+      keyboardType.push({
+        id: 'jp',
+        description: 'label.japanese.keyboard'
+      })
+      keyboardType.push({
+        id: 'sc',
+        description: 'label.simplified.chinese.keyboard'
+      })
+
+      this.$set(this.options, 'keyboards', keyboardType)
     },
     resetData () {
       this.vm = {}
@@ -655,6 +726,11 @@ export default {
         deployVmData.podid = values.podid
         deployVmData.clusterid = values.clusterid
         deployVmData.hostid = values.hostid
+        deployVmData.group = values.group
+        deployVmData.keyboard = values.keyboard
+        if (values.keyboard && values.keyboard.length > 0) {
+          deployVmData.userdata = encodeURIComponent(btoa(this.sanitizeReverse(values.keyboard)))
+        }
         // step 2: select template/iso
         if (this.tabKey === 'templateid') {
           deployVmData.templateid = values.templateid
@@ -809,11 +885,11 @@ export default {
         isoid: undefined
       })
       _.each(this.params, (param, name) => {
-        this.fetchOptions(param, name, ['zones'])
+        this.fetchOptions(param, name, ['zones', 'groups'])
       })
     },
     handleSearchFilter (name, options) {
-      this.params[name].options = { ...options }
+      this.params[name].options = { ...this.params[name].options, ...options }
       this.fetchOptions(this.params[name], name)
     },
     onTabChange (key, type) {
@@ -821,6 +897,14 @@ export default {
       if (key === 'isoid') {
         this.fetchAllIsos()
       }
+    },
+    sanitizeReverse (value) {
+      const reversedValue = value
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+
+      return reversedValue
     }
   }
 }

@@ -27,7 +27,7 @@
       :columns="columns"
       :dataSource="networkItems"
       :rowKey="record => record.id"
-      :pagination="{showSizeChanger: true}"
+      :pagination="{showSizeChanger: true, size: 'small'}"
       :rowSelection="rowSelection"
       @change="handleTableChange"
       :scroll="{ y: 225 }"
