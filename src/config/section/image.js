@@ -27,7 +27,7 @@ export default {
       permission: ['listTemplates'],
       params: { templatefilter: 'executable' },
       resourceType: 'Template',
-      columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain'],
+      columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain', 'order'],
       details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'directdownload', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created'],
       related: [{
         name: 'vm',
@@ -48,9 +48,10 @@ export default {
         {
           api: 'registerTemplate',
           icon: 'plus',
-          label: 'Create template',
+          label: 'Register Template',
           listView: true,
-          args: ['url', 'name', 'displaytext', 'directdownload', 'zoneids', 'hypervisor', 'format', 'ostypeid', 'checksum', 'isextractable', 'passwordenabled', 'sshkeyenabled', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'isrouting', 'requireshvm']
+          popup: true,
+          component: () => import('@/views/image/RegisterOrUploadTemplate.vue')
         },
         {
           api: 'getUploadParamsForTemplate',
@@ -58,7 +59,7 @@ export default {
           label: 'Upload Local Template',
           listView: true,
           popup: true,
-          component: () => import('@/views/image/UploadLocalTemplate.vue')
+          component: () => import('@/views/image/RegisterOrUploadTemplate.vue')
         },
         {
           api: 'updateTemplate',
@@ -87,9 +88,11 @@ export default {
         {
           api: 'updateTemplatePermissions',
           icon: 'reconciliation',
-          label: 'Update template permissions',
+          label: 'Update Template Permissions',
           dataView: true,
-          args: ['op', 'accounts', 'projectids']
+          popup: true,
+          show: (record, store) => { return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) || record.templatetype !== 'BUILTIN') },
+          component: () => import('@/views/image/UpdateTemplatePermissions')
         },
         {
           api: 'copyTemplate',
@@ -122,6 +125,13 @@ export default {
         title: 'Instances',
         param: 'isoid'
       }],
+      tabs: [{
+        name: 'details',
+        component: () => import('@/components/view/DetailsTab.vue')
+      }, {
+        name: 'zones',
+        component: () => import('@/views/image/IsoZones.vue')
+      }],
       actions: [
         {
           api: 'registerIso',
@@ -129,16 +139,15 @@ export default {
           label: 'Register ISO',
           listView: true,
           popup: true,
-          show: (record, user, apis) => { return 'registerIso' in apis },
-          component: () => import('@/views/image/RegisterIso.vue')
+          component: () => import('@/views/image/RegisterOrUploadIso.vue')
         },
         {
           api: 'getUploadParamsForIso',
           icon: 'cloud-upload',
-          label: 'Upload Local Iso',
+          label: 'Upload Local ISO',
           listView: true,
           popup: true,
-          component: () => import('@/views/image/UploadLocalIso.vue')
+          component: () => import('@/views/image/RegisterOrUploadIso.vue')
         },
         {
           api: 'updateIso',

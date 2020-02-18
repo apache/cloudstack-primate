@@ -16,25 +16,48 @@
 // under the License.
 
 <template>
-  <div>
-    TODO: Egress view for SG
-  </div>
+  <a-spin :spinning="fetchLoading">
+    IP Ranges Tab here
+  </a-spin>
 </template>
 
 <script>
 
 export default {
-  name: '',
-  components: {
+  name: 'IpRangesTab',
+  props: {
+    resource: {
+      type: Object,
+      required: true
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    }
   },
   data () {
     return {
+      fetchLoading: false
+    }
+  },
+  mounted () {
+    this.fetchData()
+  },
+  watch: {
+    loading (newData, oldData) {
+      if (!newData && this.resource.id) {
+        this.fetchData()
+      }
     }
   },
   methods: {
+    fetchData () {
+      // List existing IP range etc.
+    }
   }
 }
 </script>
 
-<style scoped>
+<style lang="less" scoped>
+
 </style>

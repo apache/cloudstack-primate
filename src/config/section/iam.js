@@ -113,6 +113,17 @@ export default {
           args: ['username', 'password', 'password', 'email', 'firstname', 'lastname', 'domainid', 'account', 'roleid', 'timezone', 'networkdomain']
         },
         {
+          api: 'ldapCreateAccount',
+          icon: 'user-add',
+          label: 'label.add.ldap.account',
+          listView: true,
+          popup: true,
+          show: (record, store) => {
+            return store.isLdapEnabled
+          },
+          component: () => import('@/views/iam/AddLdapAccount.vue')
+        },
+        {
           api: 'updateAccount',
           icon: 'edit',
           label: 'label.update.account',
@@ -251,6 +262,25 @@ export default {
           dataView: true,
           args: ['domainid'],
           mapping: {
+            domainid: {
+              value: (record) => { return record.id }
+            }
+          }
+        },
+        {
+          api: 'linkDomainToLdap',
+          icon: 'link',
+          label: 'Link Domain to LDAP Group/OU',
+          listView: true,
+          dataView: true,
+          args: ['type', 'domainid', 'name', 'accounttype', 'admin'],
+          mapping: {
+            type: {
+              options: ['GROUP', 'OU']
+            },
+            accounttype: {
+              options: ['0', '2']
+            },
             domainid: {
               value: (record) => { return record.id }
             }

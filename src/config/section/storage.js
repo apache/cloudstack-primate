@@ -40,7 +40,16 @@ export default {
           label: 'Create Volume',
           listView: true,
           args: ['name', 'zoneid', 'diskofferingid']
-        }, {
+        },
+        {
+          api: 'getUploadParamsForVolume',
+          icon: 'cloud-upload',
+          label: 'Upload Local Volume',
+          listView: true,
+          popup: true,
+          component: () => import('@/views/storage/UploadLocalVolume.vue')
+        },
+        {
           api: 'uploadVolume',
           icon: 'link',
           label: 'Upload Volume From URL',
@@ -51,13 +60,6 @@ export default {
               options: ['RAW', 'VHD', 'VHDX', 'OVA', 'QCOW2']
             }
           }
-        }, {
-          api: 'getUploadParamsForVolume',
-          icon: 'cloud-upload',
-          label: 'Upload Local Volume',
-          listView: true,
-          popup: true,
-          component: () => import('@/views/storage/UploadLocalVolume.vue')
         },
         {
           api: 'attachVolume',
@@ -80,20 +82,17 @@ export default {
           label: 'Take Snapshot',
           dataView: true,
           show: (record) => { return record.state === 'Ready' },
-          args: ['volumeid', 'name', 'asyncbackup', 'tags'],
-          mapping: {
-            volumeid: {
-              value: (record) => { return record.id }
-            }
-          }
+          popup: true,
+          component: () => import('@/views/storage/TakeSnapshot.vue')
         },
         {
           api: 'createSnapshotPolicy',
-          icon: 'video-camera',
+          icon: 'clock-circle',
           label: 'Recurring Snapshots',
           dataView: true,
           show: (record) => { return record.state === 'Ready' },
-          args: ['volumeid', 'intervaltype', 'schedule', 'maxsnaps', 'timezone'],
+          popup: true,
+          component: () => import('@/views/storage/RecurringSnapshotVolume.vue'),
           mapping: {
             volumeid: {
               value: (record) => { return record.id }

@@ -28,11 +28,11 @@
               <a-button
                 style="margin-top: 4px"
                 :loading="loading"
-                shape="circle"
+                shape="round"
                 size="small"
-                type="dashed"
                 icon="reload"
                 @click="fetchData()">
+                {{ "Refresh" }}
               </a-button>
             </a-tooltip>
           </breadcrumb>
@@ -48,10 +48,11 @@
               :resource="resource"
               @exec-action="execAction"/>
             <a-input-search
-              style="width: 25vw; margin-left: 10px"
+              style="width: 20vw; margin-left: 10px"
               placeholder="Search"
               v-model="searchQuery"
               v-if="!dataView && !treeView"
+              allowClear
               @search="onSearch" />
           </span>
         </a-col>
@@ -75,6 +76,7 @@
             :is="currentAction.component"
             :resource="resource"
             :loading="loading"
+            :action="{currentAction}"
             v-bind="{currentAction}"
             @refresh-data="fetchData"
             @poll-action="pollActionCompletion"
@@ -148,7 +150,7 @@
                   }"
                 >
                   <a-select-option v-for="(opt, optIndex) in field.opts" :key="optIndex">
-                    {{ opt.name || opt.description }}
+                    {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
                 </a-select>
               </span>
@@ -229,6 +231,7 @@
         @change="changePage"
         @showSizeChange="changePageSize"
         showSizeChanger
+        showQuickJumper
         v-if="!treeView" />
       <tree-view
         v-if="treeView"
@@ -272,7 +275,9 @@ export default {
   provide: function () {
     return {
       parentFetchData: this.fetchData,
-      parentToggleLoading: this.toggleLoading
+      parentToggleLoading: this.toggleLoading,
+      parentStartLoading: this.startLoading,
+      parentFinishLoading: this.finishLoading
     }
   },
   data () {
@@ -303,14 +308,39 @@ export default {
       return this.selectedRowKeys.length > 0
     }
   },
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
+  },
   mounted () {
+    this.currentPath = this.$route.fullPath
     this.fetchData()
+  },
+  beforeRouteUpdate (to, from, next) {
+    this.currentPath = this.$route.fullPath
+    next()
+  },
+  beforeRouteLeave (to, from, next) {
+    this.currentPath = this.$route.fullPath
+    next()
   },
   watch: {
     '$route' (to, from) {
-      if (to.fullPath !== from.fullPath && !to.fullPath.includes('action/')) {
-        this.page = 1
+      // The route config creates two groups of section components one for each
+      // related paths. Once these two groups of components are mounted, on
+      // route changes this method is called twice causing multiple API calls.
+      // The following fixes this issue by using logical XOR to identify the
+      // current component against related `to` route and the path the component
+      // was in and only calls fetchData if `to` route and currentPath are of
+      // the same group of routes.
+
+      const related = ['/project', '/event', '/dashboard']
+      const toPath = related.map(o => to.fullPath.includes(o)).includes(true)
+      const inPath = related.map(o => this.currentPath.includes(o)).includes(true)
+      this.needToFetchData = ((toPath ^ inPath) === 0)
+      if (this.needToFetchData && to.fullPath !== from.fullPath && !to.fullPath.includes('action/')) {
         this.searchQuery = ''
+        this.page = 1
+        this.itemCount = 0
         this.fetchData()
       }
     },
@@ -319,9 +349,6 @@ export default {
         this.fetchData()
       }
     }
-  },
-  beforeCreate () {
-    this.form = this.$form.createForm(this)
   },
   methods: {
     fetchData () {
@@ -398,7 +425,7 @@ export default {
           title: this.$t(key),
           dataIndex: key,
           scopedSlots: { customRender: key },
-          sorter: function (a, b) { return genericCompare(a[this.dataIndex], b[this.dataIndex]) }
+          sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
         })
       }
 
@@ -407,6 +434,8 @@ export default {
         params.id = this.$route.params.id
         if (this.$route.path.startsWith('/ssh/')) {
           params.name = this.$route.params.id
+        } else if (this.$route.path.startsWith('/ldapsetting/')) {
+          params.hostname = this.$route.params.id
         }
       }
 
@@ -453,6 +482,8 @@ export default {
             }
             if (this.$route.path.startsWith('/ssh')) {
               this.items[idx].id = this.items[idx].name
+            } else if (this.$route.path.startsWith('/ldapsetting')) {
+              this.items[idx].id = this.items[idx].hostname
             }
           }
         }
@@ -522,6 +553,9 @@ export default {
 
       this.showAction = true
       for (const param of this.currentAction.paramFields) {
+        if (param.type === 'list' && param.name === 'hosttags') {
+          param.type = 'string'
+        }
         if (param.type === 'uuid' || param.type === 'list' || param.name === 'account' || (this.currentAction.mapping && param.name in this.currentAction.mapping)) {
           this.listUuidOpts(param)
         }
@@ -533,10 +567,17 @@ export default {
         return
       }
       var paramName = param.name
+      var params = { listall: true }
       const possibleName = 'list' + paramName.replace('ids', '').replace('id', '').toLowerCase() + 's'
       var possibleApi
       if (this.currentAction.mapping && param.name in this.currentAction.mapping && this.currentAction.mapping[param.name].api) {
         possibleApi = this.currentAction.mapping[param.name].api
+        if (this.currentAction.mapping[param.name].params) {
+          const customParams = this.currentAction.mapping[param.name].params(this.resource)
+          if (customParams) {
+            params = { ...params, ...customParams }
+          }
+        }
       } else if (paramName === 'id') {
         possibleApi = this.apiName
       } else {
@@ -552,7 +593,6 @@ export default {
       }
       param.loading = true
       param.opts = []
-      var params = { listall: true }
       if (possibleApi === 'listTemplates') {
         params.templatefilter = 'executable'
       } else if (possibleApi === 'listIsos') {
@@ -739,6 +779,12 @@ export default {
     },
     toggleLoading () {
       this.loading = !this.loading
+    },
+    startLoading () {
+      this.loading = true
+    },
+    finishLoading () {
+      this.loading = false
     }
   }
 }

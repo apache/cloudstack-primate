@@ -27,7 +27,14 @@
         class="spin-content"
         :bordered="true"
         style="width:100%">
+        <component
+          v-if="tabs.length === 1"
+          :is="tabs[0].component"
+          :resource="resource"
+          :loading="loading"
+          :tab="tabs[0].name" />
         <a-tabs
+          v-else
           style="width: 100%"
           :animated="false"
           :defaultActiveKey="tabs[0].name"
@@ -36,7 +43,7 @@
             v-for="tab in tabs"
             :tab="$t(tab.name)"
             :key="tab.name"
-            v-if="'show' in tab ? tab.show(resource, $route, $store.getters.userInfo) : true">
+            v-if="showHideTab(tab)">
             <component :is="tab.component" :resource="resource" :loading="loading" :tab="activeTab" />
           </a-tab-pane>
         </a-tabs>
@@ -49,6 +56,7 @@
 import DetailsTab from '@/components/view/DetailsTab'
 import InfoCard from '@/components/view/InfoCard'
 import ResourceLayout from '@/layouts/ResourceLayout'
+import { api } from '@/api'
 
 export default {
   name: 'ResourceView',
@@ -77,12 +85,36 @@ export default {
   },
   data () {
     return {
-      activeTab: ''
+      activeTab: '',
+      networkService: null
+    }
+  },
+  watch: {
+    resource: function (newItem, oldItem) {
+      this.resource = newItem
+      if (newItem.id === oldItem.id) return
+
+      if (this.resource.associatednetworkid) {
+        api('listNetworks', { id: this.resource.associatednetworkid }).then(response => {
+          this.networkService = response.listnetworksresponse.network[0]
+        })
+      }
     }
   },
   methods: {
     onTabChange (key) {
       this.activeTab = key
+    },
+    showHideTab (tab) {
+      if ('networkServiceFilter' in tab) {
+        if (this.resource.virtualmachineid && tab.name !== 'Firewall') return false
+        return this.networkService && this.networkService.service &&
+          tab.networkServiceFilter(this.networkService.service)
+      } else if ('show' in tab) {
+        return tab.show(this.resource, this.$route, this.$store.getters.userInfo)
+      } else {
+        return true
+      }
     }
   }
 }

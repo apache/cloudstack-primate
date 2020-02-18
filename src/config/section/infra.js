@@ -17,6 +17,7 @@
 
 import zones from '@/config/section/infra/zones'
 import phynetworks from '@/config/section/infra/phynetworks'
+import nsp from '@/config/section/infra/nsp'
 import pods from '@/config/section/infra/pods'
 import clusters from '@/config/section/infra/clusters'
 import hosts from '@/config/section/infra/hosts'
@@ -24,6 +25,7 @@ import primaryStorages from '@/config/section/infra/primaryStorages'
 import secondaryStorages from '@/config/section/infra/secondaryStorages'
 import systemVms from '@/config/section/infra/systemVms'
 import routers from '@/config/section/infra/routers'
+import ilbvms from '@/config/section/infra/ilbvms'
 
 export default {
   name: 'infra',
@@ -40,6 +42,7 @@ export default {
     },
     zones,
     phynetworks,
+    nsp,
     pods,
     clusters,
     hosts,
@@ -47,6 +50,7 @@ export default {
     secondaryStorages,
     systemVms,
     routers,
+    ilbvms,
     {
       name: 'cpusocket',
       title: 'CPU Sockets',

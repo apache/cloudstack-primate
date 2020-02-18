@@ -17,6 +17,7 @@
 
 <template>
   <span class="row-action-button">
+    <console :resource="resource" size="default" v-if="resource && resource.id && dataView" />
     <a-tooltip
       v-for="(action, actionIndex) in actions"
       :key="actionIndex"
@@ -32,7 +33,7 @@
         v-if="action.api in $store.getters.apis &&
           action.showBadge &&
           ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
-          ('show' in action ? action.show(resource, $store.getters.userInfo, $store.getters.apis) : true)">
+          ('show' in action ? action.show(resource, $store.getters) : true)">
         <a-button
           :icon="action.icon"
           :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
@@ -44,7 +45,7 @@
         v-if="action.api in $store.getters.apis &&
           !action.showBadge &&
           ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
-          ('show' in action ? action.show(resource, $store.getters.userInfo, $store.getters.apis) : true)"
+          ('show' in action ? action.show(resource, $store.getters) : true)"
         :icon="action.icon"
         :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
         shape="circle"
@@ -56,9 +57,13 @@
 
 <script>
 import { api } from '@/api'
+import Console from '@/components/widgets/Console'
 
 export default {
   name: 'ActionButton',
+  components: {
+    Console
+  },
   data () {
     return {
       actionBadge: []
