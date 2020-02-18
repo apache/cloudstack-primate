@@ -40,7 +40,7 @@
               }]"
               :placeholder="this.$t('Display text')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.zoneid')" v-if="this.isObjectEmpty(this.zone)">
+          <a-form-item :label="$t('zoneid')" v-if="this.isObjectEmpty(this.zone)">
             <a-select
               v-decorator="['zoneid', {
                 rules: [
@@ -56,14 +56,14 @@
                 return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }"
               :loading="zoneLoading"
-              :placeholder="this.$t('label.zoneid')"
+              :placeholder="this.$t('zoneid')"
               @change="val => { this.handleZoneChanged(this.zones[val]) }">
               <a-select-option v-for="(opt, optIndex) in this.zones" :key="optIndex">
                 {{ opt.name || opt.description }}
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('label.physical.network')" v-if="this.isObjectEmpty(this.zone)">
+          <a-form-item :label="$t('physicalnetworkid')" v-if="this.isObjectEmpty(this.zone)">
             <a-select
               v-decorator="['physicalnetworkid', {}]"
               showSearch
@@ -72,29 +72,29 @@
                 return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }"
               :loading="zoneLoading"
-              :placeholder="this.$t('label.physical.network')"
+              :placeholder="this.$t('physicalnetworkid')"
               @change="val => { this.handleZoneChanged(this.formPhysicalNetworks[val]) }">
               <a-select-option v-for="(opt, optIndex) in this.formPhysicalNetworks" :key="optIndex">
                 {{ opt.name || opt.description }}
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('label.vlan.id')">
+          <a-form-item :label="$t('vlanid')">
             <a-input
               v-decorator="['vlanid', {
                 rules: [{ required: true, message: 'Please enter value' }]
               }]"
-              :placeholder="this.$t('label.vlan.id')"/>
+              :placeholder="this.$t('vlanid')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.bypass.vlan.overlap.check')">
+          <a-form-item :label="$t('bypassvlanoverlapcheck')">
             <a-switch v-decorator="['bypassvlanoverlapcheck']" />
           </a-form-item>
-          <a-form-item :label="$t('label.secondary.isolated.vlan.id')">
+          <a-form-item :label="$t('isolatedpvlanid')">
             <a-input
               v-decorator="['isolatedpvlanid', {}]"
-              :placeholder="this.$t('label.secondary.isolated.vlan.id')"/>
+              :placeholder="this.$t('isolatedpvlanid')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.scope')">
+          <a-form-item :label="$t('scope')">
             <a-radio-group
               v-decorator="['scope', {
                 initialValue: this.scopeType
@@ -115,7 +115,7 @@
               </a-radio-button>
             </a-radio-group>
           </a-form-item>
-          <a-form-item :label="$t('label.domain')" v-if="this.scopeType !== 'all'">
+          <a-form-item :label="$t('domainid')" v-if="this.scopeType !== 'all'">
             <a-select
               v-decorator="['domainid', {}]"
               showSearch
@@ -124,22 +124,22 @@
                 return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }"
               :loading="domainLoading"
-              :placeholder="this.$t('label.domain')"
+              :placeholder="this.$t('domainid')"
               @change="val => { this.handleDomainChange(this.domains[val]) }">
               <a-select-option v-for="(opt, optIndex) in this.domains" :key="optIndex">
                 {{ opt.name || opt.description }}
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('label.subdomain.access')" v-if="this.scopeType === 'domain'">
+          <a-form-item :label="$t('subdomainaccess')" v-if="this.scopeType === 'domain'">
             <a-switch v-decorator="['subdomainaccess']" />
           </a-form-item>
-          <a-form-item :label="$t('label.account')" v-if="this.scopeType === 'account'">
+          <a-form-item :label="$t('account')" v-if="this.scopeType === 'account'">
             <a-input
               v-decorator="['account', {}]"
-              :placeholder="this.$t('label.account')"/>
+              :placeholder="this.$t('account')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.project')" v-if="this.scopeType === 'project'">
+          <a-form-item :label="$t('projectid')" v-if="this.scopeType === 'project'">
             <a-select
               v-decorator="['projectid', {}]"
               showSearch
@@ -148,14 +148,14 @@
                 return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }"
               :loading="domainLoading"
-              :placeholder="this.$t('label.project')"
+              :placeholder="this.$t('projectid')"
               @change="val => { this.handleDomainChange(this.domains[val]) }">
               <a-select-option v-for="(opt, optIndex) in this.domains" :key="optIndex">
                 {{ opt.name || opt.description }}
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('label.networkofferingid')">
+          <a-form-item :label="$t('networkofferingid')">
             <a-select
               v-decorator="['networkofferingid', {
                 rules: [
@@ -171,59 +171,59 @@
                 return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }"
               :loading="networkOfferingLoading"
-              :placeholder="this.$t('label.networkofferingid')"
+              :placeholder="this.$t('networkofferingid')"
               @change="val => { this.handleNetworkOfferingChange(this.networkOfferings[val]) }">
               <a-select-option v-for="(opt, optIndex) in this.networkOfferings" :key="optIndex">
                 {{ opt.name || opt.description }}
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('label.ipv4.gateway')">
+          <a-form-item :label="$t('ip4gateway')">
             <a-input
               v-decorator="['ip4gateway', {}]"
-              :placeholder="this.$t('label.ipv4.gateway')"/>
+              :placeholder="this.$t('ip4gateway')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.ipv4.netmask')">
+          <a-form-item :label="$t('netmask')">
             <a-input
-              v-decorator="['ip4netmask', {}]"
-              :placeholder="this.$t('label.ipv4.netmask')"/>
+              v-decorator="['netmask', {}]"
+              :placeholder="this.$t('netmask')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.ipv4.start.ip')">
+          <a-form-item :label="$t('startipv4')">
             <a-input
               v-decorator="['startipv4', {}]"
-              :placeholder="this.$t('label.ipv4.start.ip')"/>
+              :placeholder="this.$t('startipv4')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.ipv4.end.ip')">
+          <a-form-item :label="$t('endipv4')">
             <a-input
               v-decorator="['endipv4', {}]"
-              :placeholder="this.$t('label.ipv4.end.ip')"/>
+              :placeholder="this.$t('endipv4')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.ipv6.gateway')">
+          <a-form-item :label="$t('ip6gateway')">
             <a-input
               v-decorator="['ip6gateway', {}]"
-              :placeholder="this.$t('label.ipv6.gateway')"/>
+              :placeholder="this.$t('ip6gateway')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.ipv6.netmask')">
+          <a-form-item :label="$t('ip6cidr')">
             <a-input
-              v-decorator="['ip6netmask', {}]"
-              :placeholder="this.$t('label.ipv6.netmask')"/>
+              v-decorator="['ip6cidr', {}]"
+              :placeholder="this.$t('ip6cidr')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.ipv6.start.ip')">
+          <a-form-item :label="$t('startipv6')">
             <a-input
               v-decorator="['startipv6', {}]"
-              :placeholder="this.$t('label.ipv6.start.ip')"/>
+              :placeholder="this.$t('startipv6')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.ipv6.end.ip')">
+          <a-form-item :label="$t('endipv6')">
             <a-input
               v-decorator="['endipv6', {}]"
-              :placeholder="this.$t('label.ipv6.end.ip')"/>
+              :placeholder="this.$t('endipv6')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.network.domain')">
+          <a-form-item :label="$t('networkdomain')">
             <a-input
               v-decorator="['networkdomain', {}]"
-              :placeholder="this.$t('label.network.domain')"/>
+              :placeholder="this.$t('networkdomain')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.network.hideipaddressusage')">
+          <a-form-item :label="$t('hideipaddressusage')">
             <a-switch v-decorator="['hideipaddressusage']" />
           </a-form-item>
           <div :span="24" class="action-button">
@@ -504,7 +504,7 @@ export default {
           return
         }
         if (
-          (!this.isValidTextValueForKey(values, 'ip4gateway') && !this.isValidTextValueForKey(values, 'ip4Netmask') &&
+          (!this.isValidTextValueForKey(values, 'ip4gateway') && !this.isValidTextValueForKey(values, 'netmask') &&
             !this.isValidTextValueForKey(values, 'startipv4') && !this.isValidTextValueForKey(values, 'endipv4') &&
             !this.isValidTextValueForKey(values, 'ip6gateway') && !this.isValidTextValueForKey(values, 'data.ip6cidr') &&
             !this.isValidTextValueForKey(values, 'data.startipv6') && !this.isValidTextValueForKey(values, 'endipv6'))
@@ -550,8 +550,8 @@ export default {
         if (this.isValidTextValueForKey(values, 'ip4gateway')) {
           params.gateway = values.ip4gateway
         }
-        if (this.isValidTextValueForKey(values, 'ip4Netmask')) {
-          params.netmask = values.ip4Netmask
+        if (this.isValidTextValueForKey(values, 'netmask')) {
+          params.netmask = values.netmask
         }
         if (this.isValidTextValueForKey(values, 'startipv4')) {
           params.startip = values.startipv4
@@ -565,13 +565,13 @@ export default {
         if (this.isValidTextValueForKey(values, 'ip4gateway')) {
           params.ip6gateway = values.ip6gateway
         }
-        if (this.isValidTextValueForKey(values, 'ip4gateway')) {
+        if (this.isValidTextValueForKey(values, 'ip6cidr')) {
           params.ip6cidr = values.ip6cidr
         }
-        if (this.isValidTextValueForKey(values, 'ip4gateway')) {
+        if (this.isValidTextValueForKey(values, 'startipv6')) {
           params.startipv6 = values.startipv6
         }
-        if (this.isValidTextValueForKey(values, 'ip4gateway')) {
+        if (this.isValidTextValueForKey(values, 'endipv6')) {
           params.endipv6 = values.endipv6
         }
         // IPv6 (end)
