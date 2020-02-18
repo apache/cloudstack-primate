@@ -29,11 +29,11 @@ const user = {
     avatar: '',
     info: {},
     apis: {},
-    cloudian: {},
     features: {},
     project: {},
     asyncJobIds: [],
-    isLdapEnabled: false
+    isLdapEnabled: false,
+    cloudian: {}
   },
 
   mutations: {
@@ -57,9 +57,6 @@ const user = {
     SET_APIS: (state, apis) => {
       state.apis = apis
     },
-    SET_CLOUDIAN: (state, cloudian) => {
-      state.cloudian = cloudian
-    },
     SET_FEATURES: (state, features) => {
       state.features = features
     },
@@ -69,6 +66,9 @@ const user = {
     },
     SET_LDAP: (state, isLdapEnabled) => {
       state.isLdapEnabled = isLdapEnabled
+    },
+    SET_CLOUDIAN: (state, cloudian) => {
+      state.cloudian = cloudian
     },
     RESET_THEME: (state) => {
       Vue.ls.set(DEFAULT_THEME, 'light')
@@ -141,18 +141,22 @@ const user = {
         }).catch(error => {
           reject(error)
         })
+
         api('cloudianIsEnabled').then(response => {
-          const cloudian = response.cloudianisenabledresponse.cloudianisenabled
+          const cloudian = response.cloudianisenabledresponse.cloudianisenabled || {}
           commit('SET_CLOUDIAN', cloudian)
-        }).catch(error => {
-          reject(error)
+        }).catch(ignored => {
         })
       })
     },
 
     Logout ({ commit, state }) {
       return new Promise((resolve) => {
-        var url = state.cloudian.url + 'logout.htm?redirect=' + encodeURIComponent(window.location.href)
+        var cloudianUrl = null
+        if (state.cloudian.url && state.cloudian.enabled) {
+          cloudianUrl = state.cloudian.url + 'logout.htm?redirect=' + encodeURIComponent(window.location.href)
+        }
+
         commit('SET_TOKEN', '')
         commit('SET_PROJECT', {})
         commit('SET_APIS', {})
@@ -161,9 +165,13 @@ const user = {
         Vue.ls.remove(CURRENT_PROJECT)
         Vue.ls.remove(ACCESS_TOKEN)
         Vue.ls.remove(ASYNC_JOB_IDS)
+
         logout(state.token).then(() => {
-          resolve()
-          window.location.replace(url)
+          if (cloudianUrl) {
+            window.location.href = cloudianUrl
+          } else {
+            resolve()
+          }
         }).catch(() => {
           resolve()
         })

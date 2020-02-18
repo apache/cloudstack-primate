@@ -19,7 +19,7 @@ import cloudian from '@/assets/icons/cloudian.svg?inline'
 
 export default {
   name: 'cloudian',
-  title: 'Cloudian',
+  title: 'Cloudian Storage',
   icon: cloudian,
   permission: ['cloudianSsoLogin'],
   component: () => import('@/views/plugins/CloudianPlugin.vue')

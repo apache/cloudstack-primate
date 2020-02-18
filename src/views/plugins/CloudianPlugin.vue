@@ -16,36 +16,47 @@
 // under the License.
 
 <template>
-  <div v-if="visible" style="font-weight: bolder"> {{ $t('message.cloudian.sso.error') }} </div>
+  <div>
+    <span v-if="showError">
+      <a-alert type="error" message="Single-Sign-On failed for Cloudian Management Console. Please ask your administrator to fix integration issues." showIcon />
+      <br/>
+      <a-button @click="doSso()">Try Again</a-button>
+    </span>
+    <span v-else>
+      <a-alert type="info" message="Cloudian Management Console should open in another window" showIcon />
+    </span>
+    <br/>
+  </div>
 </template>
+
 <script>
 import { api } from '@/api'
 
 export default {
   name: 'CloudianPlugin',
   mounted () {
-    this.fetchSSO()
+    this.doSso()
   },
   data () {
     return {
-      visible: false
+      showError: false
     }
   },
   methods: {
-    fetchSSO () {
+    doSso () {
       api('cloudianSsoLogin').then(json => {
-        const url = json.cloudianssologinresponse.cloudianssologin.url || ''
-        this.openSso(url)
-      }).catch(() => {
-        this.visible = true
+        const url = json.cloudianssologinresponse.cloudianssologin.url
+        const cmcWindow = window.open(url, 'CMCWindow')
+        cmcWindow.focus()
+      }).catch(error => {
+        this.$notification.error({
+          message: 'Single-Sign-On Failed',
+          description: error.response.headers['x-description'] || 'Request Failed',
+          duration: 0
+        })
+        this.showError = true
       })
-    },
-    openSso (url) {
-      const newWindow = window.open(url, 'CMCWindow', 'height=510,width=510')
-      newWindow.focus()
     }
   }
 }
 </script>
-<style scoped>
-</style>

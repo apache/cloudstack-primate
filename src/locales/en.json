@@ -713,7 +713,6 @@
 "memoryused": "Used",
 "memoryusedgb": "Used",
 "memused": "Memory Usage",
-"message.cloudian.sso.error": "Single-Sign-On failed for Cloudian Management Console. Please ask your administrator to fix integration issues.",
 "message.edit.account": "Edit (\"-1\" indicates no limit to the amount of resources create)",
 "message.add.new.gateway.to.vpc":"Please specify the information to add a new gateway to this VPC.",
 "message.assign.instance.another": "Please specify the account type, domain, account name and network (optional) of the new account. <br> If the default nic of the vm is on a shared network, CloudStack will check if the network can be used by the new account if you do not specify one network. <br> If the default nic of the vm is on a isolated network, and the new account has more one isolated networks, you should specify one.",
