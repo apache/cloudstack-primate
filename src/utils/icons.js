@@ -16,7 +16,6 @@
 // under the License.
 
 import _ from 'lodash'
-import cloudian from '@/assets/icons/cloudian.svg?inline'
 
 const osMapping = {
   ubuntu: 'ubuntu',
@@ -33,9 +32,7 @@ const osMapping = {
   oracle: 'java'
 }
 
-const getNormalizedOsName = (osName) => {
+export const getNormalizedOsName = (osName) => {
   osName = osName.toLowerCase()
   return _.find(osMapping, (value, key) => osName.includes(key)) || 'linux'
 }
-
-export { getNormalizedOsName, cloudian }
