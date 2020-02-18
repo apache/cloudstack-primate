@@ -125,38 +125,8 @@
             </a-collapse-panel>
           </a-collapse>
         </div>
-        <div class="list__col">
-          <a-button icon="share-alt">
-            <router-link :to="{ path: '/publicip?forloadbalancing=true' + '&associatednetworkid=' + record.id }">
-              Public LB IP
-            </router-link>
-          </a-button>
-        </div>
-        <div class="list__col">
-          <a-button icon="environment">
-            <router-link :to="{ path: '/publicip?isstaticnat=true' + '&associatednetworkid=' + record.id }">
-              Static NATS
-            </router-link>
-          </a-button>
-        </div>
-        <div class="list__col">
-          <a-button icon="desktop">
-            <router-link :to="{ path: '/vm/?vpcid=' + resource.id + '&networkid=' + record.id }">VMs</router-link>
-          </a-button>
-        </div>
-      </div>
-    </a-table>
-    <a-pagination
-      class="pagination"
-      size="small"
-      :current="page"
-      :pageSize="pageSize"
-      :total="networks ? networks.length : 0"
-      :showTotal="total => `Total ${total} items`"
-      :pageSizeOptions="['10', '20', '40', '80', '100']"
-      @change="handleChangePage"
-      @showSizeChange="handleChangePageSize"
-      showSizeChanger/>
+      </a-list-item>
+    </a-list>
 
     <a-modal v-model="showCreateNetworkModal" :title="$t('label.add.new.tier')" @ok="handleAddNetworkSubmit">
       <a-spin :spinning="modalLoading">
@@ -614,10 +584,4 @@ export default {
     }
   }
 }
-.pagination {
-  margin-top: 20px;
-}
-  .actions {
-    display: flex;
-  }
 </style>
