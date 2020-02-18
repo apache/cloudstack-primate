@@ -29,6 +29,7 @@ const user = {
     avatar: '',
     info: {},
     apis: {},
+    cloudian: {},
     features: {},
     project: {},
     asyncJobIds: [],
@@ -55,6 +56,9 @@ const user = {
     },
     SET_APIS: (state, apis) => {
       state.apis = apis
+    },
+    SET_CLOUDIAN: (state, cloudian) => {
+      state.cloudian = cloudian
     },
     SET_FEATURES: (state, features) => {
       state.features = features
@@ -137,20 +141,29 @@ const user = {
         }).catch(error => {
           reject(error)
         })
+        api('cloudianIsEnabled').then(response => {
+          const cloudian = response.cloudianisenabledresponse.cloudianisenabled
+          commit('SET_CLOUDIAN', cloudian)
+        }).catch(error => {
+          reject(error)
+        })
       })
     },
+
     Logout ({ commit, state }) {
       return new Promise((resolve) => {
+        var url = state.cloudian.url + 'logout.htm?redirect=' + encodeURIComponent(window.location.href)
         commit('SET_TOKEN', '')
         commit('SET_PROJECT', {})
         commit('SET_APIS', {})
+        commit('SET_CLOUDIAN', {})
         commit('RESET_THEME')
         Vue.ls.remove(CURRENT_PROJECT)
         Vue.ls.remove(ACCESS_TOKEN)
         Vue.ls.remove(ASYNC_JOB_IDS)
-
         logout(state.token).then(() => {
           resolve()
+          window.location.replace(url)
         }).catch(() => {
           resolve()
         })

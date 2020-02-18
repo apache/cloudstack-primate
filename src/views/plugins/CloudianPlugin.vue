@@ -15,25 +15,37 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import { cloudian } from '@/utils/icons'
+<template>
+  <div v-if="visible" style="font-weight: bolder"> {{ $t('message.cloudian.sso.error') }} </div>
+</template>
+<script>
+import { api } from '@/api'
 
 export default {
-  name: 'plugin',
-  title: 'Plugins',
-  icon: 'heat-map',
-  children: [
-    {
-      name: 'quota',
-      title: 'Quota',
-      icon: 'pie-chart',
-      permission: ['quotaSummary', 'quotaIsEnabled']
-    },
-    {
-      name: 'cloudian',
-      title: 'Cloudian Storage',
-      icon: cloudian,
-      permission: ['cloudianSsoLogin'],
-      component: () => import('@/views/plugins/CloudianPlugin.vue')
+  name: 'CloudianPlugin',
+  mounted () {
+    this.fetchSSO()
+  },
+  data () {
+    return {
+      visible: false
     }
-  ]
+  },
+  methods: {
+    fetchSSO () {
+      api('cloudianSsoLogin').then(json => {
+        const url = json.cloudianssologinresponse.cloudianssologin.url || ''
+        this.openSso(url)
+      }).catch(() => {
+        this.visible = true
+      })
+    },
+    openSso (url) {
+      const newWindow = window.open(url, 'CMCWindow', 'height=510,width=510')
+      newWindow.focus()
+    }
+  }
 }
+</script>
+<style scoped>
+</style>
