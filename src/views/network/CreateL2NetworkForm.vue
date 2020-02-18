@@ -18,9 +18,6 @@
 <template>
   <a-spin :spinning="loading">
     <div class="form-layout">
-      <label>
-        {{ 'Isolated Network' }}
-      </label>
       <div class="form">
         <a-form
           :form="form"

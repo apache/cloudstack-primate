@@ -31,7 +31,7 @@
           @refresh="handleRefresh"/>
       </a-tab-pane>
       <a-tab-pane :tab="$t('Guest')" key="3" v-if="this.isAdmin()">
-        <CreateGuestNetworkForm
+        <CreateSharedNetworkForm
           :loading="loading"
           @close-action="closeAction"
           @refresh="handleRefresh"/>
@@ -44,14 +44,14 @@
 import { api } from '@/api'
 import CreateIsolatedNetworkForm from '@/views/network/CreateIsolatedNetworkForm'
 import CreateL2NetworkForm from '@/views/network/CreateL2NetworkForm'
-import CreateGuestNetworkForm from '@/views/network/CreateGuestNetworkForm'
+import CreateSharedNetworkForm from '@/views/network/CreateSharedNetworkForm'
 
 export default {
   name: 'CreateNetwork',
   components: {
     CreateIsolatedNetworkForm,
     CreateL2NetworkForm,
-    CreateGuestNetworkForm
+    CreateSharedNetworkForm
   },
   props: {
     resource: {
