@@ -28,11 +28,12 @@
       size="large"
       :tabBarStyle="{ textAlign: 'center', borderBottom: 'unset' }"
       @change="handleTabClick"
+      :animated="false"
     >
-      <a-tab-pane key="tab1">
+      <a-tab-pane key="cs">
         <span slot="tab">
           <a-icon type="safety" />
-          <b>CloudStack Login</b>
+          Portal Login
         </span>
         <a-form-item>
           <a-input
@@ -78,10 +79,10 @@
         </a-form-item>
 
       </a-tab-pane>
-      <a-tab-pane key="tab2">
+      <a-tab-pane key="saml" :disabled="idps.length === 0">
         <span slot="tab">
           <a-icon type="audit" />
-          <b>SAML</b>
+          Single-Sign-On
         </span>
         <a-form-item>
           <a-select v-decorator="['idp', { initialValue: selectedIdp } ]">
@@ -109,6 +110,7 @@
 <script>
 import { api } from '@/api'
 import { mapActions } from 'vuex'
+import config from '@/config/settings'
 
 export default {
   components: {
@@ -117,7 +119,7 @@ export default {
     return {
       idps: [],
       selectedIdp: '',
-      customActiveKey: 'tab1',
+      customActiveKey: 'cs',
       loginBtn: false,
       loginType: 0,
       form: this.$form.createForm(this),
@@ -137,7 +139,6 @@ export default {
     ...mapActions(['Login', 'Logout']),
     fetchData () {
       api('listIdps').then(response => {
-        console.log(response.listidpsresponse.idp)
         this.idps = response.listidpsresponse.idp || []
         this.selectedIdp = this.idps[0].id || ''
       })
@@ -168,11 +169,11 @@ export default {
 
       state.loginBtn = true
 
-      const validateFieldsKey = customActiveKey === 'tab1' ? ['username', 'password', 'domain'] : ['idp']
+      const validateFieldsKey = customActiveKey === 'cs' ? ['username', 'password', 'domain'] : ['idp']
 
       validateFields(validateFieldsKey, { force: true }, (err, values) => {
         if (!err) {
-          if (customActiveKey === 'tab1') {
+          if (customActiveKey === 'cs') {
             const loginParams = { ...values }
             delete loginParams.username
             loginParams[!state.loginType ? 'email' : 'username'] = values.username
@@ -187,16 +188,13 @@ export default {
               .finally(() => {
                 state.loginBtn = false
               })
-          } else {
-            api('samlSso', {
-              idpid: values.idp
-            }).then(response => {
-              window.document.open()
-              window.document.write(response)
-              window.document.close()
-            }).finally(() => {
-              state.loginBtn = false
-            })
+          } else if (customActiveKey === 'saml') {
+            state.loginBtn = false
+            var samlUrl = config.apiBase + '?command=samlSso'
+            if (values.idp) {
+              samlUrl += ('&idpid=' + values.idp)
+            }
+            window.location.href = samlUrl
           }
         } else {
           setTimeout(() => {
@@ -206,7 +204,6 @@ export default {
       })
     },
     loginSuccess (res) {
-      this.$message.loading('Login Successful. Discovering Features...', 5)
       this.$router.push({ path: '/dashboard' }).catch(() => {})
     },
     requestFailed (err) {
@@ -236,6 +233,7 @@ export default {
   }
 
   button.login-button {
+    margin-top: 8px;
     padding: 0 15px;
     font-size: 16px;
     height: 40px;
