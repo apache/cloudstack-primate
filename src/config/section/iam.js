@@ -14,6 +14,7 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
+import store from '@/store'
 
 export default {
   name: 'iam',
@@ -71,6 +72,15 @@ export default {
           show: (record) => { return record.state === 'enabled' }
         },
         {
+          api: 'authorizeSamlSso',
+          icon: 'check-circle',
+          label: 'Configure SAML SSO Authorization',
+          dataView: true,
+          show: () => { return 'authorizeSamlSso' in store.getters.apis },
+          popup: true,
+          component: () => import('@/views/iam/ConfigureSamlSsoAuth.vue')
+        },
+        {
           api: 'deleteUser',
           icon: 'delete',
           label: 'Delete user',
@@ -110,7 +120,8 @@ export default {
           icon: 'plus',
           label: 'label.add.account',
           listView: true,
-          args: ['username', 'password', 'password', 'email', 'firstname', 'lastname', 'domainid', 'account', 'roleid', 'timezone', 'networkdomain']
+          popup: true,
+          component: () => import('@/views/iam/AddAccountForm.vue')
         },
         {
           api: 'ldapCreateAccount',

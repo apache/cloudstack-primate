@@ -105,6 +105,24 @@
                 :placeholder="apiParams.group.description"
               />
             </a-form-item>
+            <div v-if="'authorizeSamlSso' in $store.getters.apis">
+              <a-form-item>
+                <a-checkbox v-decorator="['samlEnable']"> {{ $t('samlEnable') }} </a-checkbox>
+              </a-form-item>
+              <a-form-item :label="$t('samlEntity')">
+                <a-select
+                  v-decorator="['samlEntity', {
+                    initialValue: selectedIdp,
+                  }]"
+                  placeholder="Choose SAML identity provider"
+                  :loading="loading">
+                  <a-select-option v-for="(idp, idx) in listIdps" :key="idx">
+                    {{ idp.orgName }}
+                  </a-select-option>
+                </a-select>
+              </a-form-item>
+            </div>
+
             <div class="card-footer">
               <a-button @click="handleClose">{{ $t('Close') }}</a-button>
               <a-button :loading="loading" type="primary" @click="handleSubmit">{{ $t('add') }}</a-button>
@@ -131,6 +149,8 @@ export default {
       listDomains: [],
       listRoles: [],
       timeZoneMap: [],
+      listIdps: [],
+      selectedIdp: '',
       listLoading: false,
       timeZoneLoading: false,
       domainLoading: false,
@@ -158,6 +178,7 @@ export default {
     this.dataSource = []
     this.listDomains = []
     this.listRoles = []
+    this.listIdps = []
     this.columns = [
       {
         title: this.$t('name'),
@@ -191,12 +212,14 @@ export default {
         listTimeZone,
         listLdapUsers,
         listDomains,
-        listRoles
+        listRoles,
+        listIdps
       ] = await Promise.all([
         this.fetchTimeZone(),
         this.fetchListLdapUsers(),
         this.fetchListDomains(),
-        this.fetchListRoles()
+        this.fetchListRoles(),
+        ('listIdps' in this.$store.getters.apis) ? this.fetchIdps() : []
       ]).catch(error => {
         this.$notification.error({
           message: 'Request Failed',
@@ -211,8 +234,10 @@ export default {
       this.timeZoneMap = listTimeZone && listTimeZone.length > 0 ? listTimeZone : []
       this.listDomains = listDomains && listDomains.length > 0 ? listDomains : []
       this.listRoles = listRoles && listRoles.length > 0 ? listRoles : []
+      this.listIdps = listIdps && listIdps.length > 0 ? listIdps : []
       this.dataSource = listLdapUsers
       this.oldDataSource = listLdapUsers
+      console.log('idp = ', this.listIdps)
     },
     fetchTimeZone (value) {
       return new Promise((resolve, reject) => {
@@ -258,6 +283,16 @@ export default {
         api('listRoles', params).then(json => {
           const listRoles = json.listrolesresponse.role
           resolve(listRoles)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    fetchIdps () {
+      return new Promise((resolve, reject) => {
+        api('listIdps').then(json => {
+          const listIdps = json.listidpsresponse.idp
+          resolve(listIdps)
         }).catch(error => {
           reject(error)
         })
