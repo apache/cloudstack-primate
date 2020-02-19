@@ -139,8 +139,10 @@ export default {
     ...mapActions(['Login', 'Logout']),
     fetchData () {
       api('listIdps').then(response => {
-        this.idps = response.listidpsresponse.idp || []
-        this.selectedIdp = this.idps[0].id || ''
+        if (response) {
+          this.idps = response.listidpsresponse.idp || []
+          this.selectedIdp = this.idps[0].id || ''
+        }
       })
     },
     // handler
