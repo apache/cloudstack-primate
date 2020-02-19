@@ -16,51 +16,28 @@
 // under the License.
 
 export default {
-  name: 'router',
-  title: 'Virtual Routers',
-  icon: 'fork',
-  permission: ['listRouters'],
+  name: 'ilbvm',
+  title: 'Internal LB VMs',
+  icon: 'share-alt',
+  permission: ['listInternalLoadBalancerVMs'],
   params: { projectid: '-1' },
-  columns: ['name', 'state', 'publicip', 'guestnetworkname', 'vpcname', 'redundantstate', 'version', 'hostname', 'account', 'zonename', 'requiresupgrade'],
+  columns: ['name', 'state', 'publicip', 'guestnetworkname', 'vpcname', 'version', 'hostname', 'account', 'zonename', 'requiresupgrade'],
   details: ['name', 'id', 'version', 'requiresupgrade', 'guestnetworkname', 'vpcname', 'publicip', 'guestipaddress', 'linklocalip', 'serviceofferingname', 'networkdomain', 'isredundantrouter', 'redundantstate', 'hostname', 'account', 'zonename', 'created'],
   actions: [
     {
-      api: 'startRouter',
+      api: 'startInternalLoadBalancerVM',
       icon: 'caret-right',
       label: 'label.action.start.router',
       dataView: true,
       show: (record) => { return record.state === 'Stopped' }
     },
     {
-      api: 'stopRouter',
+      api: 'stopInternalLoadBalancerVM',
       icon: 'stop',
       label: 'label.action.stop.router',
       dataView: true,
       args: ['forced'],
       show: (record) => { return record.state === 'Running' }
-    },
-    {
-      api: 'rebootRouter',
-      icon: 'sync',
-      label: 'label.action.reboot.router',
-      dataView: true,
-      hidden: (record) => { return record.state === 'Running' }
-    },
-    {
-      api: 'scaleSystemVm',
-      icon: 'arrows-alt',
-      label: 'label.change.service.offering',
-      dataView: true,
-      args: ['serviceofferingid'],
-      show: (record) => { return record.hypervisor !== 'KVM' }
-    },
-    {
-      api: 'upgradeRouterTemplate',
-      icon: 'fullscreen',
-      label: 'label.upgrade.router.newer.template',
-      dataView: true,
-      groupAction: true,
-      show: (record) => { return record.requiresupgrade }
     },
     {
       api: 'migrateSystemVm',
@@ -74,29 +51,6 @@ export default {
           value: (record) => { return record.id }
         }
       }
-    },
-    {
-      api: 'runDiagnostics',
-      icon: 'reconciliation',
-      label: 'label.action.run.diagnostics',
-      dataView: true,
-      show: (record) => { return record.state === 'Running' },
-      args: ['targetid', 'type', 'ipaddress', 'params'],
-      mapping: {
-        targetid: {
-          value: (record) => { return record.id }
-        },
-        type: {
-          options: ['ping', 'traceroute', 'arping']
-        }
-      }
-    },
-    {
-      api: 'destroyRouter',
-      icon: 'delete',
-      label: 'label.destroy.router',
-      dataView: true,
-      show: (record) => { return ['Running', 'Error', 'Stopped'].includes(record.state) }
     }
   ]
 }

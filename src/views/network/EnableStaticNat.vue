@@ -16,54 +16,37 @@
 // under the License.
 
 <template>
-  <a-list class="list" :loading="loading">
-    <div slot="header" class="list__header">
-      <a-input-search
-        placeholder="Search"
-        v-model="searchQuery"
-        @search="fetchData" />
+  <div class="list" :loading="loading">
+    <div class="list__header">
+      <div class="list__header__col" v-if="tiersSelect">
+        <a-select @change="handleTierSelect" v-model="vpcTiers" placeholder="Select a tier">
+          <a-select-option v-for="network in networksList" :key="network.id" :value="network.id">
+            {{ network.name }}
+          </a-select-option>
+        </a-select>
+      </div>
+
+      <div class="list__header__col list__header__col--full">
+        <a-input-search
+          placeholder="Search"
+          v-model="searchQuery"
+          @search="fetchData" />
+      </div>
     </div>
 
-    <a-list-item
-      v-for="vm in vmsList"
-      :key="vm.id"
-      class="list__item"
-      :class="{ 'list__item--selected' : selectedVm && selectedVm.id === vm.id }">
-
-      <div class="list__outer-container">
-        <div class="list__container" @click="() => handleSelectItem(vm)">
-          <div class="list__row">
-            <div class="list__title">{{ $t('name') }}</div>
-            <div>{{ vm.name }}</div>
-          </div>
-          <div class="list__row">
-            <div class="list__title">{{ $t('instancename') }}</div>
-            <div>{{ vm.instancename }}</div>
-          </div>
-          <div class="list__row">
-            <div class="list__title">{{ $t('displayname') }}</div>
-            <div>{{ vm.displayname }}</div>
-          </div>
-          <div class="list__row">
-            <div class="list__title">{{ $t('account') }}</div>
-            <div>{{ vm.account }}</div>
-          </div>
-          <div class="list__row">
-            <div class="list__title">{{ $t('zonenamelabel') }}</div>
-            <div>{{ vm.zonename }}</div>
-          </div>
-          <div class="list__row">
-            <div class="list__title">{{ $t('state') }}</div>
-            <div>{{ vm.state }}</div>
-          </div>
-          <a-radio
-            class="list__radio"
-            :checked="selectedVm && selectedVm.id === vm.id"
-            @change="fetchNics"></a-radio>
+    <a-table
+      size="small"
+      :loading="loading"
+      :columns="columns"
+      :dataSource="vmsList"
+      :pagination="false"
+      :rowKey="record => record.id || record.account">
+      <template slot="name" slot-scope="record">
+        <div>
+          {{ record.name }}
         </div>
-
         <a-select
-          v-if="nicsList.length && selectedVm && selectedVm.id === vm.id"
+          v-if="nicsList.length && selectedVm && selectedVm === record.id"
           class="nic-select"
           :defaultValue="selectedNic.ipaddress">
           <a-select-option
@@ -73,20 +56,41 @@
             {{ item.ipaddress }}
           </a-select-option>
         </a-select>
-      </div>
+      </template>
+      <template slot="state" slot-scope="text">
+        <status :text="text ? text : ''" displayText />
+      </template>
+      <template slot="radio" slot-scope="text">
+        <a-radio
+          class="list__radio"
+          :value="text"
+          :checked="selectedVm && selectedVm === text"
+          @change="fetchNics"></a-radio>
+      </template>
+    </a-table>
+    <a-pagination
+      class="row-element pagination"
+      size="small"
+      :current="page"
+      :pageSize="pageSize"
+      :total="vmsList.length"
+      :showTotal="total => `Total ${total} items`"
+      :pageSizeOptions="['10', '20', '40', '80', '100']"
+      @change="changePage"
+      @showSizeChange="changePageSize"
+      showSizeChanger/>
 
-    </a-list-item>
-
-    <div slot="footer" class="list__footer">
+    <div class="list__footer">
       <a-button @click="handleClose">{{ $t('cancel') }}</a-button>
-      <a-button @click="handleSubmit" type="primary" :disabled="!selectedVm || !selectedNic">{{ $t('ok') }}</a-button>
+      <a-button @click="handleSubmit" type="primary" :disabled="!selectedVm || !selectedNic">{{ $t('OK') }}</a-button>
     </div>
 
-  </a-list>
+  </div>
 </template>
 
 <script>
 import { api } from '@/api'
+import Status from '@/components/widgets/Status'
 
 export default {
   props: {
@@ -94,6 +98,9 @@ export default {
       type: Object,
       required: true
     }
+  },
+  components: {
+    Status
   },
   inject: ['parentFetchData'],
   data () {
@@ -103,7 +110,45 @@ export default {
       selectedVm: null,
       nicsList: [],
       searchQuery: null,
-      selectedNic: null
+      selectedNic: null,
+      columns: [
+        {
+          title: this.$t('name'),
+          scopedSlots: { customRender: 'name' }
+        },
+        {
+          title: this.$t('instancename'),
+          dataIndex: 'instancename'
+        },
+        {
+          title: this.$t('displayname'),
+          dataIndex: 'displayname'
+        },
+        {
+          title: this.$t('account'),
+          dataIndex: 'account'
+        },
+        {
+          title: this.$t('zonenamelabel'),
+          dataIndex: 'zonename'
+        },
+        {
+          title: this.$t('state'),
+          dataIndex: 'state',
+          scopedSlots: { customRender: 'state' }
+        },
+        {
+          title: 'Select',
+          dataIndex: 'id',
+          scopedSlots: { customRender: 'radio' }
+        }
+      ],
+      tiersSelect: false,
+      networksList: [],
+      vpcTiers: [],
+      selectedVpcTier: null,
+      page: 1,
+      pageSize: 10
     }
   },
   mounted () {
@@ -111,10 +156,16 @@ export default {
   },
   methods: {
     fetchData () {
+      if (this.resource.vpcid) {
+        this.handleTiers()
+        if (this.selectedVpcTier) this.fetchDataTiers(this.selectedVpcTier)
+        return
+      }
+
       this.loading = true
       api('listVirtualMachines', {
-        page: 1,
-        pageSize: 500,
+        page: this.page,
+        pageSize: this.pageSize,
         listAll: true,
         networkid: this.resource.associatednetworkid,
         account: this.resource.account,
@@ -122,20 +173,43 @@ export default {
         keyword: this.searchQuery
       }).then(response => {
         this.vmsList = response.listvirtualmachinesresponse.virtualmachine
-        this.loading = false
       }).catch(error => {
         this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
+          message: 'Request Failed',
+          description: error.response.headers['x-description']
         })
+      }).finally(() => {
         this.loading = false
       })
     },
-    fetchNics () {
+    fetchDataTiers (e) {
       this.loading = true
+      api('listVirtualMachines', {
+        page: this.page,
+        pageSize: this.pageSize,
+        listAll: true,
+        networkid: e,
+        account: this.resource.account,
+        domainid: this.resource.domainid,
+        vpcid: this.resource.vpcid,
+        keyword: this.searchQuery
+      }).then(response => {
+        this.vmsList = response.listvirtualmachinesresponse.virtualmachine || []
+      }).catch(error => {
+        this.$notification.error({
+          message: 'Request Failed',
+          description: error.response.headers['x-description']
+        })
+      }).finally(() => {
+        this.loading = false
+      })
+    },
+    fetchNics (e) {
+      this.selectedVm = e.target.value
       this.nicsList = []
+      this.loading = true
       api('listNics', {
-        virtualmachineid: this.selectedVm.id,
+        virtualmachineid: this.selectedVm,
         networkid: this.resource.associatednetworkid
       }).then(response => {
         this.nicsList = response.listnicsresponse.nic
@@ -148,40 +222,73 @@ export default {
         }
 
         this.selectedNic = this.nicsList[0]
-        this.loading = false
       }).catch(error => {
         this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
+          message: 'Request Failed',
+          description: error.response.headers['x-description']
         })
+      }).finally(() => {
         this.loading = false
       })
     },
-    handleSelectItem (vm) {
-      this.selectedVm = vm
-      this.fetchNics()
+    fetchNetworks () {
+      this.loading = true
+      api('listNetworks', {
+        vpcid: this.resource.vpcid,
+        domainid: this.resource.domainid,
+        account: this.resource.account,
+        supportedservices: 'StaticNat'
+      }).then(response => {
+        this.networksList = response.listnetworksresponse.network
+      }).catch(error => {
+        this.$notification.error({
+          message: 'Request Failed',
+          description: error.response.headers['x-description']
+        })
+      }).finally(() => {
+        this.loading = false
+      })
     },
     handleSubmit () {
       this.loading = true
       api('enableStaticNat', {
         ipaddressid: this.resource.id,
-        virtualmachineid: this.selectedVm.id,
-        vmguestip: this.selectedNic.ipaddress
+        virtualmachineid: this.selectedVm,
+        vmguestip: this.selectedNic.ipaddress,
+        networkid: this.selectedVpcTier
       }).then(() => {
         this.parentFetchData()
-        this.loading = false
-        this.handleClose()
       }).catch(error => {
         this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
+          message: 'Request Failed',
+          description: error.response.headers['x-description'],
+          duration: 0
         })
+      }).finally(() => {
         this.loading = false
         this.handleClose()
       })
     },
     handleClose () {
       this.$parent.$parent.close()
+    },
+    handleTiers () {
+      this.tiersSelect = true
+      this.fetchNetworks()
+    },
+    handleTierSelect (tier) {
+      this.selectedVpcTier = tier
+      this.fetchDataTiers(tier)
+    },
+    changePage (page, pageSize) {
+      this.page = page
+      this.pageSize = pageSize
+      this.fetchData()
+    },
+    changePageSize (currentPage, pageSize) {
+      this.page = currentPage
+      this.pageSize = pageSize
+      this.fetchData()
     }
   }
 }
@@ -197,13 +304,33 @@ export default {
 
     @media (min-width: 1000px) {
       max-height: 70vh;
-      width: 60vw;
+      width: 900px;
     }
 
     &__header,
     &__footer {
-      padding-right: 20px;
-      padding-left: 20px;
+      padding: 20px;
+    }
+
+    &__header {
+      display: flex;
+
+      .ant-select {
+        min-width: 200px;
+      }
+
+      &__col {
+
+        &:not(:last-child) {
+          margin-right: 20px;
+        }
+
+        &--full {
+          flex: 1;
+        }
+
+      }
+
     }
 
     &__footer {
@@ -260,11 +387,8 @@ export default {
     }
 
     &__radio {
-
-      @media (min-width: 760px) {
-        margin-left: auto;
-      }
-
+      display: flex;
+      justify-content: flex-end;
     }
 
   }
@@ -273,5 +397,20 @@ export default {
     margin-top: 10px;
     margin-right: auto;
     min-width: 150px;
+  }
+
+  .pagination {
+    margin-top: 20px;
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .table {
+    margin-top: 20px;
+    overflow-y: auto;
+  }
+
+  /deep/ .ant-table-small {
+    border: 0
   }
 </style>

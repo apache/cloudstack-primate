@@ -33,6 +33,7 @@
       </span>
     </template>
 
+    <!--
     <div slot="expandedRowRender" slot-scope="resource">
       <info-card :resource="resource" style="margin-left: 0px; width: 50%">
         <div slot="actions" style="padding-top: 12px">
@@ -57,6 +58,7 @@
         </div>
       </info-card>
     </div>
+    -->
 
     <a slot="name" slot-scope="text, record" href="javascript:;">
       <div style="min-width: 120px">
@@ -92,6 +94,9 @@
       <router-link :to="{ path: '/vm/' + record.virtualmachineid }">{{ text }}</router-link>
     </a>
     <template slot="state" slot-scope="text">
+      <status :text="text ? text : ''" displayText />
+    </template>
+    <template slot="agentstate" slot-scope="text">
       <status :text="text ? text : ''" displayText />
     </template>
     <a slot="guestnetworkname" slot-scope="text, record" href="javascript:;">

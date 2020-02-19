@@ -27,7 +27,14 @@
         class="spin-content"
         :bordered="true"
         style="width:100%">
+        <component
+          v-if="tabs.length === 1"
+          :is="tabs[0].component"
+          :resource="resource"
+          :loading="loading"
+          :tab="tabs[0].name" />
         <a-tabs
+          v-else
           style="width: 100%"
           :animated="false"
           :defaultActiveKey="tabs[0].name"
@@ -79,8 +86,7 @@ export default {
   data () {
     return {
       activeTab: '',
-      networkService: null,
-      vpnEnabled: false
+      networkService: null
     }
   },
   watch: {
@@ -91,15 +97,6 @@ export default {
       if (this.resource.associatednetworkid) {
         api('listNetworks', { id: this.resource.associatednetworkid }).then(response => {
           this.networkService = response.listnetworksresponse.network[0]
-        })
-      }
-
-      if (this.resource.id && this.resource.ipaddress) {
-        api('listRemoteAccessVpns', {
-          publicipid: this.resource.id,
-          listAll: true
-        }).then(response => {
-          this.vpnEnabled = response.listremoteaccessvpnsresponse.remoteaccessvpn && response.listremoteaccessvpnsresponse.remoteaccessvpn.length > 0
         })
       }
     }

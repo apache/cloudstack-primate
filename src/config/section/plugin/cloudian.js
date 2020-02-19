@@ -15,25 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//* import all  ## official ant ##  variables; mixins and styles
-@import "~ant-design-vue/lib/style/themes/default";
-@import "~ant-design-vue/lib/style/core/index";
+import cloudian from '@/assets/icons/cloudian.svg?inline'
 
-//* import all  ## custom ##  variables, mixins and styles
-
-
-@import "variables/prefixes";
-
-@import "common/common";
-
-@import "layout/ant";
-@import "layout/inverted-mode";
-@import "ant-overwrite/ant-layout-header";
-@import "ant-overwrite/ant-progress";
-@import "ant-overwrite/ant-form";
-
-@import "frame/content";
-@import "frame/search";
-@import "frame/top-menu";
-
-@import "objects/table";
+export default {
+  name: 'cloudian',
+  title: 'Cloudian Storage',
+  icon: cloudian,
+  permission: ['cloudianSsoLogin'],
+  component: () => import('@/views/plugins/CloudianPlugin.vue')
+}
