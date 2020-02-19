@@ -17,8 +17,15 @@
 
 <template>
   <div class="form">
-    <a-steps :current="currentStep" labelPlacement="vertical" :onChange="onChange()">
-      <a-step v-for="(item, index) in steps" :key="item.title" :title="item.title" @click="stepClicked(index)"></a-step>
+    <a-steps
+      labelPlacement="vertical"
+      size="small"
+      :current="currentStep"
+      :onChange="onChange()">
+      <a-step
+        v-for="(item) in steps"
+        :key="item.title"
+        :title="item.title"></a-step>
     </a-steps>
     <div>
       <zone-wizard-zone-type-step

@@ -17,36 +17,52 @@
 
 <template>
   <div>
-    <a-form class="form-content" :form="form" @submit="handleSubmit">
-      <span class="ant-form-text" style="text-align: justify; padding-bottom: 16px; padding-left:8px;">
-        {{ zoneType !== null ? zoneDescription[zoneType] : 'Please select zone type below.' }}
-      </span>
-      <a-form-item v-bind="formItemLayout" label="Select" has-feedback>
-        <a-select
-          v-decorator="[
-            'zoneType',
-            { rules: [{ required: true, message: 'Please select zone type', initialValue: zoneType }] },
-          ]"
-          placeholder="Please select zone type"
-        >
-          <a-select-option value="Basic">
-            Basic
-          </a-select-option>
-          <a-select-option value="Advanced">
-            Advanced
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <a-form-item v-bind="formItemLayout" label="Security Groups" v-if="isAdvancedZone">
-        <a-switch
-          v-decorator="['securityGroupsEnabled', { valuePropName: 'checked' }]"
-          :value="securityGroupsEnabled"
-        />
+    <a-form
+      class="form-content"
+      :form="form"
+      @submit="handleSubmit">
+      <a-form-item>
+        <a-radio-group
+          v-decorator="['zoneType', {
+            rules: [{ required: true, message: 'Please select zone type', initialValue: zoneType }]
+          }]">
+          <a-card :gutter="12" class="card-item">
+            <a-col :md="6" :lg="6">
+              <a-radio class="card-form-item" value="Basic">{{ $t('basic') }}</a-radio>
+            </a-col>
+            <a-col :md="18" :lg="18">
+              <a-card class="zone-support">{{ zoneDescription.Basic }}</a-card>
+            </a-col>
+          </a-card>
+          <a-card :gutter="12" class="card-item">
+            <a-col :md="6" :lg="6">
+              <a-radio class="card-form-item" value="Advanced">{{ $t('advanced') }}</a-radio>
+            </a-col>
+            <a-col :md="18" :lg="18">
+              <a-card class="zone-support">{{ zoneDescription.Advanced }}</a-card>
+            </a-col>
+            <a-col :md="6" :lg="6" style="margin-top: 15px">
+              <a-form-item
+                class="card-form-item"
+                v-bind="formItemLayout">
+                <a-switch
+                  class="card-form-item"
+                  v-decorator="['securityGroupsEnabled', { valuePropName: 'checked' }]"
+                  :value="securityGroupsEnabled"
+                  :disabled="!isAdvancedZone"
+                />
+              </a-form-item>
+              <span>Security Groups</span>
+            </a-col>
+            <a-col :md="18" :lg="18" style="margin-top: 15px">
+              <a-card class="zone-support">{{ zoneDescription.SecurityGroups }}</a-card>
+            </a-col>
+          </a-card>
+        </a-radio-group>
       </a-form-item>
     </a-form>
     <div class="form-action">
-      <a-button type="primary" @click="handleSubmit">
+      <a-button type="primary" @click="handleSubmit" style="position: absolute; right: 0;">
         Next
       </a-button>
     </div>
@@ -70,7 +86,8 @@ export default {
     },
     zoneDescription: {
       Basic: 'Basic zone provides a single network where each VM instance is assigned an IP directly from the network. Guest isolation can be provided through layer-3 means such as security groups (IP address source filtering).',
-      Advanced: 'Advanced zone is for more sophisticated network topologies. This network model provides the most flexibility in defining guest networks and providing custom network offerings such as firewall, VPN, or load balancer support.'
+      Advanced: 'Advanced zone is for more sophisticated network topologies. This network model provides the most flexibility in defining guest networks and providing custom network offerings such as firewall, VPN, or load balancer support.',
+      SecurityGroups: 'Choose this if you wish to use security groups to provide guest VM isolation.'
     }
   }),
   beforeCreate () {
@@ -91,7 +108,7 @@ export default {
       return this.zoneType === 'Advanced'
     },
     zoneType () {
-      return this.prefillContent.zoneType ? this.prefillContent.zoneType.value : null
+      return this.prefillContent.zoneType ? this.prefillContent.zoneType.value : 'Basic'
     },
     securityGroupsEnabled () {
       return this.isAdvancedZone && (this.prefillContent.securityGroupsEnabled ? this.prefillContent.securityGroupsEnabled.value : false)
@@ -109,20 +126,39 @@ export default {
   }
 }
 </script>
-<style scoped>
+<style scoped lang="less">
   .form-content {
     border: 1px dashed #e9e9e9;
     border-radius: 6px;
     background-color: #fafafa;
     min-height: 200px;
     text-align: center;
-    vertical-align: 'center';
+    vertical-align: center;
     padding: 8px;
     padding-top: 16px;
     margin-top: 8px;
   }
 
   .form-action {
+    position: relative;
     margin-top: 16px;
+    height: 35px;
+  }
+
+  .card-item {
+    margin-top: 10px;
+
+    .card-form-item {
+      float: left;
+    }
+
+    .checkbox-advance {
+      margin-top: 10px;
+    }
+
+    .zone-support {
+      text-align: left;
+      background: #fafafa;
+    }
   }
 </style>
