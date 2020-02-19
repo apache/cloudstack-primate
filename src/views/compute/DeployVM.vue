@@ -100,8 +100,8 @@
                           input-decorator="templateid"
                           :items="options.templates"
                           :selected="tabKey"
+                          :loading="loading.templates"
                           @update-template-iso="updateFieldValue"
-                          v-if="options.templates.length > 0"
                         ></template-iso-selection>
                         <disk-size-selection
                           input-decorator="rootdisksize"
@@ -112,6 +112,7 @@
                           input-decorator="isoid"
                           :items="options.isos"
                           :selected="tabKey"
+                          :loading="loading.isos"
                           @update-template-iso="updateFieldValue"
                         ></template-iso-selection>
                       </p>
@@ -333,8 +334,15 @@ export default {
       networksAdd: [],
       zone: {},
       sshKeyPair: {},
+      templateFilter: [
+        'featured',
+        'community',
+        'selfexecutable',
+        'sharedexecutable'
+      ],
       isoFilter: [
-        'executable',
+        'featured',
+        'community',
         'selfexecutable',
         'sharedexecutable'
       ],
@@ -383,13 +391,6 @@ export default {
     },
     params () {
       return {
-        templates: {
-          list: 'listTemplates',
-          options: {
-            templatefilter: 'executable',
-            zoneid: _.get(this.zone, 'id')
-          }
-        },
         serviceOfferings: {
           list: 'listServiceOfferings',
           options: {
@@ -841,6 +842,19 @@ export default {
         this.loading[name] = false
       })
     },
+    fetchTemplates (templateFilter) {
+      return new Promise((resolve, reject) => {
+        api('listTemplates', {
+          zoneid: _.get(this.zone, 'id'),
+          templatefilter: templateFilter
+        }).then((response) => {
+          resolve(response)
+        }).catch((reason) => {
+          // ToDo: Handle errors
+          reject(reason)
+        })
+      })
+    },
     fetchIsos (isoFilter) {
       return new Promise((resolve, reject) => {
         api('listIsos', {
@@ -853,6 +867,25 @@ export default {
           // ToDo: Handle errors
           reject(reason)
         })
+      })
+    },
+    fetchAllTemplates () {
+      const promises = []
+      this.options.templates = []
+      this.loading.templates = true
+      this.templateFilter.forEach((filter) => {
+        promises.push(this.fetchTemplates(filter))
+      })
+      Promise.all(promises).then(response => {
+        response.forEach((resItem) => {
+          const concatTemplates = _.concat(this.options.templates, _.get(resItem, 'listtemplatesresponse.template', []))
+          this.options.templates = _.uniqWith(concatTemplates, _.isEqual)
+          this.$forceUpdate()
+        })
+      }).catch((reason) => {
+        console.log(reason)
+      }).finally(() => {
+        this.loading.templates = false
       })
     },
     fetchAllIsos () {
@@ -884,9 +917,11 @@ export default {
         templateid: undefined,
         isoid: undefined
       })
+      this.tabKey = 'templateid'
       _.each(this.params, (param, name) => {
         this.fetchOptions(param, name, ['zones', 'groups'])
       })
+      this.fetchAllTemplates()
     },
     handleSearchFilter (name, options) {
       this.params[name].options = { ...this.params[name].options, ...options }
