@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import Cookies from 'js-cookie'
 import Vue from 'vue'
 import router from './router'
 import store from './store'
@@ -33,7 +34,8 @@ router.beforeEach((to, from, next) => {
   // start progress bar
   NProgress.start()
   to.meta && (typeof to.meta.title !== 'undefined' && setDocumentTitle(`${to.meta.title} - ${domTitle}`))
-  if (Vue.ls.get(ACCESS_TOKEN)) {
+  const validLogin = Vue.ls.get(ACCESS_TOKEN) || Cookies.get('userid') || Cookies.get('userid', { path: '/client' })
+  if (validLogin) {
     if (to.path === '/user/login') {
       next({ path: '/dashboard' })
       NProgress.done()
@@ -55,7 +57,7 @@ router.beforeEach((to, from, next) => {
           .catch(() => {
             notification.error({
               message: 'Error',
-              description: 'Exception caught while trying to discover APIs'
+              description: 'Exception caught while discoverying features'
             })
             store.dispatch('Logout').then(() => {
               next({ path: '/user/login', query: { redirect: to.fullPath } })
