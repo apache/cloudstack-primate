@@ -130,6 +130,12 @@ export default {
             jobId: response.createvolumeresponse.jobid,
             successMessage: `Successfully created volume`,
             successMethod: () => {
+              this.$store.dispatch('AddAsyncJob', {
+                title: `Successfully created Volume`,
+                jobid: response.createvolumeresponse.jobid,
+                description: values.name,
+                status: 'progress'
+              })
               this.$emit('refresh-data')
             },
             errorMessage: 'Failed to Create volume',
