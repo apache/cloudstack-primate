@@ -62,7 +62,7 @@
       </a-form-item>
     </a-form>
     <div class="form-action">
-      <a-button type="primary" @click="handleSubmit" style="position: absolute; right: 0;">
+      <a-button type="primary" @click="handleSubmit" class="button-next">
         Next
       </a-button>
     </div>
@@ -137,12 +137,6 @@ export default {
     padding: 8px;
     padding-top: 16px;
     margin-top: 8px;
-  }
-
-  .form-action {
-    position: relative;
-    margin-top: 16px;
-    height: 35px;
   }
 
   .card-item {

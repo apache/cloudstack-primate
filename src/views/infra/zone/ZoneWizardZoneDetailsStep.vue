@@ -20,42 +20,127 @@
     <a-form class="form-content" :form="form" @submit="handleSubmit">
       <a-form-item label="Name" v-bind="formItemLayout">
         <a-input
-          v-decorator="['name', { rules: [{ required: true, message: 'Please enter zone name', initialValue: name }] }]"
+          v-decorator="['name', {
+            rules: [{ required: true, message: 'Please enter zone name', initialValue: name }]
+          }]"
         />
       </a-form-item>
-      <a-form-item label="IpV4 DNS 1" v-bind="formItemLayout">
+      <a-form-item
+        label="IpV4 DNS 1"
+        v-bind="formItemLayout">
         <a-input
-          v-decorator="['ipv4Dns1', { rules: [{ required: true, message: 'Please enter IpV4 DNS 1', initialValue: ipv4Dns1 }] }]"
+          v-decorator="['ipv4Dns1', {
+            rules: [
+              {
+                required: true,
+                message: 'Please enter IpV4 DNS 1',
+                initialValue: ipv4Dns1
+              },
+              {
+                validator: validateIPAddress,
+                ipV4: true,
+                message: 'Please enter a valid IP v4 address.'
+              }
+            ]
+          }]"
         />
       </a-form-item>
       <a-form-item label="IpV4 DNS 2" v-bind="formItemLayout">
         <a-input
-          v-decorator="['ipv4Dns2', { rules: [{ message: 'Please enter IpV4 DNS 2', initialValue: ipv4Dns2 }] }]"
+          v-decorator="['ipv4Dns2', {
+            rules: [
+              {
+                message: 'Please enter IpV4 DNS 2',
+                initialValue: ipv4Dns2
+              },
+              {
+                validator: validateIPAddress,
+                ipV4: true,
+                message: 'Please enter a valid IP v4 address.'
+              }
+            ]
+          }]"
         />
       </a-form-item>
-      <a-form-item label="IpV6 DNS 1" v-bind="formItemLayout" v-if="isAdvancedZone && !securityGroupsEnabled">
+      <a-form-item
+        label="IpV6 DNS 1"
+        v-bind="formItemLayout"
+        v-if="isAdvancedZone && !securityGroupsEnabled">
         <a-input
-          v-decorator="['ipv6Dns1', { rules: [{ message: 'Please enter IpV6 DNS 1', initialValue: ipv6Dns1 }] }]"
+          v-decorator="['ipv6Dns1', {
+            rules: [
+              {
+                message: 'Please enter IpV6 DNS 1',
+                initialValue: ipv6Dns1
+              },
+              {
+                validator: validateIPAddress,
+                ipV6: true,
+                message: 'Please enter a valid IP v6 address.'
+              }
+            ]
+          }]"
         />
       </a-form-item>
-      <a-form-item label="IpV6 DNS 2" v-bind="formItemLayout" v-if="isAdvancedZone && !securityGroupsEnabled">
+      <a-form-item
+        label="IpV6 DNS 2"
+        v-bind="formItemLayout"
+        v-if="isAdvancedZone && !securityGroupsEnabled">
         <a-input
-          v-decorator="['ipv6Dns2', { rules: [{ message: 'Please enter IpV6 DNS 2', initialValue: ipv6Dns2 }] }]"
+          v-decorator="['ipv6Dns2', {
+            rules: [
+              {
+                message: 'Please enter IpV6 DNS 2',
+                initialValue: ipv6Dns2
+              },
+              {
+                validator: validateIPAddress,
+                ipV6: true,
+                message: 'Please enter a valid IP v6 address.'
+              }
+            ]
+          }]"
         />
       </a-form-item>
       <a-form-item label="Internal DNS 1" v-bind="formItemLayout">
         <a-input
-          v-decorator="['internalDns1', { rules: [{ required: true, message: 'Please enter Internal DNS 1', initialValue: internalDns1 }] }]"
+          v-decorator="['internalDns1', {
+            rules: [
+              {
+                required: true,
+                message: 'Please enter Internal DNS 1',
+                initialValue: internalDns1
+              },
+              {
+                validator: validateIPAddress,
+                ipV4: true,
+                message: 'Please enter a valid IP v4 address.'
+              }
+            ]
+          }]"
         />
       </a-form-item>
       <a-form-item label="Internal DNS 2" v-bind="formItemLayout">
         <a-input
-          v-decorator="['internalDns2', { rules: [{ message: 'Please enter Internal DNS 2', initialValue: internalDns2 }] }]"
+          v-decorator="['internalDns2', {
+            rules: [
+              {
+                message: 'Please enter Internal DNS 2',
+                initialValue: internalDns2
+              },
+              {
+                validator: validateIPAddress,
+                ipV4: true,
+                message: 'Please enter a valid IP v4 address.'
+              }
+            ]
+          }]"
         />
       </a-form-item>
       <a-form-item v-bind="formItemLayout" label="Hypervisor" has-feedback>
         <a-select
           :loading="hypervisors === null"
+          showSearch
           v-decorator="[
             'hypervisor',
             { rules: [{ required: true, message: 'Please select hypervisor type', initialValue: currentHypervisor }] },
@@ -67,7 +152,11 @@
           </a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item v-bind="formItemLayout" label="Network Offering" has-feedback v-if="!isAdvancedZone || securityGroupsEnabled">
+      <a-form-item
+        v-bind="formItemLayout"
+        label="Network Offering"
+        has-feedback
+        v-if="!isAdvancedZone || securityGroupsEnabled">
         <a-select
           :loading="availableNetworkOfferings === null"
           v-decorator="[
@@ -76,19 +165,28 @@
           ]"
           placeholder="Please select network offering"
         >
-          <a-select-option v-for="networkOffering in availableNetworkOfferings" :key="networkOffering.id">
+          <a-select-option
+            v-for="networkOffering in availableNetworkOfferings"
+            :key="networkOffering.id">
             {{ networkOffering.name }}
           </a-select-option>
         </a-select>
       </a-form-item>
       <a-form-item label="Network Domain" v-bind="formItemLayout">
         <a-input
-          v-decorator="['networkDomain', { rules: [{ message: 'Please enter Network domain', intialValue: networkDomain }] }]"
+          v-decorator="['networkDomain', {
+            rules: [{ message: 'Please enter Network domain', intialValue: networkDomain }]
+          }]"
         />
       </a-form-item>
-      <a-form-item label="Guest CIDR" v-bind="formItemLayout" v-if="isAdvancedZone && !securityGroupsEnabled">
+      <a-form-item
+        label="Guest CIDR"
+        v-bind="formItemLayout"
+        v-if="isAdvancedZone && !securityGroupsEnabled">
         <a-input
-          v-decorator="['guestcidraddress', { rules: [{ message: 'Please enter Guest CIDR', intialValue: guestcidraddress }] }]"
+          v-decorator="['guestcidraddress', {
+            rules: [{ message: 'Please enter Guest CIDR', intialValue: guestcidraddress }]
+          }]"
         />
       </a-form-item>
       <a-form-item v-bind="formItemLayout" label="Dedicated">
@@ -97,13 +195,16 @@
           :value="isDedicated"
         />
       </a-form-item>
-      <a-form-item v-bind="formItemLayout" label="Domains" has-feedback v-if="isDedicated">
+      <a-form-item
+        v-bind="formItemLayout"
+        label="Domains"
+        has-feedback
+        v-if="isDedicated">
         <a-select
           :loading="domains === null"
-          v-decorator="[
-            'domainId',
-            { rules: [{ message: 'Please select domain to dedicate to', initialValue: domain }] },
-          ]"
+          v-decorator="['domainId', {
+            rules: [{ message: 'Please select domain to dedicate to', initialValue: domain }]
+          }]"
           placeholder="Please select domain to dedicate to"
         >
           <a-select-option v-for="dom in domains" :key="dom.id">
@@ -113,7 +214,9 @@
       </a-form-item>
       <a-form-item label="Account" v-bind="formItemLayout" v-if="isDedicated">
         <a-input
-          v-decorator="['account', { rules: [{ message: 'Please enter account to dedicate to', intialValue: guestcidraddress }] }]"
+          v-decorator="['account', {
+            rules: [{ message: 'Please enter account to dedicate to', intialValue: guestcidraddress }]
+          }]"
         />
       </a-form-item>
       <a-form-item v-bind="formItemLayout" label="User VMs Local Storage enabled">
@@ -130,10 +233,10 @@
       </a-form-item>
     </a-form>
     <div class="form-action">
-      <a-button @click="handleBack">
+      <a-button @click="handleBack" class="button-back">
         Back
       </a-button>
-      <a-button style="margin-left: 8px" type="primary" @click="handleSubmit">
+      <a-button type="primary" @click="handleSubmit" class="button-next">
         Next
       </a-button>
     </div>
@@ -163,7 +266,9 @@ export default {
     domains: null,
     baremetalProviders: ['BaremetalDhcpProvider', 'BaremetalPxeProvider', 'BaremetalUserdataProvider'],
     selectedBaremetalProviders: [],
-    availableNetworkOfferings: null
+    availableNetworkOfferings: null,
+    ipV4Regex: /^(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)$/i,
+    ipV6Regex: /^((([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}:[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){5}:([0-9A-Fa-f]{1,4}:)?[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){4}:([0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){3}:([0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){2}:([0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(([0-9A-Fa-f]{1,4}:){0,5}:((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(::([0-9A-Fa-f]{1,4}:){0,5}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|([0-9A-Fa-f]{1,4}::([0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})|(::([0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){1,7}:))$/i
   }),
   created () {
     this.hypervisors = this.prefillContent.hypervisors ? this.prefillContent.hypervisors : null
@@ -197,7 +302,7 @@ export default {
       hypervisor: this.currentHypervisor,
       networkOfferingId: this.currentNetworkOfferingId,
       networkDomain: this.networkDomain,
-      guestcidraddress: this.guestcidraddress,
+      guestcidraddress: this.isAdvancedZone && !this.securityGroupsEnabled ? this.guestcidraddress : null,
       isDedicated: this.isDedicated,
       domain: this.domain,
       account: this.account,
@@ -205,27 +310,27 @@ export default {
       localstorageenabledforsystemvm: this.localstorageenabledforsystemvm
     })
 
-    var cForm = this.form
-    api('listHypervisors').then(json => {
+    const cForm = this.form
+    api('listHypervisors', { listAll: true }).then(json => {
       this.hypervisors = json.listhypervisorsresponse.hypervisor
       cForm.setFieldsValue({
         hypervisor: this.currentHypervisor
       })
     })
 
-    api('listNetworkOfferings', { state: 'Enabled', guestiptype: 'Shared' }).then(json => {
-      this.networkOfferings = {}
-      json.listnetworkofferingsresponse.networkoffering.forEach(offering => {
-        this.setupNetworkOfferingAdditionalFlags(offering)
-        this.networkOfferings[offering.id] = offering
+    if (!this.isAdvancedZone || this.securityGroupsEnabled) {
+      api('listNetworkOfferings', { state: 'Enabled', guestiptype: 'Shared' }).then(json => {
+        this.networkOfferings = {}
+        json.listnetworkofferingsresponse.networkoffering.forEach(offering => {
+          this.setupNetworkOfferingAdditionalFlags(offering)
+          this.networkOfferings[offering.id] = offering
+        })
+        this.availableNetworkOfferings = this.getAvailableNetworkOfferings(this.currentHypervisor)
+        cForm.setFieldsValue({
+          networkOfferingId: this.currentNetworkOfferingId
+        })
       })
-
-      this.availableNetworkOfferings = this.getAvailableNetworkOfferings(this.currentHypervisor)
-
-      cForm.setFieldsValue({
-        networkOfferingId: this.currentNetworkOfferingId
-      })
-    })
+    }
 
     api('listDomains', { listAll: true }).then(json => {
       this.domains = {}
@@ -277,7 +382,7 @@ export default {
       return null
     },
     currentNetworkOfferingId () {
-      var lastNetworkOfferingId = this.prefillContent.networkOfferingId ? this.prefillContent.networkOfferingId.value : null
+      const lastNetworkOfferingId = this.prefillContent.networkOfferingId ? this.prefillContent.networkOfferingId.value : null
       if (this.networkOfferings) {
         if (lastNetworkOfferingId !== null && this.networkOfferings[lastNetworkOfferingId]) {
           return lastNetworkOfferingId
@@ -296,7 +401,7 @@ export default {
       return this.prefillContent.isDedicated ? this.prefillContent.isDedicated.value : false
     },
     domain () {
-      var lastDomainId = this.prefillContent.domainId ? this.prefillContent.domainId.value : null
+      const lastDomainId = this.prefillContent.domainId ? this.prefillContent.domainId.value : null
       if (this.domains !== null && lastDomainId !== null && this.domains[lastDomainId]) {
         return lastDomainId
       }
@@ -359,7 +464,9 @@ export default {
     getAvailableNetworkOfferings (hypervisor) {
       if (this.networkOfferings) {
         return Object.values(this.networkOfferings).filter(nOffering => {
-          if ((hypervisor === 'VMware' || (this.isAdvancedZone && this.securityGroupsEnabled)) && (nOffering.havingEIP && nOffering.havingELB)) {
+          if ((hypervisor === 'VMware' ||
+            (this.isAdvancedZone && this.securityGroupsEnabled)) &&
+            (nOffering.havingEIP && nOffering.havingELB)) {
             return false
           }
 
@@ -371,24 +478,41 @@ export default {
         })
       }
       return null
+    },
+    validateIPAddress (rule, value, callback) {
+      if (value === '') {
+        callback()
+      } else if (rule.ipV4 && !this.ipV4Regex.test(value)) {
+        callback(rule.message)
+      } else if (rule.ipV6 && !this.ipV6Regex.test(value)) {
+        callback(rule.message)
+      } else {
+        callback()
+      }
     }
   }
 }
 </script>
-<style scoped>
+<style scoped lang="less">
   .form-content {
     border: 1px dashed #e9e9e9;
     border-radius: 6px;
     background-color: #fafafa;
     min-height: 200px;
     text-align: center;
-    vertical-align: 'center';
+    vertical-align: center;
     padding: 8px;
     padding-top: 16px;
     margin-top: 8px;
-  }
 
-  .form-action {
-    margin-top: 16px;
+    /deep/.has-error {
+      .ant-form-explain {
+        text-align: left;
+      }
+    }
+
+    /deep/.ant-form-item-control {
+      text-align: left;
+    }
   }
 </style>

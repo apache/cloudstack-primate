@@ -136,11 +136,21 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
   .form {
     width: 95vw;
     @media (min-width: 1000px) {
       width: 800px;
+    }
+
+    /deep/.form-action {
+      position: relative;
+      margin-top: 16px;
+      height: 35px;
+    }
+
+    /deep/.button-next {
+      position: absolute;
+      right: 0;
     }
   }
 
@@ -150,7 +160,7 @@ export default {
     background-color: #fafafa;
     min-height: 200px;
     text-align: center;
-    vertical-align: 'center';
+    vertical-align: center;
     padding: 8px;
     padding-top: 16px;
   }
