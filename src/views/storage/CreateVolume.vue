@@ -17,37 +17,29 @@
 
 <template>
   <div :loading="loading">
-    <a-form :form="form" @submit="submitCreateVolume" layout="vertical" class="form">
-      <a-form-item class="form__item" :label="$t('Name')">
+    <a-form :form="form" @submit="handleSubmit" layout="vertical">
+      <a-form-item :label="$t('Name')">
         <a-input
-          class="form__input"
           v-decorator="['name', {
             rules: [{ required: true, message: 'Please enter input' }]
           }]"
-          :placeholder="$t('Volume Name')"
-        >></a-input>
+          :placeholder="$t('Volume Name')"/>
       </a-form-item>
-      <a-form-item class="form__item" :label="$t('Zone')">
+      <a-form-item :label="$t('Zone')">
         <a-select
-          class="form__input"
           @change="val => fetchDiskOfferings(val)"
           v-decorator="['zoneid', {
-            rules: [{ required: true, message: 'Please select an option' }]}]"
-          :loading="loading"
-          :placeholder="$t('Select Zone')"
-        >
-          <a-select-option
-            v-for="(zone, index) in zones"
-            :value="zone.id"
-            :key="index"
-          >{{ zone.name }}</a-select-option>
+            initialValue: zones[0].id,
+            rules: [{ required: true, message: 'Please select a zone' }] }]">
+          <a-select-option v-for="zone in zones" :key="zone.id" :value="zone.id">
+            {{ zone.name }}
+          </a-select-option>
         </a-select>
       </a-form-item>
-
-      <a-form-item class="form__item" :label="$t('Offering')">
+      <a-form-item :label="$t('Offering')">
         <a-select
-          class="form__input"
           v-decorator="['diskofferingid', {
+            initialValue: selectedDiskOffering,
             rules: [{ required: true, message: 'Please select an option' }]}]"
           :loading="loading"
           :placeholder="$t('Offering Type')"
@@ -60,24 +52,17 @@
           >{{ diskOffering.displaytext }}</a-select-option>
         </a-select>
       </a-form-item>
-
       <span v-if="isCustomDiskOffering">
-        <a-form-item class="form__item" :label="$t('Size (GB)')">
-          <a-input-number
-            class="form__input"
-            style="width: 100%;"
+        <a-form-item :label="$t('Size (GB)')">
+          <a-input
             v-decorator="['size', {
               rules: [{ required: true, message: 'Please enter a number' }]}]"
-            :placeholder="$t('Enter Size')"
-          ></a-input-number>
+            :placeholder="$t('Enter Size')"/>
         </a-form-item>
       </span>
-
-      <a-divider />
-
-      <div class="form__footer">
+      <div :span="24" class="action-button">
         <a-button @click="closeModal">{{ $t('Cancel') }}</a-button>
-        <a-button type="primary" @click="submitCreateVolume">{{ $t('OK') }}</a-button>
+        <a-button :loading="loading" type="primary" @click="handleSubmit">{{ $t('OK') }}</a-button>
       </div>
     </a-form>
   </div>
@@ -88,18 +73,12 @@ import { api } from '@/api'
 
 export default {
   name: 'CreateVolume',
-  components: {},
-  inject: ['parentFetchData', 'parentToggleLoading'],
-  props: {
-    resource: {
-      type: Object,
-      required: true
-    }
-  },
   data () {
     return {
       zones: [],
+      selectedZone: '',
       diskOfferings: [],
+      selectedDiskOffering: '',
       customDiskOfferingId: null,
       isCustomDiskOffering: false,
       loading: false
@@ -113,76 +92,65 @@ export default {
   },
   methods: {
     fetchData () {
-      this.loading = true
-      api('listZones')
-        .then(json => {
-          this.zones = json.listzonesresponse.zone || []
-        })
-        .finally(() => {
-          this.loading = false
-        })
       this.fetchDiskOfferings(null)
+      this.loading = true
+      api('listZones').then(json => {
+        this.zones = json.listzonesresponse.zone || []
+        this.selectedZone = this.zones[0].id || ''
+        this.fetchDiskOfferings(this.selectedZone)
+      }).finally(() => {
+        this.loading = false
+      })
     },
     fetchDiskOfferings (zoneid) {
       this.loading = true
       api('listDiskOfferings', {
         zoneId: zoneid
-      })
-        .then(json => {
-          this.diskOfferings = json.listdiskofferingsresponse.diskoffering || []
-          for (var diskOffering of this.diskOfferings) {
-            if (diskOffering.name === 'Custom') {
-              this.customDiskOfferingId = diskOffering.id
-              break
-            }
+      }).then(json => {
+        this.diskOfferings = json.listdiskofferingsresponse.diskoffering || []
+        this.selectedDiskOffering = this.diskOfferings[0].id || ''
+        for (var diskOffering of this.diskOfferings) {
+          if (diskOffering.name === 'Custom') {
+            this.customDiskOfferingId = diskOffering.id
+            break
           }
-        })
-        .finally(() => {
-          this.loading = false
-        })
+        }
+      }).finally(() => {
+        this.loading = false
+      })
     },
-    submitCreateVolume () {
+    handleSubmit (e) {
       this.form.validateFields((err, values) => {
         if (err) {
           return
         }
-        this.closeModal()
-        this.parentToggleLoading()
-        api('createVolume', values)
-          .then(response => {
-            this.$pollJob({
-              jobId: response.createvolumeresponse.jobid,
-              successMessage: `Successfully created volume`,
-              successMethod: () => {
-                this.parentFetchData()
-                this.parentToggleLoading()
-              },
-              errorMessage: 'Create volume failed',
-              errorMethod: () => {
-                this.parentFetchData()
-                this.parentToggleLoading()
-              },
-              loadingMessage: `Creating volume...`,
-              catchMessage: 'Error encountered while fetching async job result',
-              catchMethod: () => {
-                this.parentFetchData()
-                this.parentToggleLoading()
-              }
-            })
+        this.loading = true
+        api('createVolume', values).then(response => {
+          this.$pollJob({
+            jobId: response.createvolumeresponse.jobid,
+            successMessage: `Successfully created volume`,
+            successMethod: () => {
+              this.$emit('refresh-data')
+            },
+            errorMessage: 'Failed to Create volume',
+            errorMethod: () => {
+              this.$emit('refresh-data')
+            },
+            loadingMessage: `Volume creation in progress`,
+            catchMessage: 'Error encountered while fetching async job result'
           })
-          .catch(error => {
-            this.$notification.error({
-              message: `Error ${error.response.status}`,
-              description: error.response.data.errorresponse.errortext
-            })
-            this.closeModal()
+        }).catch(error => {
+          this.$notification.error({
+            message: `Error ${error.response.status}`,
+            description: error.response.data.errorresponse.errortext
           })
+        }).finally(() => {
+          this.loading = false
+          this.closeModal()
+        })
       })
     },
     closeModal () {
-      this.$parent.$parent.close()
-    },
-    closeAction () {
       this.$emit('close-action')
     }
   }
@@ -190,46 +158,19 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.form {
+.form-layout {
+  width: 80vw;
 
-  width: 400px;
-
-  @media (max-width: 800px) {
-    width: 95vw;
+  @media (min-width: 700px) {
+    width: 550px;
   }
+}
 
-  &__input {
-    margin-right: 10px;
-  }
+.action-button {
+  text-align: right;
 
-  &__footer {
-      display: flex;
-      justify-content: flex-end;
-      padding-right: 20px;
-
-      button {
-        &:not(:last-child) {
-          padding-right: 20px;
-        }
-      }
-    }
-
-  &__item {
-    display: flex;
-    flex-direction: column;
-    padding-right: 20px;
-    margin-bottom: 20px;
-  }
-
-  &__required {
+  button {
     margin-right: 5px;
-    color: red;
-  }
-
-  .error-text {
-    display: none;
-    color: red;
-    font-size: 0.8rem;
   }
 }
 </style>
