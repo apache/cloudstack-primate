@@ -18,7 +18,7 @@
 <template>
   <div>
     <a-form class="form-content" :form="form" @submit="handleSubmit">
-      <a-form-item label="Name" v-bind="formItemLayout">
+      <a-form-item label="Name" v-bind="formItemLayout" has-feedback>
         <a-input
           v-decorator="['name', {
             rules: [{ required: true, message: 'Please enter zone name', initialValue: name }]
@@ -27,7 +27,8 @@
       </a-form-item>
       <a-form-item
         label="IpV4 DNS 1"
-        v-bind="formItemLayout">
+        v-bind="formItemLayout"
+        has-feedback>
         <a-input
           v-decorator="['ipv4Dns1', {
             rules: [
@@ -45,7 +46,7 @@
           }]"
         />
       </a-form-item>
-      <a-form-item label="IpV4 DNS 2" v-bind="formItemLayout">
+      <a-form-item label="IpV4 DNS 2" v-bind="formItemLayout" has-feedback>
         <a-input
           v-decorator="['ipv4Dns2', {
             rules: [
@@ -65,7 +66,8 @@
       <a-form-item
         label="IpV6 DNS 1"
         v-bind="formItemLayout"
-        v-if="isAdvancedZone && !securityGroupsEnabled">
+        v-if="isAdvancedZone && !securityGroupsEnabled"
+        has-feedback>
         <a-input
           v-decorator="['ipv6Dns1', {
             rules: [
@@ -85,7 +87,8 @@
       <a-form-item
         label="IpV6 DNS 2"
         v-bind="formItemLayout"
-        v-if="isAdvancedZone && !securityGroupsEnabled">
+        v-if="isAdvancedZone && !securityGroupsEnabled"
+        has-feedback>
         <a-input
           v-decorator="['ipv6Dns2', {
             rules: [
@@ -102,7 +105,7 @@
           }]"
         />
       </a-form-item>
-      <a-form-item label="Internal DNS 1" v-bind="formItemLayout">
+      <a-form-item label="Internal DNS 1" v-bind="formItemLayout" has-feedback>
         <a-input
           v-decorator="['internalDns1', {
             rules: [
@@ -120,7 +123,7 @@
           }]"
         />
       </a-form-item>
-      <a-form-item label="Internal DNS 2" v-bind="formItemLayout">
+      <a-form-item label="Internal DNS 2" v-bind="formItemLayout" has-feedback>
         <a-input
           v-decorator="['internalDns2', {
             rules: [
@@ -172,7 +175,7 @@
           </a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item label="Network Domain" v-bind="formItemLayout">
+      <a-form-item label="Network Domain" v-bind="formItemLayout" has-feedback>
         <a-input
           v-decorator="['networkDomain', {
             rules: [{ message: 'Please enter Network domain', intialValue: networkDomain }]
@@ -182,7 +185,8 @@
       <a-form-item
         label="Guest CIDR"
         v-bind="formItemLayout"
-        v-if="isAdvancedZone && !securityGroupsEnabled">
+        v-if="isAdvancedZone && !securityGroupsEnabled"
+        has-feedback>
         <a-input
           v-decorator="['guestcidraddress', {
             rules: [{ message: 'Please enter Guest CIDR', intialValue: guestcidraddress }]
