@@ -484,7 +484,7 @@ export default {
       return null
     },
     validateIPAddress (rule, value, callback) {
-      if (value === '') {
+      if (!value || value === '') {
         callback()
       } else if (rule.ipV4 && !this.ipV4Regex.test(value)) {
         callback(rule.message)
