@@ -17,10 +17,14 @@
 
 <template>
   <a-spin :spinning="loading">
-    <div v-show="!showAddDetail">
+    <a-alert
+      message="Please stop the virtual machine to access settings"
+      banner
+      :hidden="!disableEditSettings" />
+    <div v-show="!showAddDetail" :hidden="disableEditSettings">
       <a-button type="dashed" style="width: 100%" icon="plus" @click="showAddDetail = true">Add Setting</a-button>
     </div>
-    <div v-show="showAddDetail">
+    <div v-show="showAddDetail" :hidden="disableEditSettings">
       <a-auto-complete
         style="width: 100%"
         :filterOption="filterOption"
@@ -56,7 +60,7 @@
             <span v-else @click="showEditDetail(index)">{{ item.value }}</span>
           </span>
         </a-list-item-meta>
-        <div slot="actions">
+        <div slot="actions" :hidden="disableEditSettings">
           <a-button shape="circle" size="default" @click="updateDetail(index)" v-if="item.edit">
             <a-icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />
           </a-button>
@@ -67,7 +71,7 @@
             <a-icon type="edit" />
           </a-button>
         </div>
-        <div slot="actions">
+        <div slot="actions" :hidden="disableEditSettings">
           <a-popconfirm
             title="Delete setting?"
             @confirm="deleteDetail(index)"
@@ -101,6 +105,7 @@ export default {
       details: [],
       detailOptions: {},
       showAddDetail: false,
+      disableEditSettings: false,
       newKey: '',
       newValue: '',
       loading: false,
@@ -136,6 +141,7 @@ export default {
       api('listDetailOptions', { resourcetype: this.resourceType, resourceid: this.resource.id }).then(json => {
         this.detailOptions = json.listdetailoptionsresponse.detailoptions.details
       })
+      this.disableEditSettings = this.$route.meta.name === 'vm' && this.resource.state === 'Running'
     },
     showEditDetail (index) {
       this.details[index].edit = true
