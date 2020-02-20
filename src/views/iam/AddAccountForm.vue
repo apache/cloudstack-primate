@@ -154,13 +154,11 @@ export default {
         details: 'min'
       }).then(response => {
         this.domainsList = response.listdomainsresponse.domain || []
-        if (this.domainsList[0]) {
-          this.selectedDomain = this.domainsList[0].id
-        }
+        this.selectedDomain = this.domainsList[0].id || ''
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext || 'Error'
+          description: error.response.data.errorresponse.errortext
         })
       }).finally(() => {
         this.loading = false
