@@ -31,7 +31,7 @@
               <a-radio class="card-form-item" value="Basic">{{ $t('basic') }}</a-radio>
             </a-col>
             <a-col :md="18" :lg="18">
-              <a-card class="zone-support">{{ zoneDescription.Basic }}</a-card>
+              <a-card class="ant-form-text zone-support">{{ zoneDescription.Basic }}</a-card>
             </a-col>
           </a-card>
           <a-card :gutter="12" class="card-item">
@@ -39,7 +39,7 @@
               <a-radio class="card-form-item" value="Advanced">{{ $t('advanced') }}</a-radio>
             </a-col>
             <a-col :md="18" :lg="18">
-              <a-card class="zone-support">{{ zoneDescription.Advanced }}</a-card>
+              <a-card class="ant-form-text zone-support">{{ zoneDescription.Advanced }}</a-card>
             </a-col>
             <a-col :md="6" :lg="6" style="margin-top: 15px">
               <a-form-item
@@ -54,7 +54,7 @@
               </a-form-item>
               <span>Security Groups</span>
             </a-col>
-            <a-col :md="18" :lg="18" style="margin-top: 15px">
+            <a-col :md="18" :lg="18" style="margin-top: 15px;">
               <a-card class="zone-support">{{ zoneDescription.SecurityGroups }}</a-card>
             </a-col>
           </a-card>
@@ -151,7 +151,7 @@ export default {
     }
 
     .zone-support {
-      text-align: left;
+      text-align: justify;
       background: #fafafa;
     }
   }

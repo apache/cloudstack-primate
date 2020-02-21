@@ -18,7 +18,7 @@
 <template>
   <div style="width: auto;">
     <a-steps progressDot :current="currentStep" size="small" style="margin-left: 0px; margin-top: 16px;">
-      <a-step v-for="step in steps" :key="step.title" :title="step.title" :style="'width:' + 100 / steps.length + '%;'"/>
+      <a-step v-for="step in steps" :key="step.title" :title="step.title" />
     </a-steps>
     <zone-wizard-physical-network-setup-step
       v-if="steps && steps[currentStep].formKey === 'physicalNetwork'"
@@ -155,13 +155,17 @@ export default {
           title: 'Start Reserved System IP',
           key: 'podReservedStartIp',
           placeHolder: 'Please enter reserved system start ip for Pod',
-          required: true
+          required: true,
+          ipV4: true,
+          message: 'Please enter a valid IP v4 address.'
         },
         {
           title: 'Stop Reserved System IP',
           key: 'podReservedStopIp',
           placeHolder: 'Please enter reserved system stop ip for Pod',
-          required: false
+          required: false,
+          ipV4: true,
+          message: 'Please enter a valid IP v4 address.'
         }
       ],
       guestTrafficFields: [
@@ -181,13 +185,17 @@ export default {
           title: 'Guest Start IP',
           key: 'guestStartIp',
           placeHolder: 'Please enter start ip for guest traffic',
-          required: false
+          required: false,
+          ipV4: true,
+          message: 'Please enter a valid IP v4 address.'
         },
         {
           title: 'Guest Stop IP',
           key: 'guestStopIp',
           placeHolder: 'Please enter stop ip for guest traffic',
-          required: false
+          required: false,
+          ipV4: true,
+          message: 'Please enter a valid IP v4 address.'
         }
       ]
     }
@@ -221,7 +229,7 @@ export default {
       return this.allSteps.filter(step => {
         if (!step.trafficType) return true
         if (this.physicalNetworks) {
-          var neededTraffic = false
+          let neededTraffic = false
           this.physicalNetworks.forEach(net => {
             net.traffics.forEach(traffic => {
               if (traffic.type === step.trafficType) {

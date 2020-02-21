@@ -17,9 +17,11 @@
 
 <template>
   <div>
-    <span class="ant-form-text" style="text-align: justify; padding: 16px;">
+    <a-card
+      class="ant-form-text"
+      style="text-align: justify; margin: 10px 0;">
       {{ zoneType !== null ? zoneDescription[zoneType] : 'Please select zone type below.' }}
-    </span>
+    </a-card>
     <a-table bordered :dataSource="physicalNetworks" :columns="columns" :pagination="false" style="margin-bottom: 24px;">
       <template slot="name" slot-scope="text, record">
         <editable-cell :text="text" @change="onCellChange(record.key, 'name', $event)" />
@@ -94,14 +96,18 @@
         </a-popconfirm>
       </template>
       <template slot="footer" class="editable-add-btn" v-if="isAdvancedZone">
-        <a-button :disabled="hasUnusedPhysicalNetwork" @click="handleAddPhysicalNetwork">Add Physical Network</a-button>
+        <a-button
+          :disabled="hasUnusedPhysicalNetwork || availableTrafficToAdd.length === 0"
+          @click="handleAddPhysicalNetwork">
+          Add Physical Network
+        </a-button>
       </template>
     </a-table>
     <div class="form-action">
-      <a-button @click="handleBack">
+      <a-button class="button-right" @click="handleBack">
         Back
       </a-button>
-      <a-button style="margin-left: 8px" type="primary" @click="handleSubmit">
+      <a-button class="button-next" type="primary" @click="handleSubmit">
         Next
       </a-button>
     </div>
@@ -141,30 +147,6 @@ export default {
       },
       physicalNetworks: [],
       count: 0,
-      columns: [
-        {
-          title: 'Network Name',
-          dataIndex: 'name',
-          width: '30%',
-          scopedSlots: { customRender: 'name' }
-        },
-        {
-          title: 'Isolation Method',
-          dataIndex: 'isolationMethod',
-          scopedSlots: { customRender: 'isolationMethod' }
-        },
-        {
-          title: 'Traffic Types',
-          key: 'traffics',
-          dataIndex: 'traffics',
-          scopedSlots: { customRender: 'traffics' }
-        },
-        {
-          title: '',
-          dataIndex: 'actions',
-          scopedSlots: { customRender: 'actions' }
-        }
-      ],
       zoneDescription: {
         Basic: 'When adding a basic zone, you can set up one physical network, which corresponds to a NIC on the hypervisor. The network carries several types of traffic.',
         Advanced: 'When adding an advanced zone, you need to set up one or more physical networks. Each network corresponds to a NIC on the hypervisor. Each physical network can carry one or more types of traffic, with certain restrictions on how they may be combined.'
@@ -185,6 +167,54 @@ export default {
     }
   },
   computed: {
+    columns () {
+      if (this.isAdvancedZone) {
+        return [
+          {
+            title: 'Network Name',
+            dataIndex: 'name',
+            width: '30%',
+            scopedSlots: { customRender: 'name' }
+          },
+          {
+            title: 'Isolation Method',
+            dataIndex: 'isolationMethod',
+            scopedSlots: { customRender: 'isolationMethod' }
+          },
+          {
+            title: 'Traffic Types',
+            key: 'traffics',
+            dataIndex: 'traffics',
+            scopedSlots: { customRender: 'traffics' }
+          },
+          {
+            title: '',
+            dataIndex: 'actions',
+            scopedSlots: { customRender: 'actions' }
+          }
+        ]
+      } else {
+        return [
+          {
+            title: 'Network Name',
+            dataIndex: 'name',
+            width: '30%',
+            scopedSlots: { customRender: 'name' }
+          },
+          {
+            title: 'Isolation Method',
+            dataIndex: 'isolationMethod',
+            scopedSlots: { customRender: 'isolationMethod' }
+          },
+          {
+            title: 'Traffic Types',
+            key: 'traffics',
+            dataIndex: 'traffics',
+            scopedSlots: { customRender: 'traffics' }
+          }
+        ]
+      }
+    },
     isAdvancedZone () {
       return this.zoneType === 'Advanced'
     },
@@ -205,7 +235,7 @@ export default {
       }
     },
     requiredTrafficTypes () {
-      var traffics = ['management', 'guest']
+      const traffics = ['management', 'guest']
       if (this.needsPublicTraffic) {
         traffics.push('public')
       }
@@ -218,13 +248,18 @@ export default {
   created () {
     this.physicalNetworks = this.prefillContent.physicalNetworks
     this.hasUnusedPhysicalNetwork = this.getHasUnusedPhysicalNetwork()
-    var requiredTrafficTypes = this.requiredTrafficTypes
+    const requiredTrafficTypes = this.requiredTrafficTypes
     if (this.physicalNetworks && this.physicalNetworks.length > 0) {
       this.count = this.physicalNetworks.length
       requiredTrafficTypes.forEach(type => {
-        var foundType = false
+        let foundType = false
         this.physicalNetworks.forEach(net => {
-          for (var traffic in net.traffics) {
+          for (const index in net.traffics) {
+            const traffic = net.traffics[index]
+            if (traffic.type === 'storage') {
+              const idx = this.availableTrafficToAdd.indexOf(traffic.type)
+              if (idx > -1) this.availableTrafficToAdd.splice(idx, 1)
+            }
             if (traffic.type === type) {
               foundType = true
             }
@@ -233,7 +268,7 @@ export default {
         if (!foundType) this.availableTrafficToAdd.push(type)
       })
     } else {
-      var traffics = requiredTrafficTypes.map(item => {
+      const traffics = requiredTrafficTypes.map(item => {
         return { type: item, label: '' }
       })
       this.count = 1
@@ -270,10 +305,10 @@ export default {
       this.hasUnusedPhysicalNetwork = this.getHasUnusedPhysicalNetwork()
     },
     isValidSetup () {
-      var shouldHaveLabels = this.physicalNetworks.length > 1
-      var isValid = true
+      const shouldHaveLabels = this.physicalNetworks.length > 1
+      let isValid = true
       this.requiredTrafficTypes.forEach(type => {
-        var foundType = false
+        let foundType = false
         this.physicalNetworks.forEach(net => {
           net.traffics.forEach(traffic => {
             if (traffic.type === type) {
@@ -347,7 +382,7 @@ export default {
       this.trafficInEdit = null
     },
     getHasUnusedPhysicalNetwork () {
-      var hasUnused = false
+      let hasUnused = false
       if (this.physicalNetworks && this.physicalNetworks.length > 0) {
         this.physicalNetworks.forEach(item => {
           if (!item.traffics || item.traffics.length === 0) {
@@ -414,5 +449,9 @@ export default {
     margin-right: 2px;
     padding-left: 1px;
     padding-right: 1px;
+  }
+
+  .physical-network-support {
+    margin: 10px 0;
   }
 </style>

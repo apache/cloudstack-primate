@@ -17,21 +17,46 @@
 
 <template>
   <div>
-    <span class="ant-form-text" style="text-align: justify; padding: 16px;" v-if="description && description.length > 0">
+    <a-card
+      class="ant-form-text"
+      style="text-align: justify; margin: 10px 0;"
+      v-if="description && description.length > 0">
       {{ description }}
-    </span>
-    <a-form class="form-content" :form="form" @submit="handleSubmit">
-      <a-form-item v-for="(field, index) in this.fields" :key="index" :label="field.title" v-bind="formItemLayout">
+    </a-card>
+    <a-form
+      class="form-content"
+      :form="form"
+      @submit="handleSubmit">
+      <a-form-item
+        v-for="(field, index) in this.fields"
+        :key="index"
+        :label="field.title"
+        v-bind="formItemLayout"
+        has-feedback>
         <a-input
-          v-decorator="[field.key, { rules: [{ required: field.required, message: field.placeHolder, initialValue: getPrefilled(field.key) }] }]"
+          v-decorator="[field.key, {
+            rules: [
+              {
+                required: field.required,
+                message: field.placeHolder,
+                initialValue: getPrefilled(field.key)
+              },
+              {
+                validator: validateIPAddress,
+                ipV4: field.ipV4,
+                ipV6: field.ipV6,
+                message: field.message
+              }
+            ]
+          }]"
         />
       </a-form-item>
     </a-form>
     <div class="form-action">
-      <a-button @click="handleBack">
+      <a-button class="button-prev" @click="handleBack">
         Back
       </a-button>
-      <a-button style="margin-left: 8px" type="primary" @click="handleSubmit">
+      <a-button class="button-next" type="primary" @click="handleSubmit">
         Next
       </a-button>
     </div>
@@ -69,15 +94,14 @@ export default {
     formItemLayout: {
       labelCol: { span: 8 },
       wrapperCol: { span: 12 }
-    }
+    },
+    ipV4Regex: /^(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)$/i,
+    ipV6Regex: /^((([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}:[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){5}:([0-9A-Fa-f]{1,4}:)?[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){4}:([0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){3}:([0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){2}:([0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(([0-9A-Fa-f]{1,4}:){0,5}:((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(::([0-9A-Fa-f]{1,4}:){0,5}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|([0-9A-Fa-f]{1,4}::([0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})|(::([0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){1,7}:))$/i
   }),
   mounted () {
     this.fields.forEach(field => {
       var fieldVal = {}
       fieldVal[field.key] = this.getPrefilled(field.key)
-      console.log('Filling up')
-      console.log(fieldVal)
-      console.log(this.prefillContent)
       this.form.setFieldsValue(fieldVal)
     })
   },
@@ -95,22 +119,43 @@ export default {
     },
     handleBack (e) {
       this.$emit('backPressed')
+    },
+    validateIPAddress (rule, value, callback) {
+      if (!value || value === '') {
+        callback()
+      } else if (rule.ipV4 && !this.ipV4Regex.test(value)) {
+        callback(rule.message)
+      } else if (rule.ipV6 && !this.ipV6Regex.test(value)) {
+        callback(rule.message)
+      } else {
+        callback()
+      }
     }
   }
 }
 </script>
 
-<style>
+<style scoped lang="less">
   .form-content {
     border: 1px dashed #e9e9e9;
     border-radius: 6px;
     background-color: #fafafa;
     min-height: 200px;
     text-align: center;
-    vertical-align: 'center';
+    vertical-align: center;
     padding-top: 16px;
     padding-top: 16px;
     margin-top: 8px;
+
+    /deep/.has-error {
+      .ant-form-explain {
+        text-align: left;
+      }
+    }
+
+    /deep/.ant-form-item-control {
+      text-align: left;
+    }
   }
 
   .form-action {

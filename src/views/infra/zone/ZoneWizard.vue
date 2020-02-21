@@ -125,7 +125,9 @@ export default {
       // console.log('Step changed')
     },
     onFieldsChanged (data) {
-      if (data.zoneType && this.zoneConfig.zoneType && data.zoneType.value !== this.zoneConfig.zoneType.value || data.networkOfferingId && this.zoneConfig.networkOfferingId && data.networkOfferingId.value !== this.zoneConfig.networkOfferingId.value) {
+      if (data.zoneType &&
+        this.zoneConfig.zoneType &&
+        data.zoneType.value !== this.zoneConfig.zoneType.value) {
         this.zoneConfig.physicalNetworks = null
       }
       this.zoneConfig = { ...this.zoneConfig, ...data }

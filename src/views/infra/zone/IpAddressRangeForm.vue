@@ -17,10 +17,18 @@
 
 <template>
   <div>
-    <span class="ant-form-text" style="text-align: justify; padding: 16px;">
+    <a-card
+      class="ant-form-text"
+      style="text-align: justify; margin: 10px 0;">
       {{ description }}
-    </span>
-    <a-table bordered :dataSource="ipRanges" :columns="columns" :pagination="false" style="margin-bottom: 24px;">
+    </a-card>
+    <a-table
+      bordered
+      :dataSource="ipRanges"
+      :columns="columns"
+      :pagination="false"
+      style="margin-bottom: 24px;"
+      :scroll="{ y: 220 }">
       <template slot="actions" slot-scope="text, record">
         <a-popconfirm
           title="Delete?"
@@ -30,16 +38,23 @@
         </a-popconfirm>
       </template>
       <template slot="footer">
-        <a-form layout="inline" :form="form" @submit="handleAddRange">
+        <a-form
+          layout="inline"
+          :form="form"
+          @submit="handleAddRange">
           <a-form-item :style="{ display: 'inline-block', width: '14%' }">
             <a-input
-              v-decorator="[ 'gateway', { rules: [{ required: true }] }]"
+              v-decorator="[ 'gateway', {
+                rules: [{ required: true, message: 'Please enter Gateway' }]
+              }]"
               placeholder="Gateway"
             />
           </a-form-item>
           <a-form-item :style="{ display: 'inline-block', width: '14%' }">
             <a-input
-              v-decorator="[ 'netmask', { rules: [{ required: true }] }]"
+              v-decorator="[ 'netmask', {
+                rules: [{ required: true, message: 'Please enter Netmask' }]
+              }]"
               placeholder="Netmask"
             />
           </a-form-item>
@@ -51,13 +66,36 @@
           </a-form-item>
           <a-form-item :style="{ display: 'inline-block', width: '14%' }">
             <a-input
-              v-decorator="[ 'startIp', { rules: [{ required: true }] }]"
+              v-decorator="[ 'startIp', {
+                rules: [
+                  {
+                    required: true,
+                    message: 'Please enter Start IP'
+                  },
+                  {
+                    validator: validateIPAddress,
+                    ipV4: true,
+                    message: 'Please enter a valid IP v4 address.'
+                  }
+                ]
+              }]"
               placeholder="Start IP"
             />
           </a-form-item>
           <a-form-item :style="{ display: 'inline-block', width: '14%' }">
             <a-input
-              v-decorator="[ 'endIp', { rules: [{ required: true }] }]"
+              v-decorator="[ 'endIp', {
+                rules: [
+                  {
+                    required: true,
+                    message: 'Please enter End IP'
+                  },
+                  {
+                    validator: validateIPAddress,
+                    ipV4: true,
+                    message: 'Please enter a valid IP v4 address.'
+                  }]
+              }]"
               placeholder="End IP"
             />
           </a-form-item>
@@ -68,10 +106,10 @@
       </template>
     </a-table>
     <div class="form-action">
-      <a-button @click="handleBack">
+      <a-button class="button-prev" @click="handleBack">
         Back
       </a-button>
-      <a-button style="margin-left: 8px" type="primary" @click="handleSubmit">
+      <a-button class="button-next" type="primary" @click="handleSubmit">
         Next
       </a-button>
     </div>
@@ -113,31 +151,39 @@ export default {
       columns: [
         {
           title: 'Gateway',
-          dataIndex: 'gateway'
+          dataIndex: 'gateway',
+          width: 150
         },
         {
           title: 'Netmask',
-          dataIndex: 'netmask'
+          dataIndex: 'netmask',
+          width: 150
         },
         {
           title: 'VLAN/VNI',
-          dataIndex: 'vlan'
+          dataIndex: 'vlan',
+          width: 120
         },
         {
           title: 'Start IP',
-          dataIndex: 'startIp'
+          dataIndex: 'startIp',
+          width: 130
         },
         {
           title: 'End IP',
-          dataIndex: 'endIp'
+          dataIndex: 'endIp',
+          width: 130
         },
         {
           title: '',
           dataIndex: 'actions',
-          scopedSlots: { customRender: 'actions' }
+          scopedSlots: { customRender: 'actions' },
+          width: 50
         }
       ],
-      showError: false
+      showError: false,
+      ipV4Regex: /^(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)$/i,
+      ipV6Regex: /^((([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}:[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){5}:([0-9A-Fa-f]{1,4}:)?[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){4}:([0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){3}:([0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){2}:([0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(([0-9A-Fa-f]{1,4}:){0,5}:((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(::([0-9A-Fa-f]{1,4}:){0,5}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|([0-9A-Fa-f]{1,4}::([0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})|(::([0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){1,7}:))$/i
     }
   },
   mounted () {
@@ -196,10 +242,18 @@ export default {
       var trafficRanges = {}
       trafficRanges[this.traffic + '-ipranges'] = this.ipRanges
       this.$emit('fieldsChanged', trafficRanges)
+    },
+    validateIPAddress (rule, value, callback) {
+      if (!value || value === '') {
+        callback()
+      } else if (rule.ipV4 && !this.ipV4Regex.test(value)) {
+        callback(rule.message)
+      } else if (rule.ipV6 && !this.ipV6Regex.test(value)) {
+        callback(rule.message)
+      } else {
+        callback()
+      }
     }
   }
 }
 </script>
-
-<style scoped>
-</style>
