@@ -16,56 +16,60 @@
 // under the License.
 
 <template>
-  <div :loading="loading">
-    <a-form :form="form" @submit="handleSubmit" layout="vertical">
-      <a-form-item :label="$t('Name')">
+  <a-spin :spinning="loading">
+    <a-form class="form" :form="form" @submit="handleSubmit" layout="vertical">
+      <a-form-item :label="$t('name')">
         <a-input
           v-decorator="['name', {
-            rules: [{ required: true, message: 'Please enter input' }]
+            rules: [{ required: true, message: 'Please enter volume name' }]
           }]"
-          :placeholder="$t('Volume Name')"/>
+          :placeholder="$t('volumename')"/>
       </a-form-item>
-      <a-form-item :label="$t('Zone')">
+      <a-form-item :label="$t('zoneid')">
         <a-select
-          @change="val => fetchDiskOfferings(val)"
           v-decorator="['zoneid', {
-            initialValue: zones[0].id,
-            rules: [{ required: true, message: 'Please select a zone' }] }]">
-          <a-select-option v-for="zone in zones" :key="zone.id" :value="zone.id">
+            initialValue: selectedZoneId,
+            rules: [{ required: true, message: 'Please select a zone' }] }]"
+          :loading="loading"
+          @change="zone => fetchDiskOfferings(zone)">
+          <a-select-option
+            v-for="(zone, index) in zones"
+            :value="zone.id"
+            :key="index">
             {{ zone.name }}
           </a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item :label="$t('Offering')">
+      <a-form-item :label="$t('diskoffering')">
         <a-select
           v-decorator="['diskofferingid', {
-            initialValue: selectedDiskOffering,
+            initialValue: selectedDiskOfferingId,
             rules: [{ required: true, message: 'Please select an option' }]}]"
           :loading="loading"
-          :placeholder="$t('Offering Type')"
-          @change="val => isCustomDiskOffering = val == customDiskOfferingId"
+          @change="id => (customDiskOffering = offerings.filter(x => x.id === id)[0].iscustomized || false)"
         >
           <a-select-option
-            v-for="(diskOffering, index) in diskOfferings"
-            :value="diskOffering.id"
-            :key="index"
-          >{{ diskOffering.displaytext }}</a-select-option>
+            v-for="(offering, index) in offerings"
+            :value="offering.id"
+            :key="index">
+            {{ offering.displaytext || offering.name }}
+          </a-select-option>
         </a-select>
       </a-form-item>
-      <span v-if="isCustomDiskOffering">
+      <span v-if="customDiskOffering">
         <a-form-item :label="$t('Size (GB)')">
           <a-input
             v-decorator="['size', {
-              rules: [{ required: true, message: 'Please enter a number' }]}]"
-            :placeholder="$t('Enter Size')"/>
+              rules: [{ required: true, message: 'Please enter custom disk size' }]}]"
+            :placeholder="$t('Enter Size in GB')"/>
         </a-form-item>
       </span>
       <div :span="24" class="action-button">
-        <a-button @click="closeModal">{{ $t('Cancel') }}</a-button>
-        <a-button :loading="loading" type="primary" @click="handleSubmit">{{ $t('OK') }}</a-button>
+        <a-button @click="closeModal">{{ $t('cancel') }}</a-button>
+        <a-button type="primary" @click="handleSubmit">{{ $t('ok') }}</a-button>
       </div>
     </a-form>
-  </div>
+  </a-spin>
 </template>
 
 <script>
@@ -76,11 +80,10 @@ export default {
   data () {
     return {
       zones: [],
-      selectedZone: '',
-      diskOfferings: [],
-      selectedDiskOffering: '',
-      customDiskOfferingId: null,
-      isCustomDiskOffering: false,
+      offerings: [],
+      selectedZoneId: '',
+      selectedDiskOfferingId: '',
+      customDiskOffering: false,
       loading: false
     }
   },
@@ -91,30 +94,27 @@ export default {
     this.fetchData()
   },
   methods: {
+    log (o) {
+      console.log(o)
+    },
     fetchData () {
-      this.fetchDiskOfferings(null)
       this.loading = true
       api('listZones').then(json => {
         this.zones = json.listzonesresponse.zone || []
-        this.selectedZone = this.zones[0].id || ''
-        this.fetchDiskOfferings(this.selectedZone)
+        this.selectedZoneId = this.zones[0].id || ''
+        this.fetchDiskOfferings(this.selectedZoneId)
       }).finally(() => {
         this.loading = false
       })
     },
-    fetchDiskOfferings (zoneid) {
+    fetchDiskOfferings (zoneId) {
       this.loading = true
       api('listDiskOfferings', {
-        zoneId: zoneid
+        zoneId: zoneId
       }).then(json => {
-        this.diskOfferings = json.listdiskofferingsresponse.diskoffering || []
-        this.selectedDiskOffering = this.diskOfferings[0].id || ''
-        for (var diskOffering of this.diskOfferings) {
-          if (diskOffering.name === 'Custom') {
-            this.customDiskOfferingId = diskOffering.id
-            break
-          }
-        }
+        this.offerings = json.listdiskofferingsresponse.diskoffering || []
+        this.selectedDiskOfferingId = this.offerings[0].id || ''
+        this.customDiskOffering = this.offerings[0].iscustomized || false
       }).finally(() => {
         this.loading = false
       })
@@ -163,12 +163,12 @@ export default {
 }
 </script>
 
-<style lang="less" scoped>
-.form-layout {
+<style lang="scss" scoped>
+.form {
   width: 80vw;
 
-  @media (min-width: 700px) {
-    width: 550px;
+  @media (min-width: 500px) {
+    width: 400px;
   }
 }
 
