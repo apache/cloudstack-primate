@@ -62,42 +62,58 @@
             </a-form-item>
           </a-form>
         </a-modal>
-        <div v-if="availableTrafficToAdd !== null && availableTrafficToAdd.length > 0">
-          <div v-if="addingTrafficForKey === record.key">
+        <div v-if="isShowAddTraffic(record.traffics)">
+          <div class="traffic-select-item" v-if="addingTrafficForKey === record.key">
             <a-select
               :defaultValue="trafficLabelSelected"
               @change="val => { trafficLabelSelected = val }"
               style="min-width: 120px;"
             >
-              <a-select-option v-for="(traffic, index) in availableTrafficToAdd" :value="traffic" :key="index"> {{ traffic.toUpperCase() }} </a-select-option>
+              <a-select-option
+                v-for="(traffic, index) in availableTrafficToAdd"
+                :value="traffic"
+                :key="index"
+                :disabled="isDisabledTraffic(record.traffics, traffic)"
+              >
+                {{ traffic.toUpperCase() }}
+              </a-select-option>
             </a-select>
-            <a-icon
-              type="check"
-              @click="trafficAdded"
-            />
+            <a-button
+              class="icon-button"
+              shape="circle"
+              icon="check"
+              size="small"
+              @click="trafficAdded" />
+            <a-button
+              class="icon-button"
+              type="danger"
+              shape="circle"
+              icon="close"
+              size="small"
+              @click="() => { addingTrafficForKey = null }" />
           </div>
           <a-tag
             key="addingTraffic"
             style="margin:2px;"
             v-else
-            @click="addingTraffic(record.key)"
+            @click="addingTraffic(record.key, record.traffics)"
           >
             <a-icon type="plus" /> Add Traffic
           </a-tag>
         </div>
       </template>
       <template slot="actions" slot-scope="text, record">
+        <a-icon v-if="physicalNetworks.length <= 1" type="delete" href="javascript;;" />
         <a-popconfirm
-          v-if="physicalNetworks.length > 1"
+          v-else
           title="Delete?"
-          @confirm="() => onDelete(record.key)"
+          @confirm="() => onDelete(record)"
         >
           <a-icon type="delete" href="javascript;;" />
         </a-popconfirm>
       </template>
       <template slot="footer" class="editable-add-btn" v-if="isAdvancedZone">
         <a-button
-          :disabled="hasUnusedPhysicalNetwork || availableTrafficToAdd.length === 0"
           @click="handleAddPhysicalNetwork">
           Add Physical Network
         </a-button>
@@ -163,7 +179,8 @@ export default {
       availableTrafficToAdd: ['storage'],
       addingTrafficForKey: '-1',
       trafficLabelSelected: null,
-      showError: false
+      showError: false,
+      defaultTrafficOptions: []
     }
   },
   computed: {
@@ -246,6 +263,10 @@ export default {
     this.form = this.$form.createForm(this)
   },
   created () {
+    this.defaultTrafficOptions = ['management', 'guest', 'storage']
+    if (this.isAdvancedZone) {
+      this.defaultTrafficOptions.push('public')
+    }
     this.physicalNetworks = this.prefillContent.physicalNetworks
     this.hasUnusedPhysicalNetwork = this.getHasUnusedPhysicalNetwork()
     const requiredTrafficTypes = this.requiredTrafficTypes
@@ -272,7 +293,10 @@ export default {
         return { type: item, label: '' }
       })
       this.count = 1
-      this.physicalNetworks = [{ key: '0', name: 'Physical Network 1', traffics: traffics }]
+      this.physicalNetworks = [{ key: this.randomKeyTraffic(this.count), name: 'Physical Network 1', traffics: traffics }]
+    }
+    if (this.isAdvancedZone) {
+      this.availableTrafficToAdd.push('guest')
     }
     this.emitPhysicalNetworks()
   },
@@ -286,16 +310,21 @@ export default {
       }
       this.emitPhysicalNetworks()
     },
-    onDelete (key) {
+    onDelete (record) {
+      record.traffics.forEach(traffic => {
+        if (!this.availableTrafficToAdd.includes(traffic.type)) {
+          this.availableTrafficToAdd.push(traffic.type)
+        }
+      })
       const physicalNetworks = [...this.physicalNetworks]
-      this.physicalNetworks = physicalNetworks.filter(item => item.key !== key)
+      this.physicalNetworks = physicalNetworks.filter(item => item.key !== record.key)
       this.hasUnusedPhysicalNetwork = this.getHasUnusedPhysicalNetwork()
       this.emitPhysicalNetworks()
     },
     handleAddPhysicalNetwork () {
       const { count, physicalNetworks } = this
       const newData = {
-        key: count,
+        key: this.randomKeyTraffic(count + 1),
         name: `Physical Network ${count + 1}`,
         isolationMethod: 'VLAN',
         traffics: []
@@ -335,16 +364,25 @@ export default {
     handleBack (e) {
       this.$emit('backPressed')
     },
-    addingTraffic (key) {
+    addingTraffic (key, traffics) {
       this.addingTrafficForKey = key
-      this.trafficLabelSelected = this.availableTrafficToAdd[0]
+      this.availableTrafficToAdd.forEach(type => {
+        const trafficEx = traffics.filter(traffic => traffic.type === type)
+        if (!trafficEx || trafficEx.length === 0) {
+          this.trafficLabelSelected = type
+          return false
+        }
+      })
     },
     trafficAdded (trafficType) {
-      this.physicalNetworks[this.addingTrafficForKey].traffics.push({
+      const trafficKey = this.physicalNetworks.findIndex(network => network.key === this.addingTrafficForKey)
+      this.physicalNetworks[trafficKey].traffics.push({
         type: this.trafficLabelSelected.toLowerCase(),
         label: ''
       })
-      this.availableTrafficToAdd = this.availableTrafficToAdd.filter(item => item !== this.trafficLabelSelected)
+      if (!this.isAdvancedZone || this.trafficLabelSelected !== 'guest') {
+        this.availableTrafficToAdd = this.availableTrafficToAdd.filter(item => item !== this.trafficLabelSelected)
+      }
       this.addingTrafficForKey = null
       this.trafficLabelSelected = null
       this.emitPhysicalNetworks()
@@ -360,10 +398,13 @@ export default {
       })
     },
     deleteTraffic (key, traffic, $event) {
-      this.physicalNetworks[key].traffics = this.physicalNetworks[key].traffics.filter(tr => {
+      const trafficKey = this.physicalNetworks.findIndex(network => network.key === key)
+      this.physicalNetworks[trafficKey].traffics = this.physicalNetworks[trafficKey].traffics.filter(tr => {
         return tr.type !== traffic.type
       })
-      this.availableTrafficToAdd.push(traffic.type)
+      if (!this.isAdvancedZone || traffic.type !== 'guest') {
+        this.availableTrafficToAdd.push(traffic.type)
+      }
       this.hasUnusedPhysicalNetwork = this.getHasUnusedPhysicalNetwork()
       this.emitPhysicalNetworks()
     },
@@ -396,11 +437,42 @@ export default {
       if (this.physicalNetworks) {
         this.$emit('fieldsChanged', { physicalNetworks: this.physicalNetworks })
       }
+    },
+    isDisabledTraffic (traffics, traffic) {
+      const trafficEx = traffics.filter(item => item.type === traffic)
+      if (trafficEx && trafficEx.length > 0) {
+        return true
+      }
+
+      return false
+    },
+    isShowAddTraffic (traffics) {
+      if (!this.availableTrafficToAdd || this.availableTrafficToAdd.length === 0) {
+        return false
+      }
+
+      if (traffics.length === this.defaultTrafficOptions.length) {
+        return false
+      }
+
+      if (this.isAdvancedZone && this.availableTrafficToAdd.length === 1) {
+        const guestEx = traffics.filter(traffic => traffic.type === 'guest')
+        if (guestEx && guestEx.length > 0) {
+          return false
+        }
+      }
+
+      return true
+    },
+    randomKeyTraffic (key) {
+      const now = new Date()
+      const random = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      return [key, random, now.getTime()].join('')
     }
   }
 }
 </script>
-<style>
+<style scoped lang="less">
   .editable-cell {
     position: relative;
   }
@@ -453,5 +525,11 @@ export default {
 
   .physical-network-support {
     margin: 10px 0;
+  }
+
+  .traffic-select-item {
+    /deep/.icon-button {
+      margin: 0 0 0 5px;
+    }
   }
 </style>

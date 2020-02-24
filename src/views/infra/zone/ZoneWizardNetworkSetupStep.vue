@@ -123,7 +123,7 @@ export default {
         }
       ],
       publicTrafficDescription: {
-        advanced: 'Public traffic is generated when VMs in the cloud access the internet. Publicly-accessible IPs must be allocated for this purpose. End users can use the CloudStack UI to acquire these IPs to implement NAT between their guest network and their public network.<br/><br/>Provide at least one range of IP addresses for internet traffic.',
+        advanced: 'Public traffic is generated when VMs in the cloud access the internet. Publicly-accessible IPs must be allocated for this purpose. End users can use the CloudStack UI to acquire these IPs to implement NAT between their guest network and their public network.<br/> <br/>Provide at least one range of IP addresses for internet traffic.',
         basic: 'Public traffic is generated when VMs in the cloud access the Internet or provide services to clients over the Internet. Publicly accessible IPs must be allocated for this purpose. When a instance is created, an IP from this set of Public IPs will be allocated to the instance in addition to the guest IP address. Static 1-1 NAT will be set up automatically between the public IP and the guest IP. End users can also use the CloudStack UI to acquire additional IPs to implement static NAT between their instances and the public IP.'
       },
       guestTrafficDescription: {
