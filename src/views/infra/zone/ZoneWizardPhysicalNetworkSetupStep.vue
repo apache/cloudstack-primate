@@ -22,7 +22,13 @@
       style="text-align: justify; margin: 10px 0;">
       {{ zoneType !== null ? zoneDescription[zoneType] : 'Please select zone type below.' }}
     </a-card>
-    <a-table bordered :dataSource="physicalNetworks" :columns="columns" :pagination="false" style="margin-bottom: 24px;">
+    <a-table
+      bordered
+      :dataSource="physicalNetworks"
+      :columns="columns"
+      :pagination="false"
+      :scroll="{ y: 235 }"
+      style="margin-bottom: 24px;">
       <template slot="name" slot-scope="text, record">
         <editable-cell :text="text" @change="onCellChange(record.key, 'name', $event)" />
       </template>
@@ -103,9 +109,8 @@
         </div>
       </template>
       <template slot="actions" slot-scope="text, record">
-        <a-icon v-if="physicalNetworks.length <= 1" type="delete" href="javascript;;" />
         <a-popconfirm
-          v-else
+          v-if="physicalNetworks.length > 1"
           title="Delete?"
           @confirm="() => onDelete(record)"
         >
@@ -196,6 +201,7 @@ export default {
           {
             title: 'Isolation Method',
             dataIndex: 'isolationMethod',
+            width: '20%',
             scopedSlots: { customRender: 'isolationMethod' }
           },
           {
@@ -207,7 +213,8 @@ export default {
           {
             title: '',
             dataIndex: 'actions',
-            scopedSlots: { customRender: 'actions' }
+            scopedSlots: { customRender: 'actions' },
+            width: 50
           }
         ]
       } else {
@@ -221,6 +228,7 @@ export default {
           {
             title: 'Isolation Method',
             dataIndex: 'isolationMethod',
+            width: '20%',
             scopedSlots: { customRender: 'isolationMethod' }
           },
           {
@@ -475,41 +483,48 @@ export default {
 <style scoped lang="less">
   .editable-cell {
     position: relative;
-  }
 
-  .editable-cell-input-wrapper,
-  .editable-cell-text-wrapper {
-    padding-right: 24px;
-  }
+    /deep/.editable-cell-input-wrapper,
+    /deep/.editable-cell-text-wrapper {
+      padding-right: 24px;
+    }
 
-  .editable-cell-text-wrapper {
-    padding: 5px 24px 5px 5px;
-  }
+    /deep/.editable-cell-input-wrapper {
+      /deep/.ant-select {
+        width: 100%;
+      }
+    }
 
-  .editable-cell-icon,
-  .editable-cell-icon-check {
-    position: absolute;
-    right: 0;
-    width: 20px;
-    cursor: pointer;
-  }
+    /deep/.editable-cell-text-wrapper {
+      padding: 5px 24px 5px 5px;
+    }
 
-  .editable-cell-icon {
-    line-height: 18px;
-    display: none;
-  }
+    /deep/.editable-cell-icon,
+    /deep/.editable-cell-icon-check {
+      position: absolute;
+      top: 5px;
+      right: 0;
+      width: 20px;
+      cursor: pointer;
+    }
 
-  .editable-cell-icon-check {
-    line-height: 28px;
-  }
+    /deep/.editable-cell-icon {
+      line-height: 18px;
+      display: none;
+    }
 
-  .editable-cell:hover .editable-cell-icon {
-    display: inline-block;
-  }
+    /deep/.editable-cell-icon-check {
+      line-height: 28px;
+    }
 
-  .editable-cell-icon:hover,
-  .editable-cell-icon-check:hover {
-    color: #108ee9;
+    /deep/.editable-cell:hover .editable-cell-icon {
+      display: inline-block;
+    }
+
+    /deep/.editable-cell-icon:hover,
+    /deep/.editable-cell-icon-check:hover {
+      color: #108ee9;
+    }
   }
 
   .form-action {
