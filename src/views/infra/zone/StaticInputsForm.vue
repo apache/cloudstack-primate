@@ -19,9 +19,9 @@
   <div>
     <a-card
       class="ant-form-text"
-      style="text-align: justify; margin: 10px 0;"
-      v-if="description && description.length > 0">
-      {{ description }}
+      style="text-align: justify; margin: 10px 0; padding: 24px;"
+      v-if="description && description.length > 0"
+      v-html="description">
     </a-card>
     <a-form
       class="form-content"
@@ -99,13 +99,25 @@ export default {
     ipV6Regex: /^((([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}:[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){5}:([0-9A-Fa-f]{1,4}:)?[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){4}:([0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){3}:([0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){2}:([0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(([0-9A-Fa-f]{1,4}:){0,5}:((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(::([0-9A-Fa-f]{1,4}:){0,5}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|([0-9A-Fa-f]{1,4}::([0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})|(::([0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){1,7}:))$/i
   }),
   mounted () {
-    this.fields.forEach(field => {
-      var fieldVal = {}
-      fieldVal[field.key] = this.getPrefilled(field.key)
-      this.form.setFieldsValue(fieldVal)
-    })
+    this.fillValue(true)
+  },
+  watch: {
+    fields () {
+      this.fillValue(false)
+    }
   },
   methods: {
+    fillValue (autoFill) {
+      this.fields.forEach(field => {
+        const fieldVal = {}
+        fieldVal[field.key] = this.getPrefilled(field.key)
+        if (autoFill) {
+          this.form.setFieldsValue(fieldVal)
+        } else {
+          this.form.getFieldDecorator(field.key, { initialValue: this.getPrefilled(field.key) })
+        }
+      })
+    },
     getPrefilled (key) {
       return this.prefillContent[key] ? this.prefillContent[key].value : null
     },

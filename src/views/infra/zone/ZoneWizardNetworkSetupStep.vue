@@ -201,7 +201,9 @@ export default {
     }
   },
   mounted () {
+    this.physicalNetworks = this.prefillContent.physicalNetworks
     this.steps = this.filteredSteps()
+    this.currentStep = this.prefillContent.networkStep ? this.prefillContent.networkStep : 0
   },
   methods: {
     nextPressed () {
@@ -209,6 +211,7 @@ export default {
         this.$emit('nextPressed')
       } else {
         this.currentStep++
+        this.$emit('fieldsChanged', { networkStep: this.currentStep })
       }
     },
     handleBack (e) {
@@ -216,6 +219,7 @@ export default {
         this.$emit('backPressed')
       } else {
         this.currentStep--
+        this.$emit('fieldsChanged', { networkStep: this.currentStep })
       }
     },
     fieldsChanged (changed) {

@@ -19,8 +19,8 @@
   <div>
     <a-card
       class="ant-form-text"
-      style="text-align: justify; margin: 10px 0;">
-      {{ description }}
+      style="text-align: justify; margin: 10px 0; padding: 24px;"
+      v-html="description">
     </a-card>
     <a-table
       bordered
