@@ -508,6 +508,8 @@ export default {
     padding: 8px;
     padding-top: 16px;
     margin-top: 8px;
+    max-height: 55vh;
+    overflow-y: auto;
 
     /deep/.has-error {
       .ant-form-explain {

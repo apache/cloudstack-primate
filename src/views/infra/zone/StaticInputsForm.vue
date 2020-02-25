@@ -148,6 +148,10 @@ export default {
   methods: {
     fillValue (autoFill) {
       this.fields.forEach(field => {
+        const fieldExists = this.isDisplayInput(field.display)
+        if (!fieldExists) {
+          return
+        }
         const fieldVal = {}
         if (field.key === 'agentUserName' && !this.getPrefilled(field.key)) {
           fieldVal[field.key] = 'Oracle'
@@ -224,6 +228,8 @@ export default {
     padding-top: 16px;
     padding-top: 16px;
     margin-top: 8px;
+    max-height: 300px;
+    overflow-y: auto;
 
     /deep/.has-error {
       .ant-form-explain {
