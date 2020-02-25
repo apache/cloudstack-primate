@@ -31,9 +31,48 @@
         v-for="(field, index) in this.fields"
         :key="index"
         :label="field.title"
+        v-if="isDisplayInput(field.display)"
         v-bind="formItemLayout"
-        has-feedback>
+        :has-feedback="field.switch ? false : true">
+        <a-select
+          v-if="field.select"
+          v-decorator="[field.key, {
+            rules: [
+              {
+                required: field.required,
+                message: field.placeHolder,
+                initialValue: getPrefilled(field.key)
+              }
+            ]
+          }]"
+        >
+          <a-select-option
+            v-for="option in field.options"
+            :key="option.id"
+            :value="option.id"
+          >
+            {{ option.name || option.description }}
+          </a-select-option>
+        </a-select>
+        <a-switch
+          v-else-if="field.switch"
+          v-decorator="[field.key]"
+        />
         <a-input
+          v-else-if="field.password"
+          type="password"
+          v-decorator="[field.key, {
+            rules: [
+              {
+                required: field.required,
+                message: field.placeHolder,
+                initialValue: getPrefilled(field.key)
+              }
+            ]
+          }]"
+        />
+        <a-input
+          v-else
           v-decorator="[field.key, {
             rules: [
               {
@@ -110,7 +149,11 @@ export default {
     fillValue (autoFill) {
       this.fields.forEach(field => {
         const fieldVal = {}
-        fieldVal[field.key] = this.getPrefilled(field.key)
+        if (field.key === 'agentUserName' && !this.getPrefilled(field.key)) {
+          fieldVal[field.key] = 'Oracle'
+        } else {
+          fieldVal[field.key] = this.getPrefilled(field.key)
+        }
         if (autoFill) {
           this.form.setFieldsValue(fieldVal)
         } else {
@@ -142,6 +185,29 @@ export default {
       } else {
         callback()
       }
+    },
+    isDisplayInput (conditions) {
+      if (!conditions || Object.keys(conditions).length === 0) {
+        return true
+      }
+      let isShow = false
+      Object.keys(conditions).forEach(key => {
+        const condition = conditions[key]
+        const fieldVal = this.form.getFieldValue(key)
+          ? this.form.getFieldValue(key)
+          : (this.prefillContent[key] ? this.prefillContent[key].value : null)
+        if (Array.isArray(condition) && condition.includes(fieldVal)) {
+          isShow = true
+          return false
+        } else if (!Array.isArray(condition) && fieldVal === condition) {
+          isShow = true
+          return false
+        }
+
+        return true
+      })
+
+      return isShow
     }
   }
 }
