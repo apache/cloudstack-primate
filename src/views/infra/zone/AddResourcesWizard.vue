@@ -49,6 +49,15 @@
         :prefillContent="prefillContent"
         :description="steps[currentStep].description"
       />
+      <static-inputs-form
+        v-if="currentStep === 3"
+        @nextPressed="nextPressed"
+        @backPressed="handleBack"
+        @fieldsChanged="fieldsChanged"
+        :fields="secondaryStorageFields"
+        :prefillContent="prefillContent"
+        :description="steps[currentStep].description"
+      />
     </div>
     <div v-else>
       <static-inputs-form
@@ -57,6 +66,15 @@
         @backPressed="handleBack"
         @fieldsChanged="fieldsChanged"
         :fields="primaryStorageFields"
+        :prefillContent="prefillContent"
+        :description="steps[currentStep].description"
+      />
+      <static-inputs-form
+        v-if="currentStep === 2"
+        @nextPressed="nextPressed"
+        @backPressed="handleBack"
+        @fieldsChanged="fieldsChanged"
+        :fields="secondaryStorageFields"
         :prefillContent="prefillContent"
         :description="steps[currentStep].description"
       />
@@ -105,7 +123,7 @@ export default {
           },
           {
             title: 'Secondary Storage',
-            description: 'Each zone must have at least one NFS or secondary storage server, and we will add the first one now. Secondary storage stores VM templates, ISO images, and VM disk volume snapshots. This server must be available to all hosts in the zone. Provide the IP address and exported path.'
+            description: 'Each zone must have at least one NFS or secondary storage server, and we will add the first one now. Secondary storage stores VM templates, ISO images, and VM disk volume snapshots. This server must be available to all hosts in the zone.<br/><br/>Provide the IP address and exported path.'
           }
         ]
       } else {
@@ -125,14 +143,9 @@ export default {
         ]
       }
       return steps
-    }
-  },
-  data () {
-    return {
-      physicalNetworks: null,
-      currentHypervisor: null,
-      currentStep: 0,
-      clusterFields: [
+    },
+    clusterFields () {
+      return [
         {
           title: 'Cluster Name',
           key: 'clusterName',
@@ -221,8 +234,10 @@ export default {
             vSwitchEnabled: true
           }
         }
-      ],
-      hostFields: [
+      ]
+    },
+    hostFields () {
+      return [
         {
           title: 'Host Name',
           key: 'hostName',
@@ -277,8 +292,10 @@ export default {
           placeHolder: 'Please enter host tags',
           required: false
         }
-      ],
-      primaryStorageFields: [
+      ]
+    },
+    primaryStorageFields () {
+      return [
         {
           title: 'Name',
           key: 'primaryStorageName',
@@ -288,23 +305,22 @@ export default {
         {
           title: 'Scope',
           key: 'primaryStorageScope',
-          placeHolder: 'Please enter scope',
           required: false,
           select: true,
-          options: this.fetchOptions('primaryStorageScope')
+          options: this.primaryStorageScopes
         },
         {
           title: 'Protocol',
           key: 'primaryStorageProtocol',
-          placeHolder: 'Please enter primary storage protocol',
+          placeHolder: 'Please select option',
           required: true,
           select: true,
-          options: this.fetchOptions('primaryStorageProtocol')
+          options: this.primaryStorageProtocols
         },
         {
           title: 'Server',
           key: 'primaryStorageServer',
-          placeHolder: 'Please enter primary storage server',
+          placeHolder: 'Please enter server',
           required: true,
           display: {
             primaryStorageProtocol: ['nfs', 'iscsi', 'gluster', 'SMB']
@@ -313,7 +329,7 @@ export default {
         {
           title: 'Path',
           key: 'primaryStoragePath',
-          placeHolder: 'Please enter primary storage path',
+          placeHolder: 'Please enter path',
           required: true,
           display: {
             primaryStorageProtocol: ['nfs', 'SMB', 'SharedMountPoint', 'ocfs2']
@@ -322,7 +338,7 @@ export default {
         {
           title: 'SR Name-Label',
           key: 'primaryStorageSRLabel',
-          placeHolder: 'Please enter primary storage SR Name-Label',
+          placeHolder: 'Please enter SR Name-Label',
           required: true,
           display: {
             primaryStorageProtocol: 'PreSetup'
@@ -331,7 +347,7 @@ export default {
         {
           title: 'Target IQN',
           key: 'primaryStorageTargetIQN',
-          placeHolder: 'Please enter primary storage Target IQN',
+          placeHolder: 'Please enter Target IQN',
           required: true,
           display: {
             primaryStorageProtocol: 'iscsi'
@@ -340,7 +356,7 @@ export default {
         {
           title: 'LUN #',
           key: 'primaryStorageLUN',
-          placeHolder: 'Please enter primary storage LUN #',
+          placeHolder: 'Please enter LUN #',
           required: true,
           display: {
             primaryStorageProtocol: 'iscsi'
@@ -349,7 +365,7 @@ export default {
         {
           title: 'SMB Domain',
           key: 'primaryStorageSMBDomain',
-          placeHolder: 'Please enter primary storage SMB Domain',
+          placeHolder: 'Please enter SMB Domain',
           required: true,
           display: {
             primaryStorageProtocol: 'SMB'
@@ -358,7 +374,7 @@ export default {
         {
           title: 'SMB Username',
           key: 'primaryStorageSMBUsername',
-          placeHolder: 'Please enter primary storage SMB Username',
+          placeHolder: 'Please enter SMB Username',
           required: true,
           display: {
             primaryStorageProtocol: 'SMB'
@@ -367,7 +383,7 @@ export default {
         {
           title: 'SMB Password',
           key: 'primaryStorageSMBPassword',
-          placeHolder: 'Please enter primary storage SMB Password',
+          placeHolder: 'Please enter SMB Password',
           required: true,
           password: true,
           display: {
@@ -377,7 +393,7 @@ export default {
         {
           title: 'RADOS Monitor',
           key: 'primaryStorageRADOSMonitor',
-          placeHolder: 'Please enter primary storage RADOS Monitor',
+          placeHolder: 'Please enter RADOS Monitor',
           required: false,
           display: {
             primaryStorageProtocol: ['rbd']
@@ -386,7 +402,7 @@ export default {
         {
           title: 'RADOS Pool',
           key: 'primaryStorageRADOSPool',
-          placeHolder: 'Please enter primary storage RADOS Pool',
+          placeHolder: 'Please enter RADOS Pool',
           required: false,
           display: {
             primaryStorageProtocol: ['rbd']
@@ -395,7 +411,7 @@ export default {
         {
           title: 'RADOS User',
           key: 'primaryStorageRADOSUser',
-          placeHolder: 'Please enter primary storage RADOS User',
+          placeHolder: 'Please enter RADOS User',
           required: false,
           display: {
             primaryStorageProtocol: ['rbd']
@@ -404,7 +420,7 @@ export default {
         {
           title: 'RADOS Secret',
           key: 'primaryStorageRADOSSecret',
-          placeHolder: 'Please enter primary storage RADOS Secret',
+          placeHolder: 'Please enter RADOS Secret',
           required: false,
           display: {
             primaryStorageProtocol: ['rbd']
@@ -413,7 +429,7 @@ export default {
         {
           title: 'Volume Group',
           key: 'primaryStorageVolumeGroup',
-          placeHolder: 'Please enter primary storage Volume Group',
+          placeHolder: 'Please enter Volume Group',
           required: true,
           display: {
             primaryStorageProtocol: 'clvm'
@@ -422,7 +438,7 @@ export default {
         {
           title: 'Volume',
           key: 'primaryStorageVolume',
-          placeHolder: 'Please enter primary storage Volume',
+          placeHolder: 'Please enter Volume',
           required: true,
           display: {
             primaryStorageProtocol: 'gluster'
@@ -431,7 +447,7 @@ export default {
         {
           title: 'vCenter Datacenter',
           key: 'primaryStorageVmfsDatacenter',
-          placeHolder: 'Please enter primary storage vCenter Datacenter',
+          placeHolder: 'Please enter vCenter Datacenter',
           required: true,
           display: {
             primaryStorageProtocol: 'vmfs'
@@ -440,7 +456,7 @@ export default {
         {
           title: 'vCenter Datastore',
           key: 'primaryStorageVmfsDatastore',
-          placeHolder: 'Please enter primary storage vCenter Datastore',
+          placeHolder: 'Please enter vCenter Datastore',
           required: true,
           display: {
             primaryStorageProtocol: 'vmfs'
@@ -453,6 +469,211 @@ export default {
           required: false
         }
       ]
+    },
+    secondaryStorageFields () {
+      return [
+        {
+          title: 'Provider',
+          key: 'secondaryStorageProvider',
+          required: false,
+          select: true,
+          options: this.storageProviders
+        },
+        {
+          title: 'Name',
+          key: 'secondaryStorageName',
+          required: false,
+          display: {
+            secondaryStorageProvider: ['NFS', 'SMB', 'S3', 'Swift']
+          }
+        },
+        {
+          title: 'Server',
+          key: 'secondaryStorageServer',
+          required: true,
+          placeHolder: 'Please enter Server',
+          display: {
+            secondaryStorageProvider: ['NFS', 'SMB']
+          }
+        },
+        {
+          title: 'Path',
+          key: 'secondaryStoragePath',
+          required: true,
+          placeHolder: 'Please enter Path',
+          display: {
+            secondaryStorageProvider: ['NFS', 'SMB']
+          }
+        },
+        {
+          title: 'SMB Domain',
+          key: 'secondaryStorageSMBDomain',
+          required: true,
+          placeHolder: 'Please enter SMB Domain',
+          display: {
+            secondaryStorageProvider: ['SMB']
+          }
+        },
+        {
+          title: 'SMB Username',
+          key: 'secondaryStorageSMBUsername',
+          required: true,
+          placeHolder: 'Please enter SMB Username',
+          display: {
+            secondaryStorageProvider: ['SMB']
+          }
+        },
+        {
+          title: 'SMB Password',
+          key: 'secondaryStorageSMBPassword',
+          required: true,
+          password: true,
+          placeHolder: 'Please enter SMB Password',
+          display: {
+            secondaryStorageProvider: ['SMB']
+          }
+        },
+        {
+          title: 'Access Key',
+          key: 'secondaryStorageAccessKey',
+          required: true,
+          placeHolder: 'Please enter Access Key',
+          display: {
+            secondaryStorageProvider: ['S3']
+          }
+        },
+        {
+          title: 'Secret Key',
+          key: 'secondaryStorageSecretKey',
+          required: true,
+          placeHolder: 'Please enter Secret Key',
+          display: {
+            secondaryStorageProvider: ['S3']
+          }
+        },
+        {
+          title: 'Bucket',
+          key: 'secondaryStorageBucket',
+          required: true,
+          placeHolder: 'Please enter Bucket',
+          display: {
+            secondaryStorageProvider: ['S3']
+          }
+        },
+        {
+          title: 'Endpoint',
+          key: 'secondaryStorageEndpoint',
+          required: false,
+          display: {
+            secondaryStorageProvider: ['S3']
+          }
+        },
+        {
+          title: 'Use HTTPS',
+          key: 'secondaryStorageHttps',
+          required: false,
+          switch: true,
+          checked: true,
+          display: {
+            secondaryStorageProvider: ['S3']
+          }
+        },
+        {
+          title: 'Connection Timeout',
+          key: 'secondaryStorageConnectionTimeout',
+          required: false,
+          display: {
+            secondaryStorageProvider: ['S3']
+          }
+        },
+        {
+          title: 'Max Error Retry',
+          key: 'secondaryStorageMaxError',
+          required: false,
+          display: {
+            secondaryStorageProvider: ['S3']
+          }
+        },
+        {
+          title: 'Socket Timeout',
+          key: 'secondaryStorageSocketTimeout',
+          required: false,
+          display: {
+            secondaryStorageProvider: ['S3']
+          }
+        },
+        {
+          title: 'Create NFS Secondary Staging Store',
+          key: 'secondaryStorageNFSStaging',
+          required: false,
+          switch: true,
+          display: {
+            secondaryStorageProvider: ['S3']
+          }
+        },
+        {
+          title: 'S3 NFS Server',
+          key: 'secondaryStorageNFSServer',
+          required: true,
+          placeHolder: 'Please enter S3 NFS Server',
+          display: {
+            secondaryStorageProvider: ['S3']
+          }
+        },
+        {
+          title: 'S3 NFS Path',
+          key: 'secondaryStorageNFSPath',
+          required: true,
+          placeHolder: 'Please enter S3 NFS Path',
+          display: {
+            secondaryStorageProvider: ['S3']
+          }
+        },
+        {
+          title: 'URL',
+          key: 'secondaryStorageURL',
+          required: true,
+          placeHolder: 'Please enter URL',
+          display: {
+            secondaryStorageProvider: ['Swift']
+          }
+        },
+        {
+          title: 'Account',
+          key: 'secondaryStorageAccount',
+          required: false,
+          display: {
+            secondaryStorageProvider: ['Swift']
+          }
+        },
+        {
+          title: 'Username',
+          key: 'secondaryStorageUsername',
+          required: false,
+          display: {
+            secondaryStorageProvider: ['Swift']
+          }
+        },
+        {
+          title: 'Key',
+          key: 'secondaryStorageKey',
+          required: false,
+          display: {
+            secondaryStorageProvider: ['Swift']
+          }
+        }
+      ]
+    }
+  },
+  data () {
+    return {
+      physicalNetworks: null,
+      currentHypervisor: null,
+      primaryStorageScopes: [],
+      primaryStorageProtocols: [],
+      storageProviders: [],
+      currentStep: 0,
+      options: ['primaryStorageScope', 'primaryStorageProtocol', 'provider']
     }
   },
   mounted () {
@@ -460,6 +681,7 @@ export default {
       this.$emit('nextPressed')
     } else {
       this.fetchConfigurationSwitch()
+      this.options.forEach(this.fetchOptions)
       if (this.prefillContent.lastHypervisor &&
         this.prefillContent.lastHypervisor.value !== this.prefillContent.hypervisor.value) {
         this.$emit('fieldsChanged', {
@@ -489,12 +711,19 @@ export default {
       this.$emit('fieldsChanged', changed)
     },
     fetchOptions (name) {
-      if (name === 'primaryStorageScope') {
-        return this.fetchScope()
-      } else if (name === 'primaryStorageProtocol') {
-        return this.fetchProtocol()
+      switch (name) {
+        case 'primaryStorageScope':
+          this.fetchScope()
+          break
+        case 'primaryStorageProtocol':
+          this.fetchProtocol()
+          break
+        case 'provider':
+          this.fetchProvider()
+          break
+        default:
+          break
       }
-      return []
     },
     fetchScope () {
       const hypervisor = this.prefillContent.hypervisor ? this.prefillContent.hypervisor.value : null
@@ -514,7 +743,8 @@ export default {
           description: this.$t('label.cluster')
         })
       }
-      return scope
+      this.primaryStorageScopes = scope
+      this.$forceUpdate()
     },
     fetchProtocol () {
       const hypervisor = this.prefillContent.hypervisor ? this.prefillContent.hypervisor.value : null
@@ -596,7 +826,8 @@ export default {
         })
       }
 
-      return protocols
+      this.primaryStorageProtocols = protocols
+      this.$forceUpdate()
     },
     async fetchConfigurationSwitch () {
       const hypervisor = this.prefillContent.hypervisor ? this.prefillContent.hypervisor.value : null
@@ -623,6 +854,22 @@ export default {
           dvSwitchEnabled = true
         }
         this.$emit('fieldsChanged', { dvSwitchEnabled: { value: dvSwitchEnabled } })
+      })
+    },
+    fetchProvider () {
+      const storageProviders = []
+      api('listImageStores', { provider: 'S3' }).then(json => {
+        const s3stores = json.listimagestoresresponse.imagestore
+        if (s3stores != null && s3stores.length > 0) {
+          storageProviders.push({ id: 'S3', description: 'S3' })
+        } else {
+          storageProviders.push({ id: 'NFS', description: 'NFS' })
+          storageProviders.push({ id: 'SMB', description: 'SMB/CIFS' })
+          storageProviders.push({ id: 'S3', description: 'S3' })
+          storageProviders.push({ id: 'Swift', description: 'Swift' })
+        }
+        this.storageProviders = storageProviders
+        this.$forceUpdate()
       })
     }
   }

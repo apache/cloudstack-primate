@@ -45,6 +45,7 @@
               }
             ]
           }]"
+          :allowClear="true"
         >
           <a-select-option
             v-for="option in field.options"
@@ -57,6 +58,7 @@
         <a-switch
           v-else-if="field.switch"
           v-decorator="[field.key]"
+          :checked="isChecked(field)"
         />
         <a-input
           v-else-if="field.password"
@@ -212,6 +214,17 @@ export default {
       })
 
       return isShow
+    },
+    isChecked (field) {
+      if (!this.prefillContent[field.key] || !this.prefillContent[field.key].value) {
+        return false
+      }
+
+      if (!field.checked) {
+        return false
+      }
+
+      return true
     }
   }
 }
