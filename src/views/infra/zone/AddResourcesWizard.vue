@@ -682,8 +682,11 @@ export default {
     } else {
       this.fetchConfigurationSwitch()
       this.options.forEach(this.fetchOptions)
-      if (this.prefillContent.lastHypervisor &&
-        this.prefillContent.lastHypervisor.value !== this.prefillContent.hypervisor.value) {
+      if (!this.prefillContent.lastHypervisor) {
+        this.$emit('fieldsChanged', {
+          lastHypervisor: this.prefillContent.hypervisor
+        })
+      } else if (this.prefillContent.lastHypervisor.value !== this.prefillContent.hypervisor.value) {
         this.$emit('fieldsChanged', {
           lastHypervisor: this.prefillContent.hypervisor,
           primaryStorageProtocol: null,
