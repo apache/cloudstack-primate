@@ -279,8 +279,13 @@ export default {
     this.networkOfferings = this.prefillContent.networkOfferings ? this.prefillContent.networkOfferings : null
     this.form = this.$form.createForm(this, {
       onFieldsChange: (_, changedFields) => {
+        if (changedFields.networkOfferingId) {
+          if (this.prefillContent.networkOfferingSelected.id !== changedFields.networkOfferingId.value) {
+            changedFields.physicalNetworks = []
+          }
+        }
         if (this.networkOfferings && changedFields.networkOfferingId) {
-          changedFields.networkOfferings = this.networkofferings
+          changedFields.networkOfferings = this.networkOfferings
           changedFields.networkOfferingSelected = this.networkOfferings[changedFields.networkOfferingId.value]
         }
         if (this.hypervisors && changedFields.hypervisor) {
@@ -386,7 +391,7 @@ export default {
       return null
     },
     currentNetworkOfferingId () {
-      const lastNetworkOfferingId = this.prefillContent.networkOfferingId ? this.prefillContent.networkOfferingId.value : null
+      const lastNetworkOfferingId = this.prefillContent.networkOfferingSelected ? this.prefillContent.networkOfferingSelected.id : null
       if (this.networkOfferings) {
         if (lastNetworkOfferingId !== null && this.networkOfferings[lastNetworkOfferingId]) {
           return lastNetworkOfferingId
@@ -438,6 +443,7 @@ export default {
       nOffering.havingSG = false
       nOffering.havingEIP = false
       nOffering.havingELB = false
+      nOffering.selectedBaremetalProviders = []
 
       nOffering.service.forEach(service => {
         service.provider.forEach(provider => {
@@ -445,6 +451,7 @@ export default {
             nOffering.havingNetscaler = true
           } else if (this.baremetalProviders.includes(provider.name)) {
             this.selectedBaremetalProviders.push(this.name)
+            nOffering.selectedBaremetalProviders = this.selectedBaremetalProviders
           }
         })
 

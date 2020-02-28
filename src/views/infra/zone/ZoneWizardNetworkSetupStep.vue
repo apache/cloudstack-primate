@@ -18,7 +18,11 @@
 <template>
   <div style="width: auto;">
     <a-steps progressDot :current="currentStep" size="small" style="margin-left: 0px; margin-top: 16px;">
-      <a-step v-for="step in steps" :key="step.title" :title="step.title" />
+      <a-step
+        v-for="step in steps"
+        :key="step.title"
+        :title="step.title"
+        :style="stepScales" />
     </a-steps>
     <zone-wizard-physical-network-setup-step
       v-if="steps && steps[currentStep].formKey === 'physicalNetwork'"
@@ -26,6 +30,15 @@
       @backPressed="handleBack"
       @fieldsChanged="fieldsChanged"
       :prefillContent="prefillContent"
+    />
+    <static-inputs-form
+      v-if="steps && steps[currentStep].formKey === 'netscaler'"
+      @nextPressed="nextPressed"
+      @backPressed="handleBack"
+      @fieldsChanged="fieldsChanged"
+      :fields="netscalerFields"
+      :prefillContent="prefillContent"
+      :description="netscalerSetupDescription"
     />
     <ip-address-range-form
       v-if="steps && steps[currentStep].formKey === 'publicTraffic'"
@@ -110,9 +123,121 @@ export default {
     sgEnabled () {
       return this.prefillContent.securityGroupsEnabled ? this.prefillContent.securityGroupsEnabled.value : false
     },
+    havingNetscaler () {
+      return this.prefillContent.networkOfferingSelected ? this.prefillContent.networkOfferingSelected.havingNetscaler : false
+    },
     guestTrafficRangeMode () {
       return this.zoneType === 'Basic' ||
         (this.zoneType === 'Advanced' && this.sgEnabled)
+    },
+    allSteps () {
+      const steps = []
+      steps.push({
+        title: 'Physical Network',
+        formKey: 'physicalNetwork'
+      })
+      if (this.havingNetscaler) {
+        steps.push({
+          title: 'Netscaler',
+          formKey: 'netscaler'
+        })
+      }
+      steps.push({
+        title: 'Public Traffic',
+        formKey: 'publicTraffic',
+        trafficType: 'public'
+      })
+      steps.push({
+        title: 'Pod',
+        formKey: 'pod'
+      })
+      steps.push({
+        title: 'Guest Traffic',
+        formKey: 'guestTraffic',
+        trafficType: 'guest'
+      })
+      steps.push({
+        title: 'Storage Traffic',
+        formKey: 'storageTraffic',
+        trafficType: 'storage'
+      })
+
+      return steps
+    },
+    stepScales () {
+      if (this.allSteps.length > 4) {
+        return { width: 'calc(100% / ' + this.allSteps.length + ')' }
+      }
+      return {}
+    },
+    netscalerFields () {
+      return [
+        {
+          title: 'IP Address',
+          key: 'netscalerIp',
+          required: false,
+          ipV4: true,
+          message: 'Please enter a valid IP v4 address.'
+        },
+        {
+          title: 'Username',
+          key: 'netscalerUsername',
+          required: false
+        },
+        {
+          title: 'Password',
+          key: 'netscalerPassword',
+          required: false,
+          password: true
+        },
+        {
+          title: 'Type',
+          key: 'netscalerType',
+          required: false,
+          select: true,
+          options: this.netscalerType
+        },
+        {
+          title: 'Public Interface',
+          key: 'publicinterface',
+          required: false
+        },
+        {
+          title: 'Private Interface',
+          key: 'privateinterface',
+          required: false
+        },
+        {
+          title: 'GSLB service',
+          key: 'gslbprovider',
+          required: false,
+          switch: true
+        },
+        {
+          title: 'GSLB service Public IP',
+          key: 'gslbproviderpublicip',
+          required: false,
+          ipV4: true,
+          message: 'Please enter a valid IP v4 address.'
+        },
+        {
+          title: 'GSLB service Private IP',
+          key: 'gslbproviderprivateip',
+          required: false,
+          ipV4: true,
+          message: 'Please enter a valid IP v4 address.'
+        },
+        {
+          title: 'Number of Retries',
+          key: 'numretries',
+          required: false
+        },
+        {
+          title: 'Capacity',
+          key: 'capacity',
+          required: false
+        }
+      ]
     }
   },
   data () {
@@ -121,31 +246,7 @@ export default {
       currentStep: 0,
       steps: null,
       skipGuestTrafficStep: false,
-      allSteps: [
-        {
-          title: 'Physical Network',
-          formKey: 'physicalNetwork'
-        },
-        {
-          title: 'Public Traffic',
-          formKey: 'publicTraffic',
-          trafficType: 'public'
-        },
-        {
-          title: 'Pod',
-          formKey: 'pod'
-        },
-        {
-          title: 'Guest Traffic',
-          formKey: 'guestTraffic',
-          trafficType: 'guest'
-        },
-        {
-          title: 'Storage Traffic',
-          formKey: 'storageTraffic',
-          trafficType: 'storage'
-        }
-      ],
+      netscalerType: [],
       publicTrafficDescription: {
         advanced: 'Public traffic is generated when VMs in the cloud access the internet. Publicly-accessible IPs must be allocated for this purpose. End users can use the CloudStack UI to acquire these IPs to implement NAT between their guest network and their public network.<br/> <br/>Provide at least one range of IP addresses for internet traffic.',
         basic: 'Public traffic is generated when VMs in the cloud access the Internet or provide services to clients over the Internet. Publicly accessible IPs must be allocated for this purpose. When a instance is created, an IP from this set of Public IPs will be allocated to the instance in addition to the guest IP address. Static 1-1 NAT will be set up automatically between the public IP and the guest IP. End users can also use the CloudStack UI to acquire additional IPs to implement static NAT between their instances and the public IP.'
@@ -155,6 +256,7 @@ export default {
         basic: 'Guest network traffic is communication between end-user virtual machines. Specify a range of IP addresses that CloudStack can assign to guest VMs. Make sure this range does not overlap the reserved system IP range.'
       },
       podSetupDescription: 'Each zone must contain in one or more pods, and we will add the first pod now. A pod contains hosts and primary storage servers, which you will add in a later step. First, configure a range of reserved IP addresses for CloudStack\'s internal management traffic. The reserved IP range must be unique for each zone in the cloud.',
+      netscalerSetupDescription: 'Please specify Netscaler info',
       storageTrafficDescription: 'Traffic between CloudStack\'s internal resources, including any components that communicate with the Management Server, such as hosts and CloudStack system VMs. Please configure storage traffic here.',
       podFields: [
         {
@@ -235,8 +337,26 @@ export default {
       this.fetchConfiguration()
     }
     this.$emit('fieldsChanged', { skipGuestTrafficStep: this.skipGuestTrafficStep })
+    this.fetchNetscalerType()
   },
   methods: {
+    fetchNetscalerType () {
+      const items = []
+      items.push({
+        id: 'NetscalerMPXLoadBalancer',
+        description: 'NetScaler MPX LoadBalancer'
+      })
+      items.push({
+        id: 'NetscalerVPXLoadBalancer',
+        description: 'NetScaler VPX LoadBalancer'
+      })
+      items.push({
+        id: 'NetscalerSDXLoadBalancer',
+        description: 'NetScaler SDX LoadBalancer'
+      })
+      this.netscalerType = items
+      this.$forceUpdate()
+    },
     nextPressed () {
       if (this.currentStep === this.steps.length - 1) {
         this.$emit('nextPressed')

@@ -19,7 +19,6 @@
   <div>
     <a-card
       class="ant-form-text"
-      style="text-align: justify; margin: 10px 0; padding: 24px;"
       v-if="description && description.length > 0"
       v-html="description">
     </a-card>
@@ -253,6 +252,13 @@ export default {
     /deep/.ant-form-item-control {
       text-align: left;
     }
+  }
+
+  .ant-form-text {
+    text-align: justify;
+    margin: 10px 0;
+    padding: 24px;
+    width: 100%;
   }
 
   .form-action {

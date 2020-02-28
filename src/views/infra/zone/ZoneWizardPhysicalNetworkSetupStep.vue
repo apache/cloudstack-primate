@@ -272,7 +272,7 @@ export default {
   },
   created () {
     this.defaultTrafficOptions = ['management', 'guest', 'storage']
-    if (this.isAdvancedZone) {
+    if (this.isAdvancedZone || this.needsPublicTraffic) {
       this.defaultTrafficOptions.push('public')
     }
     this.physicalNetworks = this.prefillContent.physicalNetworks
