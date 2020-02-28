@@ -47,15 +47,27 @@
       :description="podSetupDescription"
     />
 
-    <static-inputs-form
-      v-if="steps && steps[currentStep].formKey === 'guestTraffic'"
-      @nextPressed="nextPressed"
-      @backPressed="handleBack"
-      @fieldsChanged="fieldsChanged"
-      :fields="guestTrafficFields"
-      :prefillContent="prefillContent"
-      :description="guestTrafficDescription[this.zoneType.toLowerCase()]"
-    />
+    <div v-if="guestTrafficRangeMode">
+      <static-inputs-form
+        v-if="steps && steps[currentStep].formKey === 'guestTraffic'"
+        @nextPressed="nextPressed"
+        @backPressed="handleBack"
+        @fieldsChanged="fieldsChanged"
+        :fields="guestTrafficFields"
+        :prefillContent="prefillContent"
+        :description="guestTrafficDescription[this.zoneType.toLowerCase()]"
+      />
+    </div>
+    <div v-else>
+      <advanced-guest-traffic-form
+        v-if="steps && steps[currentStep].formKey === 'guestTraffic'"
+        @nextPressed="nextPressed"
+        @backPressed="handleBack"
+        @fieldsChanged="fieldsChanged"
+        :prefillContent="prefillContent"
+        :description="guestTrafficDescription[this.zoneType.toLowerCase()]"
+      />
+    </div>
 
     <ip-address-range-form
       v-if="steps && steps[currentStep].formKey === 'storageTraffic'"
@@ -68,16 +80,20 @@
     />
   </div>
 </template>
+
 <script>
+import { api } from '@/api'
 import ZoneWizardPhysicalNetworkSetupStep from '@views/infra/zone/ZoneWizardPhysicalNetworkSetupStep'
 import IpAddressRangeForm from '@views/infra/zone/IpAddressRangeForm'
 import StaticInputsForm from '@views/infra/zone/StaticInputsForm'
+import AdvancedGuestTrafficForm from '@views/infra/zone/AdvancedGuestTrafficForm'
 
 export default {
   components: {
     ZoneWizardPhysicalNetworkSetupStep,
     IpAddressRangeForm,
-    StaticInputsForm
+    StaticInputsForm,
+    AdvancedGuestTrafficForm
   },
   props: {
     prefillContent: {
@@ -90,6 +106,13 @@ export default {
   computed: {
     zoneType () {
       return this.prefillContent.zoneType ? this.prefillContent.zoneType.value : null
+    },
+    sgEnabled () {
+      return this.prefillContent.securityGroupsEnabled ? this.prefillContent.securityGroupsEnabled.value : false
+    },
+    guestTrafficRangeMode () {
+      return this.zoneType === 'Basic' ||
+        (this.zoneType === 'Advanced' && this.sgEnabled)
     }
   },
   data () {
@@ -97,6 +120,7 @@ export default {
       physicalNetworks: null,
       currentStep: 0,
       steps: null,
+      skipGuestTrafficStep: false,
       allSteps: [
         {
           title: 'Physical Network',
@@ -204,6 +228,13 @@ export default {
     this.physicalNetworks = this.prefillContent.physicalNetworks
     this.steps = this.filteredSteps()
     this.currentStep = this.prefillContent.networkStep ? this.prefillContent.networkStep : 0
+    if (this.zoneType === 'Basic' ||
+      (this.zoneType === 'Advanced' && this.sgEnabled)) {
+      this.skipGuestTrafficStep = false
+    } else {
+      this.fetchConfiguration()
+    }
+    this.$emit('fieldsChanged', { skipGuestTrafficStep: this.skipGuestTrafficStep })
   },
   methods: {
     nextPressed () {
@@ -244,6 +275,20 @@ export default {
           if (neededTraffic) return true
         }
         return false
+      })
+    },
+    fetchConfiguration () {
+      this.skipGuestTrafficStep = false
+      api('listConfigurations', { name: 'sdn.ovs.controller' }).then(json => {
+        const items = json.listconfigurationsresponse.configuration
+        items.forEach(item => {
+          if (item.name === 'sdn.ovs.controller') {
+            if (item.value) {
+              this.skipGuestTrafficStep = true
+            }
+            return false
+          }
+        })
       })
     }
   }
