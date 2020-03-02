@@ -65,6 +65,8 @@
 </template>
 
 <script>
+import { api } from '@/api'
+
 const BASIC_ZONE = 'Basic'
 const ADVANCED_ZONE = 'Advanced'
 const STATUS_PROCESS = 'process'
@@ -108,10 +110,10 @@ export default {
       return this.prefillContent.zoneType ? this.prefillContent.zoneType.value : null
     },
     isBasicZone () {
-      return this.zoneType === ADVANCED_ZONE
+      return this.zoneType === BASIC_ZONE
     },
     isAdvancedZone () {
-      return this.zoneType === BASIC_ZONE
+      return this.zoneType === ADVANCED_ZONE
     },
     isDedicated () {
       return this.prefillContent.isDedicated ? this.prefillContent.isDedicated.value : false
@@ -240,8 +242,11 @@ export default {
     async stepAddZone () {
       console.log('stepAddZone')
       this.addStep('message.creating.zone')
+
+      const guestcidraddress = this.prefillContent.guestcidraddress ? this.prefillContent.guestcidraddress.value : null
       const params = {}
       params.networktype = this.zoneType
+
       if (this.isBasicZone) {
         if (this.havingSG) {
           params.securitygroupenabled = true
@@ -251,15 +256,15 @@ export default {
       } else {
         if (!this.sgEnabled) {
           params.securitygroupenabled = false
-          if (this.prefillContent.guestcidraddress.value != null && this.prefillContent.guestcidraddress.value.length > 0) {
-            params.guestcidraddress = this.prefillContent.guestcidraddress.value
+          if (guestcidraddress != null && guestcidraddress.length > 0) {
+            params.guestcidraddress = guestcidraddress
           }
         } else {
           params.securitygroupenabled = true
         }
       }
       params.name = this.prefillContent.name.value
-      params.localstorageenabled = this.prefillContent.localstorageenabled.value
+      params.localstorageenabled = this.prefillContent.localstorageenabled ? this.prefillContent.localstorageenabled.value : false
       params.dns1 = this.prefillContent.ipv4Dns1.value
       params.dns2 = this.prefillContent.ipv4Dns2 ? this.prefillContent.ipv4Dns2.value : null
       params.ip6dns1 = this.prefillContent.ipv6Dns1 ? this.prefillContent.ipv6Dns1.value : null
@@ -269,11 +274,12 @@ export default {
       params.domain = this.prefillContent.networkDomain ? this.prefillContent.networkDomain.value : null
 
       try {
-        const zone = await this.createZone(params)
+        const args = {}
+        args.zoneReturned = await this.createZone(params)
         if (this.isDedicated) {
-          await this.stepDedicateZone(zone.id)
+          await this.stepDedicateZone(args.zoneReturned.id)
         }
-        await this.stepAddPhysicalNetworks(zone)
+        await this.stepAddPhysicalNetworks(args)
       } catch (e) {
         console.log(e)
       }
@@ -294,29 +300,32 @@ export default {
         this.setStepStatus(STATUS_FAILED)
       }
     },
-    async stepAddPhysicalNetworks (zone) {
+    async stepAddPhysicalNetworks (args) {
       console.log('stepAddPhysicalNetworks')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
       this.addStep('message.creating.physical.networks')
-      const args = {}
+
       const params = {}
-      args.zoneReturned = zone
-      params.zoneid = zone.zoneid
+      params.zoneid = args.zoneReturned.id
+
       if (this.isBasicZone) {
         let requestedTrafficTypeCount = 2
+
         if (this.havingSG && this.havingEIP && this.havingELB) {
           requestedTrafficTypeCount++
         }
+
         args.requestedTrafficTypeCount = requestedTrafficTypeCount
+        args.returnedTrafficTypes = []
+        args.physicalNetworkReturned = {}
+
         if (this.prefillContent.physicalNetworks && this.prefillContent.physicalNetworks.length > 0) {
           params.name = this.prefillContent.physicalNetworks[0].name
         } else {
           params.name = 'PhysicalNetworkInBasicZone'
         }
-        // create physical network
-        args.returnedTrafficTypes = []
-        args.physicalNetworkReturned = {}
+
         try {
           const physicalNetworkResult = await this.createPhysicalNetwork(params)
           args.physicalNetworkReturned = physicalNetworkResult.jobresult.physicalnetwork
@@ -355,19 +364,22 @@ export default {
             }
           }
         } catch (e) {
+          this.setStepStatus(STATUS_FAILED)
           console.log(e)
         }
       } else {
         args.physicalNetworksReturned = []
         args.returnedTrafficTypes = []
         args.physicalNetworkReturned = {}
+
         await this.prefillContent.physicalNetworks.map(async (physicalNetwork) => {
           params.name = physicalNetwork.name
           if (physicalNetwork.isolationMethod && physicalNetwork.isolationMethod.length > 0) {
             params.isolationmethods = physicalNetwork.isolationMethod
           }
           // create physical network
-          args.physicalNetworkReturned = await this.createPhysicalNetwork(params)
+          const physicalNetworkResult = await this.createPhysicalNetwork(params)
+          args.physicalNetworkReturned = physicalNetworkResult.jobresult.physicalnetwork
           physicalNetwork.traffics.map(async (traffic) => {
             let trafficResult = null
             if (traffic.type === 'public') {
@@ -380,10 +392,13 @@ export default {
               trafficResult = await this.addTrafficType('Storage', args)
             }
             args.returnedTrafficTypes.push(trafficResult.jobresult.traffictype)
-            if (args.returnedTrafficTypes.length === args.requestedTrafficTypeCount) {
+            if (args.returnedTrafficTypes.length === physicalNetwork.traffics.length) {
               args.physicalNetworkReturned.returnedTrafficTypes = args.returnedTrafficTypes
               args.physicalNetworksReturned.push(args.physicalNetworkReturned)
-              await this.stepConfigurePhysicalNetwork(args)
+
+              if (args.physicalNetworksReturned.length === this.prefillContent.physicalNetworks.length) {
+                await this.stepConfigurePhysicalNetwork(args)
+              }
             }
           })
         })
@@ -403,12 +418,12 @@ export default {
         try {
           await this.updatePhysicalNetwork(updPhysicalParams)
           const listNetworkParams = {}
-          listNetworkParams.state = 'Enabled'
-          listNetworkParams.id = args.physicalNetworkReturned.id
+          listNetworkParams.name = 'VirtualRouter'
+          listNetworkParams.physicalNetworkId = args.physicalNetworkReturned.id
           const virtualRouterProviderId = await this.listNetworkServiceProviders(listNetworkParams, 'virtualRouter')
           const virtualRouterElementId = await this.listVirtualRouterElements(virtualRouterProviderId)
           await this.configureVirtualRouterElement(virtualRouterElementId)
-          await this.updateNetworkServiceProvider(virtualRouterElementId)
+          await this.updateNetworkServiceProvider(virtualRouterProviderId)
 
           for (let i = 0; i < this.selectedBaremetalProviders.length; i++) {
             const listParams = {}
@@ -430,7 +445,7 @@ export default {
         }
       } else if (this.isAdvancedZone) {
         try {
-          await args.physicalNetworkReturned.map(async (physicalNetwork) => {
+          await args.physicalNetworksReturned.map(async (physicalNetwork) => {
             const updPhysicalParams = {}
             updPhysicalParams.state = 'Enabled'
             updPhysicalParams.id = physicalNetwork.id
@@ -444,7 +459,7 @@ export default {
             await this.configureVirtualRouterElement(virtualRouterElementId)
             await this.updateNetworkServiceProvider(virtualRouterProviderId)
             this.advZoneConfiguredVirtualRouterCount++
-            if (this.advZoneConfiguredVirtualRouterCount === args.physicalNetworkReturned.length) {
+            if (this.advZoneConfiguredVirtualRouterCount === args.physicalNetworksReturned.length) {
               if (this.sgEnabled) {
                 await this.stepAddPod(args)
               } else {
@@ -695,7 +710,7 @@ export default {
 
           const params = {}
           params.zoneId = args.zoneReturned.id
-          if (publicVlanIpRange.vlan !== null && publicVlanIpRange.vlan.length > 0) {
+          if (publicVlanIpRange.vlan && publicVlanIpRange.vlan.length > 0) {
             params.vlan = publicVlanIpRange.vlan
           } else {
             params.vlan = 'untagged'
@@ -1293,16 +1308,32 @@ export default {
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
     },
+    async pollJob (jobId) {
+      console.log('pollJob', jobId)
+
+      return new Promise(resolve => {
+        api('queryAsyncJobResult', { jobId }).then(async json => {
+          const result = json.queryasyncjobresultresponse
+          if (result.jobstatus === 0) {
+            await this.pollJob(jobId)
+            return
+          }
+
+          resolve(result)
+        })
+      })
+    },
     createZone (args) {
       return new Promise((resolve, reject) => {
-        // api('createZone', args)
-        // const zone = json.createzoneresponse.zone
-        setTimeout(() => {
-          const zone = {
-            id: 'Zone-id'
-          }
+        let message = ''
+
+        api('createZone', args).then(json => {
+          const zone = json.createzoneresponse.zone
           resolve(zone)
-        }, 1000)
+        }).catch(error => {
+          message = error.response.headers['x-description']
+          reject(message)
+        })
       })
     },
     dedicateZone () {
@@ -1311,92 +1342,79 @@ export default {
         resolve()
       })
     },
-    createPhysicalNetwork (args) {
+    async createPhysicalNetwork (args) {
       console.log('createPhysicalNetwork')
       return new Promise((resolve, reject) => {
         let message = ''
-        // api('createPhysicalNetwork', args)
-        // const jobId = json.createphysicalnetworkresponse.jobid
-        // this.$pollJob
-        // const result = result = json.queryasyncjobresultresponse
-        const result = {
-          jobstatus: 1,
-          jobresult: {
-            physicalnetwork: {
-              id: 'createPhysicalNetwork-id'
+
+        api('createPhysicalNetwork', args).then(async json => {
+          const jobId = json.createphysicalnetworkresponse.jobid
+          if (jobId) {
+            const result = await this.pollJob(jobId)
+            if (result.jobstatus === 2) {
+              this.setStepStatus(STATUS_FAILED)
+              message = 'createPhysicalNetwork failed. Error: ' + result.jobresult.errortext
+              reject(message)
+              return
             }
+            resolve(result)
           }
-        }
-        if (result.jobstatus === 0) {
+        }).catch(error => {
+          message = error.response.headers['x-description']
           reject(message)
-          return
-        }
-        if (result.jobstatus === 2) {
-          this.setStepStatus(STATUS_FAILED)
-          message = 'createPhysicalNetwork failed. Error: ' + result.jobresult.errortext
-          reject(message)
-          return
-        }
-        setTimeout(() => {
-          resolve(result)
-        }, 1000)
+        })
       })
     },
     addTrafficType (trafficType, args) {
       console.log('addTrafficType')
       const getTrafficParams = this.trafficLabelParam(trafficType.toLowerCase())
       let params = {}
+
       params.trafficType = trafficType
       params.physicalnetworkid = args.physicalNetworkReturned.id
       params = { ...params, ...getTrafficParams }
+
       return new Promise((resolve, reject) => {
         let message = ''
-        // const jobId = json.addtraffictyperesponse.jobid
-        // this.$pollJob
-        // const result = result = json.queryasyncjobresultresponse
-        const result = {
-          jobstatus: 1,
-          jobresult: {
-            traffictype: {}
+
+        api('addTrafficType', params).then(async json => {
+          const jobId = json.addtraffictyperesponse.jobid
+          if (jobId) {
+            const result = await this.pollJob(jobId)
+            if (result.jobstatus === 2) {
+              this.setStepStatus(STATUS_FAILED)
+              message = 'Failed to add ' + trafficType + ' traffic type to basic zone. Error: ' + result.jobresult.errortext
+              reject(message)
+              return
+            }
+            resolve(result)
           }
-        }
-        if (result.jobstatus === 0) {
+        }).catch(error => {
+          message = error.response.headers['x-description']
           reject(message)
-          return
-        }
-        if (result.jobstatus === 2) {
-          message = 'Failed to add ' + trafficType + ' traffic type to basic zone. Error: ' + result.jobresult.errortext
-          reject(message)
-          return
-        }
-        setTimeout(() => {
-          resolve(result)
-        }, 1000)
+        })
       })
     },
     updatePhysicalNetwork (args) {
       console.log('updatePhysicalNetwork')
       return new Promise((resolve, reject) => {
         let message = ''
-        // updatePhysicalNetwork
-        // this.$poll
-        // const result = json.queryasyncjobresultresponse
-        const result = {
-          jobstatus: 1
-        }
-        if (result.jobstatus === 0) {
-          reject(message)
-          return
-        }
-        if (result.jobstatus === 2) {
-          message = 'updatePhysicalNetwork failed. Error:' + result.jobresult.errortext
-          reject(message)
-          return
-        }
 
-        setTimeout(() => {
-          resolve(result)
-        }, 1000)
+        api('updatePhysicalNetwork', args).then(async json => {
+          const jobId = json.updatephysicalnetworkresponse.jobid
+          if (jobId) {
+            const result = await this.pollJob(jobId)
+            if (result.jobstatus === 2) {
+              message = 'updatePhysicalNetwork failed. Error:' + result.jobresult.errortext
+              reject(message)
+              return
+            }
+            resolve(result)
+          }
+        }).catch(error => {
+          message = error.response.headers['x-description']
+          reject(message)
+        })
       })
     },
     listNetworkServiceProviders (params, type) {
@@ -1404,35 +1422,35 @@ export default {
       return new Promise((resolve, reject) => {
         let providerId = null
         let message = ''
-        // listNetworkServiceProviders
-        // const items = json.listnetworkserviceprovidersresponse.networkserviceprovider
-        const items = [
-          {
-            id: 'abc'
+
+        api('listNetworkServiceProviders', params).then(json => {
+          const items = json.listnetworkserviceprovidersresponse.networkserviceprovider
+          if (items != null && items.length > 0) {
+            providerId = items[0].id
           }
-        ]
-        if (items != null && items.length > 0) {
-          providerId = items[0].id
-        }
-        if (providerId == null) {
-          switch (type) {
-            case 'virtualRouter':
-              message = 'error: listNetworkServiceProviders API doesn\'t return VirtualRouter provider ID'
-              break
-            case 'baremetalProvider':
-              message = 'error: listNetworkServiceProviders API doesn\'t return Baremetal provider ID'
-              break
-            case 'ovsProvider':
-              message = 'error: listNetworkServiceProviders API doesn\'t return Ovs provider ID'
-              break
-            default:
-              message = 'error: listNetworkServiceProviders API doesn\'t return VirtualRouter provider ID'
-              break
+          if (providerId == null) {
+            switch (type) {
+              case 'virtualRouter':
+                message = 'error: listNetworkServiceProviders API doesn\'t return VirtualRouter provider ID'
+                break
+              case 'baremetalProvider':
+                message = 'error: listNetworkServiceProviders API doesn\'t return Baremetal provider ID'
+                break
+              case 'ovsProvider':
+                message = 'error: listNetworkServiceProviders API doesn\'t return Ovs provider ID'
+                break
+              default:
+                message = 'error: listNetworkServiceProviders API doesn\'t return VirtualRouter provider ID'
+                break
+            }
+            reject(message)
+            return
           }
+          resolve(providerId)
+        }).catch(error => {
+          message = error.response.headers['x-description']
           reject(message)
-          return
-        }
-        resolve(providerId)
+        })
       })
     },
     listVirtualRouterElements (virtualRouterProviderId) {
@@ -1440,18 +1458,22 @@ export default {
       return new Promise((resolve, reject) => {
         let virtualRouterElementId = null
         let message = ''
-        // api('listVirtualRouterElements', {nspid: virtualRouterProviderId})
-        // const items = json.listvirtualrouterelementsresponse.virtualrouterelement
-        const items = [{ id: 'abc' }]
-        if (items != null && items.length > 0) {
-          virtualRouterElementId = items[0].id
-        }
-        if (virtualRouterElementId === null) {
-          message = 'error: listVirtualRouterElements API doesn\'t return Virtual Router Element Id'
+
+        api('listVirtualRouterElements', { nspid: virtualRouterProviderId }).then(json => {
+          const items = json.listvirtualrouterelementsresponse.virtualrouterelement
+          if (items != null && items.length > 0) {
+            virtualRouterElementId = items[0].id
+          }
+          if (virtualRouterElementId === null) {
+            message = 'error: listVirtualRouterElements API doesn\'t return Virtual Router Element Id'
+            reject(message)
+            return
+          }
+          resolve(virtualRouterElementId)
+        }).catch(error => {
+          message = error.response.headers['x-description']
           reject(message)
-          return
-        }
-        resolve(virtualRouterElementId)
+        })
       })
     },
     configureVirtualRouterElement (virtualRouterElementId) {
@@ -1462,22 +1484,21 @@ export default {
         params.enabled = true
         params.id = virtualRouterElementId
 
-        // api('configureVirtualRouterElement', params)
-        // this.$poll
-        // const result = json.queryasyncjobresultresponse
-        const result = {
-          jobstatus: 1
-        }
-        if (result.jobstatus === 0) {
+        api('configureVirtualRouterElement', params).then(async json => {
+          const jobId = json.configurevirtualrouterelementresponse.jobid
+          if (jobId) {
+            const result = await this.pollJob(jobId)
+            if (result.jobstatus === 2) {
+              message = 'configureVirtualRouterElement failed. Error: ' + result.jobresult.errortext
+              reject(message)
+              return
+            }
+            resolve(result)
+          }
+        }).catch(error => {
+          message = error.response.headers['x-description']
           reject(message)
-          return
-        }
-        if (result.jobstatus === 2) {
-          message = 'configureVirtualRouterElement failed. Error: ' + result.jobresult.errortext
-          reject(message)
-          return
-        }
-        resolve(result)
+        })
       })
     },
     updateNetworkServiceProvider (providerId, type) {
@@ -1485,324 +1506,318 @@ export default {
       return new Promise((resolve, reject) => {
         let message = ''
         const params = {}
+
         params.id = providerId
         params.state = 'Enabled'
-        // api('updateNetworkServiceProvider', params)
-        // this.$poll
-        // const result = json.queryasyncjobresultresponse
-        const result = {
-          jobstatus: 1
-        }
-        if (result.jobstatus === 0) {
-          reject(message)
-          return
-        }
-        if (result.jobstatus === 2) {
-          message = 'updateNetworkServiceProvider failed. Error: '
-          switch (type) {
-            case 'netscalerProvider':
-              message = 'failed to enable Netscaler provider. Error: '
-              break
-            case 'enableSecurityGroupProvider':
-              message = 'failed to enable security group provider. Error: '
-              break
+
+        api('updateNetworkServiceProvider', params).then(async json => {
+          const jobId = json.updatenetworkserviceproviderresponse.jobid
+          if (jobId) {
+            const result = await this.pollJob(jobId)
+            if (result.jobstatus === 2) {
+              message = 'updateNetworkServiceProvider failed. Error: '
+              switch (type) {
+                case 'netscalerProvider':
+                  message = 'failed to enable Netscaler provider. Error: '
+                  break
+                case 'enableSecurityGroupProvider':
+                  message = 'failed to enable security group provider. Error: '
+                  break
+              }
+              message += result.jobresult.errortext
+              reject(message)
+              return
+            }
+            resolve(result)
           }
-          message += result.jobresult.errortext
+        }).catch(error => {
+          message = error.response.headers['x-description']
           reject(message)
-          return
-        }
-        setTimeout(() => {
-          resolve(result)
-        }, 1000)
+        })
       })
     },
     listOvsElements (ovsProviderId) {
       console.log('listOvsElements')
       return new Promise((resolve, reject) => {
+        let message = ''
         let ovsElementId = null
-        // api('listOvsElements', { nspid: ovsProviderId })
-        // const items = json.listovselementsresponse.ovselement
-        const item = [
-          {
-            id: 'abc'
+
+        api('listOvsElements', { nspid: ovsProviderId }).then(json => {
+          const items = json.listovselementsresponse.ovselement
+          if (items != null && items.length > 0) {
+            ovsElementId = items[0].id
           }
-        ]
-        if (item !== null && item.length > 0) {
-          ovsElementId = item[0].id
-        }
-        resolve(ovsElementId)
+          resolve(ovsElementId)
+        }).catch(error => {
+          message = error.response.headers['x-description']
+          reject(message)
+        })
       })
     },
     configureOvsElement (ovsElementId) {
       console.log('configureOvsElement')
       return new Promise((resolve, reject) => {
         let message = ''
-        // api('configureOvsElement', { enabled: true, id: ovsElementId })
-        // this.$poll
-        // const result = json.queryasyncjobresultresponse
-        const result = {
-          jobstatus: 1
-        }
-        if (result.jobstatus === 0) {
+
+        api('configureOvsElement', { enabled: true, id: ovsElementId }).then(async json => {
+          const jobId = json.configureovselementresponse.jobid
+          if (jobId) {
+            const result = await this.pollJob(jobId)
+            if (result.jobstatus === 2) {
+              message = 'configureOvsElement failed. Error: ' + result.jobresult.errortext
+              reject(message)
+              return
+            }
+            resolve(result)
+          }
+        }).catch(error => {
+          message = error.response.headers['x-description']
           reject(message)
-          return
-        }
-        if (result.jobstatus === 2) {
-          message = 'configureOvsElement failed. Error: ' + result.jobresult.errortext
-          reject(message)
-          return
-        }
-        resolve(result)
+        })
       })
     },
-
     listInternalLoadBalancerElements (internalLbProviderId) {
       console.log('listInternalLoadBalancerElements')
       return new Promise((resolve, reject) => {
         let internalLbElementId = null
         let message = ''
-        // api('listInternalLoadBalancerElements', { nspid: internalLbProviderId })
-        // const items = json.listinternalloadbalancerelementsresponse.internalloadbalancerelement
-        const item = [
-          {
-            id: 'abc'
+
+        api('listInternalLoadBalancerElements', { nspid: internalLbProviderId }).then(json => {
+          const items = json.listinternalloadbalancerelementsresponse.internalloadbalancerelement
+          if (items != null && items.length > 0) {
+            internalLbElementId = items[0].id
           }
-        ]
-        if (item != null && item.length > 0) {
-          internalLbElementId = item[0].id
-        }
-        if (internalLbElementId == null) {
-          message = 'error: listInternalLoadBalancerElements API doesn\'t return Internal LB Element Id'
+          if (internalLbElementId == null) {
+            message = 'error: listInternalLoadBalancerElements API doesn\'t return Internal LB Element Id'
+            reject(message)
+            return
+          }
+          resolve(internalLbElementId)
+        }).catch(error => {
+          message = error.response.headers['x-description']
           reject(message)
-          return
-        }
-        resolve(item)
+        })
       })
     },
     configureInternalLoadBalancerElement (internalLbElementId) {
       console.log('configureInternalLoadBalancerElement')
       return new Promise((resolve, reject) => {
         let message = ''
-        // api('configureInternalLoadBalancerElement', { enabled: true, id: internalLbElementId })
-        // const jobId = json.configureinternalloadbalancerelementresponse.jobid
-        // this.$poll
-        // const result = json.queryasyncjobresultresponse
-        const result = {
-          jobstatus: 1
-        }
-        if (result.jobstatus === 0) {
+        api('configureInternalLoadBalancerElement', { enabled: true, id: internalLbElementId }).then(async json => {
+          const jobId = json.configureinternalloadbalancerelementresponse.jobid
+          if (jobId) {
+            const result = await this.pollJob(jobId)
+            if (result.jobstatus === 2) {
+              message = 'configureVirtualRouterElement failed. Error: ' + result.jobresult.errortext
+              reject(message)
+              return
+            }
+            resolve(result)
+          }
+        }).catch(error => {
+          message = error.response.headers['x-description']
           reject(message)
-          return
-        }
-        if (result.jobstatus === 2) {
-          message = 'configureVirtualRouterElement failed. Error: ' + result.jobresult.errortext
-          reject(message)
-          return
-        }
-        resolve(result)
+        })
       })
     },
     addNetworkServiceProvider (arg) {
       console.log('addNetworkServiceProvider')
       return new Promise((resolve, reject) => {
         let message = ''
-        // api('addNetworkServiceProvider', arg)
-        // const jobId = json.addnetworkserviceproviderresponse.jobid
-        // this.$poll
-        // const result = json.queryasyncjobresultresponse
-        const result = {
-          jobstatus: 1,
-          jobresult: {
-            networkserviceprovider: {
-              id: 'addNetworkServiceProvider-ID'
+
+        api('addNetworkServiceProvider', arg).then(async json => {
+          const jobId = json.addnetworkserviceproviderresponse.jobid
+          if (jobId) {
+            const result = await this.pollJob(jobId)
+            if (result.jobstatus === 2) {
+              message = 'addNetworkServiceProvider&name=Netscaler failed. Error: ' + result.jobresult.errortext
+              reject(message)
+              return
             }
+            resolve(result)
           }
-        }
-        if (result.jobstatus === 0) {
+        }).catch(error => {
+          message = error.response.headers['x-description']
           reject(message)
-          return
-        }
-        if (result.jobstatus === 2) {
-          message = 'addNetworkServiceProvider&name=Netscaler failed. Error: ' + result.jobresult.errortext
-          reject(message)
-          return
-        }
-        resolve(result)
+        })
       })
     },
     createNetwork (args) {
       console.log('createNetwork')
       return new Promise((resolve, reject) => {
-        // api('createNetwork', args)
-        // const returnedGuestNetwork = json.createnetworkresponse.network
-        const returnedGuestNetwork = {
-          id: 'Network-id'
-        }
+        let message = ''
 
-        setTimeout(() => {
+        api('createNetwork', args).then(json => {
+          const returnedGuestNetwork = json.createnetworkresponse.network
           resolve(returnedGuestNetwork)
-        }, 1000)
+        }).catch(error => {
+          message = error.response.headers['x-description']
+          reject(message)
+        })
       })
     },
     createPod (args) {
       console.log('createPod')
       return new Promise((resolve, reject) => {
-        // api('createPod', args)
-        // const returnedPod = json.createpodresponse.pod
-        const returnedPod = {
-          id: 'Pod-id'
-        }
+        let message = ''
 
-        setTimeout(() => {
+        api('createPod', args).then(json => {
+          const returnedPod = json.createpodresponse.pod
           resolve(returnedPod)
-        }, 1000)
+        }).catch(error => {
+          message = error.response.headers['x-description']
+          reject(message)
+        })
       })
     },
     createVlanIpRange (args) {
       console.log('createVlanIpRange')
       return new Promise((resolve, reject) => {
-        // api('createVlanIpRange', args)
-        // const item = json.createvlaniprangeresponse.vlan
-        const item = {
-          id: 'VlanIP-id'
-        }
+        let message = ''
 
-        setTimeout(() => {
+        api('createVlanIpRange', args).then(json => {
+          const item = json.createvlaniprangeresponse.vlan
           resolve(item)
-        }, 1000)
+        }).catch(error => {
+          message = error.response.headers['x-description']
+          reject(message)
+        })
       })
     },
     createStorageNetworkIpRange (args) {
       console.log('createStorageNetworkIpRange')
       return new Promise((resolve, reject) => {
-        // api('createStorageNetworkIpRange', args)
-        // const jobId = json.createstoragenetworkiprangeresponse.jobid
-        const jobId = 'createStorageNetworkIpRange-job-id'
+        let message = ''
 
-        setTimeout(() => {
+        api('createStorageNetworkIpRange', args).then(async json => {
+          const jobId = json.createstoragenetworkiprangeresponse.jobid
           resolve({
             jobid: jobId,
             complete: true
           })
-        }, 1000)
+        }).catch(error => {
+          message = error.response.headers['x-description']
+          reject(message)
+        })
       })
     },
     addVmwareDc (args) {
       console.log('addVmwareDc')
       return new Promise((resolve, reject) => {
-        // api('addVmwareDc', args, 'POST')
-        // const item = json.addvmwaredcresponse.vmwaredc
-        const item = {
-          id: 'addVmwareDc-id'
-        }
+        let message = ''
 
-        setTimeout(() => {
+        api('addVmwareDc', args, 'POST').then(json => {
+          const item = json.addvmwaredcresponse.vmwaredc
           resolve(item)
-        }, 1000)
+        }).catch(error => {
+          message = error.response.headers['x-description']
+          reject(message)
+        })
       })
     },
     addCluster (args) {
       console.log('addCluster')
       return new Promise((resolve, reject) => {
-        // api('addCluster', args)
-        // const result = json.addclusterresponse.cluster[0]
-        const result = {
-          id: 'addCluster-id',
-          hypervisortype: '',
-          clustertype: ''
-        }
+        let message = ''
 
-        setTimeout(() => {
+        api('addCluster', args).then(json => {
+          const result = json.addclusterresponse.cluster[0]
           resolve(result)
-        }, 1000)
+        }).catch(error => {
+          message = error.response.headers['x-description']
+          reject(message)
+        })
       })
     },
     addHost (args) {
       console.log('addHost')
       return new Promise((resolve, reject) => {
-        // api('addHost', args)
-        // const result = json.addhostresponse.host[0]
-        const result = {
-          id: 'addHost-id'
-        }
+        let message = ''
 
-        setTimeout(() => {
+        api('addHost', args).then(json => {
+          const result = json.addhostresponse.host[0]
           resolve(result)
-        }, 1000)
+        }).catch(error => {
+          message = error.response.headers['x-description']
+          reject(message)
+        })
       })
     },
     updateConfiguration (args) {
       console.log('updateConfiguration')
       return new Promise((resolve, reject) => {
-        // api('updateConfiguration', args)
-        // const result = {}
-        const result = {}
+        let message = ''
 
-        setTimeout(() => {
-          resolve(result)
-        }, 1000)
+        api('updateConfiguration', args).then(json => {
+          resolve()
+        }).catch(error => {
+          message = error.response.headers['x-description']
+          reject(message)
+        })
       })
     },
     createStoragePool (args) {
       console.log('createStoragePool')
       return new Promise((resolve, reject) => {
-        // api('createStoragePool', args)
-        // const result = json.createstoragepoolresponse.storagepool
-        const result = {}
+        let message = ''
 
-        setTimeout(() => {
+        api('createStoragePool', args).then(json => {
+          const result = json.createstoragepoolresponse.storagepool
           resolve(result)
-        }, 1000)
+        }).catch(error => {
+          message = error.response.headers['x-description']
+          reject(message)
+        })
       })
     },
     addImageStore (args) {
       console.log('addImageStore')
       return new Promise((resolve, reject) => {
-        // api('addImageStore', args)
-        // const result = json.addimagestoreresponse.secondarystorage
-        const result = {}
+        let message = ''
 
-        setTimeout(() => {
+        api('addImageStore', args).then(json => {
+          const result = json.addimagestoreresponse.secondarystorage
           resolve(result)
-        }, 1000)
+        }).catch(error => {
+          message = error.response.headers['x-description']
+          reject(message)
+        })
       })
     },
     createSecondaryStagingStore (args) {
       console.log('createSecondaryStagingStore')
       return new Promise((resolve, reject) => {
-        // api('createSecondaryStagingStore', args)
-        // const result = json.addimagestoreresponse.secondarystorage
-        const result = {}
+        let message = ''
 
-        setTimeout(() => {
+        api('createSecondaryStagingStore', args).then(json => {
+          const result = json.addimagestoreresponse.secondarystorage
           resolve(result)
-        }, 1000)
+        }).catch(error => {
+          message = error.response.headers['x-description']
+          reject(message)
+        })
       })
     },
     addNetscalerLoadBalancer (args) {
       console.log('addNetscalerLoadBalancer')
       return new Promise((resolve, reject) => {
         let message = ''
-        // api('addNetscalerLoadBalancer', args, 'POST')
-        // const jobId = json.addnetscalerloadbalancerresponse.jobid
-        // this.$pollAction
-        // const result = json.queryasyncjobresultresponse
-        const result = {
-          jobstatus: 1,
-          jobresult: {
-            netscalerloadbalancer: {}
+
+        api('addNetscalerLoadBalancer', args, 'POST').then(async json => {
+          const jobId = json.addnetscalerloadbalancerresponse.jobid
+          if (jobId) {
+            const result = await this.pollJob(jobId)
+            if (result.jobstatus === 2) {
+              message = 'addNetscalerDevice' + result.jobresult.errortext
+              reject(message)
+              return
+            }
+            resolve(result)
           }
-        }
-        if (result.jobstatus === 0) {
+        }).catch(error => {
+          message = error.response.headers['x-description']
           reject(message)
-          return
-        }
-        if (result.jobstatus === 2) {
-          message = 'addNetscalerDevice' + result.jobresult.errortext
-          reject(message)
-          return
-        }
-        resolve(result)
+        })
       })
     },
     nfsURL (server, path) {
