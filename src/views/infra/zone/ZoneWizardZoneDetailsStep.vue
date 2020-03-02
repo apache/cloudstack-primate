@@ -279,7 +279,7 @@ export default {
     this.networkOfferings = this.prefillContent.networkOfferings ? this.prefillContent.networkOfferings : null
     this.form = this.$form.createForm(this, {
       onFieldsChange: (_, changedFields) => {
-        if (changedFields.networkOfferingId) {
+        if (changedFields.networkOfferingId && this.prefillContent.networkOfferingSelected) {
           if (this.prefillContent.networkOfferingSelected.id !== changedFields.networkOfferingId.value) {
             changedFields.physicalNetworks = []
           }

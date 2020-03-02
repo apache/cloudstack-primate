@@ -55,9 +55,11 @@
         @fieldsChanged="onFieldsChanged"
         :prefillContent="zoneConfig"
       />
-      <div v-else>
-        {{ steps[currentStep].description }}
-      </div>
+      <zone-wizard-launch-zone
+        v-else
+        @backPressed="backPressed"
+        :prefillContent="zoneConfig"
+      />
     </div>
   </div>
 </template>
@@ -66,13 +68,15 @@ import ZoneWizardZoneTypeStep from '@views/infra/zone/ZoneWizardZoneTypeStep'
 import ZoneWizardZoneDetailsStep from '@views/infra/zone/ZoneWizardZoneDetailsStep'
 import ZoneWizardNetworkSetupStep from '@views/infra/zone/ZoneWizardNetworkSetupStep'
 import AddResourcesWizard from '@views/infra/zone/AddResourcesWizard'
+import ZoneWizardLaunchZone from '@views/infra/zone/ZoneWizardLaunchZone'
 
 export default {
   components: {
     ZoneWizardZoneTypeStep,
     ZoneWizardZoneDetailsStep,
     ZoneWizardNetworkSetupStep,
-    AddResourcesWizard
+    AddResourcesWizard,
+    ZoneWizardLaunchZone
   },
   data () {
     return {
@@ -101,7 +105,7 @@ export default {
         },
         {
           title: 'Launch',
-          description: 'Setup network and traffic',
+          description: 'Zone is ready to launch; please proceed to the next step.',
           hint: 'Configure network components and traffic including IP addresses.'
         }
       ],

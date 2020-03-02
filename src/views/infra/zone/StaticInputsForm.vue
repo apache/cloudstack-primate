@@ -57,7 +57,7 @@
         <a-switch
           v-else-if="field.switch"
           v-decorator="[field.key]"
-          :checked="isChecked(field)"
+          :default-checked="isChecked(field)"
         />
         <a-input
           v-else-if="field.password"
