@@ -237,7 +237,10 @@
       </a-form-item>
     </a-form>
     <div class="form-action">
-      <a-button @click="handleBack" class="button-back">
+      <a-button
+        @click="handleBack"
+        class="button-back"
+        v-if="!isFixError">
         Back
       </a-button>
       <a-button type="primary" @click="handleSubmit" class="button-next">
@@ -258,6 +261,10 @@ export default {
       default: function () {
         return {}
       }
+    },
+    isFixError: {
+      type: Boolean,
+      default: false
     }
   },
   data: () => ({

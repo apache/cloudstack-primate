@@ -39,6 +39,8 @@
         @nextPressed="nextPressed"
         @backPressed="backPressed"
         @fieldsChanged="onFieldsChanged"
+        @submitLaunchZone="onLaunchZone"
+        :isFixError="stepFixError"
         :prefillContent="zoneConfig"
       />
       <zone-wizard-network-setup-step
@@ -46,6 +48,8 @@
         @nextPressed="nextPressed"
         @backPressed="backPressed"
         @fieldsChanged="onFieldsChanged"
+        @submitLaunchZone="onLaunchZone"
+        :isFixError="stepFixError"
         :prefillContent="zoneConfig"
       />
       <add-resources-wizard
@@ -53,11 +57,18 @@
         @nextPressed="nextPressed"
         @backPressed="backPressed"
         @fieldsChanged="onFieldsChanged"
+        @submitLaunchZone="onLaunchZone"
+        :isFixError="stepFixError"
         :prefillContent="zoneConfig"
       />
       <zone-wizard-launch-zone
         v-else
         @backPressed="backPressed"
+        @closeAction="onCloseAction"
+        @stepError="onStepError"
+        :launchZone="launchZone"
+        :launchData="launchData"
+        :isFixError="stepFixError"
         :prefillContent="zoneConfig"
       />
     </div>
@@ -81,6 +92,9 @@ export default {
   data () {
     return {
       currentStep: 0,
+      stepFixError: false,
+      launchZone: false,
+      launchData: {},
       api: 'createZone',
       steps: [
         {
@@ -90,11 +104,13 @@ export default {
         },
         {
           title: 'Zone details',
+          step: 'stepAddZone',
           description: 'Populate zone details',
           hint: 'A zone is the largest organizational unit in CloudStack, and it typically corresponds to a single datacenter. Zones provide physical isolation and redundancy. A zone consists of one or more pods (each of which contains hosts and primary storage servers) and a secondary storage server which is shared by all pods in the zone.'
         },
         {
           title: 'Network',
+          step: 'stepAddPhysicalNetworks',
           description: 'Setup network and traffic',
           hint: 'Configure network components and public/guest/management traffic including IP addresses.'
         },
@@ -105,6 +121,7 @@ export default {
         },
         {
           title: 'Launch',
+          step: 'stepLaunchZone',
           description: 'Zone is ready to launch; please proceed to the next step.',
           hint: 'Configure network components and traffic including IP addresses.'
         }
@@ -113,9 +130,6 @@ export default {
     }
   },
   methods: {
-    stepClicked (stepNum) {
-      this.currentStep = stepNum
-    },
     nextPressed () {
       this.currentStep++
     },
@@ -134,8 +148,30 @@ export default {
         data.zoneType.value !== this.zoneConfig.zoneType.value) {
         this.zoneConfig.physicalNetworks = null
       }
+
       this.zoneConfig = { ...this.zoneConfig, ...data }
-      console.log(data)
+      console.log('zoneConfig', this.zoneConfig)
+    },
+    onCloseAction () {
+      this.$emit('close-action')
+    },
+    onStepError (step, launchData) {
+      switch (step) {
+        case 'stepAddZone':
+          this.currentStep = this.steps.findIndex(item => item.step === step)
+          break
+        case 'stepAddPhysicalNetworks':
+          this.currentStep = this.steps.findIndex(item => item.step === step)
+          break
+      }
+      this.launchData = launchData
+      this.launchZone = false
+      this.stepFixError = true
+    },
+    onLaunchZone () {
+      this.stepFixError = false
+      this.launchZone = true
+      this.currentStep = this.steps.findIndex(item => item.step === 'stepLaunchZone')
     }
   }
 }
