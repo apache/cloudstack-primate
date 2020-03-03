@@ -376,37 +376,31 @@ export default {
           // createPhysicalNetwork
           const physicalNetworkResult = await this.createPhysicalNetwork(params)
           this.stepData.physicalNetworkReturned = physicalNetworkResult.jobresult.physicalnetwork
-          this.stepData.proccessIndex++
 
           // addTrafficType Guest
           const guestTrafficResult = await this.addTrafficType('Guest')
           this.stepData.returnedTrafficTypes.push(guestTrafficResult.jobresult.traffictype)
-          this.stepData.proccessIndex++
 
           // addTrafficType Management
           const managementTrafficResult = await this.addTrafficType('Management')
           this.stepData.returnedTrafficTypes.push(managementTrafficResult.jobresult.traffictype)
-          this.stepData.proccessIndex++
 
           // addTrafficType Storage
           const storageEx = this.prefillContent.physicalNetworks[0].traffics.filter(traffic => traffic.type === 'storage')
           if (storageEx && storageEx.length > 0) {
             const storageTrafficResult = await this.addTrafficType('Storage')
             this.stepData.returnedTrafficTypes.push(storageTrafficResult.jobresult.traffictype)
-            this.stepData.proccessIndex++
           }
 
           // addTrafficType Public
           if (this.havingSG && this.havingEIP && this.havingELB) {
             const publicTrafficResult = await this.addTrafficType('Public')
             this.stepData.returnedTrafficTypes.push(publicTrafficResult.jobresult.traffictype)
-            this.stepData.proccessIndex++
           }
 
           if (this.stepData.returnedTrafficTypes.length === requestedTrafficTypeCount) {
             this.stepData.physicalNetworkReturned.returnedTrafficTypes = this.stepData.returnedTrafficTypes
             await this.stepConfigurePhysicalNetwork()
-            this.stepData.proccessIndex++
           }
         } catch (e) {
           this.messageError = e
