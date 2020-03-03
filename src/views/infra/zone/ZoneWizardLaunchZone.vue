@@ -364,6 +364,7 @@ export default {
 
         this.stepData.requestedTrafficTypeCount = requestedTrafficTypeCount
         this.stepData.returnedTrafficTypes = []
+        this.stepData.trafficType = []
         this.stepData.physicalNetworkReturned = {}
 
         if (this.prefillContent.physicalNetworks && this.prefillContent.physicalNetworks.length > 0) {
@@ -409,10 +410,9 @@ export default {
         }
       } else {
         this.stepData.physicalNetworksReturned = []
-        this.stepData.returnedTrafficTypes = []
         this.stepData.physicalNetworkReturned = {}
 
-        this.prefillContent.physicalNetworks.each(async (index, physicalNetwork) => {
+        this.prefillContent.physicalNetworks.map(async (physicalNetwork, index) => {
           params.name = physicalNetwork.name
 
           if (physicalNetwork.isolationMethod && physicalNetwork.isolationMethod.length > 0) {
@@ -429,7 +429,9 @@ export default {
             return false
           }
 
-          physicalNetwork.traffics.each(async (key, traffic) => {
+          const returnedTrafficTypes = []
+
+          physicalNetwork.traffics.map(async (traffic, key) => {
             let trafficResult = null
 
             try {
@@ -443,7 +445,7 @@ export default {
                 trafficResult = await this.addTrafficType('Storage')
               }
 
-              this.stepData.returnedTrafficTypes.push(trafficResult.jobresult.traffictype)
+              returnedTrafficTypes.push(trafficResult.jobresult.traffictype)
             } catch (e) {
               this.messageError = e
               this.processStatus = STATUS_FAILED
@@ -451,8 +453,8 @@ export default {
               return false
             }
 
-            if (this.stepData.returnedTrafficTypes.length === physicalNetwork.traffics.length) {
-              this.stepData.physicalNetworkReturned.returnedTrafficTypes = this.stepData.returnedTrafficTypes
+            if (returnedTrafficTypes.length === physicalNetwork.traffics.length) {
+              this.stepData.physicalNetworkReturned.returnedTrafficTypes = returnedTrafficTypes
               this.stepData.physicalNetworksReturned.push(this.stepData.physicalNetworkReturned)
 
               if (this.stepData.physicalNetworksReturned.length === this.prefillContent.physicalNetworks.length) {
@@ -1410,7 +1412,6 @@ export default {
         const asyncJobInterval = setInterval(() => {
           api('queryAsyncJobResult', { jobId }).then(async json => {
             const result = json.queryasyncjobresultresponse
-            console.log('jobResult', result)
             if (result.jobstatus === 0) {
               return
             }
