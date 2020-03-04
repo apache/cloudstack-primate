@@ -18,36 +18,36 @@
 <template>
   <div class="form-layout">
     <a-form :form="form" layout="vertical">
-      <a-form-item :label="$t('Offering')">
+      <a-form-item :label="$t('diskoffering')" v-if="resource.type !== 'ROOT'">
         <a-select
           v-decorator="['diskofferingid', {
-            initialValue: selectedDiskOffering,
+            initialValue: selectedDiskOfferingId,
             rules: [{ required: true, message: 'Please select an option' }]}]"
           :loading="loading"
           :placeholder="$t('Offering Type')"
-          @change="val => isCustomDiskOffering = val == customDiskOfferingId"
+          @change="id => (customDiskOffering = offerings.filter(x => x.id === id)[0].iscustomized || false)"
         >
           <a-select-option
-            v-for="(diskOffering, index) in diskOfferings"
-            :value="diskOffering.id"
+            v-for="(offering, index) in offerings"
+            :value="offering.id"
             :key="index"
-          >{{ diskOffering.displaytext }}</a-select-option>
+          >{{ offering.displaytext || offering.name }}</a-select-option>
         </a-select>
       </a-form-item>
-      <div v-if="isCustomDiskOffering">
+      <div v-if="customDiskOffering || resource.type === 'ROOT'">
         <a-form-item :label="$t('Size (GB)')">
           <a-input
             v-decorator="['size', {
-              rules: [{ required: true, message: 'Please enter a number' }]}]"
+              rules: [{ required: true, message: 'Please enter size in GB' }]}]"
             :placeholder="$t('Enter Size')"/>
         </a-form-item>
-        <a-form-item :label="$t('shrinkok')">
-          <a-checkbox v-decorator="['shrinkok']"> {{ $t('shrinkok') }} </a-checkbox>
-        </a-form-item>
       </div>
+      <a-form-item :label="$t('shrinkok')">
+        <a-checkbox v-decorator="['shrinkok']" />
+      </a-form-item>
       <div :span="24" class="action-button">
-        <a-button @click="closeModal">{{ $t('Cancel') }}</a-button>
-        <a-button :loading="loading" type="primary" @click="handleSubmit">{{ $t('OK') }}</a-button>
+        <a-button @click="closeModal">{{ $t('cancel') }}</a-button>
+        <a-button :loading="loading" type="primary" @click="handleSubmit">{{ $t('ok') }}</a-button>
       </div>
     </a-form>
   </div>
@@ -65,10 +65,9 @@ export default {
   },
   data () {
     return {
-      diskOfferings: [],
-      selectedDiskOffering: '',
-      customDiskOfferingId: null,
-      isCustomDiskOffering: false,
+      offerings: [],
+      selectedDiskOfferingId: '',
+      customDiskOffering: false,
       loading: false
     }
   },
@@ -81,15 +80,13 @@ export default {
   methods: {
     fetchData () {
       this.loading = true
-      api('listDiskOfferings').then(json => {
-        this.diskOfferings = json.listdiskofferingsresponse.diskoffering || []
-        this.selectedDiskOffering = this.diskOfferings[0].id || ''
-        for (var diskOffering of this.diskOfferings) {
-          if (diskOffering.name === 'Custom') {
-            this.customDiskOfferingId = diskOffering.id
-            break
-          }
-        }
+      api('listDiskOfferings', {
+        zoneid: this.resource.zoneid,
+        listall: true
+      }).then(json => {
+        this.offerings = json.listdiskofferingsresponse.diskoffering || []
+        this.selectedDiskOfferingId = this.offerings[0].id || ''
+        this.customDiskOffering = this.offerings[0].iscustomized || false
       }).finally(() => {
         this.loading = false
       })
@@ -127,7 +124,8 @@ export default {
         }).catch(error => {
           this.$notification.error({
             message: `Error ${error.response.status}`,
-            description: error.response.data.errorresponse.errortext
+            description: error.response.data.errorresponse.errortext,
+            duration: 0
           })
         }).finally(() => {
           this.loading = false

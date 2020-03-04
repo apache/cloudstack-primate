@@ -110,7 +110,8 @@ export default {
     fetchDiskOfferings (zoneId) {
       this.loading = true
       api('listDiskOfferings', {
-        zoneId: zoneId
+        zoneid: zoneId,
+        listall: true
       }).then(json => {
         this.offerings = json.listdiskofferingsresponse.diskoffering || []
         this.selectedDiskOfferingId = this.offerings[0].id || ''
