@@ -67,7 +67,10 @@
       </a-form-item>
     </a-form>
     <div class="form-action">
-      <a-button class="button-prev" @click="handleBack">
+      <a-button
+        v-if="!isFixError"
+        class="button-prev"
+        @click="handleBack">
         Back
       </a-button>
       <a-button class="button-next" type="primary" @click="handleSubmit">
@@ -90,6 +93,10 @@ export default {
     description: {
       type: String,
       default: 'Creating IP Ranges'
+    },
+    isFixError: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -121,6 +128,10 @@ export default {
         if (!this.checkFromTo(values.vlanRangeStart, values.vlanRangeEnd)) {
           this.validStatus = 'error'
           this.validMessage = 'Please enter a valid VLAN/VNI range'
+          return
+        }
+        if (this.isFixError) {
+          this.$emit('submitLaunchZone')
           return
         }
         this.$emit('nextPressed')

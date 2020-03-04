@@ -17,15 +17,13 @@
 
 <template>
   <div v-if="!isLaunchZone">
-    <a-card
-      class="ant-form-text"
-      style="text-align: center; margin: 10px 0;width: 100%;padding: 20px;font-size: 20px;">
+    <a-card class="ant-form-text card-waiting-launch">
       <a-icon
         type="check-circle"
         theme="twoTone"
         twoToneColor="#52c41a"
         style="font-size: 20px;"/>
-      {{ description }}
+      {{ description.waiting }}
     </a-card>
     <div class="form-action">
       <a-button class="button-prev" @click="handleBack">
@@ -37,10 +35,12 @@
     </div>
   </div>
   <div v-else>
+    <a-card class="ant-form-text card-launch-description">
+      {{ description.launching }}
+    </a-card>
     <a-card
       id="launch-content"
-      class="ant-form-text"
-      style="text-align: justify; margin: 10px 0;width: 100%; font-size: 15px; max-height: 55vh; overflow-y: auto">
+      class="ant-form-text card-launch-content">
       <a-steps
         size="small"
         direction="vertical"
@@ -107,11 +107,18 @@ export default {
       default () {
         return {}
       }
+    },
+    stepChild: {
+      type: String,
+      default: ''
     }
   },
   data () {
     return {
-      description: 'Zone is ready to launch; please proceed to the next step.',
+      description: {
+        waiting: 'Zone is ready to launch; please proceed to the next step.',
+        launching: 'Please wait while your zone is being created; this may take a while...'
+      },
       isLaunchZone: false,
       processStatus: null,
       messageError: '',
@@ -166,6 +173,16 @@ export default {
   },
   mounted () {
     if (this.launchZone) {
+      this.stepData = this.launchData
+      if (this.stepChild === 'publicTraffic') {
+        this.stepData.returnedPublicTraffic = []
+        this.stepData.stepMove = this.stepData.stepMove.filter(item => item.indexOf('createPublicVlanIpRange') === -1)
+      }
+      if (this.stepChild === 'storageTraffic') {
+        this.stepData.tasks = []
+        this.stepData.stepMove = this.stepData.stepMove.filter(item => item.indexOf('createStorageNetworkIpRange') === -1)
+      }
+      console.log('stepData', this.stepData)
       this.handleSubmit()
     }
   },
@@ -190,6 +207,9 @@ export default {
       this.isLaunchZone = true
       this.advZoneConfiguredVirtualRouterCount = 0
       this.processStatus = STATUS_PROCESS
+      if (!this.stepData.stepMove) {
+        this.stepData.stepMove = []
+      }
       await this.stepAddZone()
     },
     handleClose () {
@@ -314,7 +334,10 @@ export default {
       params.domain = this.prefillContent.networkDomain ? this.prefillContent.networkDomain.value : null
 
       try {
-        this.stepData.zoneReturned = await this.createZone(params)
+        if (!this.stepData.stepMove.includes('createZone')) {
+          this.stepData.zoneReturned = await this.createZone(params)
+          this.stepData.stepMove.push('createZone')
+        }
         await this.stepDedicateZone()
         await this.stepAddPhysicalNetworks()
       } catch (e) {
@@ -324,14 +347,14 @@ export default {
       }
     },
     async stepDedicateZone () {
-      if (!this.isDedicated) {
+      if (!this.isDedicated || this.stepData.stepMove.includes('dedicateZone')) {
         return
       }
 
       console.log('stepDedicateZone')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
-      this.addStep('message.dedicate.zone', 'stepDedicateZone')
+      this.addStep('message.dedicate.zone', 'dedicateZone')
 
       const params = {}
       params.zoneid = this.stepData.zoneReturned.id
@@ -340,6 +363,7 @@ export default {
 
       try {
         await this.dedicateZone(params)
+        this.stepData.stepMove.push('dedicateZone')
       } catch (e) {
         this.messageError = e
         this.processStatus = STATUS_FAILED
@@ -350,7 +374,7 @@ export default {
       console.log('stepAddPhysicalNetworks')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
-      this.addStep('message.creating.physical.networks', 'stepAddPhysicalNetworks')
+      this.addStep('message.creating.physical.networks', 'physicalNetwork')
 
       const params = {}
       params.zoneid = this.stepData.zoneReturned.id
@@ -363,9 +387,9 @@ export default {
         }
 
         this.stepData.requestedTrafficTypeCount = requestedTrafficTypeCount
-        this.stepData.returnedTrafficTypes = []
-        this.stepData.trafficType = []
-        this.stepData.physicalNetworkReturned = {}
+        this.stepData.returnedTrafficTypes = this.stepData.returnedTrafficTypes ? this.stepData.returnedTrafficTypes : []
+        this.stepData.trafficType = this.stepData.trafficType ? this.stepData.trafficType : []
+        this.stepData.physicalNetworkReturned = this.stepData.physicalNetworkReturned ? this.stepData.physicalNetworkReturned : {}
 
         if (this.prefillContent.physicalNetworks && this.prefillContent.physicalNetworks.length > 0) {
           params.name = this.prefillContent.physicalNetworks[0].name
@@ -374,29 +398,40 @@ export default {
         }
 
         try {
-          // createPhysicalNetwork
-          const physicalNetworkResult = await this.createPhysicalNetwork(params)
-          this.stepData.physicalNetworkReturned = physicalNetworkResult.jobresult.physicalnetwork
-
-          // addTrafficType Guest
-          const guestTrafficResult = await this.addTrafficType('Guest')
-          this.stepData.returnedTrafficTypes.push(guestTrafficResult.jobresult.traffictype)
-
-          // addTrafficType Management
-          const managementTrafficResult = await this.addTrafficType('Management')
-          this.stepData.returnedTrafficTypes.push(managementTrafficResult.jobresult.traffictype)
-
-          // addTrafficType Storage
-          const storageEx = this.prefillContent.physicalNetworks[0].traffics.filter(traffic => traffic.type === 'storage')
-          if (storageEx && storageEx.length > 0) {
-            const storageTrafficResult = await this.addTrafficType('Storage')
-            this.stepData.returnedTrafficTypes.push(storageTrafficResult.jobresult.traffictype)
+          if (!this.stepData.stepMove.includes('createPhysicalNetwork')) {
+            const physicalNetworkResult = await this.createPhysicalNetwork(params)
+            this.stepData.physicalNetworkReturned = physicalNetworkResult.jobresult.physicalnetwork
+            this.stepData.stepMove.push('createPhysicalNetwork')
           }
 
-          // addTrafficType Public
-          if (this.havingSG && this.havingEIP && this.havingELB) {
-            const publicTrafficResult = await this.addTrafficType('Public')
-            this.stepData.returnedTrafficTypes.push(publicTrafficResult.jobresult.traffictype)
+          if (!this.stepData.stepMove.includes('Guest')) {
+            const guestTrafficResult = await this.addTrafficType('Guest')
+            this.stepData.returnedTrafficTypes.push(guestTrafficResult.jobresult.traffictype)
+            this.stepData.stepMove.push('Guest')
+          }
+
+          if (!this.stepData.stepMove.includes('Management')) {
+            const managementTrafficResult = await this.addTrafficType('Management')
+            this.stepData.returnedTrafficTypes.push(managementTrafficResult.jobresult.traffictype)
+            this.stepData.stepMove.push('Management')
+          }
+
+          if (!this.stepData.stepMove.includes('Storage')) {
+            // addTrafficType Storage
+            const storageEx = this.prefillContent.physicalNetworks[0].traffics.filter(traffic => traffic.type === 'storage')
+            if (storageEx && storageEx.length > 0) {
+              const storageTrafficResult = await this.addTrafficType('Storage')
+              this.stepData.returnedTrafficTypes.push(storageTrafficResult.jobresult.traffictype)
+              this.stepData.stepMove.push('Storage')
+            }
+          }
+
+          if (!this.stepData.stepMove.includes('Public')) {
+            if (this.havingSG && this.havingEIP && this.havingELB) {
+              const publicTrafficResult = await this.addTrafficType('Public')
+              this.stepData.returnedTrafficTypes.push(publicTrafficResult.jobresult.traffictype)
+            }
+            this.stepData.stepMove.push('Public')
           }
 
           if (this.stepData.returnedTrafficTypes.length === requestedTrafficTypeCount) {
@@ -409,8 +444,14 @@ export default {
           this.setStepStatus(STATUS_FAILED)
         }
       } else {
-        this.stepData.physicalNetworksReturned = []
-        this.stepData.physicalNetworkReturned = {}
+        this.stepData.physicalNetworksReturned = this.stepData.physicalNetworksReturned ? this.stepData.physicalNetworksReturned : []
+        this.stepData.physicalNetworkItem = this.stepData.physicalNetworkItem ? this.stepData.physicalNetworkItem : {}
+        let physicalNetworkReturned = {}
+
+        if (this.stepData.physicalNetworksReturned.length === this.prefillContent.physicalNetworks.length) {
+          await this.stepConfigurePhysicalNetwork()
+          return
+        }
 
         this.prefillContent.physicalNetworks.map(async (physicalNetwork, index) => {
           params.name = physicalNetwork.name
@@ -420,8 +461,15 @@ export default {
           }
 
           try {
-            const physicalNetworkResult = await this.createPhysicalNetwork(params)
-            this.stepData.physicalNetworkReturned = physicalNetworkResult.jobresult.physicalnetwork
+            if (!this.stepData.stepMove.includes('createPhysicalNetwork' + index)) {
+              const physicalNetworkResult = await this.createPhysicalNetwork(params)
+              physicalNetworkReturned = physicalNetworkResult.jobresult.physicalnetwork
+              this.stepData.physicalNetworkReturned = physicalNetworkReturned
+              this.stepData.physicalNetworkItem['createPhysicalNetwork' + index] = physicalNetworkReturned
+              this.stepData.stepMove.push('createPhysicalNetwork' + index)
+            } else {
+              this.stepData.physicalNetworkReturned = this.stepData.physicalNetworkItem['createPhysicalNetwork' + index]
+            }
           } catch (e) {
             this.messageError = e
             this.processStatus = STATUS_FAILED
@@ -429,23 +477,24 @@ export default {
             return false
           }
 
-          const returnedTrafficTypes = []
+          let advCountTrafficReturn = 0
 
           physicalNetwork.traffics.map(async (traffic, key) => {
-            let trafficResult = null
-
             try {
-              if (traffic.type === 'public') {
-                trafficResult = await this.addTrafficType('Public')
-              } else if (traffic.type === 'management') {
-                trafficResult = await this.addTrafficType('Management')
-              } else if (traffic.type === 'guest') {
-                trafficResult = await this.addTrafficType('Guest')
-              } else if (traffic.type === 'storage') {
-                trafficResult = await this.addTrafficType('Storage')
+              if (!this.stepData.stepMove.includes('addTrafficType' + index + key)) {
+                if (traffic.type === 'public') {
+                  await this.addTrafficType('Public')
+                } else if (traffic.type === 'management') {
+                  await this.addTrafficType('Management')
+                } else if (traffic.type === 'guest') {
+                  await this.addTrafficType('Guest')
+                } else if (traffic.type === 'storage') {
+                  await this.addTrafficType('Storage')
+                }
+                this.stepData.stepMove.push('addTrafficType' + index + key)
               }
 
-              returnedTrafficTypes.push(trafficResult.jobresult.traffictype)
+              advCountTrafficReturn++
             } catch (e) {
               this.messageError = e
               this.processStatus = STATUS_FAILED
@@ -453,9 +502,10 @@ export default {
               return false
             }
 
-            if (returnedTrafficTypes.length === physicalNetwork.traffics.length) {
-              this.stepData.physicalNetworkReturned.returnedTrafficTypes = returnedTrafficTypes
-              this.stepData.physicalNetworksReturned.push(this.stepData.physicalNetworkReturned)
+            if (advCountTrafficReturn === physicalNetwork.traffics.length) {
+              if (Object.keys(physicalNetworkReturned).length > 0) {
+                this.stepData.physicalNetworksReturned.push(physicalNetworkReturned)
+              }
 
               if (this.stepData.physicalNetworksReturned.length === this.prefillContent.physicalNetworks.length) {
                 await this.stepConfigurePhysicalNetwork()
@@ -471,7 +521,7 @@ export default {
       console.log('stepConfigurePhysicalNetwork')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
-      this.addStep('message.configuring.physical.networks', 'stepConfigurePhysicalNetwork')
+      this.addStep('message.configuring.physical.networks', 'physicalNetwork')
 
       if (this.isBasicZone) {
         const updPhysicalParams = {}
@@ -479,23 +529,35 @@ export default {
         updPhysicalParams.id = this.stepData.physicalNetworkReturned.id
 
         try {
-          await this.updatePhysicalNetwork(updPhysicalParams)
+          if (!this.stepData.stepMove.includes('updatePhysicalNetwork')) {
+            await this.updatePhysicalNetwork(updPhysicalParams)
+            this.stepData.stepMove.push('updatePhysicalNetwork')
+          }
 
-          const listNetworkParams = {}
-          listNetworkParams.name = 'VirtualRouter'
-          listNetworkParams.physicalNetworkId = this.stepData.physicalNetworkReturned.id
+          if (!this.stepData.stepMove.includes('basicVirtualRouter')) {
+            const listNetworkParams = {}
+            listNetworkParams.name = 'VirtualRouter'
+            listNetworkParams.physicalNetworkId = this.stepData.physicalNetworkReturned.id
 
-          const providerId = await this.listNetworkServiceProviders(listNetworkParams, 'virtualRouter')
-          const virtualRouterElementId = await this.listVirtualRouterElements(providerId)
-          await this.configureVirtualRouterElement(virtualRouterElementId)
-          await this.updateNetworkServiceProvider(providerId)
+            const providerId = await this.listNetworkServiceProviders(listNetworkParams)
+            const virtualRouterElementId = await this.listVirtualRouterElements(providerId)
+            await this.configureVirtualRouterElement(virtualRouterElementId)
+            await this.updateNetworkServiceProvider(providerId)
+            this.stepData.stepMove.push('basicVirtualRouter')
+          }
 
           for (let i = 0; i < this.selectedBaremetalProviders.length; i++) {
-            const listParams = {}
-            listParams.name = this.selectedBaremetalProviders[i]
-            listParams.physicalNetworkId = this.stepData.physicalNetworkReturned.id
-            const providerId = await this.listNetworkServiceProviders(listParams, 'baremetalProvider')
-            await this.updateNetworkServiceProvider(providerId)
+            if (!this.stepData.stepMove.includes('basicVirtualRouter' + i)) {
+              const listParams = {}
+              listParams.name = this.selectedBaremetalProviders[i]
+              listParams.physicalNetworkId = this.stepData.physicalNetworkReturned.id
+
+              const providerId = await this.listNetworkServiceProviders(listParams, 'BaremetalProvider')
+              if (providerId !== null) {
+                await this.updateNetworkServiceProvider(providerId)
+              }
+              this.stepData.stepMove.push('basicVirtualRouter' + i)
+            }
           }
 
           // need to Enable security group provider first
@@ -510,38 +572,57 @@ export default {
           this.setStepStatus(STATUS_FAILED)
         }
       } else if (this.isAdvancedZone) {
-        try {
-          await this.stepData.physicalNetworksReturned.map(async (physicalNetwork) => {
+        for (let index = 0; index < this.stepData.physicalNetworksReturned.length; index++) {
+          const physicalNetwork = this.stepData.physicalNetworksReturned[index]
+
+          if (!this.stepData.stepMove.includes('advUpdatePhysicalNetwork' + index)) {
             const updPhysicalParams = {}
             updPhysicalParams.state = 'Enabled'
             updPhysicalParams.id = physicalNetwork.id
-            await this.updatePhysicalNetwork(updPhysicalParams)
-            // ***** Virtual Router ***** (begin) *****
+
+            try {
+              await this.updatePhysicalNetwork(updPhysicalParams)
+              this.stepData.stepMove.push('advUpdatePhysicalNetwork' + index)
+            } catch (e) {
+              this.messageError = e
+              this.processStatus = STATUS_FAILED
+              this.setStepStatus(STATUS_FAILED)
+              break
+            }
+          }
+
+          // ***** Virtual Router ***** (begin) *****
+          if (!this.stepData.stepMove.includes('advVirtualRouter' + index)) {
             const listParams = {}
             listParams.name = 'VirtualRouter'
             listParams.physicalNetworkId = physicalNetwork.id
-            const virtualRouterProviderId = await this.listNetworkServiceProviders(listParams)
-            const virtualRouterElementId = await this.listVirtualRouterElements(virtualRouterProviderId)
-            await this.configureVirtualRouterElement(virtualRouterElementId)
-            await this.updateNetworkServiceProvider(virtualRouterProviderId)
-            this.advZoneConfiguredVirtualRouterCount++
 
-            if (this.advZoneConfiguredVirtualRouterCount === this.stepData.physicalNetworksReturned.length) {
-              if (this.sgEnabled) {
-                await this.stepAddPod()
-              } else {
-                await this.stepAddGuestNetwork()
-              }
+            try {
+              const providerId = await this.listNetworkServiceProviders(listParams)
+              const elementId = await this.listVirtualRouterElements(providerId)
+              await this.configureVirtualRouterElement(elementId)
+              await this.updateNetworkServiceProvider(providerId)
+              this.stepData.stepMove.push('advVirtualRouter' + index)
+            } catch (e) {
+              this.messageError = e
+              this.processStatus = STATUS_FAILED
+              this.setStepStatus(STATUS_FAILED)
+              break
             }
+          }
 
-            // ***** Virtual Router ***** (end) *****
-            // ***** Ovs ***** (begin) *****
-            await this.configOvs(physicalNetwork)
-            // ***** Ovs ***** (end) *****
-            // ***** Internal LB ***** (begin) *****
-            await this.configInternalLBVM(physicalNetwork)
-            // ***** Internal LB ***** (end) *****
+          this.advZoneConfiguredVirtualRouterCount++
 
+          // ***** Virtual Router ***** (end) *****
+
+          // ***** Ovs ***** (begin) *****
+          this.configOvs(physicalNetwork)
+          // ***** Ovs ***** (end) *****
+          // ***** Internal LB ***** (begin) *****
+          this.configInternalLBVM(physicalNetwork)
+          // ***** Internal LB ***** (end) *****
+
+          try {
             // Advanced SG-disabled zone
             if (!this.sgEnabled) {
               // ***** VPC Virtual Router ***** (begin) *****
@@ -551,50 +632,64 @@ export default {
               this.stepData.physicalNetworkReturned = physicalNetwork
               await this.stepEnableSecurityGroupProvider()
             }
-          })
-        } catch (e) {
-          this.messageError = e
-          this.processStatus = STATUS_FAILED
-          this.setStepStatus(STATUS_FAILED)
+          } catch (e) {
+            this.messageError = e
+            this.processStatus = STATUS_FAILED
+            this.setStepStatus(STATUS_FAILED)
+            break
+          }
+
+          if (this.advZoneConfiguredVirtualRouterCount === this.stepData.physicalNetworksReturned.length) {
+            if (!this.sgEnabled) {
+              await this.stepAddPod()
+            } else {
+              await this.stepAddGuestNetwork()
+            }
+          }
         }
       }
     },
     async configOvs (physicalNetwork) {
       console.log('configOvs')
+
+      if (this.stepData.stepMove.includes('configOvs')) {
+        return
+      }
+
       const listParams = {}
       listParams.name = 'Ovs'
       listParams.physicalNetworkId = physicalNetwork.id
 
-      try {
-        const ovsProviderId = await this.listNetworkServiceProviders(listParams, 'ovsProvider')
+      const ovsProviderId = await this.listNetworkServiceProviders(listParams, 'ovsProvider')
+      if (ovsProviderId !== null) {
         const ovsElementId = await this.listOvsElements(ovsProviderId)
-
         if (ovsElementId != null) {
           await this.configureOvsElement(ovsElementId)
           await this.updateNetworkServiceProvider(ovsProviderId)
         }
-      } catch (e) {
-        this.messageError = e
-        this.processStatus = STATUS_FAILED
-        this.setStepStatus(STATUS_FAILED)
       }
+      this.stepData.stepMove.push('configOvs')
     },
     async configInternalLBVM (physicalNetwork) {
       console.log('configInternalLBVM')
+
+      if (this.stepData.stepMove.includes('configInternalLBVM')) {
+        return
+      }
+
       const listParams = {}
       listParams.name = 'Internallbvm'
       listParams.physicalNetworkId = physicalNetwork.id
 
-      try {
-        const internalLbProviderId = await this.listNetworkServiceProviders(listParams)
+      const internalLbProviderId = await this.listNetworkServiceProviders(listParams, 'configInternalLBVM')
+      if (internalLbProviderId !== null) {
         const internalLbElementId = await this.listInternalLoadBalancerElements(internalLbProviderId)
-        await this.configureInternalLoadBalancerElement(internalLbElementId)
-        await this.updateNetworkServiceProvider(internalLbProviderId)
-      } catch (e) {
-        this.messageError = e
-        this.processStatus = STATUS_FAILED
-        this.setStepStatus(STATUS_FAILED)
+        if (internalLbElementId !== null) {
+          await this.configureInternalLoadBalancerElement(internalLbElementId)
+          await this.updateNetworkServiceProvider(internalLbProviderId)
+        }
       }
+      this.stepData.stepMove.push('configInternalLBVM')
     },
     async configVpcVirtualRouter (physicalNetwork) {
       console.log('configVpcVirtualRouter')
@@ -603,10 +698,14 @@ export default {
       listParams.physicalNetworkId = physicalNetwork.id
 
       try {
-        const vpcVirtualRouterProviderId = this.listNetworkServiceProviders(listParams)
-        const vpcVirtualRouterElementId = await this.listVirtualRouterElements(vpcVirtualRouterProviderId)
-        await this.configureVirtualRouterElement(vpcVirtualRouterElementId)
-        await this.updateNetworkServiceProvider(vpcVirtualRouterProviderId)
+        if (!this.stepData.stepMove.includes('configVpcVirtualRouter')) {
+          const providerId = await this.listNetworkServiceProviders(listParams)
+          const elementId = await this.listVirtualRouterElements(providerId)
+          await this.configureVirtualRouterElement(elementId)
+          await this.updateNetworkServiceProvider(providerId)
+
+          this.stepData.stepMove.push('configVpcVirtualRouter')
+        }
       } catch (e) {
         this.messageError = e
         this.processStatus = STATUS_FAILED
@@ -619,15 +718,18 @@ export default {
       if (this.havingNetscaler) {
         this.setStepStatus(STATUS_FINISH)
         this.currentStep++
-        this.addStep('message.adding.Netscaler.provider', 'stepAddNetscalerProvider')
+        this.addStep('message.adding.Netscaler.provider', 'netscaler')
 
         const params = {}
         params.name = 'Netscaler'
         params.physicalnetworkid = this.stepData.physicalNetworkReturned.id
 
         try {
-          const addResult = await this.addNetworkServiceProvider(params)
-          this.stepData.netscalerProviderReturned = addResult.jobresult.networkserviceprovider
+          if (!this.stepData.stepMove.includes('addNetworkServiceProvider')) {
+            const addResult = await this.addNetworkServiceProvider(params)
+            this.stepData.netscalerProviderReturned = addResult.jobresult.networkserviceprovider
+            this.stepData.stepMove.push('addNetworkServiceProvider')
+          }
           await this.stepAddNetscalerDevice()
         } catch (e) {
           this.messageError = e
@@ -642,7 +744,8 @@ export default {
       console.log('stepAddNetscalerDevice')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
-      this.addStep('message.adding.Netscaler.device', 'stepAddNetscalerDevice')
+      this.addStep('message.adding.Netscaler.device', 'netscaler')
+
       const params = {}
       params.physicalnetworkid = this.stepData.physicalNetworkReturned.id
       params.username = this.prefillContent.netscalerUsername ? this.prefillContent.netscalerUsername.value : null
@@ -699,9 +802,15 @@ export default {
       params.url = encodeURIComponent(url.join(''))
 
       try {
-        const addResult = await this.addNetscalerLoadBalancer(params)
-        this.stepData.netscalerProviderReturned.netScalerLoadBalancer = addResult.jobresult.netscalerloadbalancer
-        await this.updateNetworkServiceProvider(this.stepData.netscalerProviderReturned.id, 'netscalerProvider')
+        if (!this.stepData.stepMove.includes('addNetscalerLoadBalancer')) {
+          const addResult = await this.addNetscalerLoadBalancer(params)
+          this.stepData.netscalerProviderReturned.netScalerLoadBalancer = addResult.jobresult.netscalerloadbalancer
+          this.stepData.stepMove.push('addNetscalerLoadBalancer')
+        }
+        if (!this.stepData.stepMove.includes('netUpdateNetwork')) {
+          await this.updateNetworkServiceProvider(this.stepData.netscalerProviderReturned.id, 'netscalerProvider')
+          this.stepData.stepMove.push('netUpdateNetwork')
+        }
         await this.stepAddGuestNetwork()
       } catch (e) {
         this.messageError = e
@@ -713,7 +822,8 @@ export default {
       console.log('stepAddPod')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
-      this.addStep('message.creating.pod', 'stepAddPod')
+      this.addStep('message.creating.pod', 'pod')
+
       const params = {}
       params.zoneId = this.stepData.zoneReturned.id
       params.name = this.prefillContent.podName ? this.prefillContent.podName.value : null
@@ -723,7 +833,10 @@ export default {
       params.endIp = this.prefillContent.podReservedStopIp ? this.prefillContent.podReservedStopIp.value : null
 
       try {
-        this.stepData.podReturned = await this.createPod(params)
+        if (!this.stepData.stepMove.includes('createPod')) {
+          this.stepData.podReturned = await this.createPod(params)
+          this.stepData.stepMove.push('createPod')
+        }
         await this.stepConfigurePublicTraffic()
       } catch (e) {
         this.messageError = e
@@ -735,12 +848,13 @@ export default {
       console.log('stepAddGuestNetwork')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
-      this.addStep('message.creating.guest.network', 'stepAddGuestNetwork')
+      this.addStep('message.creating.guest.network', 'guestTraffic')
+
       const params = {}
       params.zoneid = this.stepData.zoneReturned.id
       params.name = 'defaultGuestNetwork'
       params.displaytext = 'defaultGuestNetwork'
-      params.networkofferingid = this.prefillContent.networkOfferingSelected.id
+      params.networkofferingid = this.prefillContent.networkOfferingSelected ? this.prefillContent.networkOfferingSelected.id : null
 
       if (this.isAdvancedZone && this.sgEnabled) {
         params.gateway = this.prefillContent.guestGateway ? this.prefillContent.guestGateway.value : null
@@ -751,7 +865,10 @@ export default {
       }
 
       try {
-        this.stepData.networkReturned = await this.createNetwork(params)
+        if (!this.stepData.stepMove.includes('createNetwork')) {
+          this.stepData.networkReturned = await this.createNetwork(params)
+          this.stepData.stepMove.push('createNetwork')
+        }
         await this.stepAddPod()
       } catch (e) {
         this.messageError = e
@@ -767,23 +884,26 @@ export default {
         (this.isAdvancedZone && !this.sgEnabled)) {
         this.setStepStatus(STATUS_FINISH)
         this.currentStep++
-        this.addStep('message.configuring.public.traffic', 'stepConfigurePublicTraffic')
+        this.addStep('message.configuring.public.traffic', 'publicTraffic')
+
         let stopNow = false
-        const returnedPublicVlanIpRanges = []
-        await this.prefillContent['public-ipranges'].map(async (publicVlanIpRange) => {
+        this.stepData.returnedPublicTraffic = this.stepData.returnedPublicTraffic ? this.stepData.returnedPublicTraffic : []
+        for (let index = 0; index < this.prefillContent['public-ipranges'].length; index++) {
+          const publicVlanIpRange = this.prefillContent['public-ipranges'][index]
           let isExisting = false
-          returnedPublicVlanIpRanges.forEach(publicVlan => {
+
+          this.stepData.returnedPublicTraffic.forEach(publicVlan => {
             if (publicVlan.vlan === publicVlanIpRange.vlan &&
               publicVlan.startIp === publicVlanIpRange.startIp &&
               publicVlan.netmask === publicVlanIpRange.netmask &&
               publicVlan.gateway === publicVlanIpRange.gateway) {
               isExisting = true
-              return true
+              return false
             }
           })
 
           if (isExisting) {
-            return
+            continue
           }
 
           const params = {}
@@ -796,7 +916,8 @@ export default {
           params.gateway = publicVlanIpRange.gateway
           params.netmask = publicVlanIpRange.netmask
           params.startip = publicVlanIpRange.startIp
-          params.endip = publicVlanIpRange.stopIp
+          params.endip = publicVlanIpRange.endIp
+
           if (this.isBasicZone) {
             params.forVirtualNetwork = true
           } else if (this.isAdvancedZone) {
@@ -806,20 +927,31 @@ export default {
               params.forVirtualNetwork = false
             }
           }
+
           try {
-            const vlanIpRangeItem = await this.createVlanIpRange(params)
-            returnedPublicVlanIpRanges.push(vlanIpRangeItem)
+            if (!this.stepData.stepMove.includes('createPublicVlanIpRange' + index)) {
+              const vlanIpRangeItem = await this.createVlanIpRange(params)
+              this.stepData.returnedPublicTraffic.push(vlanIpRangeItem)
+              this.stepData.stepMove.push('createPublicVlanIpRange' + index)
+            }
           } catch (e) {
+            this.messageError = e
+            this.processStatus = STATUS_FAILED
+            this.setStepStatus(STATUS_FAILED)
             stopNow = true
           }
+
           if (stopNow) {
-            return false
+            break
           }
-        })
+        }
+
+        console.log(stopNow)
+
         if (stopNow) {
           return
         }
-        this.stepData.returnedPublicTraffic = returnedPublicVlanIpRanges
+
         await this.stepConfigureStorageTraffic()
       } else if (this.isAdvancedZone && this.sgEnabled) {
         await this.stepConfigureStorageTraffic()
@@ -852,16 +984,16 @@ export default {
 
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
-      this.addStep('message.configuring.storage.traffic', 'stepConfigureStorageTraffic')
+      this.addStep('message.configuring.storage.traffic', 'storageTraffic')
 
-      const tasks = []
-      await this.prefillContent['storage-ipranges'].map(async (storageIpRange) => {
+      this.stepData.tasks = this.stepData.tasks ? this.stepData.tasks : []
+      await this.prefillContent['storage-ipranges'].map(async (storageIpRange, index) => {
         const params = {}
         params.vlan = storageIpRange.vlan
         params.gateway = storageIpRange.gateway
         params.netmask = storageIpRange.netmask
         params.startip = storageIpRange.startIp
-        params.endip = storageIpRange.stopIp
+        params.endip = storageIpRange.endIp
         if (!params.vlan || params.vlan.length === 0) {
           delete params.vlan
         }
@@ -869,21 +1001,24 @@ export default {
         params.podid = this.stepData.podReturned.id
 
         try {
-          const createStorageItem = await this.createStorageNetworkIpRange(params)
-          console.log('createStorageItem', createStorageItem)
-          tasks.push(createStorageItem)
-          console.log(tasks)
+          if (!this.stepData.stepMove.includes('createStorageNetworkIpRange' + index)) {
+            const createStorageItem = await this.createStorageNetworkIpRange(params)
+            this.stepData.tasks.push(createStorageItem)
+            this.stepData.stepMove.push('createStorageNetworkIpRange' + index)
+          }
         } catch (e) {
-          tasks.push({
+          this.stepData.tasks.push({
             error: true,
             message: e
           })
         }
       })
 
+      console.log(123)
+
       const taskTimer = setInterval(() => {
-        const completedTasks = tasks.filter(item => item.complete || item.error)
-        const errorTasks = tasks.filter(item => item.error)
+        const completedTasks = this.stepData.tasks.filter(item => item.complete || item.error)
+        const errorTasks = this.stepData.tasks.filter(item => item.error)
 
         if (completedTasks.length === this.prefillContent['storage-ipranges'].length) {
           clearInterval(taskTimer)
@@ -899,8 +1034,8 @@ export default {
           return
         }
 
-        if (tasks.length === this.prefillContent['storage-ipranges'].length) {
-          tasks.forEach(async (task) => {
+        if (this.stepData.tasks.length === this.prefillContent['storage-ipranges'].length) {
+          this.stepData.tasks.forEach(async (task) => {
             if (task.error) {
               return true
             }
@@ -931,10 +1066,12 @@ export default {
         await this.stepAddCluster()
         return
       }
+
       console.log('stepConfigureGuestTraffic')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
-      this.addStep('message.configuring.guest.traffic', 'stepConfigureGuestTraffic')
+      this.addStep('message.configuring.guest.traffic', 'guestTraffic')
+
       if (this.isBasicZone) {
         const params = {}
         params.podid = this.stepData.podReturned.id
@@ -946,7 +1083,11 @@ export default {
         params.forVirtualNetwork = false
 
         try {
-          this.stepData.returnedGuestNetwork = await this.createVlanIpRange(params)
+          if (!this.stepData.stepMove.includes('createGuestVlanIpRange')) {
+            this.stepData.returnedGuestNetwork = await this.createVlanIpRange(params)
+            this.stepData.stepMove.push('createGuestVlanIpRange')
+          }
+
           const hypervisor = this.prefillContent.hypervisor.value
           if (hypervisor === 'BareMetal') {
             await this.stepComplete()
@@ -967,12 +1108,14 @@ export default {
             }
           }
         })
+
         if (physicalNetworksHavingGuestIncludingVlan.length === 0) {
           await this.stepAddCluster()
         } else {
           let updatedCount = 0
-          await physicalNetworksHavingGuestIncludingVlan.map(async (network) => {
+          await physicalNetworksHavingGuestIncludingVlan.map(async (network, index) => {
             let vlan = null
+
             if (!this.prefillContent.vlanRangeEnd ||
               this.prefillContent.vlanRangeEnd.value === null ||
               this.prefillContent.vlanRangeEnd.value.length === 0) {
@@ -980,19 +1123,26 @@ export default {
             } else {
               vlan = [this.prefillContent.vlanRangeStart.value, this.prefillContent.vlanRangeEnd.value].join('-')
             }
+
             const originalId = network.id
             let returnedId = null
+
             this.stepData.physicalNetworkReturned.forEach((item) => {
               if (item.id === originalId) {
                 returnedId = item.id
                 return false
               }
             })
+
             const updateParams = {}
             updateParams.id = returnedId
             updateParams.vlan = vlan
+
             try {
-              await this.updatePhysicalNetwork(updateParams)
+              if (!this.stepData.stepMove.includes('advGuestUpdatePhysicalNetwork' + index)) {
+                await this.updatePhysicalNetwork(updateParams)
+                this.stepData.stepMove.push('advGuestUpdatePhysicalNetwork' + index)
+              }
               updatedCount++
               if (updatedCount === physicalNetworksHavingGuestIncludingVlan.length) {
                 await this.stepAddCluster()
@@ -1010,12 +1160,14 @@ export default {
       console.log('stepAddCluster')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
-      this.addStep('message.creating.cluster', 'stepAddCluster')
+      this.addStep('message.creating.cluster', 'clusterResource')
+
       const hypervisor = this.prefillContent.hypervisor.value
       const params = {}
       params.zoneId = this.stepData.zoneReturned.id
       params.hypervisor = hypervisor
       let clusterType = null
+
       if (hypervisor === 'VMware') {
         clusterType = 'ExternalManaged'
       } else {
@@ -1024,6 +1176,7 @@ export default {
       params.clustertype = clusterType
       params.podId = this.stepData.podReturned.id
       let clusterName = this.prefillContent.clusterName.value
+
       if (hypervisor === 'VMware') {
         params.username = this.prefillContent.vCenterUsername ? this.prefillContent.vCenterUsername.value : null
         params.password = this.prefillContent.vCenterPassword ? this.prefillContent.vCenterPassword.value : null
@@ -1045,6 +1198,7 @@ export default {
         clusterName = hostname + '/' + dcName + '/' + clusterName
       }
       params.clustername = clusterName
+
       if (hypervisor === 'VMware') {
         const vmwareData = {}
         vmwareData.zoneId = this.stepData.zoneReturned.id
@@ -1054,9 +1208,16 @@ export default {
         vmwareData.vcenter = this.prefillContent.vCenterHost ? this.prefillContent.vCenterHost.value : null
 
         try {
-          const vmWareResult = await this.addVmwareDc(vmwareData)
-          if (vmWareResult.id !== null) {
-            this.stepData.clusterReturned = await this.addCluster(params)
+          if (!this.stepData.stepMove.includes('addVmwareDc')) {
+            this.stepData.vmWareResult = await this.addVmwareDc(vmwareData)
+            this.stepData.stepMove.push('addVmwareDc')
+          }
+
+          if (this.stepData.vmWareResult.id !== null) {
+            if (!this.stepData.stepMove.includes('addCluster')) {
+              this.stepData.clusterReturned = await this.addCluster(params)
+              this.stepData.stepMove.push('addCluster')
+            }
             await this.stepAddPrimaryStorage()
           }
         } catch (e) {
@@ -1066,7 +1227,10 @@ export default {
         }
       } else {
         try {
-          this.stepData.clusterReturned = await this.addCluster(params)
+          if (!this.stepData.stepMove.includes('addCluster')) {
+            this.stepData.clusterReturned = await this.addCluster(params)
+            this.stepData.stepMove.push('addCluster')
+          }
           await this.stepAddHost()
         } catch (e) {
           this.messageError = e
@@ -1075,17 +1239,17 @@ export default {
         }
       }
     },
-    async stepAddHost (args) {
+    async stepAddHost () {
       console.log('stepAddHost')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
-      this.addStep('message.adding.host', 'stepAddHost')
+      this.addStep('message.adding.host', 'hostResource')
       const hostData = {}
-      hostData.zoneid = args.zoneReturned.id
-      hostData.podid = args.podReturned.id
-      hostData.clusterid = args.clusterReturned.id
-      hostData.hypervisor = args.clusterReturned.hypervisortype
-      hostData.clustertype = args.clusterReturned.clustertype
+      hostData.zoneid = this.stepData.zoneReturned.id
+      hostData.podid = this.stepData.podReturned.id
+      hostData.clusterid = this.stepData.clusterReturned.id
+      hostData.hypervisor = this.stepData.clusterReturned.hypervisortype
+      hostData.clustertype = this.stepData.clusterReturned.clustertype
       hostData.hosttags = this.prefillContent.hostTags ? this.prefillContent.hostTags.value : null
       hostData.username = this.prefillContent.hostUserName ? this.prefillContent.hostUserName.value : null
       hostData.password = this.prefillContent.hostPassword ? this.prefillContent.hostPassword.value : null
@@ -1106,11 +1270,11 @@ export default {
         const configParams = {}
         configParams.name = 'system.vm.use.local.storage'
         configParams.value = true
-        configParams.zoneid = args.zoneReturned.id
+        configParams.zoneid = this.stepData.zoneReturned.id
         try {
           await this.updateConfiguration(configParams)
-          args.returnedHost = await this.addHost(hostData)
-          await this.stepAddPrimaryStorage(args)
+          this.stepData.returnedHost = await this.addHost(hostData)
+          await this.stepAddPrimaryStorage()
         } catch (e) {
           this.messageError = e
           this.processStatus = STATUS_FAILED
@@ -1118,8 +1282,8 @@ export default {
         }
       } else {
         try {
-          args.returnedHost = await this.addHost(hostData)
-          await this.stepAddPrimaryStorage(args)
+          this.stepData.returnedHost = await this.addHost(hostData)
+          await this.stepAddPrimaryStorage()
         } catch (e) {
           this.messageError = e
           this.processStatus = STATUS_FAILED
@@ -1136,13 +1300,15 @@ export default {
       console.log('stepAddPrimaryStorage', 'stepAddPrimaryStorage')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
-      this.addStep('message.creating.primary.storage')
+      this.addStep('message.creating.primary.storage', 'primaryResource')
+
       const params = {}
       params.zoneid = this.stepData.zoneReturned.id
       params.podId = this.stepData.podReturned.id
       params.clusterid = this.stepData.clusterReturned.id
       params.name = this.prefillContent.primaryStorageName ? this.prefillContent.primaryStorageName.value : null
       params.scope = this.prefillContent.primaryStorageScope ? this.prefillContent.primaryStorageScope.value : null
+
       if (params.scope === 'zone') {
         const hypervisor = this.prefillContent.hypervisor.value
         if (hypervisor !== undefined) {
@@ -1216,13 +1382,17 @@ export default {
       }
       params.url = url
       params.tags = this.prefillContent.primaryStorageTags.value
+
       try {
-        this.stepData.primaryStorageRetunred = await this.createStoragePool(params)
+        if (!this.stepData.stepMove.includes('createStoragePool')) {
+          this.stepData.primaryStorageRetunred = await this.createStoragePool(params)
+          this.stepData.stepMove.push('createStoragePool')
+        }
         await this.stepAddSecondaryStorage()
       } catch (e) {
+        this.messageError = e
         this.processStatus = STATUS_FAILED
         this.setStepStatus(STATUS_FAILED)
-        console.log(e)
       }
     },
     async stepAddSecondaryStorage () {
@@ -1234,7 +1404,7 @@ export default {
       console.log('stepAddSecondaryStorage')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
-      this.addStep('message.creating.secondary.storage', 'stepAddSecondaryStorage')
+      this.addStep('message.creating.secondary.storage', 'secondaryResource')
 
       const params = {}
       params.name = this.prefillContent.secondaryStorageName ? this.prefillContent.secondaryStorageName.value : null
@@ -1246,15 +1416,6 @@ export default {
         params.provider = this.prefillContent.secondaryStorageProvider.value
         params.zoneid = this.stepData.zoneReturned.id
         params.url = url
-
-        try {
-          await this.addImageStore(params)
-          await this.stepComplete()
-        } catch (e) {
-          this.messageError = e
-          this.processStatus = STATUS_FAILED
-          this.setStepStatus(STATUS_FAILED)
-        }
       } else if (this.prefillContent.secondaryStorageProvider.value === 'SMB') {
         const nfsServer = this.prefillContent.secondaryStorageServer.value
         const path = this.prefillContent.secondaryStoragePath.value
@@ -1269,15 +1430,6 @@ export default {
         params['details[1].value'] = this.prefillContent.secondaryStorageSMBPassword.value
         params['details[2].key'] = 'domain'
         params['details[2].value'] = this.prefillContent.secondaryStorageSMBDomain.value
-
-        try {
-          await this.addImageStore(params)
-          await this.stepComplete()
-        } catch (e) {
-          this.messageError = e
-          this.processStatus = STATUS_FAILED
-          this.setStepStatus(STATUS_FAILED)
-        }
       } else if (this.prefillContent.secondaryStorageProvider.value === 'S3') {
         params.provider = this.prefillContent.secondaryStorageProvider.value
         params['details[0].key'] = 'accesskey'
@@ -1314,34 +1466,6 @@ export default {
           params['details[' + index.toString() + '].value'] = this.prefillContent.secondaryStorageSocketTimeout.value
           index++
         }
-
-        try {
-          await this.addImageStore(params)
-          await this.stepComplete()
-        } catch (e) {
-          this.messageError = e
-          this.processStatus = STATUS_FAILED
-          this.setStepStatus(STATUS_FAILED)
-        }
-
-        if (this.prefillContent.secondaryStorageNFSStaging.value) {
-          const nfsServer = this.prefillContent.secondaryStorageNFSServer.value
-          const path = this.prefillContent.secondaryStorageNFSPath.value
-          const url = this.nfsURL(nfsServer, path)
-
-          const nfsParams = {}
-          nfsParams.provider = 'nfs'
-          nfsParams.zoneid = this.stepData.zoneReturned.id
-          nfsParams.url = url
-
-          try {
-            await this.createSecondaryStagingStore(nfsParams)
-          } catch (e) {
-            this.messageError = e
-            this.processStatus = STATUS_FAILED
-            this.setStepStatus(STATUS_FAILED)
-          }
-        }
       } else if (this.prefillContent.secondaryStorageProvider.value === 'Swift') {
         params.provider = this.prefillContent.secondaryStorageProvider.value
         params.url = this.prefillContent.secondaryStorageURL.value
@@ -1365,30 +1489,54 @@ export default {
           params['details[' + index.toString() + '].value'] = this.prefillContent.secondaryStorageKey.value
           index++
         }
+      }
 
-        try {
+      try {
+        if (!this.stepData.stepMove.includes('addImageStore')) {
           await this.addImageStore(params)
-          await this.stepComplete()
-        } catch (e) {
-          this.messageError = e
-          this.processStatus = STATUS_FAILED
-          this.setStepStatus(STATUS_FAILED)
+          this.stepData.stepMove.push('addImageStore')
         }
+
+        if (this.prefillContent.secondaryStorageNFSStaging.value) {
+          const nfsServer = this.prefillContent.secondaryStorageNFSServer.value
+          const path = this.prefillContent.secondaryStorageNFSPath.value
+          const url = this.nfsURL(nfsServer, path)
+
+          const nfsParams = {}
+          nfsParams.provider = 'nfs'
+          nfsParams.zoneid = this.stepData.zoneReturned.id
+          nfsParams.url = url
+
+          if (!this.stepData.stepMove.includes('createSecondaryStagingStore')) {
+            await this.createSecondaryStagingStore(nfsParams)
+            this.stepData.stepMove.push('createSecondaryStagingStore')
+          }
+        }
+
+        await this.stepComplete()
+      } catch (e) {
+        this.messageError = e
+        this.processStatus = STATUS_FAILED
+        this.setStepStatus(STATUS_FAILED)
       }
     },
     async stepEnableSecurityGroupProvider () {
       console.log('stepEnableSecurityGroupProvider')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
-      this.addStep('message.enabling.security.group.provider', 'stepEnableSecurityGroupProvider')
+      this.addStep('message.enabling.security.group.provider', 'stepZone')
 
       const listNetworkParams = {}
       listNetworkParams.name = 'SecurityGroupProvider'
       listNetworkParams.physicalNetworkId = this.stepData.physicalNetworkReturned.id
 
       try {
-        const securityGroupProviderId = await this.listNetworkServiceProviders(listNetworkParams)
-        await this.updateNetworkServiceProvider(securityGroupProviderId, 'enableSecurityGroupProvider')
+        if (!this.stepData.stepMove.includes('enableSecurityGroupProvider')) {
+          const securityGroupProviderId = await this.listNetworkServiceProviders(listNetworkParams)
+          await this.updateNetworkServiceProvider(securityGroupProviderId, 'enableSecurityGroupProvider')
+          this.stepData.stepMove.push('enableSecurityGroupProvider')
+        }
+
         await this.stepAddNetscalerProvider()
       } catch (e) {
         this.messageError = e
@@ -1533,21 +1681,8 @@ export default {
           if (items != null && items.length > 0) {
             providerId = items[0].id
           }
-          if (providerId == null) {
-            switch (type) {
-              case 'virtualRouter':
-                message = 'error: listNetworkServiceProviders API doesn\'t return VirtualRouter provider ID'
-                break
-              case 'baremetalProvider':
-                message = 'error: listNetworkServiceProviders API doesn\'t return Baremetal provider ID'
-                break
-              case 'ovsProvider':
-                message = 'error: listNetworkServiceProviders API doesn\'t return Ovs provider ID'
-                break
-              default:
-                message = 'error: listNetworkServiceProviders API doesn\'t return VirtualRouter provider ID'
-                break
-            }
+          if (!type && providerId == null) {
+            message = 'error: listNetworkServiceProviders API doesn\'t return VirtualRouter provider ID'
             reject(message)
             return
           }
@@ -2025,6 +2160,30 @@ export default {
 </script>
 
 <style scoped lang="less">
+  .card-waiting-launch {
+    text-align: center;
+    margin: 10px 0;
+    width: 100%;
+    padding: 20px;
+    font-size: 20px;
+  }
+
+  .card-launch-description {
+    text-align: justify;
+    margin: 10px 0;
+    width: 100%;
+    padding: 0;
+  }
+
+  .card-launch-content {
+    text-align: justify;
+    margin: 10px 0;
+    width: 100%;
+    font-size: 15px;
+    max-height: 45vh;
+    overflow-y: auto;
+  }
+
   /deep/.step-error {
     color: #f5222d;
     margin-top: 20px;

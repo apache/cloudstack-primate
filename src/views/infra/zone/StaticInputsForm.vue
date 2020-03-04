@@ -93,7 +93,10 @@
       </a-form-item>
     </a-form>
     <div class="form-action">
-      <a-button class="button-prev" @click="handleBack">
+      <a-button
+        v-if="!isFixError"
+        class="button-prev"
+        @click="handleBack">
         Back
       </a-button>
       <a-button class="button-next" type="primary" @click="handleSubmit">
@@ -121,6 +124,10 @@ export default {
     description: {
       type: String,
       default: 'Creating IP Ranges'
+    },
+    isFixError: {
+      type: Boolean,
+      default: false
     }
   },
   created () {
@@ -172,9 +179,16 @@ export default {
     handleSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
-        if (!err) {
-          this.$emit('nextPressed')
+        if (err) {
+          return
         }
+
+        if (this.isFixError) {
+          this.$emit('submitLaunchZone')
+          return
+        }
+
+        this.$emit('nextPressed')
       })
     },
     handleBack (e) {

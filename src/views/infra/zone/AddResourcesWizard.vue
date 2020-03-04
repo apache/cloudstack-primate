@@ -25,9 +25,11 @@
       @nextPressed="nextPressed"
       @backPressed="handleBack"
       @fieldsChanged="fieldsChanged"
+      @submitLaunchZone="submitLaunchZone"
       :fields="clusterFields"
       :prefillContent="prefillContent"
       :description="steps[currentStep].description"
+      :isFixError="isFixError"
     />
 
     <div v-if="hypervisor !== 'VMware'">
@@ -36,27 +38,33 @@
         @nextPressed="nextPressed"
         @backPressed="handleBack"
         @fieldsChanged="fieldsChanged"
+        @submitLaunchZone="submitLaunchZone"
         :fields="hostFields"
         :prefillContent="prefillContent"
         :description="steps[currentStep].description"
+        :isFixError="isFixError"
       />
       <static-inputs-form
         v-if="currentStep === 2"
         @nextPressed="nextPressed"
         @backPressed="handleBack"
         @fieldsChanged="fieldsChanged"
+        @submitLaunchZone="submitLaunchZone"
         :fields="primaryStorageFields"
         :prefillContent="prefillContent"
         :description="steps[currentStep].description"
+        :isFixError="isFixError"
       />
       <static-inputs-form
         v-if="currentStep === 3"
         @nextPressed="nextPressed"
         @backPressed="handleBack"
         @fieldsChanged="fieldsChanged"
+        @submitLaunchZone="submitLaunchZone"
         :fields="secondaryStorageFields"
         :prefillContent="prefillContent"
         :description="steps[currentStep].description"
+        :isFixError="isFixError"
       />
     </div>
     <div v-else>
@@ -65,18 +73,22 @@
         @nextPressed="nextPressed"
         @backPressed="handleBack"
         @fieldsChanged="fieldsChanged"
+        @submitLaunchZone="submitLaunchZone"
         :fields="primaryStorageFields"
         :prefillContent="prefillContent"
         :description="steps[currentStep].description"
+        :isFixError="isFixError"
       />
       <static-inputs-form
         v-if="currentStep === 2"
         @nextPressed="nextPressed"
         @backPressed="handleBack"
         @fieldsChanged="fieldsChanged"
+        @submitLaunchZone="submitLaunchZone"
         :fields="secondaryStorageFields"
         :prefillContent="prefillContent"
         :description="steps[currentStep].description"
+        :isFixError="isFixError"
       />
     </div>
   </div>
@@ -95,6 +107,14 @@ export default {
       default: function () {
         return {}
       }
+    },
+    stepChild: {
+      type: String,
+      default: ''
+    },
+    isFixError: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -111,18 +131,22 @@ export default {
         steps = [
           {
             title: 'Cluster',
+            fromKey: 'clusterResource',
             description: 'Each pod must contain one or more clusters, and we will add the first cluster now. A cluster provides a way to group hosts. The hosts in a cluster all have identical hardware, run the same hypervisor, are on the same subnet, and access the same shared storage. Each cluster consists of one or more hosts and one or more primary storage servers.'
           },
           {
             title: 'Host',
+            fromKey: 'hostResource',
             description: 'Each cluster must contain at least one host (computer) for guest VMs to run on, and we will add the first host now. For a host to function in CloudStack, you must install hypervisor software on the host, assign an IP address to the host, and ensure the host is connected to the CloudStack management server. <br/><br/> Give the hosts DNS or IP address, the user name (usually root) and password, and any labels you use to categorize hosts.'
           },
           {
             title: 'Primary Storage',
+            fromKey: 'primaryResource',
             description: 'Each cluster must contain one or more primary storage servers, and we will add the first one now. Primary storage contains the disk volumes for all the VMs running on hosts in the cluster. Use any standards-compliant protocol that is supported by the underlying hypervisor.'
           },
           {
             title: 'Secondary Storage',
+            fromKey: 'secondaryResource',
             description: 'Each zone must have at least one NFS or secondary storage server, and we will add the first one now. Secondary storage stores VM templates, ISO images, and VM disk volume snapshots. This server must be available to all hosts in the zone.<br/><br/>Provide the IP address and exported path.'
           }
         ]
@@ -130,14 +154,17 @@ export default {
         steps = [
           {
             title: 'Cluster',
+            fromKey: 'clusterResource',
             description: 'Each pod must contain one or more clusters, and we will add the first cluster now. A cluster provides a way to group hosts. The hosts in a cluster all have identical hardware, run the same hypervisor, are on the same subnet, and access the same shared storage. Each cluster consists of one or more hosts and one or more primary storage servers.'
           },
           {
             title: 'Primary Storage',
+            fromKey: 'primaryResource',
             description: 'Each cluster must contain one or more primary storage servers, and we will add the first one now. Primary storage contains the disk volumes for all the VMs running on hosts in the cluster. Use any standards-compliant protocol that is supported by the underlying hypervisor.'
           },
           {
             title: 'Secondary Storage',
+            fromKey: 'secondaryResource',
             description: 'Each zone must have at least one NFS or secondary storage server, and we will add the first one now. Secondary storage stores VM templates, ISO images, and VM disk volume snapshots. This server must be available to all hosts in the zone. Provide the IP address and exported path.'
           }
         ]
@@ -677,6 +704,9 @@ export default {
     }
   },
   mounted () {
+    if (this.stepChild && this.stepChild !== '') {
+      this.currentStep = this.steps.findIndex(item => item.fromKey === this.stepChild)
+    }
     if (this.prefillContent.hypervisor.value === 'BareMetal') {
       this.$emit('nextPressed')
     } else {
@@ -874,6 +904,9 @@ export default {
         this.storageProviders = storageProviders
         this.$forceUpdate()
       })
+    },
+    submitLaunchZone () {
+      this.$emit('submitLaunchZone')
     }
   }
 }

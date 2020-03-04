@@ -106,7 +106,10 @@
       </template>
     </a-table>
     <div class="form-action">
-      <a-button class="button-prev" @click="handleBack">
+      <a-button
+        v-if="!isFixError"
+        class="button-prev"
+        @click="handleBack">
         Back
       </a-button>
       <a-button class="button-next" type="primary" @click="handleSubmit">
@@ -140,6 +143,10 @@ export default {
       default: function () {
         return {}
       }
+    },
+    isFixError: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -221,6 +228,11 @@ export default {
     },
     handleSubmit (e) {
       if (this.isValidSetup()) {
+        if (this.isFixError) {
+          this.$emit('submitLaunchZone')
+          return
+        }
+
         this.$emit('nextPressed', this.ipRanges)
       } else {
         this.showError = true

@@ -30,6 +30,7 @@
       @backPressed="handleBack"
       @fieldsChanged="fieldsChanged"
       :prefillContent="prefillContent"
+      :isFixError="isFixError"
     />
     <static-inputs-form
       v-if="steps && steps[currentStep].formKey === 'netscaler'"
@@ -39,15 +40,18 @@
       :fields="netscalerFields"
       :prefillContent="prefillContent"
       :description="netscalerSetupDescription"
+      :isFixError="isFixError"
     />
     <ip-address-range-form
       v-if="steps && steps[currentStep].formKey === 'publicTraffic'"
       @nextPressed="nextPressed"
       @backPressed="handleBack"
       @fieldsChanged="fieldsChanged"
+      @submitLaunchZone="submitLaunchZone"
       traffic="public"
       :description="publicTrafficDescription[zoneType.toLowerCase()]"
       :prefillContent="prefillContent"
+      :isFixError="isFixError"
     />
 
     <static-inputs-form
@@ -55,9 +59,11 @@
       @nextPressed="nextPressed"
       @backPressed="handleBack"
       @fieldsChanged="fieldsChanged"
+      @submitLaunchZone="submitLaunchZone"
       :fields="podFields"
       :prefillContent="prefillContent"
       :description="podSetupDescription"
+      :isFixError="isFixError"
     />
 
     <div v-if="guestTrafficRangeMode">
@@ -66,9 +72,11 @@
         @nextPressed="nextPressed"
         @backPressed="handleBack"
         @fieldsChanged="fieldsChanged"
+        @submitLaunchZone="submitLaunchZone"
         :fields="guestTrafficFields"
         :prefillContent="prefillContent"
         :description="guestTrafficDescription[this.zoneType.toLowerCase()]"
+        :isFixError="isFixError"
       />
     </div>
     <div v-else>
@@ -77,8 +85,10 @@
         @nextPressed="nextPressed"
         @backPressed="handleBack"
         @fieldsChanged="fieldsChanged"
+        @submitLaunchZone="submitLaunchZone"
         :prefillContent="prefillContent"
         :description="guestTrafficDescription[this.zoneType.toLowerCase()]"
+        :isFixError="isFixError"
       />
     </div>
 
@@ -87,9 +97,11 @@
       @nextPressed="nextPressed"
       @backPressed="handleBack"
       @fieldsChanged="fieldsChanged"
+      @submitLaunchZone="submitLaunchZone"
       traffic="storage"
       :description="storageTrafficDescription"
       :prefillContent="prefillContent"
+      :isFixError="isFixError"
     />
   </div>
 </template>
@@ -114,6 +126,14 @@ export default {
       default: function () {
         return {}
       }
+    },
+    stepChild: {
+      type: String,
+      default: ''
+    },
+    isFixError: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -330,6 +350,9 @@ export default {
     this.physicalNetworks = this.prefillContent.physicalNetworks
     this.steps = this.filteredSteps()
     this.currentStep = this.prefillContent.networkStep ? this.prefillContent.networkStep : 0
+    if (this.stepChild && this.stepChild !== '') {
+      this.currentStep = this.steps.findIndex(item => item.formKey === this.stepChild)
+    }
     if (this.zoneType === 'Basic' ||
       (this.zoneType === 'Advanced' && this.sgEnabled)) {
       this.skipGuestTrafficStep = false
@@ -372,6 +395,9 @@ export default {
         this.currentStep--
         this.$emit('fieldsChanged', { networkStep: this.currentStep })
       }
+    },
+    submitLaunchZone () {
+      this.$emit('submitLaunchZone')
     },
     fieldsChanged (changed) {
       if (changed.physicalNetworks) {

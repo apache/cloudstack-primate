@@ -437,9 +437,16 @@ export default {
     handleSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
-        if (!err) {
-          this.$emit('nextPressed')
+        if (err) {
+          return
         }
+
+        if (this.isFixError) {
+          this.$emit('submitLaunchZone')
+          return
+        }
+
+        this.$emit('nextPressed')
       })
     },
     handleBack (e) {
