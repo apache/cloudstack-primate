@@ -215,6 +215,7 @@ export default {
     handleClose () {
       this.steps = []
       this.$emit('closeAction')
+      this.$emit('refresh-data')
     },
     handleFixesError () {
       const stepError = this.steps.filter(step => step.index === this.currentStep)

@@ -67,6 +67,7 @@
         v-else
         @backPressed="backPressed"
         @closeAction="onCloseAction"
+        @refresh-data="onRefreshData"
         @stepError="onStepError"
         :launchZone="launchZone"
         :stepChild="stepChild"
@@ -160,6 +161,9 @@ export default {
     },
     onCloseAction () {
       this.$emit('close-action')
+    },
+    onRefreshData () {
+      this.$emit('refresh-data')
     },
     onStepError (step, launchData) {
       this.currentStep = this.steps.findIndex(item => item.step.includes(step))
