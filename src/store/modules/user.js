@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import Cookies from 'js-cookie'
 import Vue from 'vue'
 import md5 from 'md5'
 import { login, logout, api } from '@/api'
@@ -82,9 +83,19 @@ const user = {
     Login ({ commit }, userInfo) {
       return new Promise((resolve, reject) => {
         login(userInfo).then(response => {
-          const result = response.loginresponse
+          const result = response.loginresponse || {}
 
-          Vue.ls.set(ACCESS_TOKEN, result.sessionkey, 60 * 60 * 1000)
+          Cookies.set('account', result.account, { expires: 1 })
+          Cookies.set('domainid', result.domainid, { expires: 1 })
+          Cookies.set('role', result.type, { expires: 1 })
+          Cookies.set('sessionkey', result.sessionkey, { expires: 1 })
+          Cookies.set('timezone', result.timezone, { expires: 1 })
+          Cookies.set('timezoneoffset', result.timezoneoffset, { expires: 1 })
+          Cookies.set('userfullname', result.firstname + ' ' + result.lastname, { expires: 1 })
+          Cookies.set('userid', result.userid, { expires: 1 })
+          Cookies.set('username', result.username, { expires: 1 })
+
+          Vue.ls.set(ACCESS_TOKEN, result.sessionkey, 24 * 60 * 60 * 1000)
           commit('SET_TOKEN', result.sessionkey)
           commit('SET_PROJECT', {})
           commit('SET_ASYNC_JOB_IDS', [])
@@ -156,6 +167,11 @@ const user = {
         if (state.cloudian.url && state.cloudian.enabled) {
           cloudianUrl = state.cloudian.url + 'logout.htm?redirect=' + encodeURIComponent(window.location.href)
         }
+
+        Object.keys(Cookies.get()).forEach(cookieName => {
+          Cookies.remove(cookieName)
+          Cookies.remove(cookieName, { path: '/client' })
+        })
 
         commit('SET_TOKEN', '')
         commit('SET_PROJECT', {})
