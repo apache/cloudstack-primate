@@ -18,7 +18,6 @@
 <template>
   <a-spin :spinning="fetchLoading">
     <a-button type="dashed" icon="plus" style="width: 100%" @click="handleOpenModal">{{ $t('label.dedicate.vlan.vni.range') }}</a-button>
-
     <a-table
       size="small"
       style="overflow-y: auto; margin-top: 20px;"
@@ -26,7 +25,6 @@
       :columns="columns"
       :dataSource="items"
       :pagination="false"
-      :scroll="{ x: 600 }"
       :rowKey="record => record.id">
       <template slot="actions" slot-scope="record">
         <a-popconfirm
@@ -45,7 +43,7 @@
       size="small"
       :current="page"
       :pageSize="pageSize"
-      :total="items ? items.length : 0"
+      :total="totalCount"
       :showTotal="total => `Total ${total} items`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="handleChangePage"
@@ -146,6 +144,7 @@ export default {
       projects: [],
       modal: false,
       selectedScope: 'account',
+      totalCount: 0,
       page: 1,
       pageSize: 10,
       columns: [
@@ -160,10 +159,6 @@ export default {
         {
           title: this.$t('account'),
           dataIndex: 'account'
-        },
-        {
-          title: this.$t('id'),
-          dataIndex: 'id'
         },
         {
           title: this.$t('action'),
@@ -188,22 +183,23 @@ export default {
   methods: {
     fetchData () {
       this.form.resetFields()
+      this.formLoading = true
       api('listDedicatedGuestVlanRanges', {
         physicalnetworkid: this.resource.id,
         page: this.page,
         pageSize: this.pageSize
       }).then(response => {
-        this.items = response.listdedicatedguestvlanrangesresponse.dedicatedguestvlanrange
-          ? response.listdedicatedguestvlanrangesresponse.dedicatedguestvlanrange : []
-        this.parentFinishLoading()
-        this.formLoading = false
+        this.items = response.listdedicatedguestvlanrangesresponse.dedicatedguestvlanrange || []
+        this.totalCount = response.listdedicatedguestvlanrangesresponse.count || 0
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
+          description: error.response.data.errorresponse.errortext,
+          duration: 0
         })
-        this.parentFinishLoading()
+      }).finally(() => {
         this.formLoading = false
+        this.parentFinishLoading()
       })
     },
     fetchDomains () {
@@ -211,8 +207,7 @@ export default {
         details: 'min',
         listAll: true
       }).then(response => {
-        this.domains = response.listdomainsresponse.domain
-          ? response.listdomainsresponse.domain : []
+        this.domains = response.listdomainsresponse.domain || []
         if (this.domains.length > 0) {
           this.form.setFieldsValue({
             domain: this.domains[0].id

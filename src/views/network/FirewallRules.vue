@@ -84,7 +84,7 @@
       size="small"
       :current="page"
       :pageSize="pageSize"
-      :total="firewallRules.length"
+      :total="totalCount"
       :showTotal="total => `Total ${total} items`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="handleChangePage"
@@ -151,6 +151,7 @@ export default {
         key: null,
         value: null
       },
+      totalCount: 0,
       page: 1,
       pageSize: 10,
       columns: [
@@ -163,11 +164,11 @@ export default {
           scopedSlots: { customRender: 'protocol' }
         },
         {
-          title: `${this.$t('icmptype')}/${this.$t('startport')}`,
+          title: `${this.$t('startport')}/${this.$t('icmptype')}`,
           scopedSlots: { customRender: 'startport' }
         },
         {
-          title: `${this.$t('ICMP Code')}/${this.$t('End Port')}`,
+          title: `${this.$t('endport')}/${this.$t('icmpcode')}`,
           scopedSlots: { customRender: 'endport' }
         },
         {
@@ -209,6 +210,7 @@ export default {
         pageSize: this.pageSize
       }).then(response => {
         this.firewallRules = response.listfirewallrulesresponse.firewallrule || []
+        this.totalCount = response.listfirewallrulesresponse.count || 0
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,

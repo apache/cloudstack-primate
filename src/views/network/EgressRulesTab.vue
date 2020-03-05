@@ -20,15 +20,15 @@
     <div>
       <div class="form">
         <div class="form__item">
-          <div class="form__label">Source CIDR</div>
+          <div class="form__label">{{ $t('sourcecidr') }}</div>
           <a-input v-model="newRule.cidrlist"></a-input>
         </div>
         <div class="form__item">
-          <div class="form__label">Destination CIDR</div>
+          <div class="form__label">{{ $t('destcidr') }}</div>
           <a-input v-model="newRule.destcidrlist"></a-input>
         </div>
         <div class="form__item">
-          <div class="form__label">Protocol</div>
+          <div class="form__label">{{ $t('protocol') }}</div>
           <a-select v-model="newRule.protocol" style="width: 100%;" @change="resetRulePorts">
             <a-select-option value="tcp">TCP</a-select-option>
             <a-select-option value="udp">UDP</a-select-option>
@@ -37,19 +37,19 @@
           </a-select>
         </div>
         <div v-show="newRule.protocol === 'tcp' || newRule.protocol === 'udp'" class="form__item">
-          <div class="form__label">Start Port</div>
+          <div class="form__label">{{ $t('startport') }}</div>
           <a-input v-model="newRule.startport"></a-input>
         </div>
         <div v-show="newRule.protocol === 'tcp' || newRule.protocol === 'udp'" class="form__item">
-          <div class="form__label">End Port</div>
+          <div class="form__label">{{ $t('endport') }}</div>
           <a-input v-model="newRule.endport"></a-input>
         </div>
         <div v-show="newRule.protocol === 'icmp'" class="form__item">
-          <div class="form__label">ICMP Type</div>
+          <div class="form__label">{{ $t('icmptype') }}</div>
           <a-input v-model="newRule.icmptype"></a-input>
         </div>
         <div v-show="newRule.protocol === 'icmp'" class="form__item">
-          <div class="form__label">ICMP Code</div>
+          <div class="form__label">{{ $t('icmpcode') }}</div>
           <a-input v-model="newRule.icmpcode"></a-input>
         </div>
         <div class="form__item">
@@ -67,7 +67,6 @@
       :columns="columns"
       :dataSource="egressRules"
       :pagination="false"
-      :scroll="{ x: 600 }"
       :rowKey="record => record.id">
       <template slot="protocol" slot-scope="record">
         {{ record.protocol | capitalise }}
@@ -87,7 +86,7 @@
       size="small"
       :current="page"
       :pageSize="pageSize"
-      :total="egressRules ? egressRules.length : 0"
+      :total="totalCount"
       :showTotal="total => `Total ${total} items`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="handleChangePage"
@@ -101,6 +100,7 @@
 import { api } from '@/api'
 
 export default {
+  name: 'EgressRulesTab',
   props: {
     resource: {
       type: Object,
@@ -121,6 +121,7 @@ export default {
         startport: null,
         endport: null
       },
+      totalCount: 0,
       page: 1,
       pageSize: 10,
       columns: [
@@ -129,7 +130,7 @@ export default {
           dataIndex: 'cidrlist'
         },
         {
-          title: 'Destination CIDR',
+          title: this.$t('destcidr'),
           dataIndex: 'destcidrlist'
         },
         {
@@ -178,7 +179,9 @@ export default {
         page: this.page,
         pageSize: this.pageSize
       }).then(response => {
-        this.egressRules = response.listegressfirewallrulesresponse.firewallrule
+        this.egressRules = response.listegressfirewallrulesresponse.firewallrule || []
+        this.totalCount = response.listegressfirewallrulesresponse.count || 0
+      }).finally(() => {
         this.loading = false
       })
     },

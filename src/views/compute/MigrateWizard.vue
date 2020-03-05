@@ -16,7 +16,7 @@
 // under the License.
 
 <template>
-  <div>
+  <div class="form">
     <a-input-search
       placeholder="Search"
       v-model="searchQuery"
@@ -50,8 +50,8 @@
       <template slot="select" slot-scope="record">
         <a-radio
           class="host-item__radio"
-          @click="selectedIndex = index"
-          :checked="selectedIndex === index"
+          @click="selectedHost = record"
+          :checked="record.id === selectedHost.id"
           :disabled="!record.suitableformigration"></a-radio>
       </template>
     </a-table>
@@ -60,7 +60,7 @@
       size="small"
       :current="page"
       :pageSize="pageSize"
-      :total="hosts.length"
+      :total="totalCount"
       :showTotal="total => `Total ${total} items`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="handleChangePage"
@@ -68,8 +68,8 @@
       showSizeChanger/>
 
     <div style="margin-top: 20px; display: flex; justify-content:flex-end;">
-      <a-button type="primary" :disabled="selectedIndex === null" @click="submitForm">
-        {{ $t('OK') }}
+      <a-button type="primary" :disabled="!selectedHost.id" @click="submitForm">
+        {{ $t('ok') }}
       </a-button>
     </div>
   </div>
@@ -91,8 +91,9 @@ export default {
     return {
       loading: true,
       hosts: [],
-      selectedIndex: null,
+      selectedHost: {},
       searchQuery: '',
+      totalCount: 0,
       page: 1,
       pageSize: 10,
       columns: [
@@ -132,16 +133,20 @@ export default {
         pagesize: this.pageSize
       }).then(response => {
         this.hosts = response.findhostsformigrationresponse.host
-        this.loading = false
+        this.totalCount = response.findhostsformigrationresponse.count
+        if (this.totalCount > 0) {
+          this.totalCount -= 1
+        }
       }).catch(error => {
         this.$message.error('Failed to load hosts: ' + error)
+      }).finally(() => {
+        this.loading = false
       })
     },
     submitForm () {
       this.loading = true
-      const host = this.hosts[this.selectedIndex]
-      api(host.requiresStorageMotion ? 'migrateVirtualMachineWithVolume' : 'migrateVirtualMachine', {
-        hostid: host.id,
+      api(this.selectedHost.requiresStorageMotion ? 'migrateVirtualMachineWithVolume' : 'migrateVirtualMachine', {
+        hostid: this.selectedHost.id,
         virtualmachineid: this.resource.id
       }).then(response => {
         this.$store.dispatch('AddAsyncJob', {
@@ -169,7 +174,7 @@ export default {
         this.$parent.$parent.close()
       }).catch(error => {
         console.error(error)
-        this.$message.error('Failed to migrate host.')
+        this.$message.error(`Failed to migrate VM to host ${this.selectedHost.name}`)
       })
     },
     handleChangePage (page, pageSize) {
@@ -185,15 +190,20 @@ export default {
   },
   filters: {
     byteToGigabyte: value => {
-      if (!value) return ''
-      value = value / Math.pow(10, 9)
-      return value.toFixed(2)
+      return (value / Math.pow(10, 9)).toFixed(2)
     }
   }
 }
 </script>
 
 <style scoped lang="scss">
+
+  .form {
+    width: 85vw;
+    @media (min-width: 800px) {
+      width: 750px;
+    }
+  }
 
   .host-item {
     padding-right: 20px;
