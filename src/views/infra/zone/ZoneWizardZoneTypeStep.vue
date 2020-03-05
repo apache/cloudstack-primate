@@ -24,22 +24,26 @@
       <a-form-item>
         <a-radio-group
           v-decorator="['zoneType', {
-            rules: [{ required: true, message: 'Please select zone type', initialValue: zoneType }]
+            rules: [{
+              required: true,
+              message: 'Please select zone type',
+              initialValue: zoneType
+            }]
           }]">
           <a-card :gutter="12" class="card-item">
             <a-col :md="6" :lg="6">
-              <a-radio class="card-form-item" value="Basic">{{ $t('basic') }}</a-radio>
+              <a-radio class="card-form-item" value="Basic">{{ $t('label.basic') }}</a-radio>
             </a-col>
             <a-col :md="18" :lg="18">
-              <a-card class="ant-form-text zone-support">{{ zoneDescription.Basic }}</a-card>
+              <a-card class="ant-form-text zone-support">{{ $t(zoneDescription.Basic) }}</a-card>
             </a-col>
           </a-card>
           <a-card :gutter="12" class="card-item">
             <a-col :md="6" :lg="6">
-              <a-radio class="card-form-item" value="Advanced">{{ $t('advanced') }}</a-radio>
+              <a-radio class="card-form-item" value="Advanced">{{ $t('label.advanced') }}</a-radio>
             </a-col>
             <a-col :md="18" :lg="18">
-              <a-card class="ant-form-text zone-support">{{ zoneDescription.Advanced }}</a-card>
+              <a-card class="ant-form-text zone-support">{{ $t(zoneDescription.Advanced) }}</a-card>
             </a-col>
             <a-col :md="6" :lg="6" style="margin-top: 15px">
               <a-form-item
@@ -52,10 +56,10 @@
                   :disabled="!isAdvancedZone"
                 />
               </a-form-item>
-              <span>Security Groups</span>
+              <span>{{ $t('label.menu.security.groups') }}</span>
             </a-col>
             <a-col :md="18" :lg="18" style="margin-top: 15px;">
-              <a-card class="zone-support">{{ zoneDescription.SecurityGroups }}</a-card>
+              <a-card class="zone-support">{{ $t(zoneDescription.SecurityGroups) }}</a-card>
             </a-col>
           </a-card>
         </a-radio-group>
@@ -63,7 +67,7 @@
     </a-form>
     <div class="form-action">
       <a-button type="primary" @click="handleSubmit" class="button-next">
-        Next
+        {{ $t('label.next') }}
       </a-button>
     </div>
   </div>
@@ -85,9 +89,9 @@ export default {
       wrapperCol: { span: 14 }
     },
     zoneDescription: {
-      Basic: 'Basic zone provides a single network where each VM instance is assigned an IP directly from the network. Guest isolation can be provided through layer-3 means such as security groups (IP address source filtering).',
-      Advanced: 'Advanced zone is for more sophisticated network topologies. This network model provides the most flexibility in defining guest networks and providing custom network offerings such as firewall, VPN, or load balancer support.',
-      SecurityGroups: 'Choose this if you wish to use security groups to provide guest VM isolation.'
+      Basic: 'message.desc.basic.zone',
+      Advanced: 'message.desc.advanced.zone',
+      SecurityGroups: 'message.advanced.security.group'
     }
   }),
   beforeCreate () {

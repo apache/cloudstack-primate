@@ -23,20 +23,20 @@
         theme="twoTone"
         twoToneColor="#52c41a"
         style="font-size: 20px;"/>
-      {{ description.waiting }}
+      {{ $t(description.waiting) }}
     </a-card>
     <div class="form-action">
       <a-button class="button-prev" @click="handleBack">
-        Back
+        {{ $t('label.previous') }}
       </a-button>
       <a-button class="button-next" type="primary" @click="handleSubmit">
-        <a-icon type="rocket" /> Launch zone
+        <a-icon type="rocket" /> {{ $t('label.launch.zone') }}
       </a-button>
     </div>
   </div>
   <div v-else>
     <a-card class="ant-form-text card-launch-description">
-      {{ description.launching }}
+      {{ $t(description.launching) }}
     </a-card>
     <a-card
       id="launch-content"
@@ -70,13 +70,13 @@
         class="button-next"
         type="primary"
         @click="handleClose"
-      >Done</a-button>
+      >{{ $t('label.done') }}</a-button>
       <a-button
         v-if="processStatus==='error'"
         class="button-next"
         type="primary"
         @click="handleFixesError"
-      >Fix errors</a-button>
+      >{{ $t('label.fix.errors') }}</a-button>
     </div>
   </div>
 </template>
@@ -116,8 +116,8 @@ export default {
   data () {
     return {
       description: {
-        waiting: 'Zone is ready to launch; please proceed to the next step.',
-        launching: 'Please wait while your zone is being created; this may take a while...'
+        waiting: 'message.launch.zone',
+        launching: 'message.please.wait.while.zone.is.being.created'
       },
       isLaunchZone: false,
       processStatus: null,
@@ -454,7 +454,8 @@ export default {
           return
         }
 
-        this.prefillContent.physicalNetworks.map(async (physicalNetwork, index) => {
+        for (let index = 0; index < this.prefillContent.physicalNetworks.length; index++) {
+          const physicalNetwork = this.prefillContent.physicalNetworks[index]
           params.name = physicalNetwork.name
 
           if (physicalNetwork.isolationMethod && physicalNetwork.isolationMethod.length > 0) {
@@ -475,12 +476,14 @@ export default {
             this.messageError = e
             this.processStatus = STATUS_FAILED
             this.setStepStatus(STATUS_FAILED)
-            return false
+            break
           }
 
           let advCountTrafficReturn = 0
 
-          physicalNetwork.traffics.map(async (traffic, key) => {
+          for (let key = 0; key < physicalNetwork.traffics.length; key++) {
+            const traffic = physicalNetwork.traffics[key]
+
             try {
               if (!this.stepData.stepMove.includes('addTrafficType' + index + key)) {
                 if (traffic.type === 'public') {
@@ -500,7 +503,7 @@ export default {
               this.messageError = e
               this.processStatus = STATUS_FAILED
               this.setStepStatus(STATUS_FAILED)
-              return false
+              break
             }
 
             if (advCountTrafficReturn === physicalNetwork.traffics.length) {
@@ -512,10 +515,8 @@ export default {
                 await this.stepConfigurePhysicalNetwork()
               }
             }
-          })
-
-          return true
-        })
+          }
+        }
       }
     },
     async stepConfigurePhysicalNetwork () {
@@ -970,7 +971,7 @@ export default {
     async stepConfigureStorageTraffic () {
       console.log('stepConfigureStorageTraffic')
       let targetNetwork = false
-      this.prefillContent.physicalNetworks.map(physicalNetwork => {
+      this.prefillContent.physicalNetworks.forEach(physicalNetwork => {
         const storageEx = physicalNetwork.traffics.filter(traffic => traffic.type === 'storage')
         if (storageEx && storageEx.length > 0) {
           targetNetwork = true
@@ -1114,7 +1115,9 @@ export default {
           await this.stepAddCluster()
         } else {
           let updatedCount = 0
-          await physicalNetworksHavingGuestIncludingVlan.map(async (network, index) => {
+
+          for (let index = 0; index < physicalNetworksHavingGuestIncludingVlan.length; index++) {
+            const network = physicalNetworksHavingGuestIncludingVlan[index]
             let vlan = null
 
             if (!this.prefillContent.vlanRangeEnd ||
@@ -1152,8 +1155,9 @@ export default {
               this.messageError = e
               this.processStatus = STATUS_FAILED
               this.setStepStatus(STATUS_FAILED)
+              break
             }
-          })
+          }
         }
       }
     },

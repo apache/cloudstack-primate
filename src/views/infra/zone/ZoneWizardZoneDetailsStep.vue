@@ -17,16 +17,28 @@
 
 <template>
   <div>
+    <a-card
+      class="ant-form-text"
+      style="text-align: justify; margin: 10px 0; padding: 24px;"
+      v-html="$t(description)">
+    </a-card>
     <a-form class="form-content" :form="form" @submit="handleSubmit">
-      <a-form-item label="Name" v-bind="formItemLayout" has-feedback>
+      <a-form-item
+        :label="$t('label.name')"
+        v-bind="formItemLayout"
+        has-feedback>
         <a-input
           v-decorator="['name', {
-            rules: [{ required: true, message: 'Please enter zone name', initialValue: name }]
+            rules: [{
+              required: true,
+              message: 'Please enter zone name',
+              initialValue: name
+            }]
           }]"
         />
       </a-form-item>
       <a-form-item
-        label="IpV4 DNS 1"
+        :label="$t('label.ipv4.dns1')"
         v-bind="formItemLayout"
         has-feedback>
         <a-input
@@ -38,24 +50,7 @@
                 initialValue: ipv4Dns1
               },
               {
-                validator: validateIPAddress,
-                ipV4: true,
-                message: 'Please enter a valid IP v4 address.'
-              }
-            ]
-          }]"
-        />
-      </a-form-item>
-      <a-form-item label="IpV4 DNS 2" v-bind="formItemLayout" has-feedback>
-        <a-input
-          v-decorator="['ipv4Dns2', {
-            rules: [
-              {
-                message: 'Please enter IpV4 DNS 2',
-                initialValue: ipv4Dns2
-              },
-              {
-                validator: validateIPAddress,
+                validator: checkIpFormat,
                 ipV4: true,
                 message: 'Please enter a valid IP v4 address.'
               }
@@ -64,7 +59,27 @@
         />
       </a-form-item>
       <a-form-item
-        label="IpV6 DNS 1"
+        :label="$t('label.ipv4.dns2')"
+        v-bind="formItemLayout"
+        has-feedback>
+        <a-input
+          v-decorator="['ipv4Dns2', {
+            rules: [
+              {
+                message: 'Please enter IpV4 DNS 2',
+                initialValue: ipv4Dns2
+              },
+              {
+                validator: checkIpFormat,
+                ipV4: true,
+                message: 'Please enter a valid IP v4 address.'
+              }
+            ]
+          }]"
+        />
+      </a-form-item>
+      <a-form-item
+        :label="$t('label.ipv6.dns1')"
         v-bind="formItemLayout"
         v-if="isAdvancedZone && !securityGroupsEnabled"
         has-feedback>
@@ -76,7 +91,7 @@
                 initialValue: ipv6Dns1
               },
               {
-                validator: validateIPAddress,
+                validator: checkIpFormat,
                 ipV6: true,
                 message: 'Please enter a valid IP v6 address.'
               }
@@ -85,7 +100,7 @@
         />
       </a-form-item>
       <a-form-item
-        label="IpV6 DNS 2"
+        :label="$t('label.ipv6.dns2')"
         v-bind="formItemLayout"
         v-if="isAdvancedZone && !securityGroupsEnabled"
         has-feedback>
@@ -97,7 +112,7 @@
                 initialValue: ipv6Dns2
               },
               {
-                validator: validateIPAddress,
+                validator: checkIpFormat,
                 ipV6: true,
                 message: 'Please enter a valid IP v6 address.'
               }
@@ -105,7 +120,10 @@
           }]"
         />
       </a-form-item>
-      <a-form-item label="Internal DNS 1" v-bind="formItemLayout" has-feedback>
+      <a-form-item
+        :label="$t('label.internal.dns.1')"
+        v-bind="formItemLayout"
+        has-feedback>
         <a-input
           v-decorator="['internalDns1', {
             rules: [
@@ -115,7 +133,7 @@
                 initialValue: internalDns1
               },
               {
-                validator: validateIPAddress,
+                validator: checkIpFormat,
                 ipV4: true,
                 message: 'Please enter a valid IP v4 address.'
               }
@@ -123,7 +141,10 @@
           }]"
         />
       </a-form-item>
-      <a-form-item label="Internal DNS 2" v-bind="formItemLayout" has-feedback>
+      <a-form-item
+        :label="$t('label.internal.dns.2')"
+        v-bind="formItemLayout"
+        has-feedback>
         <a-input
           v-decorator="['internalDns2', {
             rules: [
@@ -132,7 +153,7 @@
                 initialValue: internalDns2
               },
               {
-                validator: validateIPAddress,
+                validator: checkIpFormat,
                 ipV4: true,
                 message: 'Please enter a valid IP v4 address.'
               }
@@ -140,14 +161,20 @@
           }]"
         />
       </a-form-item>
-      <a-form-item v-bind="formItemLayout" label="Hypervisor" has-feedback>
+      <a-form-item
+        :label="$t('label.hypervisor')"
+        v-bind="formItemLayout"
+        has-feedback>
         <a-select
           :loading="hypervisors === null"
           showSearch
-          v-decorator="[
-            'hypervisor',
-            { rules: [{ required: true, message: 'Please select hypervisor type', initialValue: currentHypervisor }] },
-          ]"
+          v-decorator="['hypervisor',{
+            rules: [{
+              required: true,
+              message: 'Please select hypervisor type',
+              initialValue: currentHypervisor
+            }]
+          }]"
           placeholder="Please select hypervisor type"
         >
           <a-select-option v-for="hypervisor in hypervisors" :key="hypervisor.name">
@@ -156,16 +183,18 @@
         </a-select>
       </a-form-item>
       <a-form-item
+        :label="$t('label.network.offering')"
         v-bind="formItemLayout"
-        label="Network Offering"
-        has-feedback
-        v-if="!isAdvancedZone || securityGroupsEnabled">
+        v-if="!isAdvancedZone || securityGroupsEnabled"
+        has-feedback>
         <a-select
           :loading="availableNetworkOfferings === null"
-          v-decorator="[
-            'networkOfferingId',
-            { rules: [{ message: 'Please select network offering', initialValue: currentNetworkOfferingId }] },
-          ]"
+          v-decorator="['networkOfferingId', {
+            rules: [{
+              message: 'Please select network offering',
+              initialValue: currentNetworkOfferingId
+            }]
+          }]"
           placeholder="Please select network offering"
         >
           <a-select-option
@@ -175,39 +204,51 @@
           </a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item label="Network Domain" v-bind="formItemLayout" has-feedback>
+      <a-form-item
+        :label="$t('label.network.domain')"
+        v-bind="formItemLayout"
+        has-feedback>
         <a-input
           v-decorator="['networkDomain', {
-            rules: [{ message: 'Please enter Network domain', intialValue: networkDomain }]
+            rules: [{
+              message: 'Please enter Network domain',
+              intialValue: networkDomain
+            }]
           }]"
         />
       </a-form-item>
       <a-form-item
-        label="Guest CIDR"
+        :label="$t('label.guest.cidr')"
         v-bind="formItemLayout"
         v-if="isAdvancedZone && !securityGroupsEnabled"
         has-feedback>
         <a-input
           v-decorator="['guestcidraddress', {
-            rules: [{ message: 'Please enter Guest CIDR', intialValue: guestcidraddress }]
+            rules: [{
+              intialValue: guestcidraddress
+            }]
           }]"
         />
       </a-form-item>
-      <a-form-item v-bind="formItemLayout" label="Dedicated">
+      <a-form-item
+        :label="$t('label.dedicated')"
+        v-bind="formItemLayout">
         <a-switch
           v-decorator="['isDedicated', { valuePropName: 'checked' }]"
           :value="isDedicated"
         />
       </a-form-item>
       <a-form-item
+        :label="$t('label.domains')"
         v-bind="formItemLayout"
-        label="Domains"
         has-feedback
         v-if="isDedicated">
         <a-select
           :loading="domains === null"
           v-decorator="['domainId', {
-            rules: [{ message: 'Please select domain to dedicate to', initialValue: domain }]
+            rules: [{
+              initialValue: domain
+            }]
           }]"
           placeholder="Please select domain to dedicate to"
         >
@@ -216,20 +257,29 @@
           </a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item label="Account" v-bind="formItemLayout" v-if="isDedicated">
+      <a-form-item
+        :label="$t('label.account')"
+        v-bind="formItemLayout"
+        v-if="isDedicated">
         <a-input
           v-decorator="['account', {
-            rules: [{ message: 'Please enter account to dedicate to', intialValue: guestcidraddress }]
+            rules: [{
+              intialValue: guestcidraddress
+            }]
           }]"
         />
       </a-form-item>
-      <a-form-item v-bind="formItemLayout" label="User VMs Local Storage enabled">
+      <a-form-item
+        :label="$t('label.local.storage.enabled')"
+        v-bind="formItemLayout">
         <a-switch
           v-decorator="['localstorageenabled', { valuePropName: 'checked' }]"
           :value="localstorageenabled"
         />
       </a-form-item>
-      <a-form-item v-bind="formItemLayout" label="System VMs Local Storage enabled">
+      <a-form-item
+        :label="$t('label.local.storage.enabled.system.vms')"
+        v-bind="formItemLayout">
         <a-switch
           v-decorator="['localstorageenabledforsystemvm', { valuePropName: 'checked' }]"
           :value="localstorageenabledforsystemvm"
@@ -241,10 +291,10 @@
         @click="handleBack"
         class="button-back"
         v-if="!isFixError">
-        Back
+        {{ $t('label.previous') }}
       </a-button>
       <a-button type="primary" @click="handleSubmit" class="button-next">
-        Next
+        {{ $t('label.next') }}
       </a-button>
     </div>
   </div>
@@ -268,6 +318,7 @@ export default {
     }
   },
   data: () => ({
+    description: 'message.desc.zone',
     formItemLayout: {
       labelCol: { span: 8 },
       wrapperCol: { span: 12 }
@@ -504,7 +555,7 @@ export default {
       }
       return null
     },
-    validateIPAddress (rule, value, callback) {
+    checkIpFormat (rule, value, callback) {
       if (!value || value === '') {
         callback()
       } else if (rule.ipV4 && !this.ipV4Regex.test(value)) {
@@ -529,7 +580,7 @@ export default {
     padding: 8px;
     padding-top: 16px;
     margin-top: 8px;
-    max-height: 55vh;
+    max-height: 40vh;
     overflow-y: auto;
 
     /deep/.has-error {

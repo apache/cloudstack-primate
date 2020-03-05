@@ -21,14 +21,14 @@
       class="ant-form-text"
       style="text-align: justify; margin: 10px 0; padding: 24px;"
       v-if="description && description.length > 0"
-      v-html="description">
+      v-html="$t(description)">
     </a-card>
     <a-form
       class="form-content"
       :form="form"
       @submit="handleSubmit">
       <a-form-item
-        :label="$t('VLAN/VNI Range')"
+        :label="$t('label.vlan.range')"
         v-bind="formItemLayout"
         :help="validMessage"
         :validate-status="validStatus"
@@ -41,7 +41,8 @@
               rules: [{
                 validator: validateFromTo,
                 fromInput: true,
-                compare: 'vlanRangeEnd'
+                compare: 'vlanRangeEnd',
+                initialValue: getPrefilled('vlanRangeStart')
               }]
             }]"
             style="width: 100%;"
@@ -58,7 +59,8 @@
               rules: [{
                 validator: validateFromTo,
                 toInput: true,
-                compare: 'vlanRangeStart'
+                compare: 'vlanRangeStart',
+                initialValue: getPrefilled('vlanRangeEnd')
               }]
             }]"
             style="width: 100%;"
@@ -71,10 +73,10 @@
         v-if="!isFixError"
         class="button-prev"
         @click="handleBack">
-        Back
+        {{ $t('label.previous') }}
       </a-button>
       <a-button class="button-next" type="primary" @click="handleSubmit">
-        Next
+        {{ $t('label.next') }}
       </a-button>
     </div>
   </div>
@@ -116,7 +118,20 @@ export default {
       }
     })
   },
+  mounted () {
+    this.fillValue()
+  },
   methods: {
+    fillValue () {
+      const fieldVal = {}
+      fieldVal.vlanRangeStart = this.getPrefilled('vlanRangeStart')
+      this.form.setFieldsValue(fieldVal)
+      fieldVal.vlanRangeEnd = this.getPrefilled('vlanRangeEnd')
+      this.form.setFieldsValue(fieldVal)
+    },
+    getPrefilled (key) {
+      return this.prefillContent[key] ? this.prefillContent[key].value : null
+    },
     handleSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {

@@ -21,8 +21,8 @@
       <a-step
         v-for="step in steps"
         :key="step.title"
-        :title="step.title"
-        :style="stepScales" />
+        :title="$t(step.title)"
+        :style="stepScales"></a-step>
     </a-steps>
     <zone-wizard-physical-network-setup-step
       v-if="steps && steps[currentStep].formKey === 'physicalNetwork'"
@@ -153,31 +153,31 @@ export default {
     allSteps () {
       const steps = []
       steps.push({
-        title: 'Physical Network',
+        title: 'label.physical.network',
         formKey: 'physicalNetwork'
       })
       if (this.havingNetscaler) {
         steps.push({
-          title: 'Netscaler',
+          title: 'label.netScaler',
           formKey: 'netscaler'
         })
       }
       steps.push({
-        title: 'Public Traffic',
+        title: 'label.public.traffic',
         formKey: 'publicTraffic',
         trafficType: 'public'
       })
       steps.push({
-        title: 'Pod',
+        title: 'label.pod',
         formKey: 'pod'
       })
       steps.push({
-        title: 'Guest Traffic',
+        title: 'label.guest.traffic',
         formKey: 'guestTraffic',
         trafficType: 'guest'
       })
       steps.push({
-        title: 'Storage Traffic',
+        title: 'label.storage.traffic',
         formKey: 'storageTraffic',
         trafficType: 'storage'
       })
@@ -193,67 +193,67 @@ export default {
     netscalerFields () {
       return [
         {
-          title: 'IP Address',
+          title: 'label.guest.ip',
           key: 'netscalerIp',
           required: false,
           ipV4: true,
           message: 'Please enter a valid IP v4 address.'
         },
         {
-          title: 'Username',
+          title: 'label.username',
           key: 'netscalerUsername',
           required: false
         },
         {
-          title: 'Password',
+          title: 'label.password',
           key: 'netscalerPassword',
           required: false,
           password: true
         },
         {
-          title: 'Type',
+          title: 'label.type',
           key: 'netscalerType',
           required: false,
           select: true,
           options: this.netscalerType
         },
         {
-          title: 'Public Interface',
+          title: 'label.public.interface',
           key: 'publicinterface',
           required: false
         },
         {
-          title: 'Private Interface',
+          title: 'label.private.interface',
           key: 'privateinterface',
           required: false
         },
         {
-          title: 'GSLB service',
+          title: 'label.gslb.service',
           key: 'gslbprovider',
           required: false,
           switch: true
         },
         {
-          title: 'GSLB service Public IP',
+          title: 'label.gslb.service.public.ip',
           key: 'gslbproviderpublicip',
           required: false,
           ipV4: true,
           message: 'Please enter a valid IP v4 address.'
         },
         {
-          title: 'GSLB service Private IP',
+          title: 'label.gslb.service.private.ip',
           key: 'gslbproviderprivateip',
           required: false,
           ipV4: true,
           message: 'Please enter a valid IP v4 address.'
         },
         {
-          title: 'Number of Retries',
+          title: 'label.numretries',
           key: 'numretries',
           required: false
         },
         {
-          title: 'Capacity',
+          title: 'label.capacity',
           key: 'capacity',
           required: false
         }
@@ -268,37 +268,37 @@ export default {
       skipGuestTrafficStep: false,
       netscalerType: [],
       publicTrafficDescription: {
-        advanced: 'Public traffic is generated when VMs in the cloud access the internet. Publicly-accessible IPs must be allocated for this purpose. End users can use the CloudStack UI to acquire these IPs to implement NAT between their guest network and their public network.<br/> <br/>Provide at least one range of IP addresses for internet traffic.',
-        basic: 'Public traffic is generated when VMs in the cloud access the Internet or provide services to clients over the Internet. Publicly accessible IPs must be allocated for this purpose. When a instance is created, an IP from this set of Public IPs will be allocated to the instance in addition to the guest IP address. Static 1-1 NAT will be set up automatically between the public IP and the guest IP. End users can also use the CloudStack UI to acquire additional IPs to implement static NAT between their instances and the public IP.'
+        advanced: 'message.public.traffic.in.advanced.zone',
+        basic: 'message.public.traffic.in.basic.zone'
       },
       guestTrafficDescription: {
-        advanced: 'Guest network traffic is communication between end-user virtual machines. Specify a range of VLAN IDs to carry guest traffic for each physical network.',
-        basic: 'Guest network traffic is communication between end-user virtual machines. Specify a range of IP addresses that CloudStack can assign to guest VMs. Make sure this range does not overlap the reserved system IP range.'
+        advanced: 'message.guest.traffic.in.advanced.zone',
+        basic: 'message.guest.traffic.in.basic.zone'
       },
-      podSetupDescription: 'Each zone must contain in one or more pods, and we will add the first pod now. A pod contains hosts and primary storage servers, which you will add in a later step. First, configure a range of reserved IP addresses for CloudStack\'s internal management traffic. The reserved IP range must be unique for each zone in the cloud.',
-      netscalerSetupDescription: 'Please specify Netscaler info',
-      storageTrafficDescription: 'Traffic between CloudStack\'s internal resources, including any components that communicate with the Management Server, such as hosts and CloudStack system VMs. Please configure storage traffic here.',
+      podSetupDescription: 'message.add.pod.during.zone.creation',
+      netscalerSetupDescription: 'label.please.specify.netscaler.info',
+      storageTrafficDescription: 'label.zoneWizard.trafficType.management',
       podFields: [
         {
-          title: 'Pod Name',
+          title: 'label.pod.name',
           key: 'podName',
           placeHolder: 'Please enter pod name',
           required: true
         },
         {
-          title: 'Reserved System Gateway',
+          title: 'label.reserved.system.gateway',
           key: 'podReservedGateway',
           placeHolder: 'Please enter system gateway for Pod',
           required: true
         },
         {
-          title: 'Reserved System Netmask',
+          title: 'label.reserved.system.netmask',
           key: 'podReservedNetmask',
           placeHolder: 'Please enter system netmask for Pod',
           required: true
         },
         {
-          title: 'Start Reserved System IP',
+          title: 'label.start.reserved.system.IP',
           key: 'podReservedStartIp',
           placeHolder: 'Please enter reserved system start ip for Pod',
           required: true,
@@ -306,7 +306,7 @@ export default {
           message: 'Please enter a valid IP v4 address.'
         },
         {
-          title: 'Stop Reserved System IP',
+          title: 'label.end.reserved.system.IP',
           key: 'podReservedStopIp',
           placeHolder: 'Please enter reserved system stop ip for Pod',
           required: false,
@@ -316,19 +316,19 @@ export default {
       ],
       guestTrafficFields: [
         {
-          title: 'Guest Gateway',
+          title: 'label.guest.gateway',
           key: 'guestGateway',
           placeHolder: 'Please enter guest gateway',
           required: false
         },
         {
-          title: 'Guest Netmask',
+          title: 'label.guest.netmask',
           key: 'guestNetmask',
           placeHolder: 'Please enter guest netmask',
           required: false
         },
         {
-          title: 'Guest Start IP',
+          title: 'label.guest.start.ip',
           key: 'guestStartIp',
           placeHolder: 'Please enter start ip for guest traffic',
           required: false,
@@ -336,7 +336,7 @@ export default {
           message: 'Please enter a valid IP v4 address.'
         },
         {
-          title: 'Guest Stop IP',
+          title: 'label.guest.end.ip',
           key: 'guestStopIp',
           placeHolder: 'Please enter stop ip for guest traffic',
           required: false,
@@ -440,5 +440,3 @@ export default {
   }
 }
 </script>
-<style scoped>
-</style>

@@ -18,7 +18,10 @@
 <template>
   <div style="width: auto;">
     <a-steps progressDot :current="currentStep" size="small" style="margin-left: 0; margin-top: 16px;">
-      <a-step v-for="step in steps" :key="step.title" :title="step.title" />
+      <a-step
+        v-for="step in steps"
+        :key="step.title"
+        :title="$t(step.title)"></a-step>
     </a-steps>
     <static-inputs-form
       v-if="currentStep === 0"
@@ -125,62 +128,43 @@ export default {
       return this.prefillContent.hypervisor ? this.prefillContent.hypervisor.value : null
     },
     steps () {
-      let steps = []
+      const steps = []
       const hypervisor = this.prefillContent.hypervisor ? this.prefillContent.hypervisor.value : null
+      steps.push({
+        title: 'label.cluster',
+        fromKey: 'clusterResource',
+        description: 'message.desc.cluster'
+      })
       if (hypervisor !== 'VMware') {
-        steps = [
-          {
-            title: 'Cluster',
-            fromKey: 'clusterResource',
-            description: 'Each pod must contain one or more clusters, and we will add the first cluster now. A cluster provides a way to group hosts. The hosts in a cluster all have identical hardware, run the same hypervisor, are on the same subnet, and access the same shared storage. Each cluster consists of one or more hosts and one or more primary storage servers.'
-          },
-          {
-            title: 'Host',
-            fromKey: 'hostResource',
-            description: 'Each cluster must contain at least one host (computer) for guest VMs to run on, and we will add the first host now. For a host to function in CloudStack, you must install hypervisor software on the host, assign an IP address to the host, and ensure the host is connected to the CloudStack management server. <br/><br/> Give the hosts DNS or IP address, the user name (usually root) and password, and any labels you use to categorize hosts.'
-          },
-          {
-            title: 'Primary Storage',
-            fromKey: 'primaryResource',
-            description: 'Each cluster must contain one or more primary storage servers, and we will add the first one now. Primary storage contains the disk volumes for all the VMs running on hosts in the cluster. Use any standards-compliant protocol that is supported by the underlying hypervisor.'
-          },
-          {
-            title: 'Secondary Storage',
-            fromKey: 'secondaryResource',
-            description: 'Each zone must have at least one NFS or secondary storage server, and we will add the first one now. Secondary storage stores VM templates, ISO images, and VM disk volume snapshots. This server must be available to all hosts in the zone.<br/><br/>Provide the IP address and exported path.'
-          }
-        ]
-      } else {
-        steps = [
-          {
-            title: 'Cluster',
-            fromKey: 'clusterResource',
-            description: 'Each pod must contain one or more clusters, and we will add the first cluster now. A cluster provides a way to group hosts. The hosts in a cluster all have identical hardware, run the same hypervisor, are on the same subnet, and access the same shared storage. Each cluster consists of one or more hosts and one or more primary storage servers.'
-          },
-          {
-            title: 'Primary Storage',
-            fromKey: 'primaryResource',
-            description: 'Each cluster must contain one or more primary storage servers, and we will add the first one now. Primary storage contains the disk volumes for all the VMs running on hosts in the cluster. Use any standards-compliant protocol that is supported by the underlying hypervisor.'
-          },
-          {
-            title: 'Secondary Storage',
-            fromKey: 'secondaryResource',
-            description: 'Each zone must have at least one NFS or secondary storage server, and we will add the first one now. Secondary storage stores VM templates, ISO images, and VM disk volume snapshots. This server must be available to all hosts in the zone. Provide the IP address and exported path.'
-          }
-        ]
+        steps.push({
+          title: 'label.host',
+          fromKey: 'hostResource',
+          description: 'message.desc.host'
+        })
       }
+      steps.push({
+        title: 'label.primary.storage',
+        fromKey: 'primaryResource',
+        description: 'message.desc.primary.storage'
+      })
+      steps.push({
+        title: 'label.secondary.storage',
+        fromKey: 'secondaryResource',
+        description: 'message.desc.secondary.storage'
+      })
+
       return steps
     },
     clusterFields () {
       return [
         {
-          title: 'Cluster Name',
+          title: 'label.cluster.name',
           key: 'clusterName',
           placeHolder: 'Please enter cluster name',
           required: true
         },
         {
-          title: 'vCenter Host',
+          title: 'label.vcenter.host',
           key: 'vCenterHost',
           placeHolder: 'Please enter vCenter Host',
           required: true,
@@ -189,7 +173,7 @@ export default {
           }
         },
         {
-          title: 'vCenter Username',
+          title: 'label.vcenter.username',
           key: 'vCenterUsername',
           placeHolder: 'Please enter vCenter Username',
           required: true,
@@ -198,7 +182,7 @@ export default {
           }
         },
         {
-          title: 'vCenter Password',
+          title: 'label.vcenter.password',
           key: 'vCenterPassword',
           placeHolder: 'Please enter vCenter Password',
           required: true,
@@ -208,7 +192,7 @@ export default {
           }
         },
         {
-          title: 'vCenter Datacenter',
+          title: 'label.vcenter.datacenter',
           key: 'vCenterDatacenter',
           placeHolder: 'Please enter vCenter Datacenter',
           required: true,
@@ -217,7 +201,7 @@ export default {
           }
         },
         {
-          title: 'Override Public-Traffic',
+          title: 'label.override.public.traffic',
           key: 'overridepublictraffic',
           required: false,
           switch: true,
@@ -226,7 +210,7 @@ export default {
           }
         },
         {
-          title: 'Override Guest-Traffic',
+          title: 'label.override.guest.traffic',
           key: 'overrideguesttraffic',
           required: false,
           switch: true,
@@ -235,7 +219,7 @@ export default {
           }
         },
         {
-          title: 'Nexus 1000v IP Address',
+          title: 'label.cisco.nexus1000v.ip.address',
           key: 'vsmipaddress',
           placeHolder: 'Please enter Nexus 1000v IP Address',
           required: false,
@@ -244,7 +228,7 @@ export default {
           }
         },
         {
-          title: 'Nexus 1000v IP Username',
+          title: 'label.cisco.nexus1000v.username',
           key: 'vsmusername',
           placeHolder: 'Please enter Nexus 1000v Username',
           required: false,
@@ -253,7 +237,7 @@ export default {
           }
         },
         {
-          title: 'Nexus 1000v IP Password',
+          title: 'label.cisco.nexus1000v.password',
           key: 'vsmpassword',
           placeHolder: 'Please enter Nexus 1000v Password',
           required: false,
@@ -266,7 +250,7 @@ export default {
     hostFields () {
       return [
         {
-          title: 'Host Name',
+          title: 'label.host.name',
           key: 'hostName',
           placeHolder: 'Please enter host name',
           required: true,
@@ -275,7 +259,7 @@ export default {
           }
         },
         {
-          title: 'User Name',
+          title: 'label.username',
           key: 'hostUserName',
           placeHolder: 'Please enter host username',
           required: true,
@@ -284,7 +268,7 @@ export default {
           }
         },
         {
-          title: 'Host Password',
+          title: 'label.password',
           key: 'hostPassword',
           placeHolder: 'Please enter host password',
           required: true,
@@ -294,7 +278,7 @@ export default {
           }
         },
         {
-          title: 'Agent Username',
+          title: 'label.agent.username',
           key: 'agentUserName',
           placeHolder: 'Please enter Agent username',
           required: false,
@@ -304,7 +288,7 @@ export default {
           }
         },
         {
-          title: 'Agent Password',
+          title: 'label.agent.password',
           key: 'agentPassword',
           placeHolder: 'Please enter Agent password',
           required: true,
@@ -314,7 +298,7 @@ export default {
           }
         },
         {
-          title: 'Tags',
+          title: 'label.tags',
           key: 'hostTags',
           placeHolder: 'Please enter host tags',
           required: false
@@ -324,20 +308,20 @@ export default {
     primaryStorageFields () {
       return [
         {
-          title: 'Name',
+          title: 'label.name',
           key: 'primaryStorageName',
           placeHolder: 'Please enter name',
           required: true
         },
         {
-          title: 'Scope',
+          title: 'label.scope',
           key: 'primaryStorageScope',
           required: false,
           select: true,
           options: this.primaryStorageScopes
         },
         {
-          title: 'Protocol',
+          title: 'label.protocol',
           key: 'primaryStorageProtocol',
           placeHolder: 'Please select option',
           required: true,
@@ -345,7 +329,7 @@ export default {
           options: this.primaryStorageProtocols
         },
         {
-          title: 'Server',
+          title: 'label.server',
           key: 'primaryStorageServer',
           placeHolder: 'Please enter server',
           required: true,
@@ -354,7 +338,7 @@ export default {
           }
         },
         {
-          title: 'Path',
+          title: 'label.path',
           key: 'primaryStoragePath',
           placeHolder: 'Please enter path',
           required: true,
@@ -363,7 +347,7 @@ export default {
           }
         },
         {
-          title: 'SR Name-Label',
+          title: 'label.SR.name',
           key: 'primaryStorageSRLabel',
           placeHolder: 'Please enter SR Name-Label',
           required: true,
@@ -372,7 +356,7 @@ export default {
           }
         },
         {
-          title: 'Target IQN',
+          title: 'label.target.iqn',
           key: 'primaryStorageTargetIQN',
           placeHolder: 'Please enter Target IQN',
           required: true,
@@ -381,7 +365,7 @@ export default {
           }
         },
         {
-          title: 'LUN #',
+          title: 'label.LUN.number',
           key: 'primaryStorageLUN',
           placeHolder: 'Please enter LUN #',
           required: true,
@@ -390,7 +374,7 @@ export default {
           }
         },
         {
-          title: 'SMB Domain',
+          title: 'label.smb.domain',
           key: 'primaryStorageSMBDomain',
           placeHolder: 'Please enter SMB Domain',
           required: true,
@@ -399,7 +383,7 @@ export default {
           }
         },
         {
-          title: 'SMB Username',
+          title: 'label.smb.username',
           key: 'primaryStorageSMBUsername',
           placeHolder: 'Please enter SMB Username',
           required: true,
@@ -408,7 +392,7 @@ export default {
           }
         },
         {
-          title: 'SMB Password',
+          title: 'label.smb.password',
           key: 'primaryStorageSMBPassword',
           placeHolder: 'Please enter SMB Password',
           required: true,
@@ -418,7 +402,7 @@ export default {
           }
         },
         {
-          title: 'RADOS Monitor',
+          title: 'label.rados.monitor',
           key: 'primaryStorageRADOSMonitor',
           placeHolder: 'Please enter RADOS Monitor',
           required: false,
@@ -427,7 +411,7 @@ export default {
           }
         },
         {
-          title: 'RADOS Pool',
+          title: 'label.rados.pool',
           key: 'primaryStorageRADOSPool',
           placeHolder: 'Please enter RADOS Pool',
           required: false,
@@ -436,7 +420,7 @@ export default {
           }
         },
         {
-          title: 'RADOS User',
+          title: 'label.rados.user',
           key: 'primaryStorageRADOSUser',
           placeHolder: 'Please enter RADOS User',
           required: false,
@@ -445,7 +429,7 @@ export default {
           }
         },
         {
-          title: 'RADOS Secret',
+          title: 'label.rados.secret',
           key: 'primaryStorageRADOSSecret',
           placeHolder: 'Please enter RADOS Secret',
           required: false,
@@ -454,7 +438,7 @@ export default {
           }
         },
         {
-          title: 'Volume Group',
+          title: 'label.volgroup',
           key: 'primaryStorageVolumeGroup',
           placeHolder: 'Please enter Volume Group',
           required: true,
@@ -463,7 +447,7 @@ export default {
           }
         },
         {
-          title: 'Volume',
+          title: 'label.volume',
           key: 'primaryStorageVolume',
           placeHolder: 'Please enter Volume',
           required: true,
@@ -472,7 +456,7 @@ export default {
           }
         },
         {
-          title: 'vCenter Datacenter',
+          title: 'label.vcenter.datacenter',
           key: 'primaryStorageVmfsDatacenter',
           placeHolder: 'Please enter vCenter Datacenter',
           required: true,
@@ -481,7 +465,7 @@ export default {
           }
         },
         {
-          title: 'vCenter Datastore',
+          title: 'label.vcenter.datastore',
           key: 'primaryStorageVmfsDatastore',
           placeHolder: 'Please enter vCenter Datastore',
           required: true,
@@ -490,7 +474,7 @@ export default {
           }
         },
         {
-          title: 'Storage Tags',
+          title: 'label.storage.tags',
           key: 'primaryStorageTags',
           placeHolder: 'Please enter storage tags',
           required: false
@@ -500,14 +484,14 @@ export default {
     secondaryStorageFields () {
       return [
         {
-          title: 'Provider',
+          title: 'label.provider',
           key: 'secondaryStorageProvider',
           required: false,
           select: true,
           options: this.storageProviders
         },
         {
-          title: 'Name',
+          title: 'label.name',
           key: 'secondaryStorageName',
           required: false,
           display: {
@@ -515,7 +499,7 @@ export default {
           }
         },
         {
-          title: 'Server',
+          title: 'label.server',
           key: 'secondaryStorageServer',
           required: true,
           placeHolder: 'Please enter Server',
@@ -524,7 +508,7 @@ export default {
           }
         },
         {
-          title: 'Path',
+          title: 'label.path',
           key: 'secondaryStoragePath',
           required: true,
           placeHolder: 'Please enter Path',
@@ -533,7 +517,7 @@ export default {
           }
         },
         {
-          title: 'SMB Domain',
+          title: 'label.smb.domain',
           key: 'secondaryStorageSMBDomain',
           required: true,
           placeHolder: 'Please enter SMB Domain',
@@ -542,7 +526,7 @@ export default {
           }
         },
         {
-          title: 'SMB Username',
+          title: 'label.smb.username',
           key: 'secondaryStorageSMBUsername',
           required: true,
           placeHolder: 'Please enter SMB Username',
@@ -551,7 +535,7 @@ export default {
           }
         },
         {
-          title: 'SMB Password',
+          title: 'label.smb.password',
           key: 'secondaryStorageSMBPassword',
           required: true,
           password: true,
@@ -561,7 +545,7 @@ export default {
           }
         },
         {
-          title: 'Access Key',
+          title: 'label.s3.access_key',
           key: 'secondaryStorageAccessKey',
           required: true,
           placeHolder: 'Please enter Access Key',
@@ -570,7 +554,7 @@ export default {
           }
         },
         {
-          title: 'Secret Key',
+          title: 'label.s3.secret_key',
           key: 'secondaryStorageSecretKey',
           required: true,
           placeHolder: 'Please enter Secret Key',
@@ -579,7 +563,7 @@ export default {
           }
         },
         {
-          title: 'Bucket',
+          title: 'label.s3.bucket',
           key: 'secondaryStorageBucket',
           required: true,
           placeHolder: 'Please enter Bucket',
@@ -588,7 +572,7 @@ export default {
           }
         },
         {
-          title: 'Endpoint',
+          title: 'label.s3.endpoint',
           key: 'secondaryStorageEndpoint',
           required: false,
           display: {
@@ -596,7 +580,7 @@ export default {
           }
         },
         {
-          title: 'Use HTTPS',
+          title: 'label.s3.use_https',
           key: 'secondaryStorageHttps',
           required: false,
           switch: true,
@@ -606,7 +590,7 @@ export default {
           }
         },
         {
-          title: 'Connection Timeout',
+          title: 'label.s3.connection_timeoutt',
           key: 'secondaryStorageConnectionTimeout',
           required: false,
           display: {
@@ -614,7 +598,7 @@ export default {
           }
         },
         {
-          title: 'Max Error Retry',
+          title: 'label.s3.max_error_retry',
           key: 'secondaryStorageMaxError',
           required: false,
           display: {
@@ -622,7 +606,7 @@ export default {
           }
         },
         {
-          title: 'Socket Timeout',
+          title: 'label.s3.socket_timeout',
           key: 'secondaryStorageSocketTimeout',
           required: false,
           display: {
@@ -630,7 +614,7 @@ export default {
           }
         },
         {
-          title: 'Create NFS Secondary Staging Store',
+          title: 'label.create.nfs.secondary.staging.storage',
           key: 'secondaryStorageNFSStaging',
           required: false,
           switch: true,
@@ -639,7 +623,7 @@ export default {
           }
         },
         {
-          title: 'S3 NFS Server',
+          title: 'label.s3.nfs.server',
           key: 'secondaryStorageNFSServer',
           required: true,
           placeHolder: 'Please enter S3 NFS Server',
@@ -648,7 +632,7 @@ export default {
           }
         },
         {
-          title: 'S3 NFS Path',
+          title: 'label.s3.nfs.path',
           key: 'secondaryStorageNFSPath',
           required: true,
           placeHolder: 'Please enter S3 NFS Path',
@@ -657,7 +641,7 @@ export default {
           }
         },
         {
-          title: 'URL',
+          title: 'label.url',
           key: 'secondaryStorageURL',
           required: true,
           placeHolder: 'Please enter URL',
@@ -666,7 +650,7 @@ export default {
           }
         },
         {
-          title: 'Account',
+          title: 'label.account',
           key: 'secondaryStorageAccount',
           required: false,
           display: {
@@ -674,7 +658,7 @@ export default {
           }
         },
         {
-          title: 'Username',
+          title: 'label.username',
           key: 'secondaryStorageUsername',
           required: false,
           display: {
@@ -682,7 +666,7 @@ export default {
           }
         },
         {
-          title: 'Key',
+          title: 'label.key',
           key: 'secondaryStorageKey',
           required: false,
           display: {

@@ -20,7 +20,7 @@
     <a-card
       class="ant-form-text"
       v-if="description && description.length > 0"
-      v-html="description">
+      v-html="$t(description)">
     </a-card>
     <a-form
       class="form-content"
@@ -29,7 +29,7 @@
       <a-form-item
         v-for="(field, index) in this.fields"
         :key="index"
-        :label="field.title"
+        :label="$t(field.title)"
         v-if="isDisplayInput(field.display)"
         v-bind="formItemLayout"
         :has-feedback="field.switch ? false : true">
@@ -82,7 +82,7 @@
                 initialValue: getPrefilled(field.key)
               },
               {
-                validator: validateIPAddress,
+                validator: checkIpFormat,
                 ipV4: field.ipV4,
                 ipV6: field.ipV6,
                 message: field.message
@@ -97,10 +97,10 @@
         v-if="!isFixError"
         class="button-prev"
         @click="handleBack">
-        Back
+        {{ $t('label.previous') }}
       </a-button>
       <a-button class="button-next" type="primary" @click="handleSubmit">
-        Next
+        {{ $t('label.next') }}
       </a-button>
     </div>
   </div>
@@ -182,19 +182,17 @@ export default {
         if (err) {
           return
         }
-
         if (this.isFixError) {
           this.$emit('submitLaunchZone')
           return
         }
-
         this.$emit('nextPressed')
       })
     },
     handleBack (e) {
       this.$emit('backPressed')
     },
-    validateIPAddress (rule, value, callback) {
+    checkIpFormat (rule, value, callback) {
       if (!value || value === '') {
         callback()
       } else if (rule.ipV4 && !this.ipV4Regex.test(value)) {
@@ -229,14 +227,12 @@ export default {
       return isShow
     },
     isChecked (field) {
-      if (!this.prefillContent[field.key] || !this.prefillContent[field.key].value) {
-        return false
+      if (this.prefillContent[field.key] && this.prefillContent[field.key].value) {
+        return this.prefillContent[field.key].value
       }
-
       if (!field.checked) {
         return false
       }
-
       return true
     }
   }

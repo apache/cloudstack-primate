@@ -19,8 +19,8 @@
   <div>
     <a-card
       class="ant-form-text"
-      style="text-align: justify; margin: 10px 0;">
-      {{ zoneType !== null ? zoneDescription[zoneType] : 'Please select zone type below.' }}
+      style="text-align: justify; margin: 10px 0; padding: 20px;"
+      v-html="zoneType !== null ? $t(zoneDescription[zoneType]) : 'Please select zone type below.'">
     </a-card>
     <a-table
       bordered
@@ -104,14 +104,15 @@
             v-else
             @click="addingTraffic(record.key, record.traffics)"
           >
-            <a-icon type="plus" /> Add Traffic
+            <a-icon type="plus" />
+            {{ $t('label.add.traffic') }}
           </a-tag>
         </div>
       </template>
       <template slot="actions" slot-scope="text, record">
         <a-popconfirm
           v-if="physicalNetworks.length > 1"
-          title="Delete?"
+          :title="$t('label.delete.confirm')"
           @confirm="() => onDelete(record)"
         >
           <a-icon type="delete" href="javascript;;" />
@@ -120,16 +121,22 @@
       <template slot="footer" class="editable-add-btn" v-if="isAdvancedZone">
         <a-button
           @click="handleAddPhysicalNetwork">
-          Add Physical Network
+          {{ $t('label.add.physical.network') }}
         </a-button>
       </template>
     </a-table>
     <div class="form-action">
-      <a-button class="button-right" @click="handleBack">
-        Back
+      <a-button
+        v-if="!isFixError"
+        class="button-right"
+        @click="handleBack">
+        {{ $t('label.previous') }}
       </a-button>
-      <a-button class="button-next" type="primary" @click="handleSubmit">
-        Next
+      <a-button
+        class="button-next"
+        type="primary"
+        @click="handleSubmit">
+        {{ $t('label.next') }}
       </a-button>
     </div>
     <a-modal
@@ -139,7 +146,7 @@
       @cancel="() => { showError = false }"
       centered
     >
-      <span>Error in configuration! All required traffic types should be added and with multiple physical networks each network should have a label.</span>
+      <span>{{ $t('message.required.traffic.type') }}</span>
     </a-modal>
   </div>
 </template>
@@ -158,6 +165,10 @@ export default {
       default: function () {
         return {}
       }
+    },
+    isFixError: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -169,8 +180,8 @@ export default {
       physicalNetworks: [],
       count: 0,
       zoneDescription: {
-        Basic: 'When adding a basic zone, you can set up one physical network, which corresponds to a NIC on the hypervisor. The network carries several types of traffic.',
-        Advanced: 'When adding an advanced zone, you need to set up one or more physical networks. Each network corresponds to a NIC on the hypervisor. Each physical network can carry one or more types of traffic, with certain restrictions on how they may be combined.'
+        Basic: 'message.setup.physical.network.during.zone.creation.basic',
+        Advanced: 'message.setup.physical.network.during.zone.creation'
       },
       hasUnusedPhysicalNetwork: false,
       trafficColors: {
@@ -190,55 +201,35 @@ export default {
   },
   computed: {
     columns () {
+      const columns = []
+      columns.push({
+        title: this.$t('label.network.name'),
+        dataIndex: 'name',
+        width: '30%',
+        scopedSlots: { customRender: 'name' }
+      })
+      columns.push({
+        title: this.$t('label.isolation.method'),
+        dataIndex: 'isolationMethod',
+        width: '20%',
+        scopedSlots: { customRender: 'isolationMethod' }
+      })
+      columns.push({
+        title: this.$t('label.traffic.types'),
+        key: 'traffics',
+        dataIndex: 'traffics',
+        scopedSlots: { customRender: 'traffics' }
+      })
       if (this.isAdvancedZone) {
-        return [
-          {
-            title: 'Network Name',
-            dataIndex: 'name',
-            width: '30%',
-            scopedSlots: { customRender: 'name' }
-          },
-          {
-            title: 'Isolation Method',
-            dataIndex: 'isolationMethod',
-            width: '20%',
-            scopedSlots: { customRender: 'isolationMethod' }
-          },
-          {
-            title: 'Traffic Types',
-            key: 'traffics',
-            dataIndex: 'traffics',
-            scopedSlots: { customRender: 'traffics' }
-          },
-          {
-            title: '',
-            dataIndex: 'actions',
-            scopedSlots: { customRender: 'actions' },
-            width: 50
-          }
-        ]
-      } else {
-        return [
-          {
-            title: 'Network Name',
-            dataIndex: 'name',
-            width: '30%',
-            scopedSlots: { customRender: 'name' }
-          },
-          {
-            title: 'Isolation Method',
-            dataIndex: 'isolationMethod',
-            width: '20%',
-            scopedSlots: { customRender: 'isolationMethod' }
-          },
-          {
-            title: 'Traffic Types',
-            key: 'traffics',
-            dataIndex: 'traffics',
-            scopedSlots: { customRender: 'traffics' }
-          }
-        ]
+        columns.push({
+          title: '',
+          dataIndex: 'actions',
+          scopedSlots: { customRender: 'actions' },
+          width: 50
+        })
       }
+
+      return columns
     },
     isAdvancedZone () {
       return this.zoneType === 'Advanced'
@@ -364,6 +355,10 @@ export default {
     },
     handleSubmit (e) {
       if (this.isValidSetup()) {
+        if (this.isFixError) {
+          this.$emit('submitLaunchZone')
+          return
+        }
         this.$emit('nextPressed', this.physicalNetworks)
       } else {
         this.showError = true

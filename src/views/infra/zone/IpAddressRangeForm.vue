@@ -20,7 +20,7 @@
     <a-card
       class="ant-form-text"
       style="text-align: justify; margin: 10px 0; padding: 24px;"
-      v-html="description">
+      v-html="$t(description)">
     </a-card>
     <a-table
       bordered
@@ -47,7 +47,7 @@
               v-decorator="[ 'gateway', {
                 rules: [{ required: true, message: 'Please enter Gateway' }]
               }]"
-              placeholder="Gateway"
+              :placeholder="$t('label.gateway')"
             />
           </a-form-item>
           <a-form-item :style="{ display: 'inline-block', width: '14%' }">
@@ -55,13 +55,13 @@
               v-decorator="[ 'netmask', {
                 rules: [{ required: true, message: 'Please enter Netmask' }]
               }]"
-              placeholder="Netmask"
+              :placeholder="$t('label.netmask')"
             />
           </a-form-item>
           <a-form-item :style="{ display: 'inline-block', width: '14%' }">
             <a-input
               v-decorator="[ 'vlan', { rules: [{ required: false }] }]"
-              placeholder="VLAN/VNI"
+              :placeholder="$t('label.vlan')"
             />
           </a-form-item>
           <a-form-item :style="{ display: 'inline-block', width: '14%' }">
@@ -73,13 +73,13 @@
                     message: 'Please enter Start IP'
                   },
                   {
-                    validator: validateIPAddress,
+                    validator: checkIpFormat,
                     ipV4: true,
                     message: 'Please enter a valid IP v4 address.'
                   }
                 ]
               }]"
-              placeholder="Start IP"
+              :placeholder="$t('label.start.IP')"
             />
           </a-form-item>
           <a-form-item :style="{ display: 'inline-block', width: '14%' }">
@@ -91,16 +91,16 @@
                     message: 'Please enter End IP'
                   },
                   {
-                    validator: validateIPAddress,
+                    validator: checkIpFormat,
                     ipV4: true,
                     message: 'Please enter a valid IP v4 address.'
                   }]
               }]"
-              placeholder="End IP"
+              :placeholder="$t('label.end.IP')"
             />
           </a-form-item>
           <a-form-item :style="{ display: 'inline-block', width: '14%' }">
-            <a-button type="primary" html-type="submit"> Add </a-button>
+            <a-button type="primary" html-type="submit">{{ $t('label.add') }}</a-button>
           </a-form-item>
         </a-form>
       </template>
@@ -110,10 +110,10 @@
         v-if="!isFixError"
         class="button-prev"
         @click="handleBack">
-        Back
+        {{ $t('label.previous') }}
       </a-button>
       <a-button class="button-next" type="primary" @click="handleSubmit">
-        Next
+        {{ $t('label.next') }}
       </a-button>
     </div>
     <a-modal
@@ -123,7 +123,7 @@
       @cancel="() => { showError = false }"
       centered
     >
-      <span>Please add at least 1 IP Range</span>
+      <span>{{ $t('message.required.add.least.IP') }}</span>
     </a-modal>
   </div>
 </template>
@@ -157,27 +157,27 @@ export default {
       ipRanges: [],
       columns: [
         {
-          title: 'Gateway',
+          title: this.$t('label.gateway'),
           dataIndex: 'gateway',
           width: 150
         },
         {
-          title: 'Netmask',
+          title: this.$t('label.netmask'),
           dataIndex: 'netmask',
           width: 150
         },
         {
-          title: 'VLAN/VNI',
+          title: this.$t('label.vlan'),
           dataIndex: 'vlan',
           width: 120
         },
         {
-          title: 'Start IP',
+          title: this.$t('label.start.IP'),
           dataIndex: 'startIp',
           width: 130
         },
         {
-          title: 'End IP',
+          title: this.$t('label.end.IP'),
           dataIndex: 'endIp',
           width: 130
         },
@@ -194,7 +194,7 @@ export default {
     }
   },
   mounted () {
-    var prefilledIpRangesKey = this.traffic + '-ipranges'
+    const prefilledIpRangesKey = this.traffic + '-ipranges'
     if (this.prefillContent[prefilledIpRangesKey]) {
       this.ipRanges = this.prefillContent[prefilledIpRangesKey]
     }
@@ -203,9 +203,6 @@ export default {
     this.form = this.$form.createForm(this)
   },
   methods: {
-    isValidRange () {
-      return this.ipRanges && this.ipRanges.length > 0
-    },
     handleAddRange (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
@@ -241,21 +238,17 @@ export default {
     handleBack (e) {
       this.$emit('backPressed')
     },
-    checkIpFormat () {
-      // TODO: Implement and move up in components
-      return true
-    },
     onDelete (key) {
       const ipRanges = [...this.ipRanges]
       this.ipRanges = ipRanges.filter(item => item.key !== key)
       this.emitIpRanges()
     },
     emitIpRanges () {
-      var trafficRanges = {}
+      const trafficRanges = {}
       trafficRanges[this.traffic + '-ipranges'] = this.ipRanges
       this.$emit('fieldsChanged', trafficRanges)
     },
-    validateIPAddress (rule, value, callback) {
+    checkIpFormat (rule, value, callback) {
       if (!value || value === '') {
         callback()
       } else if (rule.ipV4 && !this.ipV4Regex.test(value)) {
