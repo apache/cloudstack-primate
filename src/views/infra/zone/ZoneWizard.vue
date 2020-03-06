@@ -149,7 +149,6 @@ export default {
       }
 
       this.zoneConfig = { ...this.zoneConfig, ...data }
-      console.log('zoneConfig', this.zoneConfig)
     },
     onCloseAction () {
       this.$emit('close-action')

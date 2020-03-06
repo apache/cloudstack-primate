@@ -49,7 +49,7 @@
         <a-step
           v-for="(step, index) in steps"
           :key="index"
-          :title="step.title"
+          :title="$t(step.title)"
           :status="step.status">
           <a-icon v-if="step.status===status.PROCESS" type="loading" slot="icon" />
           <a-icon v-else-if="step.status===status.FAILED" type="close-circle" slot="icon" />
@@ -58,7 +58,7 @@
             class="step-error"
             v-if="step.status===status.FAILED"
           >
-            <div>{{ $t('error.something.went.wrong.please.correct.the.following') }}:</div>
+            <div><strong>{{ $t('error.something.went.wrong.please.correct.the.following') }}:</strong></div>
             <div>{{ messageError }}</div>
           </a-card>
         </a-step>
@@ -182,7 +182,6 @@ export default {
         this.stepData.tasks = []
         this.stepData.stepMove = this.stepData.stepMove.filter(item => item.indexOf('createStorageNetworkIpRange') === -1)
       }
-      console.log('stepData', this.stepData)
       this.handleSubmit()
     }
   },
@@ -301,7 +300,6 @@ export default {
       return trafficLabelParams
     },
     async stepAddZone () {
-      console.log('stepAddZone')
       this.addStep('message.creating.zone', 'stepAddZone')
 
       const guestcidraddress = this.prefillContent.guestcidraddress ? this.prefillContent.guestcidraddress.value : null
@@ -352,7 +350,6 @@ export default {
         return
       }
 
-      console.log('stepDedicateZone')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
       this.addStep('message.dedicate.zone', 'dedicateZone')
@@ -372,7 +369,6 @@ export default {
       }
     },
     async stepAddPhysicalNetworks () {
-      console.log('stepAddPhysicalNetworks')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
       this.addStep('message.creating.physical.networks', 'physicalNetwork')
@@ -381,15 +377,9 @@ export default {
       params.zoneid = this.stepData.zoneReturned.id
 
       if (this.isBasicZone) {
-        let requestedTrafficTypeCount = this.prefillContent.physicalNetworks[0].traffics.length
-
-        if (this.havingSG && this.havingEIP && this.havingELB) {
-          requestedTrafficTypeCount++
-        }
-
+        const requestedTrafficTypeCount = this.prefillContent.physicalNetworks[0].traffics.length
         this.stepData.requestedTrafficTypeCount = requestedTrafficTypeCount
         this.stepData.returnedTrafficTypes = this.stepData.returnedTrafficTypes ? this.stepData.returnedTrafficTypes : []
-        this.stepData.trafficType = this.stepData.trafficType ? this.stepData.trafficType : []
         this.stepData.physicalNetworkReturned = this.stepData.physicalNetworkReturned ? this.stepData.physicalNetworkReturned : {}
 
         if (this.prefillContent.physicalNetworks && this.prefillContent.physicalNetworks.length > 0) {
@@ -520,7 +510,6 @@ export default {
       }
     },
     async stepConfigurePhysicalNetwork () {
-      console.log('stepConfigurePhysicalNetwork')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
       this.addStep('message.configuring.physical.networks', 'physicalNetwork')
@@ -652,8 +641,6 @@ export default {
       }
     },
     async configOvs (physicalNetwork) {
-      console.log('configOvs')
-
       if (this.stepData.stepMove.includes('configOvs')) {
         return
       }
@@ -670,11 +657,10 @@ export default {
           await this.updateNetworkServiceProvider(ovsProviderId)
         }
       }
+
       this.stepData.stepMove.push('configOvs')
     },
     async configInternalLBVM (physicalNetwork) {
-      console.log('configInternalLBVM')
-
       if (this.stepData.stepMove.includes('configInternalLBVM')) {
         return
       }
@@ -691,10 +677,10 @@ export default {
           await this.updateNetworkServiceProvider(internalLbProviderId)
         }
       }
+
       this.stepData.stepMove.push('configInternalLBVM')
     },
     async configVpcVirtualRouter (physicalNetwork) {
-      console.log('configVpcVirtualRouter')
       const listParams = {}
       listParams.name = 'VpcVirtualRouter'
       listParams.physicalNetworkId = physicalNetwork.id
@@ -715,8 +701,6 @@ export default {
       }
     },
     async stepAddNetscalerProvider () {
-      console.log('stepAddNetscalerProvider')
-
       if (this.havingNetscaler) {
         this.setStepStatus(STATUS_FINISH)
         this.currentStep++
@@ -743,7 +727,6 @@ export default {
       }
     },
     async stepAddNetscalerDevice () {
-      console.log('stepAddNetscalerDevice')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
       this.addStep('message.adding.Netscaler.device', 'netscaler')
@@ -771,6 +754,7 @@ export default {
         }
         url.push('publicinterface=' + publicInterface)
       }
+
       const privateInterface = this.prefillContent.privateinterface ? this.prefillContent.privateinterface.value : null
       if (privateInterface != null && privateInterface.length > 0) {
         if (!isQuestionMarkAdded) {
@@ -781,6 +765,7 @@ export default {
         }
         url.push('privateinterface=' + publicInterface)
       }
+
       const numretries = this.prefillContent.numretries ? this.prefillContent.numretries.value : null
       if (numretries != null && numretries.length > 0) {
         if (!isQuestionMarkAdded) {
@@ -791,6 +776,7 @@ export default {
         }
         url.push('numretries=' + numretries)
       }
+
       const capacity = this.prefillContent.capacity ? this.prefillContent.capacity.value : null
       if (capacity != null && capacity.length > 0) {
         if (!isQuestionMarkAdded) {
@@ -801,6 +787,7 @@ export default {
         }
         url.push('lbdevicecapacity=' + capacity)
       }
+
       params.url = encodeURIComponent(url.join(''))
 
       try {
@@ -821,7 +808,6 @@ export default {
       }
     },
     async stepAddPod () {
-      console.log('stepAddPod')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
       this.addStep('message.creating.pod', 'pod')
@@ -847,7 +833,6 @@ export default {
       }
     },
     async stepAddGuestNetwork () {
-      console.log('stepAddGuestNetwork')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
       this.addStep('message.creating.guest.network', 'guestTraffic')
@@ -879,7 +864,6 @@ export default {
       }
     },
     async stepConfigurePublicTraffic () {
-      console.log('stepConfigurePublicTraffic')
       if (
         (this.isBasicZone &&
           (this.havingSG && this.havingEIP && this.havingELB)) ||
@@ -948,8 +932,6 @@ export default {
           }
         }
 
-        console.log(stopNow)
-
         if (stopNow) {
           return
         }
@@ -969,7 +951,6 @@ export default {
       }
     },
     async stepConfigureStorageTraffic () {
-      console.log('stepConfigureStorageTraffic')
       let targetNetwork = false
       this.prefillContent.physicalNetworks.forEach(physicalNetwork => {
         const storageEx = physicalNetwork.traffics.filter(traffic => traffic.type === 'storage')
@@ -1016,8 +997,6 @@ export default {
         }
       })
 
-      console.log(123)
-
       const taskTimer = setInterval(() => {
         const completedTasks = this.stepData.tasks.filter(item => item.complete || item.error)
         const errorTasks = this.stepData.tasks.filter(item => item.error)
@@ -1043,7 +1022,6 @@ export default {
             }
 
             const jobResult = await this.pollJob(task.jobid)
-            console.log('jobResult', jobResult)
 
             if (jobResult.jobstatus === 1) {
               task.complete = true
@@ -1051,8 +1029,6 @@ export default {
               task.error = true
               task.message = jobResult.jobresult.errortext
             }
-
-            console.log('task', task)
 
             return true
           })
@@ -1069,7 +1045,6 @@ export default {
         return
       }
 
-      console.log('stepConfigureGuestTraffic')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
       this.addStep('message.configuring.guest.traffic', 'guestTraffic')
@@ -1162,7 +1137,6 @@ export default {
       }
     },
     async stepAddCluster () {
-      console.log('stepAddCluster')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
       this.addStep('message.creating.cluster', 'clusterResource')
@@ -1245,10 +1219,10 @@ export default {
       }
     },
     async stepAddHost () {
-      console.log('stepAddHost')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
       this.addStep('message.adding.host', 'hostResource')
+
       const hostData = {}
       hostData.zoneid = this.stepData.zoneReturned.id
       hostData.podid = this.stepData.podReturned.id
@@ -1267,15 +1241,18 @@ export default {
       }
       hostData.url = url
       const hypervisor = this.prefillContent.hypervisor.value
+
       if (hypervisor === 'Ovm') {
         hostData.agentusername = this.prefillContent.agentUserName ? this.prefillContent.agentUserName.value : null
         hostData.agentpassword = this.prefillContent.agentPassword ? this.prefillContent.agentPassword.value : null
       }
+
       if (this.prefillContent.localstorageenabledforsystemvm.value) {
         const configParams = {}
         configParams.name = 'system.vm.use.local.storage'
         configParams.value = true
         configParams.zoneid = this.stepData.zoneReturned.id
+
         try {
           await this.updateConfiguration(configParams)
           this.stepData.returnedHost = await this.addHost(hostData)
@@ -1302,7 +1279,6 @@ export default {
         await this.stepAddSecondaryStorage()
         return
       }
-      console.log('stepAddPrimaryStorage', 'stepAddPrimaryStorage')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
       this.addStep('message.creating.primary.storage', 'primaryResource')
@@ -1322,9 +1298,11 @@ export default {
           params.hypervisor = this.stepData.clusterReturned.hypervisortype
         }
       }
+
       const server = this.prefillContent.primaryStorageServer ? this.prefillContent.primaryStorageServer.value : null
       let url = ''
       const protocol = this.prefillContent.primaryStorageProtocol.value
+
       if (protocol === 'nfs') {
         let path = this.prefillContent.primaryStoragePath.value
         if (path.substring(0, 1) !== '/') {
@@ -1385,6 +1363,7 @@ export default {
         const lun = this.prefillContent.primaryStorageLUN.value
         url = this.iscsiURL(server, iqn, lun)
       }
+
       params.url = url
       params.tags = this.prefillContent.primaryStorageTags.value
 
@@ -1406,7 +1385,6 @@ export default {
         await this.stepComplete()
         return
       }
-      console.log('stepAddSecondaryStorage')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
       this.addStep('message.creating.secondary.storage', 'secondaryResource')
@@ -1526,7 +1504,6 @@ export default {
       }
     },
     async stepEnableSecurityGroupProvider () {
-      console.log('stepEnableSecurityGroupProvider')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
       this.addStep('message.enabling.security.group.provider', 'stepZone')
@@ -1550,7 +1527,6 @@ export default {
       }
     },
     stepComplete () {
-      console.log('stepComplete')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
       this.addStep('message.Zone.creation.complete', 'stepComplete')
@@ -1559,8 +1535,6 @@ export default {
       this.processStatus = STATUS_FINISH
     },
     async pollJob (jobId) {
-      console.log('pollJob', jobId)
-
       return new Promise(resolve => {
         const asyncJobInterval = setInterval(() => {
           api('queryAsyncJobResult', { jobId }).then(async json => {
@@ -1589,7 +1563,6 @@ export default {
       })
     },
     dedicateZone (args) {
-      console.log('dedicateZone')
       return new Promise((resolve, reject) => {
         let message = ''
 
@@ -1602,7 +1575,6 @@ export default {
       })
     },
     async createPhysicalNetwork (args) {
-      console.log('createPhysicalNetwork')
       return new Promise((resolve, reject) => {
         let message = ''
 
@@ -1624,7 +1596,6 @@ export default {
       })
     },
     addTrafficType (trafficType) {
-      console.log('addTrafficType')
       const getTrafficParams = this.trafficLabelParam(trafficType.toLowerCase())
       let params = {}
 
@@ -1654,7 +1625,6 @@ export default {
       })
     },
     updatePhysicalNetwork (args) {
-      console.log('updatePhysicalNetwork')
       return new Promise((resolve, reject) => {
         let message = ''
 
@@ -1676,7 +1646,6 @@ export default {
       })
     },
     listNetworkServiceProviders (params, type) {
-      console.log('listNetworkServiceProviders')
       return new Promise((resolve, reject) => {
         let providerId = null
         let message = ''
@@ -1699,7 +1668,6 @@ export default {
       })
     },
     listVirtualRouterElements (virtualRouterProviderId) {
-      console.log('listVirtualRouterElements')
       return new Promise((resolve, reject) => {
         let virtualRouterElementId = null
         let message = ''
@@ -1722,7 +1690,6 @@ export default {
       })
     },
     configureVirtualRouterElement (virtualRouterElementId) {
-      console.log('configureVirtualRouterElement')
       return new Promise((resolve, reject) => {
         let message = ''
         const params = {}
@@ -1747,7 +1714,6 @@ export default {
       })
     },
     updateNetworkServiceProvider (providerId, type) {
-      console.log('updateNetworkServiceProvider')
       return new Promise((resolve, reject) => {
         let message = ''
         const params = {}
@@ -1782,7 +1748,6 @@ export default {
       })
     },
     listOvsElements (ovsProviderId) {
-      console.log('listOvsElements')
       return new Promise((resolve, reject) => {
         let message = ''
         let ovsElementId = null
@@ -1800,7 +1765,6 @@ export default {
       })
     },
     configureOvsElement (ovsElementId) {
-      console.log('configureOvsElement')
       return new Promise((resolve, reject) => {
         let message = ''
 
@@ -1822,7 +1786,6 @@ export default {
       })
     },
     listInternalLoadBalancerElements (internalLbProviderId) {
-      console.log('listInternalLoadBalancerElements')
       return new Promise((resolve, reject) => {
         let internalLbElementId = null
         let message = ''
@@ -1845,7 +1808,6 @@ export default {
       })
     },
     configureInternalLoadBalancerElement (internalLbElementId) {
-      console.log('configureInternalLoadBalancerElement')
       return new Promise((resolve, reject) => {
         let message = ''
         api('configureInternalLoadBalancerElement', { enabled: true, id: internalLbElementId }).then(async json => {
@@ -1866,7 +1828,6 @@ export default {
       })
     },
     addNetworkServiceProvider (arg) {
-      console.log('addNetworkServiceProvider')
       return new Promise((resolve, reject) => {
         let message = ''
 
@@ -1888,7 +1849,6 @@ export default {
       })
     },
     createNetwork (args) {
-      console.log('createNetwork')
       return new Promise((resolve, reject) => {
         let message = ''
 
@@ -1902,7 +1862,6 @@ export default {
       })
     },
     createPod (args) {
-      console.log('createPod')
       return new Promise((resolve, reject) => {
         let message = ''
 
@@ -1916,7 +1875,6 @@ export default {
       })
     },
     createVlanIpRange (args) {
-      console.log('createVlanIpRange')
       return new Promise((resolve, reject) => {
         let message = ''
 
@@ -1930,7 +1888,6 @@ export default {
       })
     },
     createStorageNetworkIpRange (args) {
-      console.log('createStorageNetworkIpRange')
       return new Promise((resolve, reject) => {
         let message = ''
 
@@ -1947,7 +1904,6 @@ export default {
       })
     },
     addVmwareDc (args) {
-      console.log('addVmwareDc')
       return new Promise((resolve, reject) => {
         let message = ''
 
@@ -1961,7 +1917,6 @@ export default {
       })
     },
     addCluster (args) {
-      console.log('addCluster')
       return new Promise((resolve, reject) => {
         let message = ''
 
@@ -1975,7 +1930,6 @@ export default {
       })
     },
     addHost (args) {
-      console.log('addHost')
       return new Promise((resolve, reject) => {
         let message = ''
 
@@ -1989,7 +1943,6 @@ export default {
       })
     },
     updateConfiguration (args) {
-      console.log('updateConfiguration')
       return new Promise((resolve, reject) => {
         let message = ''
 
@@ -2002,7 +1955,6 @@ export default {
       })
     },
     createStoragePool (args) {
-      console.log('createStoragePool')
       return new Promise((resolve, reject) => {
         let message = ''
 
@@ -2016,7 +1968,6 @@ export default {
       })
     },
     addImageStore (args) {
-      console.log('addImageStore')
       return new Promise((resolve, reject) => {
         let message = ''
 
@@ -2030,7 +1981,6 @@ export default {
       })
     },
     createSecondaryStagingStore (args) {
-      console.log('createSecondaryStagingStore')
       return new Promise((resolve, reject) => {
         let message = ''
 
@@ -2044,7 +1994,6 @@ export default {
       })
     },
     addNetscalerLoadBalancer (args) {
-      console.log('addNetscalerLoadBalancer')
       return new Promise((resolve, reject) => {
         let message = ''
 

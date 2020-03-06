@@ -29,6 +29,7 @@
       @nextPressed="nextPressed"
       @backPressed="handleBack"
       @fieldsChanged="fieldsChanged"
+      @submitLaunchZone="submitLaunchZone"
       :prefillContent="prefillContent"
       :isFixError="isFixError"
     />
@@ -37,6 +38,7 @@
       @nextPressed="nextPressed"
       @backPressed="handleBack"
       @fieldsChanged="fieldsChanged"
+      @submitLaunchZone="submitLaunchZone"
       :fields="netscalerFields"
       :prefillContent="prefillContent"
       :description="netscalerSetupDescription"
