@@ -126,6 +126,16 @@ export default {
           }
         },
         {
+          api: 'createSnapshot',
+          icon: 'camera',
+          label: 'Create VM Volume Snapshot',
+          dataView: true,
+          args: ['volumeId', 'name', 'quiescevm', 'asyncBackup'],
+          show: (record) => { return ['Running'].includes(record.state) },
+          mapping: {
+          }
+        },
+        {
           api: 'attachIso',
           icon: 'paper-clip',
           label: 'label.action.attach.iso',
@@ -168,7 +178,7 @@ export default {
           label: 'Scale VM',
           dataView: true,
           args: ['serviceofferingid', 'details'],
-          show: (record) => { return record.hypervisor !== 'KVM' }
+          show: (record) => { return ['Running'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC' }
         },
         {
           api: 'changeServiceForVirtualMachine',
@@ -176,7 +186,7 @@ export default {
           label: 'Change Service Offering',
           dataView: true,
           args: ['serviceofferingid'],
-          show: (record) => { return ['Stopped'].includes(record.state) }
+          show: (record) => { return ['Running'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC' }
         },
         {
           api: 'migrateVirtualMachine',
