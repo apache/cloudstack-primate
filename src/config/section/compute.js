@@ -118,7 +118,10 @@ export default {
           label: 'Create VM Snapshot',
           dataView: true,
           args: ['virtualmachineid', 'name', 'description', 'snapshotmemory', 'quiescevm'],
-          show: (record) => { return ['Running'].includes(record.state) },
+          show: (record) => {
+            return ((['Running'].includes(record.state) && record.hypervisor !== 'LXC') ||
+              (['Stopped'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC'))
+          },
           mapping: {
             virtualmachineid: {
               value: (record, params) => { return record.id }
@@ -131,7 +134,10 @@ export default {
           label: 'Create VM Volume Snapshot',
           dataView: true,
           args: ['volumeId', 'name', 'quiescevm', 'asyncBackup'],
-          show: (record) => { return ['Running'].includes(record.state) },
+          show: (record) => {
+            return ((['Running'].includes(record.state) && record.hypervisor !== 'LXC') ||
+              (['Stopped'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC'))
+          },
           mapping: {
           }
         },
