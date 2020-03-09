@@ -15,12 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import Cookies from 'js-cookie'
 import Vue from 'vue'
 import router from './router'
 import store from './store'
 
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
+import message from 'ant-design-vue/es/message'
 import notification from 'ant-design-vue/es/notification'
 import { setDocumentTitle, domTitle } from '@/utils/domUtil'
 import { ACCESS_TOKEN } from '@/store/mutation-types'
@@ -33,12 +35,14 @@ router.beforeEach((to, from, next) => {
   // start progress bar
   NProgress.start()
   to.meta && (typeof to.meta.title !== 'undefined' && setDocumentTitle(`${to.meta.title} - ${domTitle}`))
-  if (Vue.ls.get(ACCESS_TOKEN)) {
+  const validLogin = Vue.ls.get(ACCESS_TOKEN) || Cookies.get('userid') || Cookies.get('userid', { path: '/client' })
+  if (validLogin) {
     if (to.path === '/user/login') {
       next({ path: '/dashboard' })
       NProgress.done()
     } else {
       if (Object.keys(store.getters.apis).length === 0) {
+        message.loading('Discovering features...', 5)
         store
           .dispatch('GetInfo')
           .then(apis => {
@@ -55,7 +59,7 @@ router.beforeEach((to, from, next) => {
           .catch(() => {
             notification.error({
               message: 'Error',
-              description: 'Exception caught while trying to discover APIs'
+              description: 'Exception caught while discoverying features'
             })
             store.dispatch('Logout').then(() => {
               next({ path: '/user/login', query: { redirect: to.fullPath } })

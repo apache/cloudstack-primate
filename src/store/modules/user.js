@@ -85,17 +85,17 @@ const user = {
         login(userInfo).then(response => {
           const result = response.loginresponse || {}
 
-          Cookies.set('account', result.account)
-          Cookies.set('domainid', result.domainid)
-          Cookies.set('role', result.type)
-          Cookies.set('sessionkey', result.sessionkey)
-          Cookies.set('timezone', result.timezone)
-          Cookies.set('timezoneoffset', result.timezoneoffset)
-          Cookies.set('userfullname', result.firstname + ' ' + result.lastname)
-          Cookies.set('userid', result.userid)
-          Cookies.set('username', result.username)
+          Cookies.set('account', result.account, { expires: 1 })
+          Cookies.set('domainid', result.domainid, { expires: 1 })
+          Cookies.set('role', result.type, { expires: 1 })
+          Cookies.set('sessionkey', result.sessionkey, { expires: 1 })
+          Cookies.set('timezone', result.timezone, { expires: 1 })
+          Cookies.set('timezoneoffset', result.timezoneoffset, { expires: 1 })
+          Cookies.set('userfullname', result.firstname + ' ' + result.lastname, { expires: 1 })
+          Cookies.set('userid', result.userid, { expires: 1 })
+          Cookies.set('username', result.username, { expires: 1 })
 
-          Vue.ls.set(ACCESS_TOKEN, result.sessionkey, 60 * 60 * 1000)
+          Vue.ls.set(ACCESS_TOKEN, result.sessionkey, 24 * 60 * 60 * 1000)
           commit('SET_TOKEN', result.sessionkey)
           commit('SET_PROJECT', {})
           commit('SET_ASYNC_JOB_IDS', [])
@@ -168,6 +168,11 @@ const user = {
           cloudianUrl = state.cloudian.url + 'logout.htm?redirect=' + encodeURIComponent(window.location.href)
         }
 
+        Object.keys(Cookies.get()).forEach(cookieName => {
+          Cookies.remove(cookieName)
+          Cookies.remove(cookieName, { path: '/client' })
+        })
+
         commit('SET_TOKEN', '')
         commit('SET_PROJECT', {})
         commit('SET_APIS', {})
@@ -178,16 +183,6 @@ const user = {
         Vue.ls.remove(ASYNC_JOB_IDS)
 
         logout(state.token).then(() => {
-          Cookies.remove('account')
-          Cookies.remove('domainid')
-          Cookies.remove('role')
-          Cookies.remove('sessionkey')
-          Cookies.remove('timezone')
-          Cookies.remove('timezoneoffset')
-          Cookies.remove('userfullname')
-          Cookies.remove('userid')
-          Cookies.remove('username')
-
           if (cloudianUrl) {
             window.location.href = cloudianUrl
           } else {

@@ -29,7 +29,7 @@
             </div>
             <slot name="name">
               <h4 class="name">
-                {{ resource.displayname || resource.name || resource.displaytext || resource.hostname || resource.username || resource.ipaddress }}
+                {{ resource.displayname || resource.displaytext || resource.name || resource.hostname || resource.username || resource.ipaddress }}
               </h4>
               <console style="margin-left: 10px" :resource="resource" size="default" v-if="resource.id" />
             </slot>
@@ -73,6 +73,21 @@
             <span>{{ resource.state || resource.status }}</span>
           </div>
         </div>
+        <div class="resource-detail-item" v-if="resource.allocationstate">
+          <div class="resource-detail-item__label">{{ $t('allocationstate') }}</div>
+          <div class="resource-detail-item__details">
+            <status class="status" :text="resource.allocationstate"/>
+            <span>{{ resource.allocationstate }}</span>
+          </div>
+        </div>
+        <div class="resource-detail-item" v-if="resource.resourcestate">
+          <div class="resource-detail-item__label">{{ $t('resourcestate') }}</div>
+          <div class="resource-detail-item__details">
+            <status class="status" :text="resource.resourcestate"/>
+            <span>{{ resource.resourcestate }}</span>
+          </div>
+        </div>
+
         <div class="resource-detail-item" v-if="resource.id">
           <div class="resource-detail-item__label">{{ $t('id') }}</div>
           <div class="resource-detail-item__details">
@@ -387,7 +402,8 @@
           <div class="resource-detail-item__label">{{ $t('zone') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="global" />
-            <router-link :to="{ path: '/zone/' + resource.zoneid }">{{ resource.zonename || resource.zoneid }}</router-link>
+            <router-link v-if="!resource.zoneid.includes(',')" :to="{ path: '/zone/' + resource.zoneid }">{{ resource.zonename || resource.zoneid }}</router-link>
+            <span v-else>{{ resource.zone || resource.zonename }}</span>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.account">
@@ -408,7 +424,8 @@
           <div class="resource-detail-item__label">{{ $t('domain') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="block" />
-            <router-link :to="{ path: '/domain/' + resource.domainid }">{{ resource.domain || resource.domainid }}</router-link>
+            <router-link v-if="!resource.domainid.includes(',')" :to="{ path: '/domain/' + resource.domainid }">{{ resource.domain || resource.domainid }}</router-link>
+            <span v-else>{{ resource.domain }}</span>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.managementserverid">
@@ -476,7 +493,7 @@
               <template slot="title">
                 <span>Copy {{ $t('secretkey') }}</span>
               </template>
-              <a-button shape="circle" type="dashed" size="small" v-clipboard:copy="resource.apikey">
+              <a-button shape="circle" type="dashed" size="small" v-clipboard:copy="resource.secretkey">
                 <a-icon type="copy"/>
               </a-button>
             </a-tooltip>
