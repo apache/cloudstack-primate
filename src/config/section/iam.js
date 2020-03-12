@@ -34,7 +34,7 @@ export default {
           icon: 'plus',
           label: 'label.add.user',
           listView: true,
-          args: ['username', 'password', 'password', 'email', 'firstname', 'lastname', 'timezone', 'account', 'domainid']
+          args: ['username', 'password', 'confirmpassword', 'email', 'firstname', 'lastname', 'timezone', 'account', 'domainid']
         },
         {
           api: 'updateUser',
@@ -110,7 +110,7 @@ export default {
           icon: 'plus',
           label: 'label.add.account',
           listView: true,
-          args: ['username', 'password', 'password', 'email', 'firstname', 'lastname', 'domainid', 'account', 'roleid', 'timezone', 'networkdomain']
+          args: ['username', 'password', 'confirmpassword', 'email', 'firstname', 'lastname', 'domainid', 'account', 'roleid', 'timezone', 'networkdomain']
         },
         {
           api: 'ldapCreateAccount',

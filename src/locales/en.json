@@ -1081,5 +1081,8 @@
 "addNewNetworks": "Add new networks",
 "existingNetworks": "Existing networks",
 "sshKeyPairs": "SSH keypairs",
-"wednesday": "Wednesday"
+"wednesday": "Wednesday",
+"confirmpassword": "Confirm password",
+"label.confirmpassword.description": "Type the same password again.",
+"message.validate.equalto": "Please enter the same value again."
 }
