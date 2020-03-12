@@ -336,46 +336,49 @@ export default {
       this.tabActive = key
     },
     reloadTreeData (objData) {
-      // data response from action
-      let jsonResponse = this.getResponseJsonData(objData[0])
-      jsonResponse = this.createResourceData(jsonResponse)
-
-      // resource for check create or edit
-      const resource = this.treeVerticalData.filter(item => item.id === jsonResponse.id)
-
-      // when edit
-      if (resource && resource[0]) {
-        this.treeVerticalData.filter((item, index) => {
-          if (item.id === jsonResponse.id) {
-            // replace all value of tree data
-            Object.keys(jsonResponse).forEach((value, idx) => {
-              this.$set(this.treeVerticalData[index], value, jsonResponse[value])
-            })
-          }
-        })
+      if (objData && objData[0].isDel) {
+        this.treeVerticalData = this.treeVerticalData.filter(item => item.id !== objData[0].id)
       } else {
-        // when create
-        let resourceExists = true
+        // data response from action
+        let jsonResponse = this.getResponseJsonData(objData[0])
+        jsonResponse = this.createResourceData(jsonResponse)
 
-        // check is searching data
-        if (this.searchQuery !== '') {
-          resourceExists = jsonResponse.title.indexOf(this.searchQuery) > -1
-        }
+        // resource for check create or edit
+        const resource = this.treeVerticalData.filter(item => item.id === jsonResponse.id)
 
-        // push new resource to tree data
-        if (this.resource.haschild && resourceExists) {
-          this.treeVerticalData.push(jsonResponse)
-        }
+        // when edit
+        if (resource && resource[0]) {
+          this.treeVerticalData.filter((item, index) => {
+            if (item.id === jsonResponse.id) {
+              // replace all value of tree data
+              Object.keys(jsonResponse).forEach((value, idx) => {
+                this.$set(this.treeVerticalData[index], value, jsonResponse[value])
+              })
+            }
+          })
+        } else {
+          // when create
+          let resourceExists = true
 
-        // set resource is currently active as a parent
-        this.treeVerticalData.filter((item, index) => {
-          if (item.id === this.resource.id) {
-            this.$set(this.treeVerticalData[index], 'isLeaf', false)
-            this.$set(this.treeVerticalData[index], 'haschild', true)
+          // check is searching data
+          if (this.searchQuery !== '') {
+            resourceExists = jsonResponse.title.indexOf(this.searchQuery) > -1
           }
-        })
-      }
 
+          // push new resource to tree data
+          if (this.resource.haschild && resourceExists) {
+            this.treeVerticalData.push(jsonResponse)
+          }
+
+          // set resource is currently active as a parent
+          this.treeVerticalData.filter((item, index) => {
+            if (item.id === this.resource.id) {
+              this.$set(this.treeVerticalData[index], 'isLeaf', false)
+              this.$set(this.treeVerticalData[index], 'haschild', true)
+            }
+          })
+        }
+      }
       this.recursiveTreeData(this.treeVerticalData)
     },
     getDetailResource (selectedKey) {
