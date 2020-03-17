@@ -67,14 +67,14 @@ export default {
           label: 'Attach Volume',
           args: ['virtualmachineid'],
           dataView: true,
-          show: (record) => { return !('virtualmachineid' in record) }
+          show: (record) => { return record.type !== 'ROOT' && !('virtualmachineid' in record) }
         },
         {
           api: 'detachVolume',
           icon: 'link',
           label: 'Detach Volume',
           dataView: true,
-          show: (record) => { return 'virtualmachineid' in record && record.virtualmachineid }
+          show: (record) => { return record.type !== 'ROOT' && 'virtualmachineid' in record && record.virtualmachineid }
         },
         {
           api: 'createSnapshot',
@@ -133,7 +133,7 @@ export default {
           icon: 'cloud-download',
           label: 'Download Volume',
           dataView: true,
-          show: (record) => { return record && record.state === 'Ready' },
+          show: (record) => { return record && record.state === 'Ready' && (record.vmstate === 'Stopped' || record.virtualmachineid == null) },
           args: ['zoneid', 'mode'],
           mapping: {
             zoneid: {
@@ -150,7 +150,7 @@ export default {
           icon: 'picture',
           label: 'Create Template from Volume',
           dataView: true,
-          show: (record) => { return record.type === 'ROOT' },
+          show: (record) => { return record.type === 'ROOT' && record.vmstate === 'Stopped' },
           args: ['volumeid', 'name', 'displaytext', 'ostypeid', 'ispublic', 'isfeatured', 'isdynamicallyscalable', 'requireshvm', 'passwordenabled', 'sshkeyenabled'],
           mapping: {
             volumeid: {
