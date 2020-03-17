@@ -118,7 +118,7 @@ export default {
       permission: ['listIsos'],
       params: { isofilter: 'executable' },
       resourceType: 'ISO',
-      columns: ['name', 'ostypename', 'account', 'domain'],
+      columns: ['name', 'ostypename', 'account', 'domain', 'order'],
       details: ['name', 'id', 'displaytext', 'checksum', 'ostypename', 'size', 'bootable', 'isready', 'directdownload', 'isextractable', 'ispublic', 'isfeatured', 'crosszones', 'account', 'domain', 'created'],
       related: [{
         name: 'vm',
