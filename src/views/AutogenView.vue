@@ -554,6 +554,9 @@ export default {
         }
       }
       this.currentAction.loading = false
+      if (action.dataView) {
+        this.handleSetFieldsValues()
+      }
     },
     listUuidOpts (param) {
       if (this.currentAction.mapping && param.name in this.currentAction.mapping && !this.currentAction.mapping[param.name].api) {
@@ -634,6 +637,13 @@ export default {
         loadingMessage: `${this.$t(action.label)} in progress for ${this.resource.name}`,
         catchMessage: 'Error encountered while fetching async job result',
         action
+      })
+    },
+    handleSetFieldsValues () {
+      const form = this.form
+      this.currentAction.paramFields.map(field => {
+        const fieldValue = this.resource[field.name]
+        form.getFieldDecorator(field.name, { initialValue: fieldValue })
       })
     },
     handleSubmit (e) {
