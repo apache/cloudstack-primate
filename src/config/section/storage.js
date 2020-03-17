@@ -116,7 +116,7 @@ export default {
           label: 'Migrate Volume',
           args: ['volumeid', 'storageid', 'livemigrate'],
           dataView: true,
-          show: (record) => { return record && record.state === 'Ready' },
+          show: (record, store) => { return record && record.state === 'Ready' && record.virtualmachineid != null && ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) },
           popup: true,
           component: () => import('@/views/storage/MigrateVolume.vue'),
           mapping: {
@@ -163,7 +163,12 @@ export default {
           icon: 'delete',
           label: 'Delete Volume',
           dataView: true,
-          groupAction: true
+          groupAction: true,
+          show: (record, store) => { // g_allowUserExpungeRecoverVolume
+            return ['Expunging', 'Expunged', 'UploadError'].includes(record.state) ||
+              (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && record.state === 'Destroy') ||
+              (['Allocated', 'Uploaded'].includes(record.state) && record.type !== 'ROOT')
+          }
         }
       ]
     },
