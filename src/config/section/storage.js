@@ -222,7 +222,7 @@ export default {
       icon: 'camera',
       permission: ['listVMSnapshot'],
       resourceType: 'VMSnapshot',
-      columns: ['name', 'state', 'type', 'current', 'parentName', 'created', 'account'],
+      columns: ['displayname', 'state', 'type', 'current', 'parentName', 'created', 'account'],
       details: ['name', 'id', 'displayname', 'description', 'type', 'current', 'parentName', 'virtualmachineid', 'account', 'domain', 'created'],
       actions: [
         {
