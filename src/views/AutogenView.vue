@@ -50,7 +50,8 @@
             <search-view
               :dataView="dataView"
               :treeView="treeView"
-              :filters="filters"/>
+              :filters="filters"
+              :apiName="apiName"/>
           </span>
         </a-col>
       </a-row>

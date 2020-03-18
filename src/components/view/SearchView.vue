@@ -136,6 +136,10 @@ export default {
     filters: {
       type: Array,
       default: () => []
+    },
+    apiName: {
+      type: String,
+      default: () => ''
     }
   },
   inject: ['parentSearch', 'parentFilter'],
@@ -164,7 +168,7 @@ export default {
   methods: {
     async initFormFieldData () {
       this.fields = this.filters.map(item => {
-        if (['zoneid', 'domainid'].includes(item)) {
+        if (['zoneid', 'domainid', 'state'].includes(item)) {
           return {
             type: 'list',
             name: item,
@@ -187,6 +191,13 @@ export default {
       const promises = []
       let zoneIndex = -1
       let domainIndex = -1
+
+      if (this.filters.includes('state')) {
+        const stateIndex = this.fields.findIndex(item => item.name === 'state')
+        this.fields[stateIndex].loading = true
+        this.fields[stateIndex].opts = this.fetchState()
+        this.fields[stateIndex].loading = false
+      }
 
       if (this.filters.includes('zoneid')) {
         zoneIndex = this.fields.findIndex(item => item.name === 'zoneid')
@@ -248,6 +259,33 @@ export default {
           reject(error.response.headers['x-description'])
         })
       })
+    },
+    fetchState () {
+      console.log(this.apiName)
+      const state = []
+      if (this.apiName.indexOf('listVolumes') > -1) {
+        state.push({
+          id: 'Allocated',
+          name: 'Allocated'
+        })
+        state.push({
+          id: 'Ready',
+          name: 'Ready'
+        })
+        state.push({
+          id: 'Destroy',
+          name: 'Destroy'
+        })
+        state.push({
+          id: 'Expunging',
+          name: 'Expunging'
+        })
+        state.push({
+          id: 'Expunged',
+          name: 'Expunged'
+        })
+      }
+      return state
     },
     onSearch (value) {
       this.searchQuery = value

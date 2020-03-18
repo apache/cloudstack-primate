@@ -33,6 +33,7 @@ export default {
         title: 'Snapshots',
         param: 'volumeid'
       }],
+      filters: ['name', 'zoneid', 'domainid', 'account', 'state', 'tags'],
       actions: [
         {
           api: 'createVolume',
