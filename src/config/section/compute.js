@@ -37,6 +37,7 @@ export default {
         'memorytotal', 'networkread', 'networkwrite', 'diskkbsread', 'diskkbswrite', 'diskiopstotal',
         'account', 'zonename'
       ],
+      filters: ['name', 'zoneid', 'domainid', 'account'],
       related: [{
         name: 'volume',
         title: 'Volumes',

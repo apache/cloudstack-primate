@@ -47,13 +47,10 @@
               :dataView="dataView"
               :resource="resource"
               @exec-action="execAction"/>
-            <a-input-search
-              style="width: 20vw; margin-left: 10px"
-              placeholder="Search"
-              v-model="searchQuery"
-              v-if="!dataView && !treeView"
-              allowClear
-              @search="onSearch" />
+            <search-view
+              :dataView="dataView"
+              :treeView="treeView"
+              :filters="filters"/>
           </span>
         </a-col>
       </a-row>
@@ -259,6 +256,7 @@ import ListView from '@/components/view/ListView'
 import ResourceView from '@/components/view/ResourceView'
 import TreeView from '@/components/view/TreeView'
 import ActionButton from '@/components/view/ActionButton'
+import SearchView from '@/components/view/SearchView'
 
 export default {
   name: 'Resource',
@@ -269,7 +267,8 @@ export default {
     ListView,
     TreeView,
     Status,
-    ActionButton
+    ActionButton,
+    SearchView
   },
   mixins: [mixinDevice],
   provide: function () {
@@ -277,7 +276,9 @@ export default {
       parentFetchData: this.fetchData,
       parentToggleLoading: this.toggleLoading,
       parentStartLoading: this.startLoading,
-      parentFinishLoading: this.finishLoading
+      parentFinishLoading: this.finishLoading,
+      parentSearch: this.onSearch,
+      parentFilter: this.onFilter
     }
   },
   data () {
@@ -300,7 +301,9 @@ export default {
       actions: [],
       treeData: [],
       treeSelected: {},
-      actionData: []
+      actionData: [],
+      filters: [],
+      paramsFilters: {}
     }
   },
   computed: {
@@ -359,8 +362,12 @@ export default {
       } else if (this.$route.meta.params) {
         Object.assign(params, this.$route.meta.params)
       }
+      if (Object.keys(this.paramsFilters).length > 0) {
+        Object.assign(params, this.paramsFilters)
+      }
 
       this.treeView = this.$route && this.$route.meta && this.$route.meta.treeView
+      this.filters = this.$route && this.$route.meta && this.$route.meta.filters
 
       if (this.$route && this.$route.params && this.$route.params.id) {
         this.resource = {}
@@ -511,6 +518,14 @@ export default {
     onSearch (value) {
       this.searchQuery = value
       this.page = 1
+      this.fetchData()
+    },
+    onFilter (filters) {
+      if (filters && Object.keys(filters).length > 0) {
+        this.paramsFilters = filters
+        this.page = 1
+      }
+
       this.fetchData()
     },
     closeAction () {
