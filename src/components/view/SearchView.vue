@@ -168,7 +168,7 @@ export default {
   methods: {
     async initFormFieldData () {
       this.fields = this.filters.map(item => {
-        if (['zoneid', 'domainid', 'state'].includes(item)) {
+        if (['zoneid', 'domainid', 'state', 'level'].includes(item)) {
           return {
             type: 'list',
             name: item,
@@ -197,6 +197,13 @@ export default {
         this.fields[stateIndex].loading = true
         this.fields[stateIndex].opts = this.fetchState()
         this.fields[stateIndex].loading = false
+      }
+
+      if (this.filters.includes('level')) {
+        const levelIndex = this.fields.findIndex(item => item.name === 'level')
+        this.fields[levelIndex].loading = true
+        this.fields[levelIndex].opts = this.fetchLevel()
+        this.fields[levelIndex].loading = false
       }
 
       if (this.filters.includes('zoneid')) {
@@ -286,6 +293,22 @@ export default {
         })
       }
       return state
+    },
+    fetchLevel () {
+      const levels = []
+      levels.push({
+        id: 'INFO',
+        name: 'INFO'
+      })
+      levels.push({
+        id: 'WARN',
+        name: 'WARN'
+      })
+      levels.push({
+        id: 'ERROR',
+        name: 'ERROR'
+      })
+      return levels
     },
     onSearch (value) {
       this.searchQuery = value

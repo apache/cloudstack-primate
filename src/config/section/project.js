@@ -23,6 +23,7 @@ export default {
   resourceType: 'Project',
   columns: ['name', 'state', 'displaytext', 'account', 'domain'],
   details: ['name', 'id', 'displaytext', 'projectaccountname', 'vmtotal', 'cputotal', 'memorytotal', 'volumetotal', 'iptotal', 'vpctotal', 'templatetotal', 'primarystoragetotal', 'account', 'domain'],
+  filters: ['name', 'displaytext', 'domainid', 'account'],
   tabs: [
     {
       name: 'details',

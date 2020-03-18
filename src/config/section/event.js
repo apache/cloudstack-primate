@@ -22,6 +22,7 @@ export default {
   permission: ['listEvents'],
   columns: ['username', 'description', 'state', 'level', 'type', 'account', 'domain', 'created'],
   details: ['username', 'id', 'description', 'state', 'level', 'type', 'account', 'domain', 'created'],
+  filters: ['level', 'domainid', 'account', 'username'],
   actions: [
     {
       api: 'archiveEvents',
