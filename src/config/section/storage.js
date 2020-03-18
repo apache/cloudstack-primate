@@ -176,6 +176,7 @@ export default {
       resourceType: 'Snapshot',
       columns: ['name', 'state', 'volumename', 'intervaltype', 'created', 'account'],
       details: ['name', 'id', 'volumename', 'intervaltype', 'account', 'domain', 'created'],
+      filters: ['name', 'domainid', 'account', 'tags'],
       actions: [
         {
           api: 'createTemplate',
