@@ -1933,7 +1933,7 @@ export default {
       return new Promise((resolve, reject) => {
         let message = ''
 
-        api('addHost', args).then(json => {
+        api('addHost', args, 'POST').then(json => {
           const result = json.addhostresponse.host[0]
           resolve(result)
         }).catch(error => {
