@@ -1480,7 +1480,7 @@ export default {
           this.stepData.stepMove.push('addImageStore')
         }
 
-        if (this.prefillContent.secondaryStorageNFSStaging.value) {
+        if (this.prefillContent.secondaryStorageNFSStaging && this.prefillContent.secondaryStorageNFSStaging.value) {
           const nfsServer = this.prefillContent.secondaryStorageNFSServer.value
           const path = this.prefillContent.secondaryStorageNFSPath.value
           const url = this.nfsURL(nfsServer, path)
@@ -1907,7 +1907,7 @@ export default {
       return new Promise((resolve, reject) => {
         let message = ''
 
-        api('addVmwareDc', args, 'POST').then(json => {
+        api('addVmwareDc', {}, 'POST', args).then(json => {
           const item = json.addvmwaredcresponse.vmwaredc
           resolve(item)
         }).catch(error => {
@@ -1933,7 +1933,7 @@ export default {
       return new Promise((resolve, reject) => {
         let message = ''
 
-        api('addHost', args, 'POST').then(json => {
+        api('addHost', {}, 'POST', args).then(json => {
           const result = json.addhostresponse.host[0]
           resolve(result)
         }).catch(error => {
@@ -1997,7 +1997,7 @@ export default {
       return new Promise((resolve, reject) => {
         let message = ''
 
-        api('addNetscalerLoadBalancer', args, 'POST').then(async json => {
+        api('addNetscalerLoadBalancer', {}, 'POST', args).then(async json => {
           const jobId = json.addnetscalerloadbalancerresponse.jobid
           if (jobId) {
             const result = await this.pollJob(jobId)
