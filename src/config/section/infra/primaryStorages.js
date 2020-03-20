@@ -21,7 +21,7 @@ export default {
   icon: 'database',
   permission: ['listStoragePoolsMetrics', 'listStoragePools'],
   columns: ['name', 'state', 'ipaddress', 'type', 'path', 'scope', 'disksizeusedgb', 'disksizetotalgb', 'disksizeallocatedgb', 'disksizeunallocatedgb', 'clustername', 'zonename'],
-  details: ['name', 'id', 'ipaddress', 'type', 'scope', 'path', 'provider', 'hypervisor', 'overprovisionfactor', 'disksizetotal', 'disksizeallocated', 'disksizeused', 'clustername', 'podname', 'zonename', 'created'],
+  details: ['name', 'id', 'ipaddress', 'type', 'scope', 'path', 'provider', 'hypervisor', 'overprovisionfactor', 'disksizetotal', 'disksizeallocated', 'disksizeused', 'clustername', 'podname', 'zonename', 'created', 'tags'],
   related: [{
     name: 'volume',
     title: 'Volumes',

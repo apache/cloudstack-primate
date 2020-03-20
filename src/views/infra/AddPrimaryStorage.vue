@@ -559,7 +559,7 @@ export default {
           }
         }
         var storagetags = this.storagetags.map(tag => tag).join(',')
-        params.storagetags = storagetags
+        params.tags = storagetags
         this.loading = true
         api('createStoragePool', params).then(json => {
           this.$notification.success({
