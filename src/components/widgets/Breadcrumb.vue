@@ -26,7 +26,7 @@
         {{ $t(item.meta.title) }}
       </router-link>
       <span v-else-if="$route.params.id">
-        {{ $route.params.id }}
+        {{ resource.displayname || resource.displaytext || resource.name || resource.hostname || resource.username || resource.ipaddress || $route.params.id }}
       </span>
       <span v-else>
         {{ $t(item.meta.title) }}
@@ -38,7 +38,7 @@
           </template>
           <a
             v-if="item.meta.docHelp"
-            style="margin-right: 10px"
+            style="margin-right: 12px"
             :href="docBase + '/' + $route.meta.docHelp"
             target="_blank">
             <a-icon type="question-circle-o"></a-icon>
@@ -56,6 +56,14 @@ import config from '@/config/settings'
 
 export default {
   name: 'Breadcrumb',
+  props: {
+    resource: {
+      type: Object,
+      default: function () {
+        return {}
+      }
+    }
+  },
   data () {
     return {
       name: '',

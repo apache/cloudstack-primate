@@ -39,8 +39,17 @@ export default {
           icon: 'plus',
           label: 'Create Volume',
           listView: true,
-          args: ['name', 'zoneid', 'diskofferingid']
+          popup: true,
+          component: () => import('@/views/storage/CreateVolume.vue')
         }, {
+          api: 'getUploadParamsForVolume',
+          icon: 'cloud-upload',
+          label: 'Upload Local Volume',
+          listView: true,
+          popup: true,
+          component: () => import('@/views/storage/UploadLocalVolume.vue')
+        },
+        {
           api: 'uploadVolume',
           icon: 'link',
           label: 'Upload Volume From URL',
@@ -51,13 +60,6 @@ export default {
               options: ['RAW', 'VHD', 'VHDX', 'OVA', 'QCOW2']
             }
           }
-        }, {
-          api: 'getUploadParamsForVolume',
-          icon: 'cloud-upload',
-          label: 'Upload Local Volume',
-          listView: true,
-          popup: true,
-          component: () => import('@/views/storage/UploadLocalVolume.vue')
         },
         {
           api: 'attachVolume',
@@ -105,7 +107,8 @@ export default {
           icon: 'fullscreen',
           label: 'Resize Volume',
           dataView: true,
-          args: ['size']
+          popup: true,
+          component: () => import('@/views/storage/ResizeVolume.vue')
         },
         {
           api: 'migrateVolume',

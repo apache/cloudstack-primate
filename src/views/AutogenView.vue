@@ -20,7 +20,7 @@
     <a-card class="breadcrumb-card">
       <a-row>
         <a-col :span="14" style="padding-left: 6px">
-          <breadcrumb>
+          <breadcrumb :resource="resource">
             <a-tooltip placement="bottom" slot="end">
               <template slot="title">
                 {{ "Refresh" }}
@@ -28,11 +28,12 @@
               <a-button
                 style="margin-top: 4px"
                 :loading="loading"
-                shape="circle"
+                shape="round"
                 size="small"
-                type="dashed"
                 icon="reload"
-                @click="fetchData()" />
+                @click="fetchData()">
+                {{ "Refresh" }}
+              </a-button>
             </a-tooltip>
           </breadcrumb>
         </a-col>
@@ -47,10 +48,11 @@
               :resource="resource"
               @exec-action="execAction"/>
             <a-input-search
-              style="width: 25vw; margin-left: 10px"
+              style="width: 20vw; margin-left: 10px"
               placeholder="Search"
               v-model="searchQuery"
               v-if="!dataView && !treeView"
+              allowClear
               @search="onSearch" />
           </span>
         </a-col>
@@ -74,6 +76,7 @@
             :is="currentAction.component"
             :resource="resource"
             :loading="loading"
+            :action="{currentAction}"
             v-bind="{currentAction}"
             @refresh-data="fetchData"
             @poll-action="pollActionCompletion"
@@ -147,7 +150,7 @@
                   }"
                 >
                   <a-select-option v-for="(opt, optIndex) in field.opts" :key="optIndex">
-                    {{ opt.name || opt.description }}
+                    {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
                 </a-select>
               </span>
@@ -228,6 +231,7 @@
         @change="changePage"
         @showSizeChange="changePageSize"
         showSizeChanger
+        showQuickJumper
         v-if="!treeView" />
       <tree-view
         v-if="treeView"
@@ -271,7 +275,9 @@ export default {
   provide: function () {
     return {
       parentFetchData: this.fetchData,
-      parentToggleLoading: this.toggleLoading
+      parentToggleLoading: this.toggleLoading,
+      parentStartLoading: this.startLoading,
+      parentFinishLoading: this.finishLoading
     }
   },
   data () {
@@ -302,14 +308,27 @@ export default {
       return this.selectedRowKeys.length > 0
     }
   },
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
+  },
   mounted () {
+    this.currentPath = this.$route.fullPath
     this.fetchData()
+  },
+  beforeRouteUpdate (to, from, next) {
+    this.currentPath = this.$route.fullPath
+    next()
+  },
+  beforeRouteLeave (to, from, next) {
+    this.currentPath = this.$route.fullPath
+    next()
   },
   watch: {
     '$route' (to, from) {
       if (to.fullPath !== from.fullPath && !to.fullPath.includes('action/')) {
-        this.page = 1
         this.searchQuery = ''
+        this.page = 1
+        this.itemCount = 0
         this.fetchData()
       }
     },
@@ -318,9 +337,6 @@ export default {
         this.fetchData()
       }
     }
-  },
-  beforeCreate () {
-    this.form = this.$form.createForm(this)
   },
   methods: {
     fetchData () {
@@ -342,10 +358,6 @@ export default {
         Object.assign(params, this.$route.query)
       } else if (this.$route.meta.params) {
         Object.assign(params, this.$route.meta.params)
-      }
-
-      if (this.searchQuery !== '') {
-        params.keyword = this.searchQuery
       }
 
       this.treeView = this.$route && this.$route.meta && this.$route.meta.treeView
@@ -373,6 +385,14 @@ export default {
         return
       }
 
+      if (this.searchQuery !== '') {
+        if (this.apiName === 'listRoles') {
+          params.name = this.searchQuery
+        } else {
+          params.keyword = this.searchQuery
+        }
+      }
+
       if (!this.columnKeys || this.columnKeys.length === 0) {
         for (const field of store.getters.apis[this.apiName].response) {
           this.columnKeys.push(field.name)
@@ -397,7 +417,7 @@ export default {
           title: this.$t(key),
           dataIndex: key,
           scopedSlots: { customRender: key },
-          sorter: function (a, b) { return genericCompare(a[this.dataIndex], b[this.dataIndex]) }
+          sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
         })
       }
 
@@ -490,6 +510,7 @@ export default {
     },
     onSearch (value) {
       this.searchQuery = value
+      this.page = 1
       this.fetchData()
     },
     closeAction () {
@@ -525,6 +546,9 @@ export default {
 
       this.showAction = true
       for (const param of this.currentAction.paramFields) {
+        if (param.type === 'list' && param.name === 'hosttags') {
+          param.type = 'string'
+        }
         if (param.type === 'uuid' || param.type === 'list' || param.name === 'account' || (this.currentAction.mapping && param.name in this.currentAction.mapping)) {
           this.listUuidOpts(param)
         }
@@ -748,6 +772,12 @@ export default {
     },
     toggleLoading () {
       this.loading = !this.loading
+    },
+    startLoading () {
+      this.loading = true
+    },
+    finishLoading () {
+      this.loading = false
     }
   }
 }

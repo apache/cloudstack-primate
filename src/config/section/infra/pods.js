@@ -37,7 +37,8 @@ export default {
       icon: 'plus',
       label: 'label.add.pod',
       listView: true,
-      args: ['zoneid', 'name', 'gateway', 'netmask', 'startip', 'endip']
+      popup: true,
+      component: () => import('@/views/infra/PodAdd.vue')
     },
     {
       api: 'updatePod',
@@ -47,37 +48,17 @@ export default {
       args: ['name', 'netmask', 'gateway']
     },
     {
-      api: 'dedicatePod',
-      icon: 'user-add',
-      label: 'label.dedicate.pod',
-      dataView: true,
-      show: (record) => { return !record.domainid },
-      args: ['podid', 'domainid', 'account'],
-      mapping: {
-        podid: {
-          value: (record) => { return record.id }
-        }
-      }
-    },
-    {
-      api: 'releaseDedicatedPod',
-      icon: 'user-delete',
-      label: 'label.release.dedicated.pod',
-      dataView: true,
-      show: (record) => { return record.domainid },
-      args: ['podid'],
-      mapping: {
-        podid: {
-          value: (record) => { return record.id }
-        }
-      }
-    },
-    {
       api: 'updatePod',
       icon: 'play-circle',
       label: 'label.action.enable.pod',
       dataView: true,
-      show: (record) => { return record.allocationstate === 'Disabled' }
+      show: (record) => { return record.allocationstate === 'Disabled' },
+      args: ['allocationstate'],
+      mapping: {
+        allocationstate: {
+          value: (record) => 'Enabled'
+        }
+      }
     },
     {
       api: 'updatePod',
@@ -85,7 +66,12 @@ export default {
       label: 'label.action.disable.pod',
       dataView: true,
       show: (record) => { return record.allocationstate === 'Enabled' },
-      defaultArgs: { allocationstate: 'Disabled' }
+      args: ['allocationstate'],
+      mapping: {
+        allocationstate: {
+          value: (record) => 'Disabled'
+        }
+      }
     },
     {
       api: 'deletePod',

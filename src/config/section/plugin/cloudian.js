@@ -15,26 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-<template>
-  <div>
-    TODO: VPC tiers management
-  </div>
-</template>
-
-<script>
+import cloudian from '@/assets/icons/cloudian.svg?inline'
 
 export default {
-  name: '',
-  components: {
-  },
-  data () {
-    return {
-    }
-  },
-  methods: {
-  }
+  name: 'cloudian',
+  title: 'Cloudian Storage',
+  icon: cloudian,
+  permission: ['cloudianSsoLogin'],
+  component: () => import('@/views/plugins/CloudianPlugin.vue')
 }
-</script>
-
-<style scoped>
-</style>
