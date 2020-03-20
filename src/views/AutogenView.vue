@@ -642,7 +642,14 @@ export default {
     handleSetFieldsValues () {
       const form = this.form
       this.currentAction.paramFields.map(field => {
-        const fieldValue = this.resource[field.name]
+        let fieldValue = null
+        let fieldName = null
+        if (field.type === 'uuid' || field.type === 'list' || field.name === 'account' || (this.currentAction.mapping && field.name in this.currentAction.mapping)) {
+          fieldName = field.name.replace('ids', 'name').replace('id', 'name')
+        } else {
+          fieldName = field.name
+        }
+        fieldValue = this.resource[fieldName] ? this.resource[fieldName] : null
         form.getFieldDecorator(field.name, { initialValue: fieldValue })
       })
     },
