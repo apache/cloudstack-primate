@@ -21,12 +21,12 @@
       <a-form :form="form" layout="vertical">
         <a-form-item :label="$t('scope')">
           <a-select v-decorator="['scope', { initialValue: 'Cluster' }]" @change="val => { this.scope = val }">
-            <a-select-option :value="$t('clusterid')"> {{ $t('clusterid') }} </a-select-option>
-            <a-select-option :value="$t('zonewide')"> {{ $t('zonewide') }} </a-select-option>
-            <a-select-option :value="$t('hostId')"> {{ $t('hostId') }} </a-select-option>
+            <a-select-option :value="'cluster'"> {{ $t('clusterid') }} </a-select-option>
+            <a-select-option :value="'zone'"> {{ $t('zoneid') }} </a-select-option>
+            <!-- <a-select-option :value="$t('host')"> {{ $t('hostid') }} </a-select-option> -->
           </a-select>
         </a-form-item>
-        <div v-if="scope === 'Zone-Wide'">
+        <div v-if="this.scope === 'zone'">
           <a-form-item :label="$t('hypervisor')">
             <a-select
               v-decorator="['hypervisor', { initialValue: hypervisors[0]}]"
@@ -46,7 +46,7 @@
             </a-select-option>
           </a-select>
         </a-form-item>
-        <div v-if="this.scope === 'Cluster' || this.scope === 'Host'">
+        <div v-if="this.scope === 'cluster' || this.scope === 'host'">
           <a-form-item :label="$t('podId')">
             <a-select
               v-decorator="['pod', { initialValue: this.podSelected, rules: [{ required: true, message: 'required'}] }]"
@@ -66,7 +66,7 @@
             </a-select>
           </a-form-item>
         </div>
-        <div v-if="this.scope === 'Host'">
+        <div v-if="this.scope === 'host'">
           <a-form-item :label="$t('hostId')">
             <a-select
               v-decorator="['host', { initialValue: this.hostSelected, rules: [{ required: true, message: 'required'}] }]"
@@ -222,7 +222,7 @@ export default {
       hypervisors: ['KVM', 'VMware', 'Hyperv', 'Any'],
       protocols: [],
       providers: [],
-      scope: 'Cluster',
+      scope: 'cluster',
       zones: [],
       pods: [],
       clusters: [],
@@ -481,14 +481,14 @@ export default {
           name: values.name,
           provider: values.provider
         }
-        if (values.scope === 'Zone-Wide') {
+        if (values.scope === 'zone') {
           params.hypervisor = values.hypervisor
         }
-        if (values.scope === 'Cluster' || values.scope === 'Host') {
+        if (values.scope === 'cluster' || values.scope === 'host') {
           params.podid = values.pod
           params.clusterid = values.cluster
         }
-        if (values.scope === 'Host') {
+        if (values.scope === 'host') {
           params.hostid = values.host
         }
         var server = values.server ? values.server : null
