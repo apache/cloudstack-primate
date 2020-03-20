@@ -69,8 +69,11 @@
         v-if="processStatus==='finish'"
         class="button-next"
         type="primary"
-        @click="handleClose"
-      >{{ $t('label.done') }}</a-button>
+        @click="handleEnableZone"
+      >
+        <a-icon type="play-circle" />
+        {{ $t('label.enable.zone') }}
+      </a-button>
       <a-button
         v-if="processStatus==='error'"
         class="button-next"
@@ -211,10 +214,13 @@ export default {
       }
       await this.stepAddZone()
     },
-    handleClose () {
-      this.steps = []
-      this.$emit('closeAction')
-      this.$emit('refresh-data')
+    handleEnableZone () {
+      this.$confirm({
+        title: this.$t('label.confirmation'),
+        content: this.$t('message.confirm.enable.zone'),
+        onOk: this.enableZoneAction,
+        onCancel () {}
+      })
     },
     handleFixesError () {
       const stepError = this.steps.filter(step => step.index === this.currentStep)
@@ -1534,6 +1540,24 @@ export default {
       this.currentStep++
       this.processStatus = STATUS_FINISH
     },
+    async enableZoneAction () {
+      const params = {}
+      params.allocationstate = 'Enabled'
+      params.id = this.stepData.zoneReturned.id
+
+      try {
+        await this.enableZone(params)
+        this.$message.success('Success')
+        this.steps = []
+        this.$emit('closeAction')
+        this.$emit('refresh-data')
+      } catch (e) {
+        this.$notification.error({
+          message: 'Request Failed',
+          description: e
+        })
+      }
+    },
     async pollJob (jobId) {
       return new Promise(resolve => {
         const asyncJobInterval = setInterval(() => {
@@ -2008,6 +2032,19 @@ export default {
             }
             resolve(result)
           }
+        }).catch(error => {
+          message = error.response.headers['x-description']
+          reject(message)
+        })
+      })
+    },
+    enableZone (args) {
+      return new Promise((resolve, reject) => {
+        let message = ''
+
+        api('updateZone', args).then(json => {
+          const result = json.updatezoneresponse.zone
+          resolve(result)
         }).catch(error => {
           message = error.response.headers['x-description']
           reject(message)
