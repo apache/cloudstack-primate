@@ -29,7 +29,7 @@
             </div>
             <slot name="name">
               <h4 class="name">
-                {{ resource.displayname || resource.displaytext || resource.name || resource.hostname || resource.username || resource.ipaddress }}
+                {{ resource.displayname || resource.displaytext || resource.name || resource.hostname || resource.username || resource.ipaddress || resource.virtualmachinename }}
               </h4>
               <console style="margin-left: 10px" :resource="resource" size="default" v-if="resource.id" />
             </slot>
@@ -644,6 +644,11 @@ export default {
       this.resource = newItem
       if (newItem.id === oldItem.id) {
         return
+      }
+
+      if (typeof this.resource.volumes === 'string') {
+        const volumes = JSON.parse(this.resource.volumes)
+        this.$set(this.resource, 'volumes', volumes)
       }
 
       this.resourceType = this.$route.meta.resourceType

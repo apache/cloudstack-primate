@@ -251,6 +251,54 @@ export default {
           }
         }
       ]
+    },
+    {
+      name: 'backups',
+      title: 'Backups',
+      icon: 'rollback',
+      permission: ['listBackups'],
+      resourceType: 'backup',
+      columns: ['virtualmachinename', 'status', 'type', 'created', 'account', 'zone'],
+      details: ['virtualmachinename', 'id', 'volumename', 'intervaltype', 'account', 'domain', 'created'],
+      filters: ['name', 'domainid', 'account', 'tags'],
+      actions: [
+        {
+          api: 'deleteBackup',
+          icon: 'delete',
+          label: 'label.backup.delete',
+          dataView: true
+        },
+        {
+          api: 'restoreBackup',
+          icon: 'undo',
+          label: 'label.backup.restore',
+          dataView: true
+        },
+        {
+          api: 'restoreVolumeFromBackupAndAttachToVM',
+          icon: 'paper-clip',
+          label: 'label.backup.restore.and.attach.vm',
+          dataView: true,
+          args: ['volumeid', 'virtualmachineid'],
+          mapping: {
+            backupid: {
+              value: (record) => { return record.id }
+            }
+          }
+        },
+        {
+          api: 'removeVirtualMachineFromBackupOffering',
+          icon: 'stop',
+          label: 'label.backup.delete.chain',
+          dataView: true,
+          args: ['forced'],
+          mapping: {
+            virtualmachineid: {
+              value: (record) => { return record.virtualmachineid }
+            }
+          }
+        }
+      ]
     }
   ]
 }

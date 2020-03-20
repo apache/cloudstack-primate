@@ -150,7 +150,8 @@
                   }"
                 >
                   <a-select-option v-for="(opt, optIndex) in field.opts" :key="optIndex">
-                    {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
+                    <template v-if="!field.listLocal">{{ opt.name || opt.description || opt.traffictype || opt.publicip }}</template>
+                    <template v-else>{{ opt.name || opt.description || opt.type }}</template>
                   </a-select-option>
                 </a-select>
               </span>
@@ -549,6 +550,19 @@ export default {
         if (param.type === 'list' && param.name === 'hosttags') {
           param.type = 'string'
         }
+        if (param.name === 'volumeid' && param.type === 'string') {
+          if (this.resource && this.resource.volumes && this.resource.volumes.length > 0) {
+            param.type = 'uuid'
+            param.listLocal = true
+            param.opts = this.resource.volumes
+            this.$forceUpdate()
+          }
+        }
+
+        if (param.listLocal) {
+          continue
+        }
+
         if (param.type === 'uuid' || param.type === 'list' || param.name === 'account' || (this.currentAction.mapping && param.name in this.currentAction.mapping)) {
           this.listUuidOpts(param)
         }

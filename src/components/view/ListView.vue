@@ -71,6 +71,9 @@
         <router-link :to="{ path: $route.path + '/' + record.name }" v-else>{{ text }}</router-link>
       </div>
     </a>
+    <a slot="virtualmachinename" slot-scope="text, record" href="javascript:;">
+      <router-link :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
+    </a>
     <a slot="displayname" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
     </a>
@@ -94,6 +97,9 @@
       <router-link :to="{ path: '/vm/' + record.virtualmachineid }">{{ text }}</router-link>
     </a>
     <template slot="state" slot-scope="text">
+      <status :text="text ? text : ''" displayText />
+    </template>
+    <template slot="status" slot-scope="text">
       <status :text="text ? text : ''" displayText />
     </template>
     <template slot="allocationstate" slot-scope="text">
