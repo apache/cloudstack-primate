@@ -152,7 +152,12 @@ export default {
         icon: 'edit',
         label: 'Edit Offering',
         dataView: true,
-        args: ['name', 'displaytext', 'availability']
+        args: ['name', 'displaytext', 'availability'],
+        mapping: {
+          availability: {
+            options: ['Optional', 'Required']
+          }
+        }
       }, {
         api: 'updateNetworkOffering',
         icon: 'play-circle',
@@ -198,7 +203,7 @@ export default {
       permission: ['listVPCOfferings'],
       params: { isrecursive: 'true' },
       resourceType: 'VpcOffering',
-      columns: ['name', 'state', 'displaytext', 'domain', 'zone'],
+      columns: ['name', 'state', 'displaytext', 'domain', 'zone', 'order'],
       details: ['name', 'id', 'displaytext', 'distributedvpcrouter', 'service', 'tags', 'domain', 'zone', 'created'],
       related: [{
         name: 'vpc',
