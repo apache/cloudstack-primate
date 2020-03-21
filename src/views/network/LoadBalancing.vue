@@ -125,7 +125,7 @@
       size="small"
       :current="page"
       :pageSize="pageSize"
-      :total="lbRules ? lbRules.length : 0"
+      :total="totalCount"
       :showTotal="total => `Total ${total} items`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="handleChangePage"
@@ -382,6 +382,7 @@ export default {
       addVmModalNicLoading: false,
       vms: [],
       nics: [],
+      totalCount: 0,
       page: 1,
       pageSize: 10,
       columns: [
@@ -454,6 +455,7 @@ export default {
         pageSize: this.pageSize
       }).then(response => {
         this.lbRules = response.listloadbalancerrulesresponse.loadbalancerrule || []
+        this.totalCount = response.listloadbalancerrulesresponse.count || 0
       }).then(() => {
         if (this.lbRules.length > 0) {
           setTimeout(() => {

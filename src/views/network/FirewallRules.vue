@@ -101,7 +101,7 @@
           <p class="add-tags__label">{{ $t('value') }}</p>
           <a-input v-model="newTag.value"></a-input>
         </div>
-        <a-button type="primary" @click="() => handleAddTag()">{{ $t('add') }}</a-button>
+        <a-button type="primary" @click="() => handleAddTag()" :loading="addTagLoading">{{ $t('add') }}</a-button>
       </div>
 
       <a-divider></a-divider>
@@ -134,6 +134,7 @@ export default {
   data () {
     return {
       loading: true,
+      addTagLoading: false,
       firewallRules: [],
       newRule: {
         protocol: 'tcp',
@@ -308,6 +309,7 @@ export default {
       })
     },
     handleAddTag () {
+      this.addTagLoading = true
       api('createTags', {
         'tags[0].key': this.newTag.key,
         'tags[0].value': this.newTag.value,
@@ -342,6 +344,8 @@ export default {
           description: error.response.data.createtagsresponse.errortext
         })
         this.closeModal()
+      }).finally(() => {
+        this.addTagLoading = false
       })
     },
     handleDeleteTag (tag) {

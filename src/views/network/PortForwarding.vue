@@ -106,7 +106,7 @@
       size="small"
       :current="page"
       :pageSize="pageSize"
-      :total="portForwardRules ? portForwardRules.length : 0"
+      :total="totalCount"
       :showTotal="total => `Total ${total} items`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="handleChangePage"
@@ -238,6 +238,7 @@ export default {
       addVmModalNicLoading: false,
       vms: [],
       nics: [],
+      totalCount: 0,
       page: 1,
       pageSize: 10,
       columns: [
@@ -296,6 +297,7 @@ export default {
         pageSize: this.pageSize
       }).then(response => {
         this.portForwardRules = response.listportforwardingrulesresponse.portforwardingrule || []
+        this.totalCount = response.listportforwardingrulesresponse.count || 0
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,

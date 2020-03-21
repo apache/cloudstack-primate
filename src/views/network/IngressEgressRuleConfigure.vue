@@ -74,7 +74,6 @@
       style="overflow-y: auto"
       :columns="columns"
       :dataSource="rules"
-      :scroll="{ x: 800 }"
       :pagination="false"
       :rowKey="record => record.id">
       <template slot="protocol" slot-scope="record">
