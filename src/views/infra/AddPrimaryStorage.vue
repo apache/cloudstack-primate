@@ -20,10 +20,9 @@
     <a-spin :spinning="loading">
       <a-form :form="form" layout="vertical">
         <a-form-item :label="$t('scope')">
-          <a-select v-decorator="['scope', { initialValue: 'Cluster' }]" @change="val => { this.scope = val }">
+          <a-select v-decorator="['scope', { initialValue: 'cluster' }]" @change="val => { this.scope = val }">
             <a-select-option :value="'cluster'"> {{ $t('clusterid') }} </a-select-option>
             <a-select-option :value="'zone'"> {{ $t('zoneid') }} </a-select-option>
-            <!-- <a-select-option :value="$t('host')"> {{ $t('hostid') }} </a-select-option> -->
           </a-select>
         </a-form-item>
         <div v-if="this.scope === 'zone'">
@@ -40,7 +39,7 @@
         <a-form-item :label="$t('zoneid')">
           <a-select
             v-decorator="['zone', { initialValue: this.zoneSelected, rules: [{ required: true, message: 'required'}] }]"
-            @change="val => this.zoneSelected = val">
+            @change="val => changeZone(val)">
             <a-select-option :value="zone.id" v-for="(zone) in zones" :key="zone.id">
               {{ zone.name }}
             </a-select-option>
@@ -50,7 +49,7 @@
           <a-form-item :label="$t('podId')">
             <a-select
               v-decorator="['pod', { initialValue: this.podSelected, rules: [{ required: true, message: 'required'}] }]"
-              @change="val => this.podSelected = val">
+              @change="val => changePod(val)">
               <a-select-option :value="pod.id" v-for="(pod) in pods" :key="pod.id">
                 {{ pod.name }}
               </a-select-option>
@@ -129,7 +128,7 @@
         </div>
         <a-form-item :label="$t('providername')">
           <a-select
-            v-decorator="['provider', { initialValue: this.providers[0], rules: [{ required: true, message: 'required'}] }]"
+            v-decorator="['provider', { initialValue: providerSelected, rules: [{ required: true, message: 'required'}] }]"
             @change="val => this.providerSelected = val">
             <a-select-option :value="provider" v-for="(provider,idx) in providers" :key="idx">
               {{ provider }}
@@ -176,36 +175,22 @@
           </a-form-item>
         </div>
         <a-form-item :label="$t('storageTags')">
-          <div>
-            <template v-for="(tag, idx) in storagetags">
-              <a-tag :key="idx" :closable="true" :afterClose="() => handleClose(tag)">
-                {{ tag }}
-              </a-tag>
-            </template>
-            <a-input
-              v-if="inputVisible"
-              ref="input"
-              type="text"
-              size="small"
-              :style="{ width: 'auto' }"
-              :value="tagInput"
-              @change="handleInputChange"
-              @blur="handleInputConfirm"
-              @keyup.enter="handleInputConfirm"
-            />
-            <a-tag v-else @click="showTag" style="background: #fff; borderStyle: dashed;">
-              <a-icon type="plus" /> New Tag
-            </a-tag>
-          </div>
+          <a-select
+            mode="tags"
+            v-model="selectedTags"
+          >
+            <a-select-option v-for="tag in storageTags" :key="tag.name">{{ tag.name }}</a-select-option>
+          </a-select>
         </a-form-item>
       </a-form>
       <div class="actions">
-        <a-button @click="closeModal">{{ $t('Cancel') }}</a-button>
-        <a-button type="primary" @click="handleSubmit">{{ $t('OK') }}</a-button>
+        <a-button @click="closeModal">{{ $t('cancel') }}</a-button>
+        <a-button type="primary" @click="handleSubmit">{{ $t('ok') }}</a-button>
       </div>
     </a-spin>
   </div>
 </template>
+
 <script>
 import { api } from '@/api'
 export default {
@@ -227,7 +212,8 @@ export default {
       pods: [],
       clusters: [],
       hosts: [],
-      storagetags: [],
+      selectedTags: [],
+      storageTags: [],
       zoneId: '',
       zoneSelected: '',
       podSelected: '',
@@ -235,21 +221,14 @@ export default {
       hostSelected: '',
       hypervisorType: '',
       protocolSelected: 'nfs',
-      providerSelected: 'SolidFire',
+      providerSelected: 'DefaultPrimary',
       selectedHypervisor: 'KVM',
       size: 'default',
-      inputVisible: false,
-      tagInput: '',
       loading: false
     }
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
-  },
-  computed: {
-    condition1: function () {
-      return (this.protocolSelected !== 'SharedMountPoint' || this.protocolSelected !== 'ocfs2' || this.protocolSelected !== 'preSetup')
-    }
   },
   mounted () {
     this.fetchData()
@@ -264,43 +243,56 @@ export default {
       this.loading = true
       api('listZones').then(json => {
         this.zones = json.listzonesresponse.zone || []
-        this.zoneSelected = this.zones[0].id || ''
-      }).then(() => {
-        api('listPods', {
-          zoneid: this.zoneSelected
-        }).then(json => {
-          this.pods = json.listpodsresponse.pod || []
-          this.podSelected = this.pods[0].id || ''
-        }).then(() => {
-          api('listClusters', {
-            podid: this.podSelected
-          }).then(json => {
-            this.clusters = json.listclustersresponse.cluster || []
-            if (this.clusters.length > 0) {
-              this.clusterSelected = this.clusters[0].id
-              this.fetchHypervisor()
-            }
-          }).then(() => {
-            api('listHosts', {
-              clusterid: this.clusterSelected
-            }).then(json => {
-              this.hosts = json.listhostsresponse.host || []
-              if (this.hosts.length > 0) {
-                this.hostSelected = this.hosts[0].id
-              }
-            })
-          })
-        })
+        this.changeZone(this.zones[0] ? this.zones[0].id : '')
       }).finally(() => {
         this.loading = false
       })
     },
+    changeZone (value) {
+      this.zoneSelected = value
+      if (this.zoneSelected === '') {
+        this.podSelected = ''
+        return
+      }
+      api('listPods', {
+        zoneid: this.zoneSelected
+      }).then(json => {
+        this.pods = json.listpodsresponse.pod || []
+        this.changePod(this.pods[0] ? this.pods[0].id : '')
+      })
+    },
+    changePod (value) {
+      this.podSelected = value
+      if (this.podSelected === '') {
+        this.clusterSelected = ''
+        return
+      }
+      api('listClusters', {
+        podid: this.podSelected
+      }).then(json => {
+        this.clusters = json.listclustersresponse.cluster || []
+        if (this.clusters.length > 0) {
+          this.clusterSelected = this.clusters[0].id
+          this.fetchHypervisor()
+        }
+      }).then(() => {
+        api('listHosts', {
+          clusterid: this.clusterSelected
+        }).then(json => {
+          this.hosts = json.listhostsresponse.host || []
+          if (this.hosts.length > 0) {
+            this.hostSelected = this.hosts[0].id
+          }
+        })
+      })
+    },
     listStorageProviders () {
+      this.providers = []
       this.loading = true
       api('listStorageProviders', { type: 'primary' }).then(json => {
         var providers = json.liststorageprovidersresponse.dataStoreProvider || []
-        for (var i = 0; i < providers.length; i++) {
-          this.providers.push(providers[i].name)
+        for (const provider of providers) {
+          this.providers.push(provider.name)
         }
       }).finally(() => {
         this.loading = false
@@ -309,10 +301,7 @@ export default {
     listStorageTags () {
       this.loading = true
       api('listStorageTags').then(json => {
-        var storagetags = json.liststoragetagsresponse.storagetag || []
-        for (var i = 0; i < storagetags.length; i++) {
-          this.storagetags.push(storagetags[i].name)
-        }
+        this.storageTags = json.liststoragetagsresponse.storagetag || []
       }).finally(() => {
         this.loading = false
       })
@@ -332,10 +321,8 @@ export default {
         this.protocols = ['nfs', 'ocfs2']
       } else if (this.hypervisorType === 'LXC') {
         this.protocols = ['nfs', 'SharedMountPoint', 'RBD']
-      } else if (this.hypervisorType === 'Ovm3') {
-        this.protocols = ['nfs']
       } else {
-        this.protocols = []
+        this.protocols = ['nfs']
       }
     },
     nfsURL (server, path) {
@@ -445,27 +432,6 @@ export default {
       }
       return url
     },
-    handleClose (removedTag) {
-      const tags = this.storagetags.filter(tag => tag !== removedTag)
-      this.storagetags = tags
-    },
-    showTag () {
-      this.inputVisible = true
-      this.$nextTick(function () {
-        this.$refs.input.focus()
-      })
-    },
-    handleInputChange (e) {
-      this.tagInput = e.target.value
-    },
-    handleInputConfirm () {
-      const tagInput = this.tagInput
-      if (tagInput && this.storagetags.indexOf(tagInput) === -1) {
-        this.storagetags.push(tagInput)
-      }
-      this.inputVisible = false
-      this.tagInput = ''
-    },
     closeModal () {
       this.$parent.$parent.close()
     },
@@ -558,8 +524,9 @@ export default {
             params.url = values.url
           }
         }
-        var storagetags = this.storagetags.map(tag => tag).join(',')
-        params.tags = storagetags
+        if (this.selectedTags.length > 0) {
+          params.tags = this.selectedTags.join()
+        }
         this.loading = true
         api('createStoragePool', params).then(json => {
           this.$notification.success({
@@ -585,7 +552,7 @@ export default {
 .form-layout {
   width: 80vw;
   @media (min-width: 1000px) {
-    width: 35vw;
+    width: 500px;
   }
 }
 .actions {
