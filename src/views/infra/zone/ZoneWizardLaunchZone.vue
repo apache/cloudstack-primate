@@ -69,11 +69,10 @@
         v-if="processStatus==='finish'"
         class="button-next"
         type="primary"
-        @click="handleEnableZone"
-      >
-        <a-icon type="play-circle" />
-        {{ $t('label.enable.zone') }}
-      </a-button>
+        icon="play-circle"
+        :loading="loading"
+        @click="enableZoneAction"
+      >{{ $t('label.enable.zone') }}</a-button>
       <a-button
         v-if="processStatus==='error'"
         class="button-next"
@@ -133,7 +132,8 @@ export default {
         PROCESS: STATUS_PROCESS,
         FAILED: STATUS_FAILED,
         FINISH: STATUS_FINISH
-      }
+      },
+      loading: false
     }
   },
   updated () {
@@ -213,14 +213,6 @@ export default {
         this.stepData.stepMove = []
       }
       await this.stepAddZone()
-    },
-    handleEnableZone () {
-      this.$confirm({
-        title: this.$t('label.confirmation'),
-        content: this.$t('message.confirm.enable.zone'),
-        onOk: this.enableZoneAction,
-        onCancel () {}
-      })
     },
     handleFixesError () {
       const stepError = this.steps.filter(step => step.index === this.currentStep)
@@ -1544,15 +1536,18 @@ export default {
       const params = {}
       params.allocationstate = 'Enabled'
       params.id = this.stepData.zoneReturned.id
+      this.loading = true
 
       try {
         await this.enableZone(params)
-        this.$message.success('Success')
+        await this.$message.success('Success')
+        this.loading = false
         this.steps = []
         this.$emit('closeAction')
         this.$emit('refresh-data')
       } catch (e) {
-        this.$notification.error({
+        this.loading = false
+        await this.$notification.error({
           message: 'Request Failed',
           description: e
         })

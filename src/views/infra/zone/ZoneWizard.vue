@@ -191,6 +191,11 @@ export default {
       position: absolute;
       right: 0;
     }
+
+    /deep/.button-next.ant-btn-loading:not(.ant-btn-circle):not(.ant-btn-circle-outline):not(.ant-btn-icon-only) {
+      position: absolute;
+      right: 0;
+    }
   }
 
   /deep/.ant-form-text {
