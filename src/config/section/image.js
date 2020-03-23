@@ -196,6 +196,44 @@ export default {
           groupAction: true
         }
       ]
+    },
+    {
+      name: 'kubernetessupportedversions',
+      title: 'Kubernetes Supported Versions',
+      icon: 'usb',
+      permission: ['listKubernetesSupportedVersions'],
+      params: {},
+      resourceType: 'ISO',
+      columns: ['name', 'semanticversion', 'zonename', 'isostate', 'mincpunumber', 'minmemory', 'state'],
+      details: ['name', 'id', 'semanticversion', 'zoneid', 'zonename', 'isoid', 'isoname', 'isostate', 'mincpunumber', 'minmemory', 'supportsha', 'state'],
+      tabs: [{
+        name: 'details',
+        component: () => import('@/components/view/DetailsTab.vue')
+      }],
+      actions: [
+        {
+          api: 'addKubernetesSupportedVersion',
+          icon: 'plus',
+          label: 'Add Kubernetes Version',
+          listView: true,
+          popup: true,
+          component: () => import('@/views/image/AddKubernetesSupportedVersion.vue')
+        },
+        {
+          api: 'updateKubernetesSupportedVersion',
+          icon: 'edit',
+          label: 'label.edit',
+          dataView: true,
+          args: ['state']
+        },
+        {
+          api: 'deleteKubernetesSupportedVersion',
+          icon: 'delete',
+          label: 'Delete Kubernetes Version',
+          dataView: true,
+          groupAction: true
+        }
+      ]
     }
   ]
 }
