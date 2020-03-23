@@ -224,8 +224,8 @@ export default {
       icon: 'camera',
       permission: ['listVMSnapshot'],
       resourceType: 'VMSnapshot',
-      columns: ['name', 'state', 'type', 'current', 'parent', 'created', 'account'],
-      details: ['name', 'id', 'displayname', 'description', 'type', 'current', 'parent', 'virtualmachineid', 'account', 'domain', 'created'],
+      columns: ['displayname', 'state', 'type', 'current', 'parentName', 'created', 'account'],
+      details: ['name', 'id', 'displayname', 'description', 'type', 'current', 'parentName', 'virtualmachineid', 'account', 'domain', 'created'],
       filters: ['name', 'domainid', 'account', 'tags'],
       actions: [
         {
