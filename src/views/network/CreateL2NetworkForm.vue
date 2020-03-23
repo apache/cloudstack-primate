@@ -60,7 +60,7 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('domainid')" v-if="this.isAdminOrDomainAdmin()">
+          <a-form-item :label="$t('domain')" v-if="this.isAdminOrDomainAdmin()">
             <a-select
               v-decorator="['domainid', {}]"
               showSearch
@@ -99,7 +99,7 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('vlanid')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
+          <a-form-item :label="$t('vlan')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
             <a-input
               v-decorator="['vlanid', {
                 rules: [{ required: true, message: 'Please enter value' }]
@@ -328,13 +328,13 @@ export default {
             message: 'Network',
             description: 'Successfully created L2 network'
           })
-          this.resetForm()
         }).catch(error => {
           this.$notification.error({
             message: 'Request Failed',
             description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
           })
         }).finally(() => {
+          this.$emit('refresh-data')
           this.actionLoading = false
           this.closeAction()
         })

@@ -18,9 +18,6 @@
 <template>
   <a-spin :spinning="loading">
     <div class="form-layout">
-      <label>
-        {{ 'Isolated Network' }}
-      </label>
       <div class="form">
         <a-form
           :form="form"
@@ -79,7 +76,7 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('vlanid')">
+          <a-form-item :label="$t('vlan')">
             <a-input
               v-decorator="['vlanid', {
                 rules: [{ required: true, message: 'Please enter value' }]
@@ -115,7 +112,7 @@
               </a-radio-button>
             </a-radio-group>
           </a-form-item>
-          <a-form-item :label="$t('domainid')" v-if="this.scopeType !== 'all'">
+          <a-form-item :label="$t('domain')" v-if="this.scopeType !== 'all'">
             <a-select
               v-decorator="['domainid', {}]"
               showSearch
@@ -183,7 +180,7 @@
               v-decorator="['ip4gateway', {}]"
               :placeholder="this.$t('ip4gateway')"/>
           </a-form-item>
-          <a-form-item :label="$t('netmask')">
+          <a-form-item :label="$t('ip4Netmask')">
             <a-input
               v-decorator="['netmask', {}]"
               :placeholder="this.$t('netmask')"/>
@@ -595,6 +592,7 @@ export default {
             description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
           })
         }).finally(() => {
+          this.$emit('refresh-data')
           this.actionLoading = false
           this.closeAction()
         })
