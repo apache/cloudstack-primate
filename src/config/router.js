@@ -29,14 +29,15 @@ import iam from '@/config/section/iam'
 import infra from '@/config/section/infra'
 import offering from '@/config/section/offering'
 import config from '@/config/section/config'
-import plugin from '@/config/section/plugin'
+import quota from '@/config/section/plugin/quota'
+import cloudian from '@/config/section/plugin/cloudian'
 
 export function generateRouterMap (section) {
   var map = {
     name: section.name,
     path: '/' + section.name,
     hidden: section.hidden,
-    meta: { title: section.title, keepAlive: true, icon: section.icon, docHelp: section.docHelp },
+    meta: { title: section.title, icon: section.icon, docHelp: section.docHelp },
     component: RouteView
   }
 
@@ -53,7 +54,6 @@ export function generateRouterMap (section) {
         meta: {
           title: child.title,
           name: child.name,
-          keepAlive: true,
           icon: child.icon,
           docHelp: child.docHelp,
           permission: child.permission,
@@ -75,7 +75,6 @@ export function generateRouterMap (section) {
             meta: {
               title: child.title,
               name: child.name,
-              keepAlive: true,
               icon: child.icon,
               docHelp: child.docHelp,
               permission: child.permission,
@@ -103,7 +102,6 @@ export function generateRouterMap (section) {
             meta: {
               title: child.title,
               name: child.name,
-              keepAlive: true,
               permission: [action.api]
             },
             component: action.component
@@ -121,7 +119,6 @@ export function generateRouterMap (section) {
       meta: {
         title: section.title,
         name: section.name,
-        keepAlive: true,
         icon: section.icon,
         docHelp: section.docHelp,
         hidden: section.hidden,
@@ -169,7 +166,6 @@ export const asyncRouterMap = [
         name: 'dashboard',
         meta: {
           title: 'Dashboard',
-          keepAlive: true,
           icon: 'dashboard',
           tabs: [
             {
@@ -201,7 +197,8 @@ export const asyncRouterMap = [
       generateRouterMap(infra),
       generateRouterMap(offering),
       generateRouterMap(config),
-      generateRouterMap(plugin),
+      generateRouterMap(quota),
+      generateRouterMap(cloudian),
 
       {
         path: '/exception',
