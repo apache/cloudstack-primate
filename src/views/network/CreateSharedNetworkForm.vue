@@ -89,10 +89,10 @@
           <a-form-item :label="$t('isolatedpvlantype')">
             <a-radio-group
               v-decorator="['isolatedpvlantype', {
-                initialValue: this.pvlanType
+                initialValue: this.isolatePvlanType
               }]"
               buttonStyle="solid"
-              @change="selected => { this.handlePvlanTypeChange(selected.target.value) }">
+              @change="selected => { this.handleIsolatedPvlanTypeChange(selected.target.value) }">
               <a-radio-button value="none">
                 {{ $t('None') }}
               </a-radio-button>
@@ -107,7 +107,7 @@
               </a-radio-button>
             </a-radio-group>
           </a-form-item>
-          <a-form-item :label="$t('isolatedpvlan')" v-if="this.pvlanType=='community' || this.pvlanType=='isolated'">
+          <a-form-item :label="$t('isolatedpvlan')" v-if="this.isolatePvlanType=='community' || this.isolatePvlanType=='isolated'">
             <a-input
               v-decorator="['isolatedpvlan', {}]"
               :placeholder="this.$t('isolatedpvlan')"/>
@@ -135,7 +135,14 @@
           </a-form-item>
           <a-form-item :label="$t('domain')" v-if="this.scopeType !== 'all'">
             <a-select
-              v-decorator="['domainid', {}]"
+              v-decorator="['domainid', {
+                rules: [
+                  {
+                    required: true,
+                    message: 'Please select option'
+                  }
+                ]
+              }]"
               showSearch
               optionFilterProp="children"
               :filterOption="(input, option) => {
@@ -159,16 +166,23 @@
           </a-form-item>
           <a-form-item :label="$t('projectid')" v-if="this.scopeType === 'project'">
             <a-select
-              v-decorator="['projectid', {}]"
+              v-decorator="['projectid', {
+                rules: [
+                  {
+                    required: true,
+                    message: 'Please select option'
+                  }
+                ]
+              }]"
               showSearch
               optionFilterProp="children"
               :filterOption="(input, option) => {
                 return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }"
-              :loading="domainLoading"
+              :loading="projectLoading"
               :placeholder="this.$t('projectid')"
-              @change="val => { this.handleDomainChange(this.domains[val]) }">
-              <a-select-option v-for="(opt, optIndex) in this.domains" :key="optIndex">
+              @change="val => { this.handleProjectChange(this.projects[val]) }">
+              <a-select-option v-for="(opt, optIndex) in this.projects" :key="optIndex">
                 {{ opt.name || opt.description }}
               </a-select-option>
             </a-select>
@@ -291,7 +305,7 @@ export default {
       formPhysicalNetworks: [],
       formPhysicalNetworkLoading: false,
       formSelectedPhysicalNetwork: {},
-      pvlanType: 'none',
+      isolatePvlanType: 'none',
       scopeType: 'all',
       domains: [],
       domainLoading: false,
@@ -434,8 +448,8 @@ export default {
       this.formSelectedPhysicalNetwork = physicalNet
       this.fetchNetworkOfferingData()
     },
-    handlePvlanTypeChange (pvlan) {
-      this.pvlanType = pvlan
+    handleIsolatedPvlanTypeChange (pvlan) {
+      this.isolatePvlanType = pvlan
     },
     handleScopeTypeChange (scope) {
       this.scopeType = scope
@@ -447,6 +461,7 @@ export default {
         }
         case 'project':
         {
+          this.fetchDomainData()
           this.fetchProjectData()
           this.fetchNetworkOfferingData()
           break
@@ -520,6 +535,28 @@ export default {
         this.fetchNetworkOfferingData()
       }
     },
+    fetchProjectData () {
+      this.projects = []
+      const params = {}
+      params.listall = true
+      params.details = 'min'
+      this.projectLoading = true
+      api('listProjects', params).then(json => {
+        const listProjects = json.listprojectsresponse.project
+        this.projects = this.projects.concat(listProjects)
+      }).finally(() => {
+        this.projectLoading = false
+        if (this.arrayHasItems(this.projects)) {
+          this.form.setFieldsValue({
+            projectid: 0
+          })
+          this.handleProjectChange(this.projects[0])
+        }
+      })
+    },
+    handleProjectChange (project) {
+      this.selectedProject = project
+    },
     handleSubmit (e) {
       this.form.validateFields((error, values) => {
         if (error) {
@@ -528,8 +565,8 @@ export default {
         if (
           (!this.isValidTextValueForKey(values, 'ip4gateway') && !this.isValidTextValueForKey(values, 'netmask') &&
             !this.isValidTextValueForKey(values, 'startipv4') && !this.isValidTextValueForKey(values, 'endipv4') &&
-            !this.isValidTextValueForKey(values, 'ip6gateway') && !this.isValidTextValueForKey(values, 'data.ip6cidr') &&
-            !this.isValidTextValueForKey(values, 'data.startipv6') && !this.isValidTextValueForKey(values, 'endipv6'))
+            !this.isValidTextValueForKey(values, 'ip6gateway') && !this.isValidTextValueForKey(values, 'ip6cidr') &&
+            !this.isValidTextValueForKey(values, 'startipv6') && !this.isValidTextValueForKey(values, 'endipv6'))
         ) {
           this.$notification.error({
             message: 'Request Failed',
@@ -551,6 +588,9 @@ export default {
         }
         if (this.isValidValueForKey(values, 'bypassvlanoverlapcheck')) {
           params.bypassvlanoverlapcheck = values.bypassvlanoverlapcheck
+        }
+        if (this.isValidValueForKey(values, 'isolatedpvlantype')) {
+          params.isolatedpvlantype = values.isolatedpvlantype
         }
         if (this.isValidValueForKey(values, 'isolatedpvlan')) {
           params.isolatedpvlan = values.isolatedpvlan
