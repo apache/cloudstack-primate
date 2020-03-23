@@ -86,10 +86,31 @@
           <a-form-item :label="$t('bypassvlanoverlapcheck')">
             <a-switch v-decorator="['bypassvlanoverlapcheck']" />
           </a-form-item>
-          <a-form-item :label="$t('isolatedpvlanid')">
+          <a-form-item :label="$t('isolatedpvlantype')">
+            <a-radio-group
+              v-decorator="['isolatedpvlantype', {
+                initialValue: this.pvlanType
+              }]"
+              buttonStyle="solid"
+              @change="selected => { this.handlePvlanTypeChange(selected.target.value) }">
+              <a-radio-button value="none">
+                {{ $t('None') }}
+              </a-radio-button>
+              <a-radio-button value="community">
+                {{ $t('Community') }}
+              </a-radio-button>
+              <a-radio-button value="isolated">
+                {{ $t('Isolated') }}
+              </a-radio-button>
+              <a-radio-button value="promiscuous">
+                {{ $t('Promiscuous') }}
+              </a-radio-button>
+            </a-radio-group>
+          </a-form-item>
+          <a-form-item :label="$t('isolatedpvlan')" v-if="this.pvlanType=='community' || this.pvlanType=='isolated'">
             <a-input
-              v-decorator="['isolatedpvlanid', {}]"
-              :placeholder="this.$t('isolatedpvlanid')"/>
+              v-decorator="['isolatedpvlan', {}]"
+              :placeholder="this.$t('isolatedpvlan')"/>
           </a-form-item>
           <a-form-item :label="$t('scope')">
             <a-radio-group
@@ -270,6 +291,7 @@ export default {
       formPhysicalNetworks: [],
       formPhysicalNetworkLoading: false,
       formSelectedPhysicalNetwork: {},
+      pvlanType: 'none',
       scopeType: 'all',
       domains: [],
       domainLoading: false,
@@ -412,6 +434,9 @@ export default {
       this.formSelectedPhysicalNetwork = physicalNet
       this.fetchNetworkOfferingData()
     },
+    handlePvlanTypeChange (pvlan) {
+      this.pvlanType = pvlan
+    },
     handleScopeTypeChange (scope) {
       this.scopeType = scope
       switch (scope) {
@@ -527,8 +552,8 @@ export default {
         if (this.isValidValueForKey(values, 'bypassvlanoverlapcheck')) {
           params.bypassvlanoverlapcheck = values.bypassvlanoverlapcheck
         }
-        if (this.isValidValueForKey(values, 'isolatedpvlanid')) {
-          params.isolatedpvlan = values.isolatedpvlanid
+        if (this.isValidValueForKey(values, 'isolatedpvlan')) {
+          params.isolatedpvlan = values.isolatedpvlan
         }
         if (this.scopeType !== 'all') {
           params.domainid = this.selectedDomain.id
