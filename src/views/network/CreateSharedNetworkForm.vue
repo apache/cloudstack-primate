@@ -448,7 +448,7 @@ export default {
       }
       // Network tab in Guest Traffic Type in Infrastructure menu is only available when it's under Advanced zone.
       // zone dropdown in add guest network dialog includes only Advanced zones.
-      if (this.scopeType === 'zone' || this.scopeType === 'domain') {
+      if (this.scopeType === 'all' || this.scopeType === 'domain') {
         params.guestiptype = 'Shared'
         if (this.scopeType === 'domain') {
           params.domainid = this.selectedDomain.id
