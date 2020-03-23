@@ -166,7 +166,7 @@
 "diskIopsReadRate": "Disk Read Rate (IOPS)",
 "diskIopsWriteRate": "Disk Write Rate (IOPS)",
 "diskoffering": "Disk Offering",
-"diskOfferingId": "Disk Offerings",
+"diskofferingid": "Disk Offering",
 "diskSize": "Disk Size (in GB)",
 "diskiopstotal": "IOPS",
 "diskioread": "Disk Read (IO)",
