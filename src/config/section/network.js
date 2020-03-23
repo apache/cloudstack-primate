@@ -40,7 +40,7 @@ export default {
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
         name: 'Egress Rules',
-        component: () => import('@/views/network/EgressConfigure.vue'),
+        component: () => import('@/views/network/EgressRulesTab.vue'),
         show: (record) => { return record.type === 'Isolated' && 'listEgressFirewallRules' in store.getters.apis }
       }, {
         name: 'Public IP Addresses',
@@ -518,7 +518,6 @@ export default {
       title: 'VPN Customer Gateway',
       icon: 'lock',
       permission: ['listVpnCustomerGateways'],
-      resourceType: 'VpnGateway',
       columns: ['name', 'gateway', 'cidrlist', 'ipsecpsk', 'account', 'domain'],
       details: ['name', 'id', 'gateway', 'cidrlist', 'ipsecpsk', 'ikepolicy', 'ikelifetime', 'esppolicy', 'esplifetime', 'dpd', 'forceencap', 'account', 'domain'],
       actions: [

@@ -39,9 +39,9 @@ export default {
           icon: 'plus',
           label: 'Create Volume',
           listView: true,
-          args: ['name', 'zoneid', 'diskofferingid']
-        },
-        {
+          popup: true,
+          component: () => import('@/views/storage/CreateVolume.vue')
+        }, {
           api: 'getUploadParamsForVolume',
           icon: 'cloud-upload',
           label: 'Upload Local Volume',
@@ -107,7 +107,8 @@ export default {
           icon: 'fullscreen',
           label: 'Resize Volume',
           dataView: true,
-          args: ['size']
+          popup: true,
+          component: () => import('@/views/storage/ResizeVolume.vue')
         },
         {
           api: 'migrateVolume',
@@ -221,8 +222,8 @@ export default {
       icon: 'camera',
       permission: ['listVMSnapshot'],
       resourceType: 'VMSnapshot',
-      columns: ['name', 'state', 'type', 'current', 'parent', 'created', 'account'],
-      details: ['name', 'id', 'displayname', 'description', 'type', 'current', 'parent', 'virtualmachineid', 'account', 'domain', 'created'],
+      columns: ['displayname', 'state', 'type', 'current', 'parentName', 'created', 'account'],
+      details: ['name', 'id', 'displayname', 'description', 'type', 'current', 'parentName', 'virtualmachineid', 'account', 'domain', 'created'],
       actions: [
         {
           api: 'revertToVMSnapshot',
