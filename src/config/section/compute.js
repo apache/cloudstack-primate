@@ -438,14 +438,17 @@ export default {
           icon: 'swap',
           label: 'Scale Kubernetes Cluster',
           dataView: true,
-          show: (record) => { return ['Created', 'Running'].includes(record.state) }
+          show: (record) => { return ['Created', 'Running'].includes(record.state) },
+          args: ['size', 'serviceofferingid']
         },
         {
           api: 'upgradeKubernetesCluster',
           icon: 'plus-circle',
           label: 'Upgrade Kubernetes Cluster',
           dataView: true,
-          show: (record) => { return ['Created', 'Running'].includes(record.state) }
+          show: (record) => { return ['Created', 'Running'].includes(record.state) },
+          popup: true,
+          component: () => import('@/views/compute/UpgradeKubernetesCluster.vue')
         },
         {
           api: 'deleteKubernetesCluster',

@@ -124,12 +124,7 @@ import { api } from '@/api'
 
 export default {
   name: 'AddKubernetesSupportedVersion',
-  props: {
-    resource: {
-      type: Object,
-      required: true
-    }
-  },
+  props: {},
   data () {
     return {
       zones: [],

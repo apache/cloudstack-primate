@@ -195,12 +195,7 @@ import { api } from '@/api'
 
 export default {
   name: 'CreateKubernetesCluster',
-  props: {
-    resource: {
-      type: Object,
-      required: true
-    }
-  },
+  props: {},
   data () {
     return {
       zones: [],
@@ -284,7 +279,7 @@ export default {
       this.kubernetesVersionLoading = true
       api('listKubernetesSupportedVersions', params).then(json => {
         const versionObjs = json.listkubernetessupportedversionsresponse.kubernetessupportedversion
-        if (versionObjs != null) {
+        if (this.arrayHasItems(versionObjs)) {
           for (var i = 0; i < versionObjs.length; i++) {
             if (versionObjs[i].state === 'Enabled' && versionObjs[i].isostate === 'Ready') {
               this.kubernetesVersions.push(versionObjs[i])
@@ -303,7 +298,6 @@ export default {
     },
     handleKubernetesVersionChange (version) {
       this.selectedKubernetesVersion = version
-      console.log(this.selectedKubernetesVersion)
       this.fetchServiceOfferingData()
     },
     fetchServiceOfferingData () {
@@ -314,15 +308,15 @@ export default {
       api('listServiceOfferings', params).then(json => {
         var items = json.listserviceofferingsresponse.serviceoffering
         var minCpu = 2
-        var minRamSize = 2048
+        var minMemory = 2048
         if (!this.isObjectEmpty(this.selectedKubernetesVersion)) {
           minCpu = this.selectedKubernetesVersion.mincpunumber
-          minRamSize = this.selectedKubernetesVersion.minmemory
+          minMemory = this.selectedKubernetesVersion.minmemory
         }
         if (items != null) {
           for (var i = 0; i < items.length; i++) {
             if (items[i].iscustomized === false &&
-                items[i].cpunumber >= minCpu && items[i].memory >= minRamSize) {
+                items[i].cpunumber >= minCpu && items[i].memory >= minMemory) {
               this.serviceOfferings.push(items[i])
             }
           }
@@ -382,7 +376,6 @@ export default {
           return
         }
         this.loading = true
-        console.log(values)
         const params = {
           name: values.name,
           description: values.description,
@@ -406,7 +399,6 @@ export default {
         if (this.isValidValueForKey(values, 'keypair') && this.arrayHasItems(this.keyPairs) && this.keyPairs[values.keypair].id != null) {
           params.keypair = this.keyPairs[values.keypair].id
         }
-        console.log(params)
         api('createKubernetesCluster', params).then(json => {
           this.$message.success('Successfully created Kubernetes cluster: ' + values.name)
         }).catch(error => {
