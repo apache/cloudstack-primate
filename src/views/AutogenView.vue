@@ -656,7 +656,7 @@ export default {
         }
         fieldValue = this.resource[fieldName] ? this.resource[fieldName] : null
         if (fieldValue) {
-          form.getFieldDecorator(field.name, { initialValue: String(fieldValue) })
+          form.getFieldDecorator(field.name, { initialValue: fieldValue })
         }
       })
     },
