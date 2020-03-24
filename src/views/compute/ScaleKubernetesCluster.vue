@@ -166,7 +166,7 @@ export default {
           params.serviceofferingid = this.serviceOfferings[values.serviceofferingid].id
         }
         api('scaleKubernetesCluster', params).then(json => {
-          this.$message.success('Successfully scaled Kubernetes cluster: ' + values.name)
+          this.$message.success('Successfully scaled Kubernetes cluster: ' + this.resource.name)
         }).catch(error => {
           this.$notification.error({
             message: 'Request Failed',

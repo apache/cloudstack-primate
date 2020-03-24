@@ -224,7 +224,8 @@ export default {
           icon: 'edit',
           label: 'label.edit',
           dataView: true,
-          args: ['state']
+          popup: true,
+          component: () => import('@/views/image/UpdateKubernetesSupportedVersion.vue')
         },
         {
           api: 'deleteKubernetesSupportedVersion',

@@ -22,10 +22,10 @@
         :form="form"
         @submit="handleSubmit"
         layout="vertical">
-        <a-form-item :label="$t('kubernetesversionid')">
+        <a-form-item :label="$t('state')">
           <a-select
-            id="version-selection"
-            v-decorator="['kubernetesversionid', {
+            id="state-selection"
+            v-decorator="['state', {
               rules: [{ required: true }]
             }]"
             showSearch
@@ -33,9 +33,9 @@
             :filterOption="(input, option) => {
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
-            :loading="kubernetesVersionLoading"
-            :placeholder="this.$t('kubernetesversionid')">
-            <a-select-option v-for="(opt, optIndex) in this.kubernetesVersions" :key="optIndex">
+            :loading="stateLoading"
+            :placeholder="this.$t('state')">
+            <a-select-option v-for="(opt, optIndex) in this.states" :key="optIndex">
               {{ opt.name || opt.description }}
             </a-select-option>
           </a-select>
@@ -54,7 +54,7 @@
 import { api } from '@/api'
 
 export default {
-  name: 'UpgradeKubernetesCluster',
+  name: 'UpdateKubernetesSupportedVersion',
   props: {
     resource: {
       type: Object,
@@ -63,10 +63,8 @@ export default {
   },
   data () {
     return {
-      kubernetesVersions: [],
-      kubernetesVersionLoading: false,
-      minCpu: 2,
-      minMemory: 2048,
+      states: [],
+      stateLoading: false,
       loading: false
     }
   },
@@ -74,13 +72,34 @@ export default {
     this.form = this.$form.createForm(this)
   },
   created () {
+    this.states = [
+      {
+        id: 'Enabled',
+        name: this.$t('enabled')
+      },
+      {
+        id: 'Disabled',
+        name: this.$t('disabled')
+      }
+    ]
   },
   mounted () {
     this.fetchData()
   },
   methods: {
     fetchData () {
-      this.fetchKubernetesVersionData()
+      var selectedState = 0
+      if (!this.isObjectEmpty(this.resource)) {
+        for (var i = 0; i < this.states.length; ++i) {
+          if (this.states[i].id === this.resource.state) {
+            selectedState = i
+            break
+          }
+        }
+      }
+      this.form.setFieldsValue({
+        state: selectedState
+      })
     },
     isValidValueForKey (obj, key) {
       return key in obj && obj[key] != null
@@ -90,43 +109,6 @@ export default {
     },
     isObjectEmpty (obj) {
       return !(obj !== null && obj !== undefined && Object.keys(obj).length > 0 && obj.constructor === Object)
-    },
-    fetchKubernetesVersionData () {
-      this.kubernetesVersions = []
-      const params = {}
-      if (!this.isObjectEmpty(this.resource)) {
-        params.minimumkubernetesversionid = this.resource.kubernetesversionid
-      }
-      this.kubernetesVersionLoading = true
-      api('listKubernetesSupportedVersions', params).then(json => {
-        const versionObjs = json.listkubernetessupportedversionsresponse.kubernetessupportedversion
-        if (this.arrayHasItems(versionObjs)) {
-          var clusterVersion = null
-          for (var j = 0; j < versionObjs.length; j++) {
-            if (versionObjs[j].id === this.resource.kubernetesversionid) {
-              clusterVersion = versionObjs[j]
-              break
-            }
-          }
-          for (var i = 0; i < versionObjs.length; i++) {
-            if (versionObjs[i].id !== this.resource.kubernetesversionid &&
-              (clusterVersion == null || (clusterVersion != null && versionObjs[i].semanticversion !== clusterVersion.semanticversion)) &&
-              versionObjs[i].state === 'Enabled' && versionObjs[i].isostate === 'Ready') {
-              this.kubernetesVersions.push({
-                id: versionObjs[i].id,
-                description: versionObjs[i].name
-              })
-            }
-          }
-        }
-      }).finally(() => {
-        this.kubernetesVersionLoading = false
-        if (this.arrayHasItems(this.kubernetesVersions)) {
-          this.form.setFieldsValue({
-            kubernetesversionid: 0
-          })
-        }
-      })
     },
     handleSubmit (e) {
       e.preventDefault()
@@ -138,11 +120,11 @@ export default {
         const params = {
           id: this.resource.id
         }
-        if (this.isValidValueForKey(values, 'kubernetesversionid') && this.arrayHasItems(this.kubernetesVersions)) {
-          params.kubernetesversionid = this.kubernetesVersions[values.kubernetesversionid].id
+        if (this.isValidValueForKey(values, 'state') && this.arrayHasItems(this.states)) {
+          params.state = this.states[values.state].id
         }
-        api('upgradeKubernetesCluster', params).then(json => {
-          this.$message.success('Successfully upgraded Kubernetes cluster: ' + this.resource.name)
+        api('updateKubernetesSupportedVersion', params).then(json => {
+          this.$message.success('Successfully updated Kubernetes supported version: ' + this.resource.name)
         }).catch(error => {
           this.$notification.error({
             message: 'Request Failed',
