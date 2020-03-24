@@ -559,8 +559,8 @@ export default {
         }
       }
       this.currentAction.loading = false
-      if (action.dataView) {
-        this.handleSetFieldsValues()
+      if (action.dataView && action.icon === 'edit') {
+        this.fillEditFormFieldValues()
       }
     },
     listUuidOpts (param) {
@@ -644,7 +644,7 @@ export default {
         action
       })
     },
-    handleSetFieldsValues () {
+    fillEditFormFieldValues () {
       const form = this.form
       this.currentAction.paramFields.map(field => {
         let fieldValue = null
@@ -655,7 +655,9 @@ export default {
           fieldName = field.name
         }
         fieldValue = this.resource[fieldName] ? this.resource[fieldName] : null
-        form.getFieldDecorator(field.name, { initialValue: fieldValue })
+        if (fieldValue) {
+          form.getFieldDecorator(field.name, { initialValue: String(fieldValue) })
+        }
       })
     },
     handleSubmit (e) {
