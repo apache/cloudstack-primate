@@ -439,7 +439,8 @@ export default {
           label: 'Scale Kubernetes Cluster',
           dataView: true,
           show: (record) => { return ['Created', 'Running'].includes(record.state) },
-          args: ['size', 'serviceofferingid']
+          popup: true,
+          component: () => import('@/views/compute/ScaleKubernetesCluster.vue')
         },
         {
           api: 'upgradeKubernetesCluster',

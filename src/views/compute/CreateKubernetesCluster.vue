@@ -251,7 +251,6 @@ export default {
     },
     fetchZoneData () {
       const params = {}
-      params.listAll = true
       this.zoneLoading = true
       api('listZones', params).then(json => {
         const listZones = json.listzonesresponse.zone
@@ -303,7 +302,6 @@ export default {
     fetchServiceOfferingData () {
       this.serviceOfferings = []
       const params = {}
-      params.listAll = true
       this.serviceOfferingLoading = true
       api('listServiceOfferings', params).then(json => {
         var items = json.listserviceofferingsresponse.serviceoffering

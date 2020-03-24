@@ -22,21 +22,33 @@
         :form="form"
         @submit="handleSubmit"
         layout="vertical">
-        <a-form-item :label="$t('kubernetesversionid')">
-          <a-select
-            id="version-selection"
-            v-decorator="['kubernetesversionid', {
-              rules: [{ required: true }]
+        <a-form-item :label="$t('cks.cluster.size')">
+          <a-input
+            v-decorator="['size', {
+              initialValue: '1',
+              rules: [{
+                validator: (rule, value, callback) => {
+                  if (value && (isNaN(value) || value <= 0)) {
+                    callback('Please enter a valid number')
+                  }
+                  callback()
+                }
+              }]
             }]"
+            :placeholder="this.$t('cks.cluster.size')"/>
+        </a-form-item>
+        <a-form-item :label="$t('serviceofferingid')">
+          <a-select
+            id="offering-selection"
+            v-decorator="['serviceofferingid', {}]"
             showSearch
             optionFilterProp="children"
             :filterOption="(input, option) => {
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
-            :loading="kubernetesVersionLoading"
-            :placeholder="this.$t('kubernetesversionid')"
-            @change="val => { this.handleKubernetesVersionChange(this.kubernetesVersions[val]) }">
-            <a-select-option v-for="(opt, optIndex) in this.kubernetesVersions" :key="optIndex">
+            :loading="serviceOfferingLoading"
+            :placeholder="this.$t('serviceofferingid')">
+            <a-select-option v-for="(opt, optIndex) in this.serviceOfferings" :key="optIndex">
               {{ opt.name || opt.description }}
             </a-select-option>
           </a-select>
@@ -55,7 +67,7 @@
 import { api } from '@/api'
 
 export default {
-  name: 'UpgradeKubernetesCluster',
+  name: 'ScaleKubernetesCluster',
   props: {
     resource: {
       type: Object,
@@ -64,8 +76,9 @@ export default {
   },
   data () {
     return {
-      kubernetesVersions: [],
-      kubernetesVersionLoading: false,
+      originalSize: 1,
+      serviceOfferings: [],
+      serviceOfferingLoading: false,
       minCpu: 2,
       minMemory: 2048,
       loading: false
@@ -81,6 +94,7 @@ export default {
   },
   methods: {
     fetchData () {
+      this.originalSize = !this.isObjectEmpty(this.resource) ? 1 : this.resource.size
       this.fetchKubernetesVersionData()
     },
     isValidValueForKey (obj, key) {
@@ -93,39 +107,45 @@ export default {
       return !(obj !== null && obj !== undefined && Object.keys(obj).length > 0 && obj.constructor === Object)
     },
     fetchKubernetesVersionData () {
-      this.kubernetesVersions = []
       const params = {}
       if (!this.isObjectEmpty(this.resource)) {
-        params.minimumkubernetesversionid = this.resource.kubernetesversionid
+        params.id = this.resource.kubernetesversionid
       }
-      this.kubernetesVersionLoading = true
       api('listKubernetesSupportedVersions', params).then(json => {
         const versionObjs = json.listkubernetessupportedversionsresponse.kubernetessupportedversion
-        if (this.arrayHasItems(versionObjs)) {
-          var clusterVersion = null
-          for (var j = 0; j < versionObjs.length; j++) {
-            if (versionObjs[j].id === this.resource.kubernetesversionid) {
-              clusterVersion = versionObjs[j]
-              break
-            }
-          }
-          for (var i = 0; i < versionObjs.length; i++) {
-            if (versionObjs[i].id !== this.resource.kubernetesversionid &&
-              (clusterVersion == null || (clusterVersion != null && versionObjs[i].semanticversion !== clusterVersion.semanticversion)) &&
-              versionObjs[i].state === 'Enabled' && versionObjs[i].isostate === 'Ready') {
-              this.kubernetesVersions.push({
-                id: versionObjs[i].id,
-                description: versionObjs[i].name
-              })
+        if (this.arrayHasItems(versionObjs) && !this.isObjectEmpty(versionObjs[0])) {
+          this.minCpu = versionObjs[0].mincpunumber
+          this.minMemory = versionObjs[0].minmemory
+        }
+      }).finally(() => {
+        this.fetchServiceOfferingData()
+      })
+    },
+    fetchServiceOfferingData () {
+      this.serviceOfferings = []
+      const params = {}
+      this.serviceOfferingLoading = true
+      api('listServiceOfferings', params).then(json => {
+        var items = json.listserviceofferingsresponse.serviceoffering
+        if (items != null) {
+          for (var i = 0; i < items.length; i++) {
+            if (items[i].iscustomized === false &&
+                items[i].cpunumber >= this.minCpu && items[i].memory >= this.minMemory) {
+              this.serviceOfferings.push(items[i])
             }
           }
         }
       }).finally(() => {
-        this.kubernetesVersionLoading = false
-        if (this.arrayHasItems(this.kubernetesVersions)) {
-          this.form.setFieldsValue({
-            kubernetesversionid: 0
-          })
+        this.serviceOfferingLoading = false
+        if (this.arrayHasItems(this.serviceOfferings)) {
+          for (var i = 0; i < this.serviceOfferings.length; i++) {
+            if (this.serviceOfferings[i].id === this.resource.serviceofferingid) {
+              this.form.setFieldsValue({
+                serviceofferingid: i
+              })
+              break
+            }
+          }
         }
       })
     },
@@ -139,11 +159,14 @@ export default {
         const params = {
           id: this.resource.id
         }
-        if (this.isValidValueForKey(values, 'kubernetesversionid') && this.arrayHasItems(this.kubernetesVersions)) {
+        if (this.isValidValueForKey(values, 'size') && values.size > 0) {
           params.kubernetesversionid = this.kubernetesVersions[values.kubernetesversionid].id
         }
-        api('upgradeKubernetesCluster', params).then(json => {
-          this.$message.success('Successfully upgraded Kubernetes cluster: ' + values.name)
+        if (this.isValidValueForKey(values, 'serviceofferingid') && this.arrayHasItems(this.serviceOfferings)) {
+          params.serviceofferingid = this.serviceOfferings[values.serviceofferingid].id
+        }
+        api('scaleKubernetesCluster', params).then(json => {
+          this.$message.success('Successfully scaled Kubernetes cluster: ' + values.name)
         }).catch(error => {
           this.$notification.error({
             message: 'Request Failed',
