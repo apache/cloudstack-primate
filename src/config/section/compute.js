@@ -409,11 +409,12 @@ export default {
           icon: 'plus',
           label: 'Create Kubernetes Cluster',
           listView: true,
-          args: ['name', 'description', 'type']
+          popup: true,
+          component: () => import('@/views/compute/CreateKubernetesCluster.vue')
         },
         {
           api: 'startKubernetesCluster',
-          icon: 'start',
+          icon: 'caret-right',
           label: 'Start Kubernetes Cluster',
           dataView: true,
           show: (record) => { return ['Stopped'].includes(record.state) }
