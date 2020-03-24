@@ -24,7 +24,8 @@
       <a-step
         v-for="(item) in steps"
         :key="item.title"
-        :title="$t(item.title)"></a-step>
+        :title="$t(item.title)">
+      </a-step>
     </a-steps>
     <div>
       <zone-wizard-zone-type-step

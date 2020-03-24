@@ -255,7 +255,7 @@ export default {
           placeHolder: 'Please enter host name',
           required: true,
           display: {
-            hypervisor: ['VMware', 'BareMetal', 'Ovm', 'Hyperv', 'KVM', 'XenServer', 'LXC']
+            hypervisor: ['VMware', 'BareMetal', 'Ovm', 'Hyperv', 'KVM', 'XenServer', 'LXC', 'Simulator']
           }
         },
         {
@@ -264,7 +264,7 @@ export default {
           placeHolder: 'Please enter host username',
           required: true,
           display: {
-            hypervisor: ['VMware', 'BareMetal', 'Ovm', 'Hyperv', 'KVM', 'XenServer', 'LXC']
+            hypervisor: ['VMware', 'BareMetal', 'Ovm', 'Hyperv', 'KVM', 'XenServer', 'LXC', 'Simulator']
           }
         },
         {
@@ -274,7 +274,7 @@ export default {
           required: true,
           password: true,
           display: {
-            hypervisor: ['VMware', 'BareMetal', 'Ovm', 'Hyperv', 'KVM', 'XenServer', 'LXC']
+            hypervisor: ['VMware', 'BareMetal', 'Ovm', 'Hyperv', 'KVM', 'XenServer', 'LXC', 'Simulator']
           }
         },
         {
@@ -836,7 +836,7 @@ export default {
           id: 'rbd',
           description: 'RBD'
         })
-      } else if (hypervisor === 'Ovm3') {
+      } else {
         protocols.push({
           id: 'nfs',
           description: 'nfs'

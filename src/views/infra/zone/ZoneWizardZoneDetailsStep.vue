@@ -380,6 +380,7 @@ export default {
     const cForm = this.form
     api('listHypervisors', { listAll: true }).then(json => {
       this.hypervisors = json.listhypervisorsresponse.hypervisor
+      this.hypervisors.push({ name: 'Simulator' })
       cForm.setFieldsValue({
         hypervisor: this.currentHypervisor
       })
