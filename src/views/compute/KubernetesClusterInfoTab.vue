@@ -16,7 +16,7 @@
 // under the License.
 
 <template>
-  <a-spin :spinning="fetchLoading">
+  <a-spin :spinning="networkLoading">
     <a-tabs
       :activeKey="currentTab"
       :tabPosition="device === 'tablet' || device === 'mobile' ? 'top' : 'left'"
@@ -29,16 +29,24 @@
         <DetailsTab :resource="resource" :loading="loading" />
       </a-tab-pane>
       <a-tab-pane :tab="$t('instances')" key="instances">
-        <DetailsTab :resource="resource" :loading="loading" />
+        <a-table
+          class="table"
+          size="small"
+          :columns="this.vmColumns"
+          :dataSource="this.virtualmachines"
+          :rowKey="item => item.id"
+          :pagination="false"
+        >
+        </a-table>
       </a-tab-pane>
       <a-tab-pane :tab="$t('firewall')" key="firewall">
-        <FirewallRules :resource="this.network" :loading="this.fetchLoading" />
+        <FirewallRules :resource="this.publicIpAddress" :loading="this.networkLoading" />
       </a-tab-pane>
       <a-tab-pane :tab="$t('portforwarding')" key="portforwarding">
-        <PortForwarding :resource="this.network" :loading="this.fetchLoading" />
+        <PortForwarding :resource="this.publicIpAddress" :loading="this.networkLoading" />
       </a-tab-pane>
       <a-tab-pane :tab="$t('loadbalancing')" key="loadbalancing">
-        <LoadBalancing :resource="this.network" :loading="this.fetchLoading" />
+        <LoadBalancing :resource="this.publicIpAddress" :loading="this.networkLoading" />
       </a-tab-pane>
     </a-tabs>
   </a-spin>
@@ -46,6 +54,7 @@
 
 <script>
 import { api } from '@/api'
+import { mixinDevice } from '@/utils/mixin.js'
 import DetailsTab from '@/components/view/DetailsTab'
 import FirewallRules from '@/views/network/FirewallRules'
 import PortForwarding from '@/views/network/PortForwarding'
@@ -59,6 +68,7 @@ export default {
     PortForwarding,
     LoadBalancing
   },
+  mixins: [mixinDevice],
   props: {
     resource: {
       type: Object,
@@ -71,12 +81,90 @@ export default {
   },
   data () {
     return {
-      fetchLoading: false,
+      instanceLoading: false,
+      virtualmachines: [],
+      vmColumns: [
+        {
+          title: this.$t('name'),
+          dataIndex: 'name'
+        },
+        {
+          title: this.$t('instancename'),
+          dataIndex: 'instancename'
+        },
+        {
+          title: this.$t('displayname'),
+          dataIndex: 'displayname'
+        },
+        {
+          title: this.$t('ipaddress'),
+          dataIndex: 'ipaddress'
+        },
+        {
+          title: this.$t('zonename'),
+          dataIndex: 'zonename'
+        },
+        {
+          title: this.$t('state'),
+          dataIndex: 'state'
+        }
+      ],
+      networkLoading: false,
       network: {},
+      publicIpAddress: {},
       currentTab: 'details'
     }
   },
   beforeCreate () {
+  },
+  created () {
+    if (this.isAdminOrDomainAdmin()) {
+      this.vmColumns = [
+        {
+          title: this.$t('name'),
+          dataIndex: 'name'
+        },
+        {
+          title: this.$t('instancename'),
+          dataIndex: 'instancename'
+        },
+        {
+          title: this.$t('displayname'),
+          dataIndex: 'displayname'
+        },
+        {
+          title: this.$t('ipaddress'),
+          dataIndex: 'ipaddress'
+        },
+        {
+          title: this.$t('zonename'),
+          dataIndex: 'zonename'
+        },
+        {
+          title: this.$t('state'),
+          dataIndex: 'state'
+        }
+      ]
+    } else {
+      this.vmColumns = [
+        {
+          title: this.$t('name'),
+          dataIndex: 'name'
+        },
+        {
+          title: this.$t('displayname'),
+          dataIndex: 'displayname'
+        },
+        {
+          title: this.$t('ipaddress'),
+          dataIndex: 'ipaddress'
+        },
+        {
+          title: this.$t('state'),
+          dataIndex: 'state'
+        }
+      ]
+    }
   },
   mounted () {
     this.handleFetchData()
@@ -89,6 +177,15 @@ export default {
     }
   },
   methods: {
+    isAdminOrDomainAdmin () {
+      return ['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype)
+    },
+    isValidValueForKey (obj, key) {
+      return key in obj && obj[key] != null
+    },
+    arrayHasItems (array) {
+      return array !== null && array !== undefined && Array.isArray(array) && array.length > 0
+    },
     isObjectEmpty (obj) {
       return !(obj !== null && obj !== undefined && Object.keys(obj).length > 0 && obj.constructor === Object)
     },
@@ -96,18 +193,61 @@ export default {
       this.currentTab = e
     },
     handleFetchData () {
-      this.fetchNetwork()
+      this.fetchInstances()
+      this.fetchPublicIpAddress()
     },
-    fetchNetwork () {
-      this.fetchLoading = true
-      var params = {}
-      if (!this.isObjectEmpty(this.resource)) {
-        params.id = this.resource.associatednetworkid
+    fetchInstances () {
+      this.instanceLoading = true
+      this.virtualmachines = []
+      if (!this.isObjectEmpty(this.resource) && this.arrayHasItems(this.resource.virtualmachineids)) {
+        var params = {}
+        if (this.isValidValueForKey(this.resource, 'projectid') &&
+          this.resource.projectid !== '') {
+          params.projectid = this.resource.projectid
+        }
+        params.ids = this.resource.virtualmachineids.join()
+        api('listVirtualMachines', params).then(json => {
+          const listVms = json.listvirtualmachinesresponse.virtualmachine
+          if (this.arrayHasItems(listVms)) {
+            for (var i = 0; i < listVms.length; ++i) {
+              var vm = listVms[i]
+              if (vm.nic && vm.nic.length > 0 && vm.nic[0].ipaddress) {
+                vm.ipaddress = vm.nic[0].ipaddress
+                listVms[i] = vm
+              }
+            }
+            this.virtualmachines = this.virtualmachines.concat(listVms)
+            console.log(this.virtualmachines)
+          }
+        }).catch(error => {
+          this.$notification.error({
+            message: 'Request Failed',
+            description: error.response.headers['x-description']
+          })
+        }).finally(() => {
+          this.instanceLoading = false
+        })
       }
-      api('listNetworks', params).then(json => {
-        const listNetworks = json.listnetworksresponse.network
-        if (this.arrayHasItems(listNetworks)) {
-          this.network = listNetworks[0]
+    },
+    fetchPublicIpAddress () {
+      this.networkLoading = true
+      var params = {
+        listAll: true,
+        forvirtualnetwork: true
+      }
+      if (!this.isObjectEmpty(this.resource)) {
+        if (this.isValidValueForKey(this.resource, 'projectid') &&
+          this.resource.projectid !== '') {
+          params.projectid = this.resource.projectid
+        }
+        if (this.isValidValueForKey(this.resource, 'associatednetworkid')) {
+          params.associatednetworkid = this.resource.associatednetworkid
+        }
+      }
+      api('listPublicIpAddresses', params).then(json => {
+        const ips = json.listpublicipaddressesresponse.publicipaddress
+        if (this.arrayHasItems(ips)) {
+          this.publicIpAddress = ips[0]
         }
       }).catch(error => {
         this.$notification.error({
@@ -115,7 +255,7 @@ export default {
           description: error.response.headers['x-description']
         })
       }).finally(() => {
-        this.fetchLoading = false
+        this.networkLoading = false
       })
     }
   }
