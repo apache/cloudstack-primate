@@ -279,6 +279,74 @@ export default {
     },
     */
     {
+      name: 'kubernetesclusters',
+      title: 'Kubernetes Clusters',
+      icon: 'gold',
+      permission: ['listKubernetesClusters'],
+      columns: ['name', 'zonename', 'size', 'cpunumber', 'memory', 'state'],
+      details: ['name', 'id', 'description', 'zonename', 'kubernetesversionname', 'masternodes', 'size', 'cpunumber', 'memory', 'state', 'serviceofferingname', 'associatednetworkname', 'keypair'],
+      tabs: [{
+        name: 'info',
+        component: () => import('@/views/compute/KubernetesClusterInfoTab.vue')
+      }],
+      actions: [
+        {
+          api: 'createKubernetesCluster',
+          icon: 'plus',
+          label: 'Create Kubernetes Cluster',
+          listView: true,
+          popup: true,
+          component: () => import('@/views/compute/CreateKubernetesCluster.vue')
+        },
+        {
+          api: 'startKubernetesCluster',
+          icon: 'caret-right',
+          label: 'Start Kubernetes Cluster',
+          dataView: true,
+          show: (record) => { return ['Stopped'].includes(record.state) }
+        },
+        {
+          api: 'stopKubernetesCluster',
+          icon: 'stop',
+          label: 'Stop Kubernetes Cluster',
+          dataView: true,
+          show: (record) => { return !['Stopped'].includes(record.state) }
+        },
+        // {
+        //   api: 'getKubernetesClusterConfig',
+        //   icon: 'cloud-download',
+        //   label: 'Download Cluster Config',
+        //   dataView: true,
+        //   show: (record) => { return !['Stopped'].includes(record.state) }
+        // },
+        {
+          api: 'scaleKubernetesCluster',
+          icon: 'swap',
+          label: 'Scale Kubernetes Cluster',
+          dataView: true,
+          show: (record) => { return ['Created', 'Running'].includes(record.state) },
+          popup: true,
+          component: () => import('@/views/compute/ScaleKubernetesCluster.vue')
+        },
+        {
+          api: 'upgradeKubernetesCluster',
+          icon: 'plus-circle',
+          label: 'Upgrade Kubernetes Cluster',
+          dataView: true,
+          show: (record) => { return ['Created', 'Running'].includes(record.state) },
+          popup: true,
+          component: () => import('@/views/compute/UpgradeKubernetesCluster.vue')
+        },
+        {
+          api: 'deleteKubernetesCluster',
+          icon: 'delete',
+          label: 'Delete Kubernetes Cluster',
+          dataView: true,
+          show: (record) => { return !['Destroyed', 'Destroying'].includes(record.state) }
+        }
+      ]
+    },
+    {
       name: 'vmgroup',
       title: 'Instance Groups',
       icon: 'gold',
@@ -393,74 +461,6 @@ export default {
           icon: 'delete',
           label: 'Delete Affinity Group',
           dataView: true
-        }
-      ]
-    },
-    {
-      name: 'kubernetesclusters',
-      title: 'Kubernetes Clusters',
-      icon: 'gold',
-      permission: ['listKubernetesClusters'],
-      columns: ['name', 'zonename', 'size', 'cpunumber', 'memory', 'state'],
-      details: ['name', 'id', 'description', 'zonename', 'kubernetesversionname', 'masternodes', 'size', 'cpunumber', 'memory', 'state', 'serviceofferingname', 'associatednetworkname', 'keypair'],
-      tabs: [{
-        name: 'info',
-        component: () => import('@/views/compute/KubernetesClusterInfoTab.vue')
-      }],
-      actions: [
-        {
-          api: 'createKubernetesCluster',
-          icon: 'plus',
-          label: 'Create Kubernetes Cluster',
-          listView: true,
-          popup: true,
-          component: () => import('@/views/compute/CreateKubernetesCluster.vue')
-        },
-        {
-          api: 'startKubernetesCluster',
-          icon: 'caret-right',
-          label: 'Start Kubernetes Cluster',
-          dataView: true,
-          show: (record) => { return ['Stopped'].includes(record.state) }
-        },
-        {
-          api: 'stopKubernetesCluster',
-          icon: 'stop',
-          label: 'Stop Kubernetes Cluster',
-          dataView: true,
-          show: (record) => { return !['Stopped'].includes(record.state) }
-        },
-        {
-          api: 'getKubernetesClusterConfig',
-          icon: 'cloud-download',
-          label: 'Download Cluster Config',
-          dataView: true,
-          show: (record) => { return !['Stopped'].includes(record.state) }
-        },
-        {
-          api: 'scaleKubernetesCluster',
-          icon: 'swap',
-          label: 'Scale Kubernetes Cluster',
-          dataView: true,
-          show: (record) => { return ['Created', 'Running'].includes(record.state) },
-          popup: true,
-          component: () => import('@/views/compute/ScaleKubernetesCluster.vue')
-        },
-        {
-          api: 'upgradeKubernetesCluster',
-          icon: 'plus-circle',
-          label: 'Upgrade Kubernetes Cluster',
-          dataView: true,
-          show: (record) => { return ['Created', 'Running'].includes(record.state) },
-          popup: true,
-          component: () => import('@/views/compute/UpgradeKubernetesCluster.vue')
-        },
-        {
-          api: 'deleteKubernetesCluster',
-          icon: 'delete',
-          label: 'Delete Kubernetes Cluster',
-          dataView: true,
-          show: (record) => { return !['Destroyed', 'Destroying'].includes(record.state) }
         }
       ]
     }

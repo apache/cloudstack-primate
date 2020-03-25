@@ -26,7 +26,66 @@
         <DetailsTab :resource="resource" :loading="loading" />
       </a-tab-pane>
       <a-tab-pane :tab="$t('access')" key="access">
-        <DetailsTab :resource="resource" :loading="loading" />
+        <a-card title="Kubernetes Cluster kubeconfig" :loading="this.versionLoading">
+          <a-textarea :value="this.clusterConfig" :rows="5" readonly />
+          <div :span="24" class="action-button">
+            <a-button @click="downloadKubernetesClusterConfig" type="primary">{{ this.$t('Download') }}</a-button>
+          </div>
+        </a-card>
+        <a-card title="Access Kubernetes Cluster using kubectl" :loading="this.versionLoading">
+          <a-timeline>
+            <a-timeline-item>
+              <p>
+                Download kubeconfig for the cluster<br><br>
+                The <code>kubectl</code> command-line tool uses kubeconfig files to find the information it needs to choose a cluster and communicate with the API server of a cluster.
+              </p>
+            </a-timeline-item>
+            <a-timeline-item>
+              <p>
+                Download kubectl tool for cluster's Kubernetes version<br><br>
+                Linux: <a :href="this.kubectlLinuxLink">{{ this.kubectlLinuxLink }}</a><br>
+                MacOS: <a :href="this.kubectlMacLink">{{ this.kubectlMacLink }}</a><br>
+                Windows: <a :href="this.kubectlWindowsLink">{{ this.kubectlWindowsLink }}</a>
+              </p>
+            </a-timeline-item>
+            <a-timeline-item>
+              <p>
+                Using kubectl and kubeconfig file to access cluster<br><br>
+                <code><b>kubectl --kubeconfig /custom/path/kube.conf {COMMAND}</b></code><br><br>
+
+                <em>List pods</em><br>
+                <code>kubectl --kubeconfig /custom/path/kube.conf get pods --all-namespaces</code><br>
+                <em>List nodes</em><br>
+                <code>kubectl --kubeconfig /custom/path/kube.conf get nodes --all-namespaces</code><br>
+                <em>List services</em><br>
+                <code>kubectl --kubeconfig /custom/path/kube.conf get services --all-namespaces</code>
+              </p>
+            </a-timeline-item>
+          </a-timeline>
+        </a-card>
+        <a-card title="Access Kubernetes Dashborad Web UI">
+          <a-timeline>
+            <a-timeline-item>
+              <p>
+                Run proxy locally<br><br>
+                <code><b>kubectl --kubeconfig /custom/path/kube.conf proxy</b></code>
+              </p>
+            </a-timeline-item>
+            <a-timeline-item>
+              <p>
+                Open URL in browser<br><br>
+                <a href="http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"><code>http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/</code></a>
+              </p>
+            </a-timeline-item>
+            <a-timeline-item>
+              <p>
+                Token for dashboard login can be retrieved using following command<br><br>
+                <code><b>kubectl --kubeconfig /custom/path/kube.conf describe secret $(kubectl --kubeconfig /custom/path/kube.conf get secrets -n kubernetes-dashboard | grep kubernetes-dashboard-token | awk '{print $1}') -n kubernetes-dashboard</b></code>
+              </p>
+            </a-timeline-item>
+          </a-timeline>
+          <p>More about accessing dashboard UI, https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/#accessing-the-dashboard-ui</p>
+        </a-card>
       </a-tab-pane>
       <a-tab-pane :tab="$t('instances')" key="instances">
         <a-table
@@ -81,6 +140,13 @@ export default {
   },
   data () {
     return {
+      clusterConfigLoading: false,
+      clusterConfig: '',
+      versionLoading: false,
+      kubernetesVersion: {},
+      kubectlLinuxLink: 'https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/linux/amd64/kubectl',
+      kubectlMacLink: 'https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/darwin/amd64/kubectl',
+      kubectlWindowsLink: 'https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/windows/amd64/kubectl.exe',
       instanceLoading: false,
       virtualmachines: [],
       vmColumns: [
@@ -193,8 +259,70 @@ export default {
       this.currentTab = e
     },
     handleFetchData () {
+      this.fetchKubernetesClusterConfig()
+      this.fetchKubernetesVersion()
       this.fetchInstances()
       this.fetchPublicIpAddress()
+    },
+    fetchKubernetesClusterConfig () {
+      this.clusterConfigLoading = true
+      this.clusterConfig = ''
+      if (!this.isObjectEmpty(this.resource)) {
+        var params = {}
+        params.id = this.resource.id
+        api('getKubernetesClusterConfig', params).then(json => {
+          const config = json.getkubernetesclusterconfigresponse.clusterconfig
+          if (!this.isObjectEmpty(config) &&
+            this.isValidValueForKey(config, 'configdata') &&
+            config.configdata !== '') {
+            this.clusterConfig = config.configdata
+          } else {
+            this.$notification.error({
+              message: 'Request Failed',
+              description: 'Unable to retrieve Kubernetes cluster config'
+            })
+          }
+        }).catch(error => {
+          this.$notification.error({
+            message: 'Request Failed',
+            description: error.response.headers['x-description']
+          })
+        }).finally(() => {
+          this.clusterConfigLoading = false
+          if (!this.isObjectEmpty(this.kubernetesVersion) && this.isValidValueForKey(this.kubernetesVersion, 'semanticversion')) {
+            this.kubectlLinuxLink = 'https://storage.googleapis.com/kubernetes-release/release/v' + this.kubernetesVersion.semanticversion + '/bin/linux/amd64/kubectl'
+            this.kubectlMacLink = 'https://storage.googleapis.com/kubernetes-release/release/v' + this.kubernetesVersion.semanticversion + '/bin/darwin/amd64/kubectl'
+            this.kubectlWindowsLink = 'https://storage.googleapis.com/kubernetes-release/release/v' + this.kubernetesVersion.semanticversion + '/bin/windows/amd64/kubectl.exe'
+          }
+        })
+      }
+    },
+    fetchKubernetesVersion () {
+      this.versionLoading = true
+      this.virtualmachines = []
+      if (!this.isObjectEmpty(this.resource) && this.isValidValueForKey(this.resource, 'kubernetesversionid') &&
+        this.resource.kubernetesversionid !== '') {
+        var params = {}
+        params.id = this.resource.kubernetesversionid
+        api('listKubernetesSupportedVersions', params).then(json => {
+          const versionObjs = json.listkubernetessupportedversionsresponse.kubernetessupportedversion
+          if (this.arrayHasItems(versionObjs)) {
+            this.kubernetesVersion = versionObjs[0]
+          }
+        }).catch(error => {
+          this.$notification.error({
+            message: 'Request Failed',
+            description: error.response.headers['x-description']
+          })
+        }).finally(() => {
+          this.versionLoading = false
+          if (!this.isObjectEmpty(this.kubernetesVersion) && this.isValidValueForKey(this.kubernetesVersion, 'semanticversion')) {
+            this.kubectlLinuxLink = 'https://storage.googleapis.com/kubernetes-release/release/v' + this.kubernetesVersion.semanticversion + '/bin/linux/amd64/kubectl'
+            this.kubectlMacLink = 'https://storage.googleapis.com/kubernetes-release/release/v' + this.kubernetesVersion.semanticversion + '/bin/darwin/amd64/kubectl'
+            this.kubectlWindowsLink = 'https://storage.googleapis.com/kubernetes-release/release/v' + this.kubernetesVersion.semanticversion + '/bin/windows/amd64/kubectl.exe'
+          }
+        })
+      }
     },
     fetchInstances () {
       this.instanceLoading = true
@@ -257,43 +385,66 @@ export default {
       }).finally(() => {
         this.networkLoading = false
       })
+    },
+    downloadKubernetesClusterConfig () {
+      var blob = new Blob([this.clusterConfig], { type: 'text/plain' })
+      var filename = 'kube.conf'
+      if (window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveBlob(blob, filename)
+      } else {
+        var elem = window.document.createElement('a')
+        elem.href = window.URL.createObjectURL(blob)
+        elem.download = filename
+        document.body.appendChild(elem)
+        elem.click()
+        document.body.removeChild(elem)
+      }
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.list {
+  .list {
 
-  &__item,
-  &__row {
-    display: flex;
-    flex-wrap: wrap;
-    width: 100%;
+    &__item,
+    &__row {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    &__item {
+      margin-bottom: -20px;
+    }
+
+    &__col {
+      flex: 1;
+      margin-right: 20px;
+      margin-bottom: 20px;
+    }
+
+    &__label {
+      font-weight: bold;
+    }
+
   }
 
-  &__item {
-    margin-bottom: -20px;
+  .pagination {
+    margin-top: 20px;
   }
 
-  &__col {
-    flex: 1;
-    margin-right: 20px;
-    margin-bottom: 20px;
+  .table {
+    margin-top: 20px;
+    overflow-y: auto;
   }
 
-  &__label {
-    font-weight: bold;
+  .action-button {
+    margin-top: 10px;
+    text-align: right;
+
+    button {
+      margin-right: 5px;
+    }
   }
-
-}
-
-.pagination {
-  margin-top: 20px;
-}
-
-.table {
-  margin-top: 20px;
-  overflow-y: auto;
-}
 </style>
