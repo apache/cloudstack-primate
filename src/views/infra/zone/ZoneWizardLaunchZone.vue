@@ -1077,10 +1077,8 @@ export default {
       } else if (this.isAdvancedZone) {
         const physicalNetworksHavingGuestIncludingVlan = []
         await this.prefillContent.physicalNetworks.map(async (network) => {
-          if (this.prefillContent.vlanRangeStart && this.prefillContent.vlanRangeEnd) {
-            if (this.prefillContent.vlanRangeStart.length > 0 && this.prefillContent.vlanRangeEnd.length > 0) {
-              physicalNetworksHavingGuestIncludingVlan.push(network)
-            }
+          if (this.prefillContent.vlanRangeStart) {
+            physicalNetworksHavingGuestIncludingVlan.push(network)
           }
         })
 
@@ -1093,26 +1091,14 @@ export default {
             const network = physicalNetworksHavingGuestIncludingVlan[index]
             let vlan = null
 
-            if (!this.prefillContent.vlanRangeEnd ||
-              this.prefillContent.vlanRangeEnd.value === null ||
-              this.prefillContent.vlanRangeEnd.value.length === 0) {
+            if (!this.prefillContent.vlanRangeEnd || !this.prefillContent.vlanRangeEnd.value) {
               vlan = this.prefillContent.vlanRangeStart.value
             } else {
               vlan = [this.prefillContent.vlanRangeStart.value, this.prefillContent.vlanRangeEnd.value].join('-')
             }
 
-            const originalId = network.id
-            let returnedId = null
-
-            this.stepData.physicalNetworkReturned.forEach((item) => {
-              if (item.id === originalId) {
-                returnedId = item.id
-                return false
-              }
-            })
-
             const updateParams = {}
-            updateParams.id = returnedId
+            updateParams.id = this.stepData.physicalNetworkReturned.id
             updateParams.vlan = vlan
 
             try {
