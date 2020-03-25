@@ -35,7 +35,7 @@
                 }
               }]
             }]"
-            :placeholder="this.$t('cks.cluster.size')"/>
+            :placeholder="apiParams.size.description"/>
         </a-form-item>
         <a-form-item :label="$t('serviceofferingid')">
           <a-select
@@ -47,7 +47,7 @@
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
             :loading="serviceOfferingLoading"
-            :placeholder="this.$t('serviceofferingid')">
+            :placeholder="apiParams.serviceofferingid.description">
             <a-select-option v-for="(opt, optIndex) in this.serviceOfferings" :key="optIndex">
               {{ opt.name || opt.description }}
             </a-select-option>
@@ -86,6 +86,11 @@ export default {
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
+    this.apiConfig = this.$store.getters.apis.scaleKubernetesCluster || {}
+    this.apiParams = {}
+    this.apiConfig.params.forEach(param => {
+      this.apiParams[param.name] = param
+    })
   },
   created () {
   },

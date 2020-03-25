@@ -34,7 +34,7 @@
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
             :loading="kubernetesVersionLoading"
-            :placeholder="this.$t('kubernetesversionid')">
+            :placeholder="apiParams.kubernetesversionid.description">
             <a-select-option v-for="(opt, optIndex) in this.kubernetesVersions" :key="optIndex">
               {{ opt.name || opt.description }}
             </a-select-option>
@@ -72,6 +72,11 @@ export default {
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
+    this.apiConfig = this.$store.getters.apis.upgradeKubernetesCluster || {}
+    this.apiParams = {}
+    this.apiConfig.params.forEach(param => {
+      this.apiParams[param.name] = param
+    })
   },
   created () {
   },

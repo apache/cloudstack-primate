@@ -27,14 +27,14 @@
             v-decorator="['name', {
               rules: [{ required: true, message: 'Please enter Kubernetes cluster name' }]
             }]"
-            :placeholder="$t('name')"/>
+            :placeholder="apiParams.name.description"/>
         </a-form-item>
         <a-form-item :label="$t('description')">
           <a-input
             v-decorator="['description', {
               rules: [{ message: 'Please enter name' }]
             }]"
-            :placeholder="$t('description')"/>
+            :placeholder="apiParams.description.description"/>
         </a-form-item>
         <a-form-item :label="$t('zoneid')">
           <a-select
@@ -48,7 +48,7 @@
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
             :loading="zoneLoading"
-            :placeholder="this.$t('zoneid')"
+            :placeholder="apiParams.zoneid.description"
             @change="val => { this.handleZoneChanged(this.zones[val]) }">
             <a-select-option v-for="(opt, optIndex) in this.zones" :key="optIndex">
               {{ opt.name || opt.description }}
@@ -67,7 +67,7 @@
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
             :loading="kubernetesVersionLoading"
-            :placeholder="this.$t('kubernetesversionid')"
+            :placeholder="apiParams.kubernetesversionid.description"
             @change="val => { this.handleKubernetesVersionChange(this.kubernetesVersions[val]) }">
             <a-select-option v-for="(opt, optIndex) in this.kubernetesVersions" :key="optIndex">
               {{ opt.name || opt.description }}
@@ -86,7 +86,7 @@
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
             :loading="serviceOfferingLoading"
-            :placeholder="this.$t('serviceofferingid')">
+            :placeholder="apiParams.serviceofferingid.description">
             <a-select-option v-for="(opt, optIndex) in this.serviceOfferings" :key="optIndex">
               {{ opt.name || opt.description }}
             </a-select-option>
@@ -104,7 +104,7 @@
                 }
               }]
             }]"
-            :placeholder="this.$t('noderootdisksize')"/>
+            :placeholder="apiParams.noderootdisksize.description"/>
         </a-form-item>
         <a-form-item :label="$t('networkid')">
           <a-select
@@ -116,7 +116,7 @@
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
             :loading="networkLoading"
-            :placeholder="this.$t('networkid')">
+            :placeholder="apiParams.networkid.description">
             <a-select-option v-for="(opt, optIndex) in this.networks" :key="optIndex">
               {{ opt.name || opt.description }}
             </a-select-option>
@@ -140,12 +140,12 @@
                       }
               ]
             }]"
-            :placeholder="this.$t('masternodes')"/>
+            :placeholder="apiParams.masternodes.description"/>
         </a-form-item>
         <a-form-item :label="$t('externalloadbalanceripaddress')" v-if="this.haEnabled">
           <a-input
             v-decorator="['externalloadbalanceripaddress', {}]"
-            :placeholder="$t('externalloadbalanceripaddress')"/>
+            :placeholder="apiParams.externalloadbalanceripaddress.description"/>
         </a-form-item>
         <a-form-item :label="$t('cks.cluster.size')">
           <a-input
@@ -162,7 +162,7 @@
                       }
               ]
             }]"
-            :placeholder="this.$t('cks.cluster.size')"/>
+            :placeholder="apiParams.size.description"/>
         </a-form-item>
         <a-form-item :label="$t('keypair')">
           <a-select
@@ -174,7 +174,7 @@
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
             :loading="keyPairLoading"
-            :placeholder="this.$t('keypair')">
+            :placeholder="apiParams.keypair.description">
             <a-select-option v-for="(opt, optIndex) in this.keyPairs" :key="optIndex">
               {{ opt.name || opt.description }}
             </a-select-option>
@@ -216,6 +216,11 @@ export default {
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
+    this.apiConfig = this.$store.getters.apis.createKubernetesCluster || {}
+    this.apiParams = {}
+    this.apiConfig.params.forEach(param => {
+      this.apiParams[param.name] = param
+    })
   },
   created () {
     this.networks = [

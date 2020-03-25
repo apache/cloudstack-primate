@@ -27,7 +27,7 @@
             v-decorator="['semanticversion', {
               rules: [{ required: true, message: 'Please enter Kubernetes semantic version' }]
             }]"
-            :placeholder="$t('semanticversion')"/>
+            :placeholder="apiParams.semanticversion.description"/>
         </a-form-item>
         <a-form-item :label="$t('name')">
           <a-input
@@ -57,7 +57,7 @@
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
             :loading="zoneLoading"
-            :placeholder="this.$t('zoneid')">
+            :placeholder="apiParams.zoneid.description">
             <a-select-option v-for="(opt, optIndex) in this.zones" :key="optIndex">
               {{ opt.name || opt.description }}
             </a-select-option>
@@ -68,14 +68,14 @@
             v-decorator="['url', {
               rules: [{ required: true, message: 'Please enter binaries ISO URL' }]
             }]"
-            :placeholder="$t('url')" />
+            :placeholder="apiParams.url.description" />
         </a-form-item>
         <a-form-item :label="$t('checksum')">
           <a-input
             v-decorator="['checksum', {
               rules: [{ required: false, message: 'Please enter input' }]
             }]"
-            :placeholder="$t('checksum')" />
+            :placeholder="apiParams.checksum.description" />
         </a-form-item>
         <a-form-item :label="$t('mincpunumber')">
           <a-input
@@ -91,7 +91,7 @@
                       }
               ]
             }]"
-            :placeholder="this.$t('mincpunumber')"/>
+            :placeholder="apiParams.mincpunumber.description"/>
         </a-form-item>
         <a-form-item :label="$t('minmemory')">
           <a-input
@@ -107,7 +107,7 @@
                       }
               ]
             }]"
-            :placeholder="this.$t('minmemory')"/>
+            :placeholder="apiParams.minmemory.description"/>
         </a-form-item>
 
         <div :span="24" class="action-button">
@@ -134,6 +134,11 @@ export default {
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
+    this.apiConfig = this.$store.getters.apis.addKubernetesSupportedVersion || {}
+    this.apiParams = {}
+    this.apiConfig.params.forEach(param => {
+      this.apiParams[param.name] = param
+    })
   },
   created () {
     this.zones = [
