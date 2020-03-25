@@ -42,7 +42,7 @@
             </a-timeline-item>
             <a-timeline-item>
               <p>
-                Download kubectl tool for cluster's Kubernetes version<br><br>
+                Download <code>kubectl</code> tool for cluster's Kubernetes version<br><br>
                 Linux: <a :href="this.kubectlLinuxLink">{{ this.kubectlLinuxLink }}</a><br>
                 MacOS: <a :href="this.kubectlMacLink">{{ this.kubectlMacLink }}</a><br>
                 Windows: <a :href="this.kubectlWindowsLink">{{ this.kubectlWindowsLink }}</a>
@@ -50,7 +50,7 @@
             </a-timeline-item>
             <a-timeline-item>
               <p>
-                Using kubectl and kubeconfig file to access cluster<br><br>
+                Use <code>kubectl</code> and <code>kubeconfig</code> file to access cluster<br><br>
                 <code><b>kubectl --kubeconfig /custom/path/kube.conf {COMMAND}</b></code><br><br>
 
                 <em>List pods</em><br>
