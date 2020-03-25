@@ -48,10 +48,10 @@
               <a-tag v-if="resource.hypervisor">
                 {{ resource.hypervisor }}
               </a-tag>
-              <a-tag v-if="'haenable' in resource" :color="resource.haenable ? 'green': 'red'">
+              <a-tag v-if="resource.haenable">
                 {{ $t('haenable') }}
               </a-tag>
-              <a-tag v-if="'isdynamicallyscalable' in resource" :color="resource.isdynamicallyscalable ? 'green': 'red'">
+              <a-tag v-if="resource.isdynamicallyscalable">
                 {{ $t('isdynamicallyscalable') }}
               </a-tag>
               <a-tag v-if="resource.scope">
@@ -821,7 +821,7 @@ export default {
       margin-bottom: 0;
       font-size: 18px;
       line-height: 1;
-      word-wrap: break-word;
+      word-break: break-all;
       text-align: left;
     }
 
@@ -829,7 +829,7 @@ export default {
 }
 .resource-detail-item {
   margin-bottom: 20px;
-  word-break: break-word;
+  word-break: break-all;
 
   &__details {
     display: flex;

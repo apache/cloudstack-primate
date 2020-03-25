@@ -24,7 +24,7 @@
         layout="vertical">
 
         <a-form-item :label="$t('ispublic')" v-show="this.isAdmin()">
-          <a-switch v-decorator="['ispublic']" :checked="this.offeringIsPublic" @change="val => { this.offeringIsPublic = val }" />
+          <a-switch v-decorator="['ispublic', {initialValue: this.isPublic}]" :defaultChecked="this.offeringIsPublic" @change="val => { this.offeringIsPublic = val }" />
         </a-form-item>
 
         <a-form-item :label="$t('domainid')" v-if="!this.offeringIsPublic">
@@ -73,7 +73,7 @@
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
             :loading="zoneLoading"
-            :placeholder="this.$t('label.zone')">
+            :placeholder="this.$t('zone')">
             <a-select-option v-for="(opt, optIndex) in this.zones" :key="optIndex">
               {{ opt.name || opt.description }}
             </a-select-option>
@@ -126,7 +126,6 @@ export default {
     ]
   },
   mounted () {
-    this.offeringType = this.$route.meta.name
     switch (this.$route.meta.name) {
       case 'computeoffering':
         this.offeringType = 'ServiceOffering'
@@ -281,8 +280,8 @@ export default {
   .form-layout {
     width: 80vw;
 
-    @media (min-width: 1000px) {
-      width: 35vw;
+    @media (min-width: 600px) {
+      width: 25vw;
     }
   }
 
