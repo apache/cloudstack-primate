@@ -146,7 +146,7 @@ export default {
         listView: true,
         args: ['name', 'description', 'zoneid', 'externalid']
       }, {
-        api: 'deleteBackupOffering:',
+        api: 'deleteBackupOffering',
         icon: 'delete',
         label: 'Delete Offering',
         dataView: true

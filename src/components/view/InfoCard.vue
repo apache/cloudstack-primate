@@ -332,6 +332,17 @@
             <router-link :to="{ path: '/vpc/' + resource.vpcid }">{{ resource.vpcname || resource.vpcid }}</router-link>
           </div>
         </div>
+        <div class="resource-detail-item" v-if="resource.affinitygroup && resource.affinitygroup.length > 0">
+          <div class="resource-detail-item__label">{{ $t('affinitygroup') }}</div>
+          <a-icon type="swap" />
+          <span
+            v-for="(group, index) in resource.affinitygroup"
+            :key="group.id"
+          >
+            <router-link :to="{ path: '/affinitygroup/' + group.id }">{{ group.name }}</router-link>
+            <span v-if="index + 1 < resource.affinitygroup.length">, </span>
+          </span>
+        </div>
         <div class="resource-detail-item" v-if="resource.serviceofferingname && resource.serviceofferingid">
           <div class="resource-detail-item__label">{{ $t('serviceofferingname') }}</div>
           <div class="resource-detail-item__details">
@@ -355,6 +366,7 @@
         </div>
         <div class="resource-detail-item" v-if="resource.backupofferingid">
           <div class="resource-detail-item__label">{{ $t('backupofferingid') }}</div>
+          <a-icon type="cloud-upload" />
           <router-link :to="{ path: '/backupoffering/' + resource.backupofferingid }">{{ resource.backupofferingname || resource.backupofferingid }} </router-link>
         </div>
         <div class="resource-detail-item" v-if="resource.networkofferingid">
@@ -444,16 +456,6 @@
           <div class="resource-detail-item__details">
             <a-icon type="calendar" />{{ resource.created }}
           </div>
-        </div>
-        <div class="resource-detail-item" v-if="resource.affinitygroup && resource.affinitygroup.length > 0">
-          <a-icon type="swap" />
-          <span
-            v-for="(group, index) in resource.affinitygroup"
-            :key="group.id"
-          >
-            <router-link :to="{ path: '/affinitygroup/' + group.id }">{{ group.name }}</router-link>
-            <span v-if="index + 1 < resource.affinitygroup.length">, </span>
-          </span>
         </div>
       </div>
 

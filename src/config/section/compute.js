@@ -117,35 +117,6 @@ export default {
           }
         },
         {
-          api: 'attachIso',
-          icon: 'paper-clip',
-          label: 'label.action.attach.iso',
-          dataView: true,
-          args: ['id', 'virtualmachineid'],
-          show: (record) => { return !record.isoid },
-          mapping: {
-            id: {
-              api: 'listIsos'
-            },
-            virtualmachineid: {
-              value: (record, params) => { return record.id }
-            }
-          }
-        },
-        {
-          api: 'detachIso',
-          icon: 'link',
-          label: 'label.action.detach.iso',
-          dataView: true,
-          args: ['virtualmachineid'],
-          show: (record) => { return 'isoid' in record && record.isoid },
-          mapping: {
-            virtualmachineid: {
-              value: (record, params) => { return record.id }
-            }
-          }
-        },
-        {
           api: 'createVMSnapshot',
           icon: 'camera',
           label: 'Create VM Snapshot',
@@ -207,6 +178,35 @@ export default {
           dataView: true,
           args: ['virtualmachineid', 'forced'],
           show: (record) => { return record.backupofferingid },
+          mapping: {
+            virtualmachineid: {
+              value: (record, params) => { return record.id }
+            }
+          }
+        },
+        {
+          api: 'attachIso',
+          icon: 'paper-clip',
+          label: 'label.action.attach.iso',
+          dataView: true,
+          args: ['id', 'virtualmachineid'],
+          show: (record) => { return !record.isoid },
+          mapping: {
+            id: {
+              api: 'listIsos'
+            },
+            virtualmachineid: {
+              value: (record, params) => { return record.id }
+            }
+          }
+        },
+        {
+          api: 'detachIso',
+          icon: 'link',
+          label: 'label.action.detach.iso',
+          dataView: true,
+          args: ['virtualmachineid'],
+          show: (record) => { return 'isoid' in record && record.isoid },
           mapping: {
             virtualmachineid: {
               value: (record, params) => { return record.id }
