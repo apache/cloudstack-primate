@@ -101,6 +101,12 @@
           :rowKey="item => item.id"
           :pagination="false"
         >
+          <template slot="name" slot-scope="text, record">
+            <router-link :to="{ path: '/vm/' + record.id }">{{ record.name }}</router-link>
+          </template>
+          <template slot="state" slot-scope="text">
+            <status :text="text ? text : ''" displayText />
+          </template>
         </a-table>
       </a-tab-pane>
       <a-tab-pane :tab="$t('firewall')" key="firewall">
@@ -123,6 +129,7 @@ import DetailsTab from '@/components/view/DetailsTab'
 import FirewallRules from '@/views/network/FirewallRules'
 import PortForwarding from '@/views/network/PortForwarding'
 import LoadBalancing from '@/views/network/LoadBalancing'
+import Status from '@/components/widgets/Status'
 
 export default {
   name: 'KubernetesServiceTab',
@@ -130,7 +137,8 @@ export default {
     DetailsTab,
     FirewallRules,
     PortForwarding,
-    LoadBalancing
+    LoadBalancing,
+    Status
   },
   mixins: [mixinDevice],
   props: {
@@ -166,15 +174,17 @@ export default {
       this.vmColumns = [
         {
           title: this.$t('name'),
-          dataIndex: 'name'
+          dataIndex: 'name',
+          scopedSlots: { customRender: 'name' }
+        },
+        {
+          title: this.$t('state'),
+          dataIndex: 'state',
+          scopedSlots: { customRender: 'state' }
         },
         {
           title: this.$t('instancename'),
           dataIndex: 'instancename'
-        },
-        {
-          title: this.$t('displayname'),
-          dataIndex: 'displayname'
         },
         {
           title: this.$t('ipaddress'),
@@ -183,10 +193,6 @@ export default {
         {
           title: this.$t('zonename'),
           dataIndex: 'zonename'
-        },
-        {
-          title: this.$t('state'),
-          dataIndex: 'state'
         }
       ]
     } else {
