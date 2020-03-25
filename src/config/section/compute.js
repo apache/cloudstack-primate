@@ -404,23 +404,8 @@ export default {
       columns: ['name', 'zonename', 'size', 'cpunumber', 'memory', 'state'],
       details: ['name', 'id', 'description', 'zonename', 'kubernetesversionname', 'masternodes', 'size', 'cpunumber', 'memory', 'state', 'serviceofferingname', 'associatednetworkname', 'keypair'],
       tabs: [{
-        name: 'details',
-        component: () => import('@/components/view/DetailsTab')
-      }, {
-        name: 'access',
-        component: () => import('@/components/view/DetailsTab')
-      }, {
-        name: 'instances',
-        component: () => import('@/components/view/DetailSettings')
-      }, {
-        name: 'firewall',
-        component: () => import('@/views/network/FirewallRules.vue')
-      }, {
-        name: 'portforwarding',
-        component: () => import('@/views/network/PortForwarding.vue')
-      }, {
-        name: 'loadbalancing',
-        component: () => import('@/views/network/LoadBalancing.vue')
+        name: 'info',
+        component: () => import('@/views/compute/KubernetesClusterInfoTab.vue')
       }],
       actions: [
         {

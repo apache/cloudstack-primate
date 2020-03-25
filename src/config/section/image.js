@@ -222,7 +222,7 @@ export default {
         {
           api: 'updateKubernetesSupportedVersion',
           icon: 'edit',
-          label: 'label.edit',
+          label: 'Update Kuberntes Version',
           dataView: true,
           popup: true,
           component: () => import('@/views/image/UpdateKubernetesSupportedVersion.vue')
