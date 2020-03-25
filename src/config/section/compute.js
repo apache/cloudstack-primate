@@ -15,6 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import kubernetes from '@/assets/icons/kubernetes.svg?inline'
+
 export default {
   name: 'compute',
   title: 'Compute',
@@ -328,25 +330,16 @@ export default {
         }
       ]
     },
-    /*
     {
-      name: 'demo',
-      title: 'Demo',
-      icon: 'radar-chart',
-      permission: [ 'listVirtualMachines' ],
-      component: () => import('@/components/Test.vue')
-    },
-    */
-    {
-      name: 'kubernetesclusters',
-      title: 'Kubernetes Clusters',
-      icon: 'gold',
+      name: 'kubernetes',
+      title: 'Kubernetes',
+      icon: kubernetes,
       permission: ['listKubernetesClusters'],
-      columns: ['name', 'zonename', 'size', 'cpunumber', 'memory', 'state'],
-      details: ['name', 'id', 'description', 'zonename', 'kubernetesversionname', 'masternodes', 'size', 'cpunumber', 'memory', 'state', 'serviceofferingname', 'associatednetworkname', 'keypair'],
+      columns: ['name', 'state', 'size', 'cpunumber', 'memory', 'account', 'zonename'],
+      details: ['name', 'description', 'zonename', 'kubernetesversionname', 'size', 'masternodes', 'cpunumber', 'memory', 'keypair', 'associatednetworkname', 'account', 'domain', 'zonename'],
       tabs: [{
-        name: 'info',
-        component: () => import('@/views/compute/KubernetesClusterInfoTab.vue')
+        name: 'k8s',
+        component: () => import('@/views/compute/KubernetesServiceTab.vue')
       }],
       actions: [
         {

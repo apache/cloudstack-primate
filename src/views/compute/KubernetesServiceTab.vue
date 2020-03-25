@@ -26,7 +26,7 @@
         <DetailsTab :resource="resource" :loading="loading" />
       </a-tab-pane>
       <a-tab-pane :tab="$t('access')" key="access">
-        <a-card title="Kubernetes Cluster kubeconfig" :loading="this.versionLoading">
+        <a-card title="Kubernetes Cluster Config" :loading="this.versionLoading">
           <div v-if="this.clusterConfig !== ''">
             <a-textarea :value="this.clusterConfig" :rows="5" readonly />
             <div :span="24" class="action-button">
@@ -37,7 +37,7 @@
             <p>Kubernetes cluster kubeconfig not available currently</p>
           </div>
         </a-card>
-        <a-card title="Access Kubernetes Cluster using kubectl" :loading="this.versionLoading">
+        <a-card title="Using CLI" :loading="this.versionLoading">
           <a-timeline>
             <a-timeline-item>
               <p>
@@ -68,7 +68,7 @@
             </a-timeline-item>
           </a-timeline>
         </a-card>
-        <a-card title="Access Kubernetes Dashborad Web UI">
+        <a-card title="Kubernetes Dashboard UI">
           <a-timeline>
             <a-timeline-item>
               <p>
@@ -125,7 +125,7 @@ import PortForwarding from '@/views/network/PortForwarding'
 import LoadBalancing from '@/views/network/LoadBalancing'
 
 export default {
-  name: 'KubernetesClusterInfoTab',
+  name: 'KubernetesServiceTab',
   components: {
     DetailsTab,
     FirewallRules,
@@ -160,8 +160,6 @@ export default {
       publicIpAddress: {},
       currentTab: 'details'
     }
-  },
-  beforeCreate () {
   },
   created () {
     if (this.isAdminOrDomainAdmin()) {
@@ -266,11 +264,6 @@ export default {
               description: 'Unable to retrieve Kubernetes cluster config'
             })
           }
-        }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: error.response.headers['x-description']
-          })
         }).finally(() => {
           this.clusterConfigLoading = false
           if (!this.isObjectEmpty(this.kubernetesVersion) && this.isValidValueForKey(this.kubernetesVersion, 'semanticversion')) {
