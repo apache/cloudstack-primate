@@ -328,7 +328,6 @@ export default {
               }
             }
             this.virtualmachines = this.virtualmachines.concat(listVms)
-            console.log(this.virtualmachines)
           }
         }).catch(error => {
           this.$notification.error({

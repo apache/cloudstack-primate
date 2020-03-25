@@ -144,7 +144,7 @@ export default {
     this.zones = [
       {
         id: null,
-        name: this.$t('all.zone')
+        name: this.$t('label.all.zone')
       }
     ]
   },
