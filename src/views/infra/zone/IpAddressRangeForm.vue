@@ -27,15 +27,9 @@
       :dataSource="ipRanges"
       :columns="columns"
       :pagination="false"
-      style="margin-bottom: 24px;"
-      :scroll="{ y: 220 }">
+      style="margin-bottom: 24px;" >
       <template slot="actions" slot-scope="text, record">
-        <a-popconfirm
-          title="Delete?"
-          @confirm="() => onDelete(record.key)"
-        >
-          <a-icon type="delete" href="javascript;;" />
-        </a-popconfirm>
+        <a-button type="danger" shape="circle" icon="delete" @click="onDelete(record.key)" />
       </template>
       <template slot="footer">
         <a-form
@@ -75,7 +69,7 @@
                   {
                     validator: checkIpFormat,
                     ipV4: true,
-                    message: 'Please enter a valid IP v4 address.'
+                    message: 'Please enter a valid IPv4 address.'
                   }
                 ]
               }]"
@@ -93,7 +87,7 @@
                   {
                     validator: checkIpFormat,
                     ipV4: true,
-                    message: 'Please enter a valid IP v4 address.'
+                    message: 'Please enter a valid IPv4 address.'
                   }]
               }]"
               :placeholder="$t('label.end.IP')"

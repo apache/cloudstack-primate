@@ -27,25 +27,38 @@
       :dataSource="physicalNetworks"
       :columns="columns"
       :pagination="false"
-      :scroll="{ y: 235 }"
       style="margin-bottom: 24px;">
       <template slot="name" slot-scope="text, record">
-        <editable-cell :text="text" @change="onCellChange(record.key, 'name', $event)" />
+        <a-input :value="text" @change="e => onCellChange(record.key, 'name', e.target.value)" />
       </template>
       <template slot="isolationMethod" slot-scope="text, record">
-        <editable-cell-drop-down :text="text" @change="onCellChange(record.key, 'isolationMethod', $event)" />
-      </template>
-      <template slot="traffics" slot-scope="traffics, record" class="editable-cell">
-        <a-tag
-          v-for="traffic in traffics"
-          :color="trafficColors[traffic.type]"
-          :key="traffic.type"
-          style="margin:2px;"
+        <a-select
+          style="width: 100%"
+          defaultValue="VLAN"
+          @change="value => onCellChange(record.key, 'isolationMethod', value)"
         >
-          {{ traffic.type.toUpperCase() }}
-          <a-icon type="edit" class="traffic-type-action" @click="editTraffic(record.key, traffic, $event)"/>
-          <a-icon type="delete" class="traffic-type-action" @click="deleteTraffic(record.key, traffic, $event)"/>
-        </a-tag>
+          <a-select-option value="VLAN"> VLAN </a-select-option>
+          <a-select-option value="VXLAN"> VXLAN </a-select-option>
+          <a-select-option value="GRE"> GRE </a-select-option>
+          <a-select-option value="STT"> STT </a-select-option>
+          <a-select-option value="BCF_SEGMENT"> BCF_SEGMENT </a-select-option>
+          <a-select-option value="ODL"> ODL </a-select-option>
+          <a-select-option value="L3VPN"> L3VPN </a-select-option>
+          <a-select-option value="VSP"> VSP </a-select-option>
+          <a-select-option value="VCS"> VCS </a-select-option>
+        </a-select>
+      </template>
+      <template slot="traffics" slot-scope="traffics, record">
+        <div v-for="traffic in traffics" :key="traffic.type">
+          <a-tag
+            :color="trafficColors[traffic.type]"
+            style="margin:2px"
+          >
+            {{ traffic.type.toUpperCase() }}
+            <a-icon type="edit" class="traffic-type-action" @click="editTraffic(record.key, traffic, $event)"/>
+            <a-icon type="delete" class="traffic-type-action" @click="deleteTraffic(record.key, traffic, $event)"/>
+          </a-tag>
+        </div>
         <a-modal
           title="Edit traffic type"
           :visible="showEditTraffic"
@@ -56,7 +69,7 @@
         >
           <a-form :form="form">
             <span class="ant-form-text"> Please specify the traffic label you want associated with this traffic type. </span>
-            <a-form-item v-bind="formItemLayout" style="margin-top:16px;" label="XenServer Traffic Label">
+            <a-form-item v-bind="formItemLayout" style="margin-top:16px;" label="Traffic Label">
               <a-input
                 v-decorator="['trafficLabel', {
                   rules: [{
@@ -87,7 +100,7 @@
             <a-button
               class="icon-button"
               shape="circle"
-              icon="check"
+              icon="plus"
               size="small"
               @click="trafficAdded" />
             <a-button
@@ -110,15 +123,9 @@
         </div>
       </template>
       <template slot="actions" slot-scope="text, record">
-        <a-popconfirm
-          v-if="physicalNetworks.length > 1"
-          :title="$t('label.delete.confirm')"
-          @confirm="() => onDelete(record)"
-        >
-          <a-icon type="delete" href="javascript;;" />
-        </a-popconfirm>
+        <a-button v-if="physicalNetworks.indexOf(record) > 0" type="danger" shape="circle" icon="delete" @click="onDelete(record)" />
       </template>
-      <template slot="footer" class="editable-add-btn" v-if="isAdvancedZone">
+      <template slot="footer" v-if="isAdvancedZone">
         <a-button
           @click="handleAddPhysicalNetwork">
           {{ $t('label.add.physical.network') }}
@@ -151,14 +158,8 @@
   </div>
 </template>
 <script>
-import EditableCell from './EditableCell'
-import EditableCellDropDown from './EditableCellDropDown'
 
 export default {
-  components: {
-    EditableCell,
-    EditableCellDropDown
-  },
   props: {
     prefillContent: {
       type: Object,
@@ -187,7 +188,7 @@ export default {
       trafficColors: {
         public: 'orange',
         guest: 'green',
-        management: 'geekblue',
+        management: 'blue',
         storage: 'red'
       },
       showEditTraffic: false,
@@ -475,53 +476,8 @@ export default {
   }
 }
 </script>
+
 <style scoped lang="less">
-  .editable-cell {
-    position: relative;
-
-    /deep/.editable-cell-input-wrapper,
-    /deep/.editable-cell-text-wrapper {
-      padding-right: 24px;
-    }
-
-    /deep/.editable-cell-input-wrapper {
-      /deep/.ant-select {
-        width: 100%;
-      }
-    }
-
-    /deep/.editable-cell-text-wrapper {
-      padding: 5px 24px 5px 5px;
-    }
-
-    /deep/.editable-cell-icon,
-    /deep/.editable-cell-icon-check {
-      position: absolute;
-      top: 5px;
-      right: 0;
-      width: 20px;
-      cursor: pointer;
-    }
-
-    /deep/.editable-cell-icon {
-      line-height: 18px;
-      display: none;
-    }
-
-    /deep/.editable-cell-icon-check {
-      line-height: 28px;
-    }
-
-    /deep/.editable-cell:hover .editable-cell-icon {
-      display: inline-block;
-    }
-
-    /deep/.editable-cell-icon:hover,
-    /deep/.editable-cell-icon-check:hover {
-      color: #108ee9;
-    }
-  }
-
   .form-action {
     margin-top: 16px;
   }
