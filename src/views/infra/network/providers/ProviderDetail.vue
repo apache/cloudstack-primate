@@ -16,12 +16,45 @@
 // under the License.
 
 <template>
-  <div>// TODO: Detail</div>
+  <div>
+    <a-list size="small" :dataSource="details">
+      <a-list-item slot="renderItem" slot-scope="item">
+        <div>
+          <strong>{{ $t(item) }}</strong>
+          <br />
+          <div v-if="nsp && nsp[item]">
+            <div v-if="item === 'servicelist'">
+              {{ nsp[item].join(', ') }}
+            </div>
+            <span v-else-if="item !== 'state'">{{ nsp[item] }}</span>
+            <span v-else>
+              <status :text="nsp[item] ? nsp[item] : 'Disabled'" displayText />
+            </span>
+          </div>
+        </div>
+      </a-list-item>
+    </a-list>
+  </div>
 </template>
 
 <script>
+import Status from '@/components/widgets/Status'
+
 export default {
-  name: 'ProviderDetail'
+  name: 'ProviderDetail',
+  components: {
+    Status
+  },
+  props: {
+    details: {
+      type: Array,
+      default: () => []
+    },
+    nsp: {
+      type: Object,
+      default: () => {}
+    }
+  }
 }
 </script>
 

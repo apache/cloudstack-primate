@@ -16,14 +16,76 @@
 // under the License.
 
 <template>
-  <div>// TODO: List device</div>
+  <div>
+    <a-table
+      size="small"
+      class="row-list-data"
+      :loading="loading"
+      :columns="columns"
+      :dataSource="dataSource"
+      :rowKey="record => record.id || record.name"
+      :pagination="false"
+      :scroll="{ y: '60vh' }"/>
+    <a-pagination
+      size="small"
+      class="row-pagination"
+      :current="page"
+      :pageSize="pageSize"
+      :total="itemCount"
+      :showTotal="total => `Total ${total} items`"
+      :pageSizeOptions="['10', '20', '40', '80', '100']"
+      @change="changePage"
+      @showSizeChange="changePageSize"
+      showSizeChanger
+      showQuickJumper />
+  </div>
 </template>
 
 <script>
 export default {
-  name: 'ListDevice'
+  name: 'ListDevice',
+  props: {
+    columns: {
+      type: Array,
+      required: true
+    },
+    dataSource: {
+      type: Array,
+      default: () => []
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    page: {
+      type: Number,
+      default: () => 1
+    },
+    pageSize: {
+      type: Number,
+      default: () => 10
+    },
+    itemCount: {
+      type: Number,
+      default: () => 0
+    }
+  },
+  inject: ['providerChangePage'],
+  methods: {
+    changePage (page, pageSize) {
+      this.providerChangePage(page, pageSize)
+    },
+    changePageSize (currentPage, pageSize) {
+      this.providerChangePage(currentPage, pageSize)
+    }
+  }
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
+.row-pagination {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  text-align: right;
+}
 </style>
