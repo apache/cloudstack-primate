@@ -18,40 +18,17 @@
 <template>
   <a-spin :spinning="fetchLoading">
     <a-tabs :tabPosition="device === 'mobile' ? 'top' : 'left'" :animated="false">
-      <a-tab-pane v-for="nsp in hardcodedNsps" :key="nsp">
+      <a-tab-pane v-for="nsp in hardcodedNsps" :key="nsp.title">
         <span slot="tab">
-          {{ nsp }}
-          <status :text="nsp in nsps ? nsps[nsp].state : 'Disabled'" style="margin-bottom: 6px; margin-left: 6px" />
+          {{ $t(nsp.title) }}
+          <status :text="nsp in nsps ? nsps[nsp.title].state : 'Disabled'" style="margin-bottom: 6px; margin-left: 6px" />
         </span>
-        <a-list size="small" :dataSource="details">
-          <a-list-item
-            slot="renderItem"
-            slot-scope="item">
-            <div>
-              <strong>{{ $t(item) }}</strong>
-              <br />
-              <div v-if="item === 'name'">
-                <span v-if="nsp in nsps">
-                  <router-link :to="{ path: '/nsp/' + nsps[nsp].id + '?name=' + nsps[nsp].name + '&physicalnetworkid=' + resource.id }">
-                    {{ nsps[nsp].name }}
-                  </router-link>
-                </span>
-                <span v-else>
-                  {{ nsp }}
-                </span>
-              </div>
-              <div v-else-if="item === 'state'">
-                <status :text="nsp in nsps ? nsps[nsp].state : 'Disabled'" displayText />
-              </div>
-              <div v-else-if="item === 'id'">
-                <span v-if="nsp in nsps"> {{ nsps[nsp].id }} </span>
-              </div>
-              <div v-else-if="item === 'servicelist'">
-                <span v-if="nsp in nsps"> {{ nsps[nsp].servicelist.join(', ') }} </span>
-              </div>
-            </div>
-          </a-list-item>
-        </a-list>
+        <component
+          :is="nsp.component"
+          :nsp="nsps[nsp.title]"
+          :actions="nsp.actions"
+          :bordered="false"
+        />
       </a-tab-pane>
     </a-tabs>
   </a-spin>
@@ -82,27 +59,68 @@ export default {
     return {
       nsps: {},
       details: ['name', 'state', 'id', 'servicelist'],
-      hardcodedNsps: [
-        'BaremetalDhcpProvider',
-        'BaremetalPxeProvider',
-        'BigSwitchBcf',
-        'BrocadeVcs',
-        'CiscoVnmc',
-        'ConfigDrive',
-        'F5BigIp',
-        'GloboDns',
-        'InternalLbVm',
-        'JuniperSRX',
-        'Netscaler',
-        'NiciraNvp',
-        'Opendaylight',
-        'Ovs',
-        'PaloAlto',
-        'SecurityGroupProvider',
-        'VirtualRouter',
-        'VpcVirtualRouter'
-      ],
       fetchLoading: false
+    }
+  },
+  computed: {
+    hardcodedNsps () {
+      return [
+        {
+          title: 'BaremetalDhcpProvider',
+          component: () => import('@/views/infra/network/providers/BaremetalDhcpProvider.vue')
+        },
+        {
+          title: 'BaremetalPxeProvider'
+        },
+        {
+          title: 'BigSwitchBcf'
+        },
+        {
+          title: 'BrocadeVcs'
+        },
+        {
+          title: 'CiscoVnmc'
+        },
+        {
+          title: 'ConfigDrive'
+        },
+        {
+          title: 'F5BigIp'
+        },
+        {
+          title: 'GloboDns'
+        },
+        {
+          title: 'InternalLbVm'
+        },
+        {
+          title: 'JuniperSRX'
+        },
+        {
+          title: 'Netscaler'
+        },
+        {
+          title: 'NiciraNvp'
+        },
+        {
+          title: 'Opendaylight'
+        },
+        {
+          title: 'Ovs'
+        },
+        {
+          title: 'PaloAlto'
+        },
+        {
+          title: 'SecurityGroupProvider'
+        },
+        {
+          title: 'VirtualRouter'
+        },
+        {
+          title: 'VpcVirtualRouter'
+        }
+      ]
     }
   },
   mounted () {
