@@ -27,9 +27,14 @@
       </a-tab-pane>
       <a-tab-pane :tab="$t('access')" key="access">
         <a-card title="Kubernetes Cluster kubeconfig" :loading="this.versionLoading">
-          <a-textarea :value="this.clusterConfig" :rows="5" readonly />
-          <div :span="24" class="action-button">
-            <a-button @click="downloadKubernetesClusterConfig" type="primary">{{ this.$t('Download') }}</a-button>
+          <div v-if="this.clusterConfig !== ''">
+            <a-textarea :value="this.clusterConfig" :rows="5" readonly />
+            <div :span="24" class="action-button">
+              <a-button @click="downloadKubernetesClusterConfig" type="primary">{{ this.$t('Download') }}</a-button>
+            </div>
+          </div>
+          <div v-else>
+            <p>Kubernetes cluster kubeconfig not available currently</p>
           </div>
         </a-card>
         <a-card title="Access Kubernetes Cluster using kubectl" :loading="this.versionLoading">
@@ -84,7 +89,7 @@
               </p>
             </a-timeline-item>
           </a-timeline>
-          <p>More about accessing dashboard UI, https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/#accessing-the-dashboard-ui</p>
+          <p>More about accessing dashboard UI, <a href="https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/#accessing-the-dashboard-ui">https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/#accessing-the-dashboard-ui</a></p>
         </a-card>
       </a-tab-pane>
       <a-tab-pane :tab="$t('instances')" key="instances">
@@ -149,32 +154,7 @@ export default {
       kubectlWindowsLink: 'https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/windows/amd64/kubectl.exe',
       instanceLoading: false,
       virtualmachines: [],
-      vmColumns: [
-        {
-          title: this.$t('name'),
-          dataIndex: 'name'
-        },
-        {
-          title: this.$t('instancename'),
-          dataIndex: 'instancename'
-        },
-        {
-          title: this.$t('displayname'),
-          dataIndex: 'displayname'
-        },
-        {
-          title: this.$t('ipaddress'),
-          dataIndex: 'ipaddress'
-        },
-        {
-          title: this.$t('zonename'),
-          dataIndex: 'zonename'
-        },
-        {
-          title: this.$t('state'),
-          dataIndex: 'state'
-        }
-      ],
+      vmColumns: [],
       networkLoading: false,
       network: {},
       publicIpAddress: {},
@@ -224,6 +204,10 @@ export default {
         {
           title: this.$t('ipaddress'),
           dataIndex: 'ipaddress'
+        },
+        {
+          title: this.$t('zonename'),
+          dataIndex: 'zonename'
         },
         {
           title: this.$t('state'),
