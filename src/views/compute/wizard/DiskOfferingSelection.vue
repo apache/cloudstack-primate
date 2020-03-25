@@ -72,11 +72,11 @@ export default {
       columns: [
         {
           dataIndex: 'name',
-          title: this.$t('diskOffering'),
+          title: this.$t('diskoffering'),
           width: '40%'
         },
         {
-          dataIndex: 'diskSize',
+          dataIndex: 'disksize',
           slots: { title: 'diskSizeTitle' },
           width: '30%',
           scopedSlots: { customRender: 'diskSize' }
