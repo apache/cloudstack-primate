@@ -19,13 +19,12 @@
   <a-table
     :columns="columns"
     :dataSource="tableSource"
-    :pagination="false"
-    :scroll="{x: 0, y: 320}"
+    :pagination="{showSizeChanger: true}"
     :rowSelection="rowSelection"
     size="middle"
   >
     <span slot="cpuTitle"><a-icon type="appstore" /> {{ $t('cpu') }}</span>
-    <span slot="ramTitle"><a-icon type="bulb" /> {{ $t('ram') }}</span>
+    <span slot="ramTitle"><a-icon type="bulb" /> {{ $t('memory') }}</span>
   </a-table>
 </template>
 
@@ -47,6 +46,7 @@ export default {
       columns: [
         {
           dataIndex: 'name',
+          title: this.$t('serviceOfferingId'),
           width: '40%'
         },
         {
@@ -97,14 +97,5 @@ export default {
 <style lang="less" scoped>
   .ant-table-wrapper {
     margin: 2rem 0;
-  }
-</style>
-
-<style lang="less">
-  .ant-table-selection-column {
-    // Fix for the table header if the row selection use radio buttons instead of checkboxes
-    > div:empty {
-      width: 16px;
-    }
   }
 </style>

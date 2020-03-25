@@ -83,20 +83,27 @@ export default {
       title: 'Accounts',
       icon: 'team',
       permission: ['listAccounts'],
-      columns: ['name', 'state', 'firstname', 'lastname', 'rolename', 'roletype', 'domain'],
+      columns: ['name', 'state', 'rolename', 'roletype', 'domain'],
       details: ['name', 'id', 'rolename', 'roletype', 'domain', 'networkdomain', 'iptotal', 'vmtotal', 'volumetotal', 'receivedbytes', 'sentbytes', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit'],
       related: [{
         name: 'accountuser',
         title: 'Users',
         param: 'account'
       }],
-      tabs: [{
-        name: 'details',
-        component: () => import('@/components/view/DetailsTab.vue')
-      }, {
-        name: 'Settings',
-        component: () => import('@/components/view/SettingsTab.vue')
-      }],
+      tabs: [
+        {
+          name: 'details',
+          component: () => import('@/components/view/DetailsTab.vue')
+        },
+        {
+          name: 'certificate',
+          component: () => import('@/views/iam/SSLCertificateTab.vue')
+        },
+        {
+          name: 'Settings',
+          component: () => import('@/components/view/SettingsTab.vue')
+        }
+      ],
       actions: [
         {
           api: 'createAccount',
@@ -106,11 +113,30 @@ export default {
           args: ['username', 'password', 'password', 'email', 'firstname', 'lastname', 'domainid', 'account', 'roleid', 'timezone', 'networkdomain']
         },
         {
+          api: 'ldapCreateAccount',
+          icon: 'user-add',
+          label: 'label.add.ldap.account',
+          listView: true,
+          popup: true,
+          show: (record, store) => {
+            return store.isLdapEnabled
+          },
+          component: () => import('@/views/iam/AddLdapAccount.vue')
+        },
+        {
           api: 'updateAccount',
           icon: 'edit',
-          label: 'label.update.account',
+          label: 'Update Account',
           dataView: true,
-          args: ['newname', 'domainid', 'roleid', 'networkdomain', 'details']
+          args: ['newname', 'account', 'domainid', 'networkdomain'],
+          mapping: {
+            account: {
+              value: (record) => { return record.name }
+            },
+            domainid: {
+              value: (record) => { return record.domainid }
+            }
+          }
         },
         {
           api: 'updateResourceCount',
@@ -158,6 +184,22 @@ export default {
           mapping: {
             lock: {
               value: (record) => { return true }
+            }
+          }
+        },
+        {
+          api: 'uploadSslCert',
+          icon: 'safety-certificate',
+          label: 'Add certificate',
+          dataView: true,
+          args: ['name', 'certificate', 'privatekey', 'certchain', 'password', 'account', 'domainid'],
+          show: (record) => { return record.state === 'enabled' },
+          mapping: {
+            account: {
+              value: (record) => { return record.name }
+            },
+            domainid: {
+              value: (record) => { return record.domainid }
             }
           }
         },
@@ -228,6 +270,25 @@ export default {
           dataView: true,
           args: ['domainid'],
           mapping: {
+            domainid: {
+              value: (record) => { return record.id }
+            }
+          }
+        },
+        {
+          api: 'linkDomainToLdap',
+          icon: 'link',
+          label: 'Link Domain to LDAP Group/OU',
+          listView: true,
+          dataView: true,
+          args: ['type', 'domainid', 'name', 'accounttype', 'admin'],
+          mapping: {
+            type: {
+              options: ['GROUP', 'OU']
+            },
+            accounttype: {
+              options: ['0', '2']
+            },
             domainid: {
               value: (record) => { return record.id }
             }

@@ -16,17 +16,43 @@
 // under the License.
 
 <template>
-  <div>
-    TODO: list of zones and the zone specific status?
+  <div class="row-template-zone">
+    <a-row :gutter="12">
+      <a-col :md="24" :lg="24">
+        <a-table
+          size="small"
+          style="overflow-y: auto"
+          :loading="loading || fetchLoading"
+          :columns="columns"
+          :dataSource="dataSource"
+          :pagination="false"
+          :rowKey="record => record.zoneid">
+          <div slot="isready" slot-scope="text, record">
+            <span v-if="record.isready">{{ $t('Yes') }}</span>
+            <span v-else>{{ $t('No') }}</span>
+          </div>
+        </a-table>
+        <a-pagination
+          class="row-element"
+          size="small"
+          :current="page"
+          :pageSize="pageSize"
+          :total="itemCount"
+          :showTotal="total => `Total ${total} items`"
+          :pageSizeOptions="['10', '20', '40', '80', '100']"
+          @change="handleChangePage"
+          @showSizeChange="handleChangePageSize"
+          showSizeChanger/>
+      </a-col>
+    </a-row>
   </div>
 </template>
 
 <script>
+import { api } from '@/api'
 
 export default {
   name: 'TemplateZones',
-  components: {
-  },
   props: {
     resource: {
       type: Object,
@@ -36,6 +62,93 @@ export default {
       type: Boolean,
       default: false
     }
+  },
+  data () {
+    return {
+      columns: [],
+      dataSource: [],
+      page: 1,
+      pageSize: 20,
+      itemCount: 0,
+      fetchLoading: false
+    }
+  },
+  created () {
+    this.columns = [
+      {
+        title: this.$t('name'),
+        dataIndex: 'zonename',
+        scopedSlots: { customRender: 'name' }
+      },
+      {
+        title: this.$t('status'),
+        dataIndex: 'status',
+        scopedSlots: { customRender: 'status' }
+      },
+      {
+        title: this.$t('isready'),
+        dataIndex: 'isready',
+        scopedSlots: { customRender: 'isready' }
+      }
+    ]
+  },
+  mounted () {
+    this.fetchData()
+  },
+  watch: {
+    loading (newData, oldData) {
+      if (!newData) {
+        this.fetchData()
+      }
+    }
+  },
+  methods: {
+    fetchData () {
+      const params = {}
+      params.listAll = true
+      params.id = this.resource.id
+      params.templatefilter = 'self'
+      params.page = this.page
+      params.pagesize = this.pageSize
+
+      this.dataSource = []
+      this.itemCount = 0
+      this.fetchLoading = true
+
+      api('listTemplates', params).then(json => {
+        const listTemplates = json.listtemplatesresponse.template
+        const count = json.listtemplatesresponse.count
+
+        if (listTemplates) {
+          this.dataSource = listTemplates
+          this.itemCount = count
+        }
+      }).catch(error => {
+        this.$notification.error({
+          message: 'Request Failed',
+          description: error.response.headers['x-description']
+        })
+      }).finally(() => {
+        this.fetchLoading = false
+      })
+    },
+    handleChangePage (page, pageSize) {
+      this.page = page
+      this.pageSize = pageSize
+      this.fetchData()
+    },
+    handleChangePageSize (currentPage, pageSize) {
+      this.page = currentPage
+      this.pageSize = pageSize
+      this.fetchData()
+    }
   }
 }
 </script>
+
+<style lang="less" scoped>
+.row-element {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+</style>

@@ -25,19 +25,22 @@ import { ACCESS_TOKEN, CURRENT_PROJECT } from '@/store/mutation-types'
 
 const service = axios.create({
   baseURL: config.apiBase,
-  timeout: 60000
+  timeout: 600000
 })
 
 const err = (error) => {
-  if (error.response) {
-    console.log('error has occurred')
-    console.log(error)
+  const response = error.response
+  if (response) {
+    console.log(response)
     const token = Vue.ls.get(ACCESS_TOKEN)
-    if (error.response.status === 403) {
-      const data = error.response.data
+    if (response.status === 403) {
+      const data = response.data
       notification.error({ message: 'Forbidden', description: data.message })
     }
-    if (error.response.status === 401) {
+    if (response.status === 401) {
+      if (response.config && response.config.params && ['listIdps'].includes(response.config.params.command)) {
+        return
+      }
       notification.error({ message: 'Unauthorized', description: 'Authorization verification failed' })
       if (token) {
         store.dispatch('Logout').then(() => {
@@ -47,7 +50,7 @@ const err = (error) => {
         })
       }
     }
-    if (error.response.status === 404) {
+    if (response.status === 404) {
       notification.error({ message: 'Not Found', description: 'Resource not found' })
       this.$router.push({ path: '/exception/404' })
     }
@@ -57,10 +60,10 @@ const err = (error) => {
 
 // request interceptor
 service.interceptors.request.use(config => {
-  const project = Vue.ls.get(CURRENT_PROJECT)
   if (config && config.params) {
     config.params.response = 'json'
-    if (project && project.id) {
+    const project = Vue.ls.get(CURRENT_PROJECT)
+    if (!config.params.projectid && project && project.id) {
       config.params.projectid = project.id
     }
   }

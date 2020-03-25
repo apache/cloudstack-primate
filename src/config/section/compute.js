@@ -30,8 +30,7 @@ export default {
       columns: [
         'name', 'state', 'instancename', 'ipaddress', 'cpunumber', 'cpuused', 'cputotal',
         {
-          memoryused:
-          (record) => {
+          memoryused: (record) => {
             return record.memorykbs && record.memoryintfreekbs ? parseFloat(100.0 * (record.memorykbs - record.memoryintfreekbs) / record.memorykbs).toFixed(2) + '%' : '0.0%'
           }
         },
@@ -85,7 +84,8 @@ export default {
           dataView: true,
           groupAction: true,
           show: (record) => { return ['Stopped'].includes(record.state) },
-          args: ['podid', 'clusterid', 'hostid']
+          args: ['podid', 'clusterid', 'hostid'],
+          response: (result) => { return result.virtualmachine && result.virtualmachine.password ? `Password of the VM is ${result.virtualmachine.password}` : null }
         },
         {
           api: 'stopVirtualMachine',
@@ -253,13 +253,6 @@ export default {
           }
         },
         {
-          api: 'migrateVirtualMachineWithVolume',
-          icon: 'export',
-          label: 'Migrate VM with Volume(s)',
-          dataView: true,
-          show: (record) => { return ['Running'].includes(record.state) }
-        },
-        {
           api: 'migrateVirtualMachine',
           icon: 'drag',
           label: 'label.migrate.instance.to.ps',
@@ -280,7 +273,8 @@ export default {
           icon: 'key',
           label: 'Reset Instance Password',
           dataView: true,
-          show: (record) => { return ['Stopped'].includes(record.state) }
+          show: (record) => { return ['Stopped'].includes(record.state) },
+          response: (result) => { return result.virtualmachine && result.virtualmachine.password ? `Password of the VM is ${result.virtualmachine.password}` : null }
         },
         {
           api: 'resetSSHKeyForVirtualMachine',
@@ -300,6 +294,8 @@ export default {
           icon: 'user-add',
           label: 'Assign Instance to Another Account',
           dataView: true,
+          component: () => import('@/views/compute/AssignInstance'),
+          popup: true,
           show: (record) => { return ['Stopped'].includes(record.state) },
           args: ['virtualmachineid', 'account', 'domainid'],
           mapping: {

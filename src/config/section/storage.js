@@ -39,8 +39,17 @@ export default {
           icon: 'plus',
           label: 'Create Volume',
           listView: true,
-          args: ['name', 'zoneid', 'diskofferingid']
+          popup: true,
+          component: () => import('@/views/storage/CreateVolume.vue')
         }, {
+          api: 'getUploadParamsForVolume',
+          icon: 'cloud-upload',
+          label: 'Upload Local Volume',
+          listView: true,
+          popup: true,
+          component: () => import('@/views/storage/UploadLocalVolume.vue')
+        },
+        {
           api: 'uploadVolume',
           icon: 'link',
           label: 'Upload Volume From URL',
@@ -51,13 +60,6 @@ export default {
               options: ['RAW', 'VHD', 'VHDX', 'OVA', 'QCOW2']
             }
           }
-        }, {
-          api: 'getUploadParamsForVolume',
-          icon: 'cloud-upload',
-          label: 'Upload Local Volume',
-          listView: true,
-          popup: true,
-          component: () => import('@/views/storage/UploadLocalVolume.vue')
         },
         {
           api: 'attachVolume',
@@ -80,20 +82,17 @@ export default {
           label: 'Take Snapshot',
           dataView: true,
           show: (record) => { return record.state === 'Ready' },
-          args: ['volumeid', 'name', 'asyncbackup', 'tags'],
-          mapping: {
-            volumeid: {
-              value: (record) => { return record.id }
-            }
-          }
+          popup: true,
+          component: () => import('@/views/storage/TakeSnapshot.vue')
         },
         {
           api: 'createSnapshotPolicy',
-          icon: 'video-camera',
+          icon: 'clock-circle',
           label: 'Recurring Snapshots',
           dataView: true,
           show: (record) => { return record.state === 'Ready' },
-          args: ['volumeid', 'intervaltype', 'schedule', 'maxsnaps', 'timezone'],
+          popup: true,
+          component: () => import('@/views/storage/RecurringSnapshotVolume.vue'),
           mapping: {
             volumeid: {
               value: (record) => { return record.id }
@@ -108,7 +107,8 @@ export default {
           icon: 'fullscreen',
           label: 'Resize Volume',
           dataView: true,
-          args: ['size']
+          popup: true,
+          component: () => import('@/views/storage/ResizeVolume.vue')
         },
         {
           api: 'migrateVolume',
@@ -116,7 +116,9 @@ export default {
           label: 'Migrate Volume',
           args: ['volumeid', 'storageid', 'livemigrate'],
           dataView: true,
-          show: (record) => { return 'virtualmachineid' in record && record.virtualmachineid },
+          show: (record) => { return record && record.state === 'Ready' },
+          popup: true,
+          component: () => import('@/views/storage/MigrateVolume.vue'),
           mapping: {
             volumeid: {
               value: (record) => { return record.id }
@@ -131,6 +133,7 @@ export default {
           icon: 'cloud-download',
           label: 'Download Volume',
           dataView: true,
+          show: (record) => { return record && record.state === 'Ready' },
           args: ['zoneid', 'mode'],
           mapping: {
             zoneid: {
@@ -139,7 +142,8 @@ export default {
             mode: {
               value: (record) => { return 'HTTP_DOWNLOAD' }
             }
-          }
+          },
+          response: (result) => { return `Please click <a href="${result.volume.url}" target="_blank">${result.volume.url}</a> to download.` }
         },
         {
           api: 'createTemplate',
@@ -173,12 +177,12 @@ export default {
       details: ['name', 'id', 'volumename', 'intervaltype', 'account', 'domain', 'created'],
       actions: [
         {
-          api: 'createVolume',
-          icon: 'plus',
-          label: 'Create volume',
+          api: 'createTemplate',
+          icon: 'picture',
+          label: 'Create Template',
           dataView: true,
           show: (record) => { return record.state === 'BackedUp' },
-          args: ['snapshotid', 'name'],
+          args: ['snapshotid', 'name', 'displaytext', 'ostypeid', 'ispublic', 'isfeatured', 'isdynamicallyscalable', 'requireshvm', 'passwordenabled', 'sshkeyenabled'],
           mapping: {
             snapshotid: {
               value: (record) => { return record.id }
@@ -186,12 +190,12 @@ export default {
           }
         },
         {
-          api: 'createTemplate',
-          icon: 'picture',
-          label: 'Create volume',
+          api: 'createVolume',
+          icon: 'hdd',
+          label: 'Create Volume',
           dataView: true,
           show: (record) => { return record.state === 'BackedUp' },
-          args: ['snapshotid', 'name', 'displaytext', 'ostypeid', 'ispublic', 'isfeatured', 'isdynamicallyscalable', 'requireshvm', 'passwordenabled', 'sshkeyenabled'],
+          args: ['snapshotid', 'name'],
           mapping: {
             snapshotid: {
               value: (record) => { return record.id }
@@ -218,8 +222,8 @@ export default {
       icon: 'camera',
       permission: ['listVMSnapshot'],
       resourceType: 'VMSnapshot',
-      columns: ['name', 'state', 'type', 'current', 'parent', 'created', 'account'],
-      details: ['name', 'id', 'displayname', 'description', 'type', 'current', 'parent', 'virtualmachineid', 'account', 'domain', 'created'],
+      columns: ['displayname', 'state', 'type', 'current', 'parentName', 'created', 'account'],
+      details: ['name', 'id', 'displayname', 'description', 'type', 'current', 'parentName', 'virtualmachineid', 'account', 'domain', 'created'],
       actions: [
         {
           api: 'revertToVMSnapshot',

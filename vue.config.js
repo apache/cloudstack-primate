@@ -25,6 +25,7 @@ function resolve (dir) {
 
 // vue.config.js
 module.exports = {
+  publicPath: './',
   /*
     Vue-cli3:
     Crashed when using Webpack `import()` #2463
@@ -113,7 +114,8 @@ module.exports = {
         target: process.env.CS_URL || 'http://localhost:8080',
         secure: false,
         ws: false,
-        changeOrigin: true
+        changeOrigin: true,
+        proxyTimeout: 10 * 60 * 1000 // 10 minutes
       }
     },
     https: process.env.HTTPS_KEY ? {

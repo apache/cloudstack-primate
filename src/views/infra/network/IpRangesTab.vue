@@ -15,22 +15,49 @@
 // specific language governing permissions and limitations
 // under the License.
 
+<template>
+  <a-spin :spinning="fetchLoading">
+    IP Ranges Tab here
+  </a-spin>
+</template>
+
+<script>
+
 export default {
-  name: 'plugin',
-  title: 'Plugins',
-  icon: 'heat-map',
-  children: [
-    {
-      name: 'quota',
-      title: 'Quota',
-      icon: 'pie-chart',
-      permission: ['quotaSummary', 'quotaIsEnabled']
+  name: 'IpRangesTab',
+  props: {
+    resource: {
+      type: Object,
+      required: true
     },
-    {
-      name: 'cloudian',
-      title: 'Cloudian Storage',
-      icon: 'cloud-download',
-      permission: ['cloudianSsoLogin', 'cloudianIsEnabled']
+    loading: {
+      type: Boolean,
+      default: false
     }
-  ]
+  },
+  data () {
+    return {
+      fetchLoading: false
+    }
+  },
+  mounted () {
+    this.fetchData()
+  },
+  watch: {
+    loading (newData, oldData) {
+      if (!newData && this.resource.id) {
+        this.fetchData()
+      }
+    }
+  },
+  methods: {
+    fetchData () {
+      // List existing IP range etc.
+    }
+  }
 }
+</script>
+
+<style lang="less" scoped>
+
+</style>

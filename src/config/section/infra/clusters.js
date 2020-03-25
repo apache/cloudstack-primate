@@ -20,7 +20,7 @@ export default {
   title: 'Clusters',
   icon: 'cluster',
   permission: ['listClustersMetrics', 'listClusters'],
-  columns: ['name', 'state', 'clustertype', 'hypervisortype', 'hosts', 'cpuused', 'cpumaxdeviation', 'cpuallocated', 'cputotal', 'memoryused', 'memorymaxdeviation', 'memoryallocated', 'memorytotal', 'podname', 'zonename'],
+  columns: ['name', 'state', 'allocationstate', 'clustertype', 'hypervisortype', 'hosts', 'cpuused', 'cpumaxdeviation', 'cpuallocated', 'cputotal', 'memoryused', 'memorymaxdeviation', 'memoryallocated', 'memorytotal', 'podname', 'zonename'],
   details: ['name', 'id', 'allocationstate', 'clustertype', 'hypervisortype', 'podname', 'zonename'],
   related: [{
     name: 'host',
@@ -40,7 +40,8 @@ export default {
       icon: 'plus',
       label: 'label.add.cluster',
       listView: true,
-      args: ['zoneid', 'hypervisor', 'podid', 'clustername']
+      popup: true,
+      component: () => import('@/views/infra/ClusterAdd.vue')
     },
     {
       api: 'updateCluster',
@@ -57,32 +58,6 @@ export default {
       dataView: true,
       defaultArgs: { allocationstate: 'Disabled' },
       show: (record) => { return record.allocationstate === 'Enabled' }
-    },
-    {
-      api: 'dedicateCluster',
-      icon: 'user-add',
-      label: 'label.dedicate.cluster',
-      dataView: true,
-      show: (record) => { return !record.domainid },
-      args: ['clusterid', 'domainid', 'account'],
-      mapping: {
-        clusterid: {
-          value: (record) => { return record.id }
-        }
-      }
-    },
-    {
-      api: 'releaseDedicatedCluster',
-      icon: 'user-delete',
-      label: 'label.release.dedicated.cluster',
-      dataView: true,
-      show: (record) => { return record.domainid },
-      args: ['clusterid'],
-      mapping: {
-        clusterid: {
-          value: (record) => { return record.id }
-        }
-      }
     },
     {
       api: 'updateCluster',

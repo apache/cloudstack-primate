@@ -19,47 +19,40 @@
   <div>
     <a-card class="breadcrumb-card">
       <a-row>
-        <a-col :span="14">
-          <breadcrumb style="padding-top: 6px" />
-        </a-col>
-        <a-col :span="10">
-          <span style="float: right">
-            <a-tooltip placement="bottom">
+        <a-col :span="14" style="padding-left: 6px">
+          <breadcrumb :resource="resource">
+            <a-tooltip placement="bottom" slot="end">
               <template slot="title">
                 {{ "Refresh" }}
               </template>
               <a-button
+                style="margin-top: 4px"
                 :loading="loading"
-                shape="circle"
-                type="dashed"
+                shape="round"
+                size="small"
                 icon="reload"
-                style="margin-right: 5px"
-                @click="fetchData()" />
-            </a-tooltip>
-            <a-tooltip
-              v-for="(action, actionIndex) in actions"
-              :key="actionIndex"
-              placement="bottom">
-              <template slot="title">
-                {{ $t(action.label) }}
-              </template>
-              <a-button
-                v-if="action.api in $store.getters.apis &&
-                  ((!dataView && (action.listView || action.groupAction && selectedRowKeys.length > 0)) || (dataView && action.dataView)) &&
-                  ('show' in action ? action.show(resource) : true)"
-                :icon="action.icon"
-                :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
-                shape="circle"
-                style="margin-right: 5px"
-                @click="execAction(action)"
-              >
+                @click="fetchData()">
+                {{ "Refresh" }}
               </a-button>
             </a-tooltip>
+          </breadcrumb>
+        </a-col>
+        <a-col :span="10">
+          <span style="float: right">
+            <action-button
+              style="margin-bottom: 5px"
+              :loading="loading"
+              :actions="actions"
+              :selectedRowKeys="selectedRowKeys"
+              :dataView="dataView"
+              :resource="resource"
+              @exec-action="execAction"/>
             <a-input-search
-              style="width: unset"
+              style="width: 20vw; margin-left: 10px"
               placeholder="Search"
               v-model="searchQuery"
               v-if="!dataView && !treeView"
+              allowClear
               @search="onSearch" />
           </span>
         </a-col>
@@ -77,8 +70,17 @@
           :confirmLoading="currentAction.loading"
           :footer="null"
           centered
+          width="auto"
         >
-          <component :is="currentAction.component" :resource="resource" :loading="loading" v-bind="{currentAction}" />
+          <component
+            :is="currentAction.component"
+            :resource="resource"
+            :loading="loading"
+            :action="{currentAction}"
+            v-bind="{currentAction}"
+            @refresh-data="fetchData"
+            @poll-action="pollActionCompletion"
+            @close-action="closeAction"/>
         </a-modal>
       </keep-alive>
       <a-modal
@@ -109,10 +111,16 @@
             <a-form-item
               v-for="(field, fieldIndex) in currentAction.paramFields"
               :key="fieldIndex"
-              :label="$t(field.name)"
               :v-bind="field.name"
               v-if="!(currentAction.mapping && field.name in currentAction.mapping && currentAction.mapping[field.name].value)"
             >
+              <span slot="label">
+                {{ $t(field.name) }}
+                <a-tooltip :title="field.description">
+                  <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                </a-tooltip>
+              </span>
+
               <span v-if="field.type==='boolean'">
                 <a-switch
                   v-decorator="[field.name, {
@@ -134,16 +142,21 @@
                   </a-select-option>
                 </a-select>
               </span>
-              <span v-else-if="field.type==='uuid' || field.name==='account' || field.name==='keypair'">
+              <span v-else-if="field.type==='uuid' || (field.name==='account' && !['addAccountToProject'].includes(currentAction.api)) || field.name==='keypair'">
                 <a-select
-                  :loading="field.loading"
+                  showSearch
+                  optionFilterProp="children"
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: 'Please select option' }]
                   }]"
+                  :loading="field.loading"
                   :placeholder="field.description"
+                  :filterOption="(input, option) => {
+                    return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }"
                 >
                   <a-select-option v-for="(opt, optIndex) in field.opts" :key="optIndex">
-                    {{ opt.name || opt.description }}
+                    {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
                 </a-select>
               </span>
@@ -177,13 +190,21 @@
                   :placeholder="field.description"
                 />
               </span>
-              <span v-else>
-                <a-input
+              <span v-else-if="field.name==='certificate' || field.name==='privatekey' || field.name==='certchain'">
+                <a-textarea
+                  rows="2"
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: 'Please enter input' }]
                   }]"
                   :placeholder="field.description"
                 />
+              </span>
+              <span v-else>
+                <a-input
+                  v-decorator="[field.name, {
+                    rules: [{ required: field.required, message: 'Please enter input' }]
+                  }]"
+                  :placeholder="field.description" />
               </span>
             </a-form-item>
           </a-form>
@@ -215,6 +236,7 @@
         @change="changePage"
         @showSizeChange="changePageSize"
         showSizeChanger
+        showQuickJumper
         v-if="!treeView" />
       <tree-view
         v-if="treeView"
@@ -231,6 +253,7 @@
 <script>
 import { api } from '@/api'
 import { mixinDevice } from '@/utils/mixin.js'
+import { genericCompare } from '@/utils/sort.js'
 import config from '@/config/settings'
 import store from '@/store'
 
@@ -240,7 +263,7 @@ import Status from '@/components/widgets/Status'
 import ListView from '@/components/view/ListView'
 import ResourceView from '@/components/view/ResourceView'
 import TreeView from '@/components/view/TreeView'
-import { genericCompare } from '@/utils/sort.js'
+import ActionButton from '@/components/view/ActionButton'
 
 export default {
   name: 'Resource',
@@ -250,9 +273,18 @@ export default {
     ResourceView,
     ListView,
     TreeView,
-    Status
+    Status,
+    ActionButton
   },
   mixins: [mixinDevice],
+  provide: function () {
+    return {
+      parentFetchData: this.fetchData,
+      parentToggleLoading: this.toggleLoading,
+      parentStartLoading: this.startLoading,
+      parentFinishLoading: this.finishLoading
+    }
+  },
   data () {
     return {
       apiName: '',
@@ -281,14 +313,27 @@ export default {
       return this.selectedRowKeys.length > 0
     }
   },
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
+  },
   mounted () {
+    this.currentPath = this.$route.fullPath
     this.fetchData()
+  },
+  beforeRouteUpdate (to, from, next) {
+    this.currentPath = this.$route.fullPath
+    next()
+  },
+  beforeRouteLeave (to, from, next) {
+    this.currentPath = this.$route.fullPath
+    next()
   },
   watch: {
     '$route' (to, from) {
       if (to.fullPath !== from.fullPath && !to.fullPath.includes('action/')) {
-        this.page = 1
         this.searchQuery = ''
+        this.page = 1
+        this.itemCount = 0
         this.fetchData()
       }
     },
@@ -298,12 +343,12 @@ export default {
       }
     }
   },
-  beforeCreate () {
-    this.form = this.$form.createForm(this)
-  },
   methods: {
     fetchData () {
-      this.routeName = this.$route.name
+      if (this.routeName !== this.$route.name) {
+        this.routeName = this.$route.name
+        this.items = []
+      }
       if (!this.routeName) {
         this.routeName = this.$route.matched[this.$route.matched.length - 1].parent.name
       }
@@ -311,7 +356,6 @@ export default {
       this.actions = []
       this.columns = []
       this.columnKeys = []
-      this.items = []
       this.treeData = []
       this.treeSelected = {}
       var params = { listall: true }
@@ -319,10 +363,6 @@ export default {
         Object.assign(params, this.$route.query)
       } else if (this.$route.meta.params) {
         Object.assign(params, this.$route.meta.params)
-      }
-
-      if (this.searchQuery !== '') {
-        params.keyword = this.searchQuery
       }
 
       this.treeView = this.$route && this.$route.meta && this.$route.meta.treeView
@@ -340,6 +380,7 @@ export default {
         if (this.$route.meta.columns) {
           this.columnKeys = this.$route.meta.columns
         }
+
         if (this.$route.meta.actions) {
           this.actions = this.$route.meta.actions
         }
@@ -347,6 +388,14 @@ export default {
 
       if (this.apiName === '' || this.apiName === undefined) {
         return
+      }
+
+      if (this.searchQuery !== '') {
+        if (this.apiName === 'listRoles') {
+          params.name = this.searchQuery
+        } else {
+          params.keyword = this.searchQuery
+        }
       }
 
       if (!this.columnKeys || this.columnKeys.length === 0) {
@@ -373,7 +422,7 @@ export default {
           title: this.$t(key),
           dataIndex: key,
           scopedSlots: { customRender: key },
-          sorter: function (a, b) { return genericCompare(a[this.dataIndex], b[this.dataIndex]) }
+          sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
         })
       }
 
@@ -382,6 +431,8 @@ export default {
         params.id = this.$route.params.id
         if (this.$route.path.startsWith('/ssh/')) {
           params.name = this.$route.params.id
+        } else if (this.$route.path.startsWith('/ldapsetting/')) {
+          params.hostname = this.$route.params.id
         }
       }
 
@@ -428,6 +479,8 @@ export default {
             }
             if (this.$route.path.startsWith('/ssh')) {
               this.items[idx].id = this.items[idx].name
+            } else if (this.$route.path.startsWith('/ldapsetting')) {
+              this.items[idx].id = this.items[idx].hostname
             }
           }
         }
@@ -462,6 +515,7 @@ export default {
     },
     onSearch (value) {
       this.searchQuery = value
+      this.page = 1
       this.fetchData()
     },
     closeAction () {
@@ -497,22 +551,34 @@ export default {
 
       this.showAction = true
       for (const param of this.currentAction.paramFields) {
+        if (param.type === 'list' && ['tags', 'hosttags'].includes(param.name)) {
+          param.type = 'string'
+        }
         if (param.type === 'uuid' || param.type === 'list' || param.name === 'account' || (this.currentAction.mapping && param.name in this.currentAction.mapping)) {
           this.listUuidOpts(param)
         }
       }
-      console.log(this.currentAction.paramFields)
       this.currentAction.loading = false
+      if (action.dataView && action.icon === 'edit') {
+        this.fillEditFormFieldValues()
+      }
     },
     listUuidOpts (param) {
       if (this.currentAction.mapping && param.name in this.currentAction.mapping && !this.currentAction.mapping[param.name].api) {
         return
       }
       var paramName = param.name
+      var params = { listall: true }
       const possibleName = 'list' + paramName.replace('ids', '').replace('id', '').toLowerCase() + 's'
       var possibleApi
       if (this.currentAction.mapping && param.name in this.currentAction.mapping && this.currentAction.mapping[param.name].api) {
         possibleApi = this.currentAction.mapping[param.name].api
+        if (this.currentAction.mapping[param.name].params) {
+          const customParams = this.currentAction.mapping[param.name].params(this.resource)
+          if (customParams) {
+            params = { ...params, ...customParams }
+          }
+        }
       } else if (paramName === 'id') {
         possibleApi = this.apiName
       } else {
@@ -528,7 +594,6 @@ export default {
       }
       param.loading = true
       param.opts = []
-      var params = { listall: true }
       if (possibleApi === 'listTemplates') {
         params.templatefilter = 'executable'
       } else if (possibleApi === 'listIsos') {
@@ -558,19 +623,41 @@ export default {
       })
     },
     pollActionCompletion (jobId, action) {
-      api('queryAsyncJobResult', { jobid: jobId }).then(json => {
-        var result = json.queryasyncjobresultresponse
-        if (result.jobstatus === 1) {
+      this.$pollJob({
+        jobId,
+        successMethod: result => {
           this.fetchData()
-        } else if (result.jobstatus === 2) {
-          this.fetchData()
-        } else if (result.jobstatus === 0) {
-          this.$message
-            .loading(this.$t(action.label) + ' in progress for ' + this.resource.name, 3)
-            .then(() => this.pollActionCompletion(jobId, action))
+          if (action.response) {
+            const description = action.response(result.jobresult)
+            if (description) {
+              this.$notification.info({
+                message: action.label,
+                description: (<span domPropsInnerHTML={description}></span>),
+                duration: 0
+              })
+            }
+          }
+        },
+        errorMethod: () => this.fetchData(),
+        loadingMessage: `${this.$t(action.label)} in progress for ${this.resource.name}`,
+        catchMessage: 'Error encountered while fetching async job result',
+        action
+      })
+    },
+    fillEditFormFieldValues () {
+      const form = this.form
+      this.currentAction.paramFields.map(field => {
+        let fieldValue = null
+        let fieldName = null
+        if (field.type === 'uuid' || field.type === 'list' || field.name === 'account' || (this.currentAction.mapping && field.name in this.currentAction.mapping)) {
+          fieldName = field.name.replace('ids', 'name').replace('id', 'name')
+        } else {
+          fieldName = field.name
         }
-      }).catch(function (e) {
-        console.log('Error encountered while fetching async job result' + e)
+        fieldValue = this.resource[fieldName] ? this.resource[fieldName] : null
+        if (fieldValue) {
+          form.getFieldDecorator(field.name, { initialValue: fieldValue })
+        }
       })
     },
     handleSubmit (e) {
@@ -600,7 +687,11 @@ export default {
                 } else if (param.type === 'list') {
                   params[key] = input.map(e => { return param.opts[e].id }).reduce((str, name) => { return str + ',' + name })
                 } else if (param.name === 'account' || param.name === 'keypair') {
-                  params[key] = param.opts[input].name
+                  if (['addAccountToProject'].includes(this.currentAction.api)) {
+                    params[key] = input
+                  } else {
+                    params[key] = param.opts[input].name
+                  }
                 } else {
                   params[key] = input
                 }
@@ -648,7 +739,7 @@ export default {
                 break
               }
             }
-            if (this.currentAction.icon === 'delete') {
+            if (this.currentAction.icon === 'delete' && this.dataView) {
               this.$router.go(-1)
             } else {
               if (!hasJobId) {
@@ -659,7 +750,7 @@ export default {
             console.log(error)
             this.$notification.error({
               message: 'Request Failed',
-              description: error.response.headers['x-description']
+              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
             })
           }).finally(f => {
             this.closeAction()
@@ -702,6 +793,15 @@ export default {
     changeResource (resource) {
       this.treeSelected = resource
       this.resource = this.treeSelected
+    },
+    toggleLoading () {
+      this.loading = !this.loading
+    },
+    startLoading () {
+      this.loading = true
+    },
+    finishLoading () {
+      this.loading = false
     }
   }
 }
