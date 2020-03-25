@@ -34,7 +34,7 @@
       <template slot="isolationMethod" slot-scope="text, record">
         <a-select
           style="width: 100%"
-          defaultValue="VLAN"
+          :defaultValue="text"
           @change="value => onCellChange(record.key, 'isolationMethod', value)"
         >
           <a-select-option value="VLAN"> VLAN </a-select-option>
@@ -293,7 +293,7 @@ export default {
         return { type: item, label: '' }
       })
       this.count = 1
-      this.physicalNetworks = [{ key: this.randomKeyTraffic(this.count), name: 'Physical Network 1', traffics: traffics }]
+      this.physicalNetworks = [{ key: this.randomKeyTraffic(this.count), name: 'Physical Network 1', isolationMethod: 'VLAN', traffics: traffics }]
     }
     if (this.isAdvancedZone) {
       this.availableTrafficToAdd.push('guest')

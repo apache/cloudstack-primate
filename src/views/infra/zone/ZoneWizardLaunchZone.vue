@@ -446,7 +446,7 @@ export default {
           const physicalNetwork = this.prefillContent.physicalNetworks[index]
           params.name = physicalNetwork.name
 
-          if (physicalNetwork.isolationMethod && physicalNetwork.isolationMethod.length > 0) {
+          if (physicalNetwork.isolationMethod) {
             params.isolationmethods = physicalNetwork.isolationMethod
           }
 
