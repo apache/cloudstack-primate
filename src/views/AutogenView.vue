@@ -111,10 +111,16 @@
             <a-form-item
               v-for="(field, fieldIndex) in currentAction.paramFields"
               :key="fieldIndex"
-              :label="$t(field.name)"
               :v-bind="field.name"
               v-if="!(currentAction.mapping && field.name in currentAction.mapping && currentAction.mapping[field.name].value)"
             >
+              <span slot="label">
+                {{ $t(field.name) }}
+                <a-tooltip :title="field.description">
+                  <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                </a-tooltip>
+              </span>
+
               <span v-if="field.type==='boolean'">
                 <a-switch
                   v-decorator="[field.name, {
@@ -201,8 +207,7 @@
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: 'Please enter input' }]
                   }]"
-                  :placeholder="field.description"
-                />
+                  :placeholder="field.description" />
               </span>
             </a-form-item>
           </a-form>
@@ -549,7 +554,7 @@ export default {
 
       this.showAction = true
       for (const param of this.currentAction.paramFields) {
-        if (param.type === 'list' && param.name === 'hosttags') {
+        if (param.type === 'list' && ['tags', 'hosttags'].includes(param.name)) {
           param.type = 'string'
         }
         if (param.type === 'uuid' || param.type === 'list' || param.name === 'account' || (this.currentAction.mapping && param.name in this.currentAction.mapping)) {
@@ -557,6 +562,9 @@ export default {
         }
       }
       this.currentAction.loading = false
+      if (action.dataView && action.icon === 'edit') {
+        this.fillEditFormFieldValues()
+      }
     },
     listUuidOpts (param) {
       if (this.currentAction.mapping && param.name in this.currentAction.mapping && !this.currentAction.mapping[param.name].api) {
@@ -637,6 +645,22 @@ export default {
         loadingMessage: `${this.$t(action.label)} in progress for ${this.resource.name}`,
         catchMessage: 'Error encountered while fetching async job result',
         action
+      })
+    },
+    fillEditFormFieldValues () {
+      const form = this.form
+      this.currentAction.paramFields.map(field => {
+        let fieldValue = null
+        let fieldName = null
+        if (field.type === 'uuid' || field.type === 'list' || field.name === 'account' || (this.currentAction.mapping && field.name in this.currentAction.mapping)) {
+          fieldName = field.name.replace('ids', 'name').replace('id', 'name')
+        } else {
+          fieldName = field.name
+        }
+        fieldValue = this.resource[fieldName] ? this.resource[fieldName] : null
+        if (fieldValue) {
+          form.getFieldDecorator(field.name, { initialValue: fieldValue })
+        }
       })
     },
     handleSubmit (e) {
