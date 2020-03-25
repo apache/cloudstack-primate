@@ -25,6 +25,7 @@
     <a-spin :spinning="loading">
       <a-tabs
         tabPosition="top"
+        :animated="false"
         :defaultActiveKey="Object.keys(dataSource)[0]">
         <a-tab-pane v-for="(osList, osName) in dataSource" :key="osName">
           <span slot="tab">

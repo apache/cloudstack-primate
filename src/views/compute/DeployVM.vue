@@ -26,7 +26,7 @@
             layout="vertical"
           >
             <a-steps direction="vertical" size="small">
-              <a-step :title="this.$t('BasicSetup')" status="process">
+              <a-step :title="this.$t('details')" status="process">
                 <template slot="description">
                   <div style="margin-top: 15px">
                     <a-form-item :label="this.$t('name')">
@@ -65,7 +65,7 @@
                         :loading="loading.hosts"
                       ></a-select>
                     </a-form-item>
-                    <a-form-item :label="this.$t('groupname')">
+                    <a-form-item :label="this.$t('group')">
                       <a-select
                         v-decorator="['group']"
                         :options="groupsSelectOptions"
