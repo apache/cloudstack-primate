@@ -337,45 +337,62 @@ export default {
     },
     reloadTreeData (objData) {
       // data response from action
-      let jsonResponse = this.getResponseJsonData(objData[0])
-      jsonResponse = this.createResourceData(jsonResponse)
+      let jsonResponse = this.getResponseJsonData(objData[0], true)
+      const responseName = jsonResponse.responsename
+      jsonResponse = jsonResponse.data
+      if (responseName.startsWith('delete')) {
+        // resource for check delete
+        const resource = this.treeVerticalData.filter(item => item.id === this.selectedTreeKey)
 
-      // resource for check create or edit
-      const resource = this.treeVerticalData.filter(item => item.id === jsonResponse.id)
-
-      // when edit
-      if (resource && resource[0]) {
-        this.treeVerticalData.filter((item, index) => {
-          if (item.id === jsonResponse.id) {
-            // replace all value of tree data
-            Object.keys(jsonResponse).forEach((value, idx) => {
-              this.$set(this.treeVerticalData[index], value, jsonResponse[value])
-            })
-          }
-        })
+        if (resource && resource[0]) {
+          this.treeVerticalData.filter((item, index) => {
+            if (item.id === this.selectedTreeKey) {
+              this.$delete(this.treeVerticalData, index)
+              if (index > 0 && this.treeVerticalData.length > 0) {
+                this.onSelect([this.treeVerticalData[index - 1].id], { selected: true })
+              }
+            }
+          })
+        }
       } else {
-        // when create
-        let resourceExists = true
+        jsonResponse = this.createResourceData(jsonResponse)
 
-        // check is searching data
-        if (this.searchQuery !== '') {
-          resourceExists = jsonResponse.title.indexOf(this.searchQuery) > -1
-        }
+        // resource for check create or edit
+        const resource = this.treeVerticalData.filter(item => item.id === jsonResponse.id)
 
-        // push new resource to tree data
-        if (this.resource.haschild && resourceExists) {
-          this.treeVerticalData.push(jsonResponse)
-        }
+        // when edit
+        if (resource && resource[0]) {
+          this.treeVerticalData.filter((item, index) => {
+            if (item.id === jsonResponse.id) {
+              // replace all value of tree data
+              Object.keys(jsonResponse).forEach((value, idx) => {
+                this.$set(this.treeVerticalData[index], value, jsonResponse[value])
+              })
+            }
+          })
+        } else {
+          // when create
+          let resourceExists = true
 
-        // set resource is currently active as a parent
-        this.treeVerticalData.filter((item, index) => {
-          if (item.id === this.resource.id) {
-            this.$set(this.treeVerticalData[index], 'isLeaf', false)
-            this.$set(this.treeVerticalData[index], 'haschild', true)
+          // check is searching data
+          if (this.searchQuery !== '') {
+            resourceExists = jsonResponse.title.indexOf(this.searchQuery) > -1
           }
-        })
-      }
 
+          // push new resource to tree data
+          if (this.resource.haschild && resourceExists) {
+            this.treeVerticalData.push(jsonResponse)
+          }
+
+          // set resource is currently active as a parent
+          this.treeVerticalData.filter((item, index) => {
+            if (item.id === this.resource.id) {
+              this.$set(this.treeVerticalData[index], 'isLeaf', false)
+              this.$set(this.treeVerticalData[index], 'haschild', true)
+            }
+          })
+        }
+      }
       this.recursiveTreeData(this.treeVerticalData)
     },
     getDetailResource (selectedKey) {
@@ -410,7 +427,7 @@ export default {
         this.$emit('change-resource', this.resource)
       })
     },
-    getResponseJsonData (json) {
+    getResponseJsonData (json, asMap) {
       let responseName
       let objectName
       for (const key in json) {
@@ -427,6 +444,12 @@ export default {
 
         objectName = key
         break
+      }
+      if (asMap === true) {
+        return {
+          responsename: responseName,
+          data: json[responseName][objectName]
+        }
       }
       return json[responseName][objectName]
     },
