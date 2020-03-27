@@ -94,9 +94,6 @@ export default {
     this.fetchData()
   },
   methods: {
-    log (o) {
-      console.log(o)
-    },
     fetchData () {
       this.loading = true
       api('listZones').then(json => {
@@ -153,6 +150,7 @@ export default {
           })
         }).finally(() => {
           this.loading = false
+          this.$emit('refresh-data')
           this.closeModal()
         })
       })

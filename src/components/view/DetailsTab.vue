@@ -21,9 +21,19 @@
     :dataSource="$route.meta.details">
     <a-list-item slot="renderItem" slot-scope="item" v-if="item in resource">
       <div>
-        <strong>{{ $t(item) }}</strong>
+        <strong>{{ item === 'service' ? $t('supportedservices') : $t(item) }}</strong>
         <br/>
-        <div>
+        <div v-if="Array.isArray(resource[item]) && item === 'service'">
+          <div v-for="(service, idx) in resource[item]" :key="idx">
+            {{ service.name }} : {{ service.provider[0].name }}
+          </div>
+        </div>
+        <div v-else-if="$route.meta.name === 'backup' && item === 'volumes'">
+          <div v-for="(volume, idx) in JSON.parse(resource[item])" :key="idx">
+            <router-link :to="{ path: '/volume/' + volume.uuid }">{{ volume.type }} - {{ volume.path }}</router-link> ({{ parseFloat(volume.size / (1024.0 * 1024.0 * 1024.0)).toFixed(1) }} GB)
+          </div>
+        </div>
+        <div v-else>
           {{ resource[item] }}
         </div>
       </div>
