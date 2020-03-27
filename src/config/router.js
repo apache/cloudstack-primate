@@ -178,9 +178,12 @@ export const asyncRouterMap = [
               component: () => import('@/views/project/AccountsTab')
             },
             {
-              name: 'resources',
+              name: 'limits',
+              params: {
+                projectid: 'id'
+              },
               show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
-              component: () => import('@/views/project/ResourcesTab.vue')
+              component: () => import('@/components/view/ResourceLimitTab.vue')
             }
           ]
         },
