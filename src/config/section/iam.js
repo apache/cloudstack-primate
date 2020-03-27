@@ -48,7 +48,8 @@ export default {
           icon: 'key',
           label: 'Change Password',
           dataView: true,
-          args: ['currentpassword', 'password']
+          popup: true,
+          component: () => import('@/views/iam/ChangeUserPassword.vue')
         },
         {
           api: 'registerUserKeys',
