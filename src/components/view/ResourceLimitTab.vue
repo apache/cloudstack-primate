@@ -16,7 +16,7 @@
 // under the License.
 
 <template>
-  <a-spin :spinning="loading || formLoading">
+  <a-spin :spinning="formLoading">
     <a-form
       :form="form"
       @submit="handleSubmit"
@@ -24,21 +24,23 @@
     >
       <a-form-item
         v-for="(item, index) in dataResource"
-        v-if="dataSource.includes(item.resourcetypename)"
         :key="index"
+        v-if="item.resourcetypename !== 'project'"
         :v-bind="item.resourcetypename"
-        :label="$t('max' + item.resourcetypename)">
+        :label="$t('max' + item.resourcetypename.replace('_', ''))">
         <a-input-number
           style="width: 100%;"
           v-decorator="[item.resourcetype, {
             initialValue: item.max
           }]"
-          :placeholder="$t('project.' + item.resourcetypename + '.description')"
         />
       </a-form-item>
       <div class="card-footer">
-        <!-- ToDo extract as component -->
-        <a-button :loading="formLoading" type="primary" @click="handleSubmit">{{ this.$t('apply') }}</a-button>
+        <a-button
+          v-if="!($route.meta.name === 'domain' && resource.level === 0)"
+          :loading="formLoading"
+          type="primary"
+          @click="handleSubmit">{{ $t('submit') }}</a-button>
       </div>
     </a-form>
   </a-spin>
@@ -48,7 +50,7 @@
 import { api } from '@/api'
 
 export default {
-  name: 'ResourceTab',
+  name: 'ResourceLimitTab',
   props: {
     resource: {
       type: Object,
@@ -59,29 +61,14 @@ export default {
       default: false
     }
   },
-  beforeCreate () {
-    this.form = this.$form.createForm(this)
-  },
   data () {
     return {
       formLoading: false,
-      dataResource: [],
-      dataSource: []
+      dataResource: []
     }
   },
-  created () {
-    this.dataSource = [
-      'network',
-      'volume',
-      'public_ip',
-      'template',
-      'user_vm',
-      'snapshot',
-      'vpc', 'cpu',
-      'memory',
-      'primary_storage',
-      'secondary_storage'
-    ]
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
   },
   mounted () {
     this.fetchData()
@@ -91,30 +78,36 @@ export default {
       if (!newData || !newData.id) {
         return
       }
-
       this.resource = newData
       this.fetchData()
     }
   },
   methods: {
-    fetchData () {
+    getParams () {
       const params = {}
-      params.projectid = this.resource.id
-
-      this.formLoading = true
-
-      api('listResourceLimits', params).then(json => {
-        if (json.listresourcelimitsresponse.resourcelimit) {
-          this.dataResource = json.listresourcelimitsresponse.resourcelimit
-        }
-      }).catch(error => {
+      if (this.$route.meta.name === 'account') {
+        params.account = this.resource.name
+        params.domainid = this.resource.domainid
+      } else if (this.$route.meta.name === 'domain') {
+        params.domainid = this.resource.id
+      } else { // project
+        params.projectid = this.resource.id
+      }
+      return params
+    },
+    async fetchData () {
+      const params = this.getParams()
+      try {
+        this.formLoading = true
+        this.dataResource = await this.listResourceLimits(params)
+        this.formLoading = false
+      } catch (e) {
         this.$notification.error({
           message: 'Request Failed',
-          description: error.response.headers['x-description']
+          description: e
         })
-      }).finally(() => {
         this.formLoading = false
-      })
+      }
     },
     handleSubmit (e) {
       e.preventDefault()
@@ -123,29 +116,17 @@ export default {
         if (err) {
           return
         }
-
         const arrAsync = []
-        const params = {}
-        params.projectid = this.resource.id
-
-        // create parameter from form
+        const params = this.getParams()
         for (const key in values) {
           const input = values[key]
 
           if (input === undefined) {
             continue
           }
-
           params.resourcetype = key
           params.max = input
-
-          arrAsync.push(new Promise((resolve, reject) => {
-            api('updateResourceLimit', params).then(json => {
-              resolve()
-            }).catch(error => {
-              reject(error)
-            })
-          }))
+          arrAsync.push(this.updateResourceLimit(params))
         }
 
         this.formLoading = true
@@ -162,6 +143,29 @@ export default {
           this.formLoading = false
         })
       })
+    },
+    listResourceLimits (params) {
+      return new Promise((resolve, reject) => {
+        let dataResource = []
+        api('listResourceLimits', params).then(json => {
+          if (json.listresourcelimitsresponse.resourcelimit) {
+            dataResource = json.listresourcelimitsresponse.resourcelimit
+            dataResource.sort((a, b) => a.resourcetype - b.resourcetype)
+          }
+          resolve(dataResource)
+        }).catch(error => {
+          reject(error.response.headers['x-description'])
+        })
+      })
+    },
+    updateResourceLimit (params) {
+      return new Promise((resolve, reject) => {
+        api('updateResourceLimit', params).then(json => {
+          resolve()
+        }).catch(error => {
+          reject(error)
+        })
+      })
     }
   }
 }
@@ -169,8 +173,6 @@ export default {
 
 <style lang="less" scoped>
   .card-footer {
-    text-align: right;
-
     button + button {
       margin-left: 8px;
     }
