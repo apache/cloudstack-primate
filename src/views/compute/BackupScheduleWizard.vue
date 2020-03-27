@@ -16,14 +16,77 @@
 // under the License.
 
 <template>
-  <div>// TODO: Configure Backup Schedule Wizard</div>
+  <div class="snapshot-layout">
+    <a-tabs defaultActiveKey="1">
+      <a-tab-pane :tab="$t('schedule')" key="1">
+        <FormSchedule
+          :loading="loading"
+          :resource="resource"
+          :dataSource="dataSource"/>
+      </a-tab-pane>
+      <a-tab-pane :tab="$t('label.scheduled.backup')" key="2">
+        <BackupSchedule
+          :loading="loading"
+          :resource="resource"
+          :dataSource="dataSource" />
+      </a-tab-pane>
+    </a-tabs>
+  </div>
 </template>
 
 <script>
+import { api } from '@/api'
+import FormSchedule from '@views/compute/backup/FormSchedule'
+import BackupSchedule from '@views/compute/backup/BackupSchedule'
+
 export default {
-  name: 'BackupScheduleWizard'
+  name: 'BackupScheduleWizard',
+  components: {
+    FormSchedule,
+    BackupSchedule
+  },
+  props: {
+    resource: {
+      type: Object,
+      required: true
+    }
+  },
+  data () {
+    return {
+      loading: false,
+      dataSource: {}
+    }
+  },
+  provide () {
+    return {
+      refreshSchedule: this.fetchData,
+      closeSchedule: this.closeAction
+    }
+  },
+  mounted () {
+    this.fetchData()
+  },
+  methods: {
+    fetchData () {
+      const params = {}
+      this.dataSource = {}
+      this.loading = true
+      params.virtualmachineid = this.resource.id
+      api('listBackupSchedule', params).then(json => {
+        this.dataSource = json.listbackupscheduleresponse.backupschedule || {}
+      }).finally(() => {
+        this.loading = false
+      })
+    },
+    closeAction () {
+      this.$emit('close-action')
+    }
+  }
 }
 </script>
 
 <style scoped>
+  .snapshot-layout {
+    max-width: 45vw;
+  }
 </style>
