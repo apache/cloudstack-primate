@@ -22,8 +22,8 @@ export default {
   permission: ['listProjects'],
   resourceType: 'Project',
   columns: ['name', 'state', 'displaytext', 'account', 'domain'],
-  details: ['name', 'id', 'displaytext', 'projectaccountname', 'vmtotal', 'cputotal', 'memorytotal', 'volumetotal', 'iptotal', 'vpctotal', 'templatetotal', 'primarystoragetotal', 'account', 'domain'],
   filters: ['name', 'displaytext', 'domainid', 'account'],
+  details: ['name', 'id', 'displaytext', 'projectaccountname', 'vmtotal', 'cputotal', 'memorytotal', 'volumetotal', 'iptotal', 'vpctotal', 'templatetotal', 'primarystoragetotal', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit', 'account', 'domain'],
   tabs: [
     {
       name: 'details',
@@ -35,9 +35,9 @@ export default {
       component: () => import('@/views/project/AccountsTab.vue')
     },
     {
-      name: 'resources',
+      name: 'limits',
       show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
-      component: () => import('@/views/project/ResourcesTab.vue')
+      component: () => import('@/components/view/ResourceLimitTab.vue')
     }
   ],
   actions: [
