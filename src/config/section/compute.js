@@ -15,6 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import kubernetes from '@/assets/icons/kubernetes.svg?inline'
+
 export default {
   name: 'compute',
   title: 'Compute',
@@ -44,6 +46,10 @@ export default {
       }, {
         name: 'vmsnapshot',
         title: 'VM Snapshots',
+        param: 'virtualmachineid'
+      }, {
+        name: 'backup',
+        title: 'Backups',
         param: 'virtualmachineid'
       }, {
         name: 'affinitygroup',
@@ -119,6 +125,61 @@ export default {
           dataView: true,
           args: ['virtualmachineid', 'name', 'description', 'snapshotmemory', 'quiescevm'],
           show: (record) => { return ['Running'].includes(record.state) },
+          mapping: {
+            virtualmachineid: {
+              value: (record, params) => { return record.id }
+            }
+          }
+        },
+        {
+          api: 'assignVirtualMachineToBackupOffering',
+          icon: 'folder-add',
+          label: 'Assign VM to Backup Offering',
+          dataView: true,
+          args: ['virtualmachineid', 'backupofferingid'],
+          show: (record) => { return !record.backupofferingid },
+          mapping: {
+            virtualmachineid: {
+              value: (record, params) => { return record.id }
+            }
+          }
+        },
+        {
+          api: 'createBackup',
+          icon: 'cloud-upload',
+          label: 'Create Backup',
+          dataView: true,
+          args: ['virtualmachineid'],
+          show: (record) => { return record.backupofferingid },
+          mapping: {
+            virtualmachineid: {
+              value: (record, params) => { return record.id }
+            }
+          }
+        },
+        {
+          api: 'createBackupSchedule',
+          icon: 'schedule',
+          label: 'Configure Backup Schedule',
+          dataView: true,
+          args: ['virtualmachineid', 'intervaltype', 'schedule', 'timezone'],
+          show: (record) => { return record.backupofferingid },
+          mapping: {
+            virtualmachineid: {
+              value: (record, params) => { return record.id }
+            },
+            intervaltype: {
+              options: ['HOURLY', 'DAILY', 'WEEKLY', 'MONTHLY']
+            }
+          }
+        },
+        {
+          api: 'removeVirtualMachineFromBackupOffering',
+          icon: 'scissor',
+          label: 'Remove VM from Backup Offering',
+          dataView: true,
+          args: ['virtualmachineid', 'forced'],
+          show: (record) => { return record.backupofferingid },
           mapping: {
             virtualmachineid: {
               value: (record, params) => { return record.id }
@@ -269,15 +330,74 @@ export default {
         }
       ]
     },
-    /*
     {
-      name: 'demo',
-      title: 'Demo',
-      icon: 'radar-chart',
-      permission: [ 'listVirtualMachines' ],
-      component: () => import('@/components/Test.vue')
+      name: 'kubernetes',
+      title: 'Kubernetes',
+      icon: kubernetes,
+      permission: ['listKubernetesClusters'],
+      columns: ['name', 'state', 'size', 'cpunumber', 'memory', 'account', 'zonename'],
+      details: ['name', 'description', 'zonename', 'kubernetesversionname', 'size', 'masternodes', 'cpunumber', 'memory', 'keypair', 'associatednetworkname', 'account', 'domain', 'zonename'],
+      tabs: [{
+        name: 'k8s',
+        component: () => import('@/views/compute/KubernetesServiceTab.vue')
+      }],
+      actions: [
+        {
+          api: 'createKubernetesCluster',
+          icon: 'plus',
+          label: 'Create Kubernetes Cluster',
+          listView: true,
+          popup: true,
+          component: () => import('@/views/compute/CreateKubernetesCluster.vue')
+        },
+        {
+          api: 'startKubernetesCluster',
+          icon: 'caret-right',
+          label: 'Start Kubernetes Cluster',
+          dataView: true,
+          show: (record) => { return ['Stopped'].includes(record.state) }
+        },
+        {
+          api: 'stopKubernetesCluster',
+          icon: 'stop',
+          label: 'Stop Kubernetes Cluster',
+          dataView: true,
+          show: (record) => { return !['Stopped'].includes(record.state) }
+        },
+        // {
+        //   api: 'getKubernetesClusterConfig',
+        //   icon: 'cloud-download',
+        //   label: 'Download Cluster Config',
+        //   dataView: true,
+        //   show: (record) => { return !['Stopped'].includes(record.state) }
+        // },
+        {
+          api: 'scaleKubernetesCluster',
+          icon: 'swap',
+          label: 'Scale Kubernetes Cluster',
+          dataView: true,
+          show: (record) => { return ['Created', 'Running'].includes(record.state) },
+          popup: true,
+          component: () => import('@/views/compute/ScaleKubernetesCluster.vue')
+        },
+        {
+          api: 'upgradeKubernetesCluster',
+          icon: 'plus-circle',
+          label: 'Upgrade Kubernetes Cluster',
+          dataView: true,
+          show: (record) => { return ['Created', 'Running'].includes(record.state) },
+          popup: true,
+          component: () => import('@/views/compute/UpgradeKubernetesCluster.vue')
+        },
+        {
+          api: 'deleteKubernetesCluster',
+          icon: 'delete',
+          label: 'Delete Kubernetes Cluster',
+          dataView: true,
+          show: (record) => { return !['Destroyed', 'Destroying'].includes(record.state) }
+        }
+      ]
     },
-    */
     {
       name: 'vmgroup',
       title: 'Instance Groups',
