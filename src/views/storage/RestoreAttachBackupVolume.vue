@@ -89,6 +89,7 @@ export default {
   mounted () {
     this.fetchData()
   },
+  inject: ['parentFetchData'],
   methods: {
     fetchData () {
       this.fetchVirtualMachine()
@@ -140,23 +141,23 @@ export default {
 
         this.actionLoading = true
         const title = 'Restore Volume and Attach'
-        const description = this.resource.id
         api('restoreVolumeFromBackupAndAttachToVM', params).then(json => {
           const jobId = json.restorevolumefrombackupandattachtovmresponse.jobid || null
           if (jobId) {
             this.$pollJob({
               jobId,
               successMethod: result => {
-                const successDescription = result.jobresult.snapshot.name
+                const successDescription = result.jobresult.storagebackup.name
                 this.$store.dispatch('AddAsyncJob', {
                   title: title,
                   jobid: jobId,
                   description: successDescription,
                   status: 'progress'
                 })
+                this.parentFetchData()
                 this.closeAction()
               },
-              loadingMessage: `${title} in progress for ${description}`,
+              loadingMessage: `${title} in progress for ${this.resource.id}`,
               catchMessage: 'Error encountered while fetching async job result'
             })
           }
