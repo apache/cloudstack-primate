@@ -44,21 +44,27 @@
                         :loading="loading.zones"
                       ></a-select>
                     </a-form-item>
-                    <a-form-item :label="this.$t('podId')">
+                    <a-form-item
+                      v-if="!isNormalAndDomainUser"
+                      :label="this.$t('podId')">
                       <a-select
                         v-decorator="['podid']"
                         :options="podSelectOptions"
                         :loading="loading.pods"
                       ></a-select>
                     </a-form-item>
-                    <a-form-item :label="this.$t('clusterid')">
+                    <a-form-item
+                      v-if="!isNormalAndDomainUser"
+                      :label="this.$t('clusterid')">
                       <a-select
                         v-decorator="['clusterid']"
                         :options="clusterSelectOptions"
                         :loading="loading.clusters"
                       ></a-select>
                     </a-form-item>
-                    <a-form-item :label="this.$t('hostId')">
+                    <a-form-item
+                      v-if="!isNormalAndDomainUser"
+                      :label="this.$t('hostId')">
                       <a-select
                         v-decorator="['hostid']"
                         :options="hostSelectOptions"
@@ -372,6 +378,9 @@ export default {
     }
   },
   computed: {
+    isNormalAndDomainUser () {
+      return ['DomainAdmin', 'User'].includes(this.$store.getters.userInfo.roletype)
+    },
     diskSize () {
       const rootDiskSize = _.get(this.instanceConfig, 'rootdisksize', 0)
       const customDiskSize = _.get(this.instanceConfig, 'size', 0)
@@ -411,7 +420,8 @@ export default {
           }
         },
         zones: {
-          list: 'listZones'
+          list: 'listZones',
+          isLoad: true
         },
         affinityGroups: {
           list: 'listAffinityGroups',
@@ -443,18 +453,21 @@ export default {
         },
         pods: {
           list: 'listPods',
+          isLoad: !this.isNormalAndDomainUser,
           options: {
             zoneid: _.get(this.zone, 'id')
           }
         },
         clusters: {
           list: 'listClusters',
+          isLoad: !this.isNormalAndDomainUser,
           options: {
             zoneid: _.get(this.zone, 'id')
           }
         },
         hosts: {
           list: 'listHosts',
+          isLoad: !this.isNormalAndDomainUser,
           options: {
             zoneid: _.get(this.zone, 'id'),
             state: 'Up',
@@ -604,11 +617,17 @@ export default {
   },
   methods: {
     fetchData () {
-      this.fetchOptions(this.params.zones, 'zones')
-      this.fetchOptions(this.params.pods, 'pods')
-      this.fetchOptions(this.params.clusters, 'clusters')
-      this.fetchOptions(this.params.hosts, 'hosts')
-      this.fetchOptions(this.params.groups, 'groups')
+      // this.fetchOptions(this.params.zones, 'zones')
+      // this.fetchOptions(this.params.pods, 'pods')
+      // this.fetchOptions(this.params.clusters, 'clusters')
+      // this.fetchOptions(this.params.hosts, 'hosts')
+      // this.fetchOptions(this.params.groups, 'groups')
+      _.each(this.params, (param, name) => {
+        if (param.isLoad) {
+          this.fetchOptions(param, name)
+        }
+      })
+
       this.fetchKeyboard()
       Vue.nextTick().then(() => {
         this.instanceConfig = this.form.getFieldsValue() // ToDo: maybe initialize with some other defaults
@@ -919,7 +938,9 @@ export default {
       })
       this.tabKey = 'templateid'
       _.each(this.params, (param, name) => {
-        this.fetchOptions(param, name, ['zones', 'groups'])
+        if (!('isLoad' in param) || param.isLoad) {
+          this.fetchOptions(param, name, ['zones', 'groups'])
+        }
       })
       this.fetchAllTemplates()
     },
