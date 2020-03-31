@@ -202,7 +202,7 @@ export default {
             itemCount: 0
           }
           for (const key in json) {
-            if (key.includes('response')) {
+            if (key.includes('response') || key.includes(apiName)) {
               responseName = key
               break
             }

@@ -95,6 +95,21 @@
                 :placeholder="field.description"
               />
             </span>
+            <span v-else-if="field.type==='uuid'">
+              <a-select
+                v-decorator="[field.name, {
+                  rules: [{
+                    required: field.required,
+                    message: 'Please select option'
+                  }]
+                }]"
+                :loading="field.loading"
+                :placeholder="field.description">
+                <a-select-option
+                  v-for="(opt, idx) in field.opts"
+                  :key="idx">{{ opt.name || opt.description }}</a-select-option>
+              </a-select>
+            </span>
             <span v-else>
               <a-input
                 v-decorator="[field.name, {
@@ -174,7 +189,7 @@ export default {
               listView: true,
               label: 'label.disable.provider',
               confirm: 'Please confirm that you would like to disable this provider?',
-              show: (record) => { return record && record.state === 'Enabled' },
+              show: (record) => { return (record && record.id && record.state === 'Enabled') },
               mapping: {
                 state: {
                   value: (record) => { return 'Disabled' }
@@ -187,7 +202,7 @@ export default {
               listView: true,
               label: 'label.enable.provider',
               confirm: 'Please confirm that you would like to enable this provider?',
-              show: (record) => { return record && record.state === 'Disabled' },
+              show: (record) => { return (record && record.id && record.state === 'Disabled') },
               mapping: {
                 state: {
                   value: (record) => { return 'Enabled' }
@@ -238,7 +253,7 @@ export default {
               listView: true,
               label: 'label.disable.provider',
               confirm: 'Please confirm that you would like to disable this provider?',
-              show: (record) => { return record && record.state === 'Enabled' },
+              show: (record) => { return (record && record.id && record.state === 'Enabled') },
               mapping: {
                 state: {
                   value: (record) => { return 'Disabled' }
@@ -251,7 +266,7 @@ export default {
               listView: true,
               label: 'label.enable.provider',
               confirm: 'Please confirm that you would like to enable this provider?',
-              show: (record) => { return record && record.state === 'Disabled' },
+              show: (record) => { return (record && record.id && record.state === 'Disabled') },
               mapping: {
                 state: {
                   value: (record) => { return 'Enabled' }
@@ -297,7 +312,7 @@ export default {
               listView: true,
               label: 'label.disable.provider',
               confirm: 'Please confirm that you would like to disable this provider?',
-              show: (record) => { return record && record.state === 'Enabled' },
+              show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Disabled' }
@@ -310,7 +325,7 @@ export default {
               listView: true,
               label: 'label.enable.provider',
               confirm: 'Please confirm that you would like to enable this provider?',
-              show: (record) => { return record && record.state === 'Disabled' },
+              show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Enabled' }
@@ -356,7 +371,7 @@ export default {
               listView: true,
               label: 'label.disable.provider',
               confirm: 'Please confirm that you would like to disable this provider?',
-              show: (record) => { return record && record.state === 'Enabled' },
+              show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Disabled' }
@@ -369,7 +384,7 @@ export default {
               listView: true,
               label: 'label.enable.provider',
               confirm: 'Please confirm that you would like to enable this provider?',
-              show: (record) => { return record && record.state === 'Disabled' },
+              show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Enabled' }
@@ -403,11 +418,23 @@ export default {
           title: 'CiscoVnmc',
           actions: [
             {
-              api: 'addBrocadeVcsDevice',
+              api: 'addCiscoVnmcResource',
               listView: true,
               icon: 'plus',
-              label: 'label.add.BigSwitchBcf.device',
+              label: 'label.add.vnmc.device',
               args: ['hostname', 'username', 'password']
+            },
+            {
+              api: 'addCiscoAsa1000vResource',
+              listView: true,
+              icon: 'plus-circle',
+              label: 'label.add.ciscoASA1000v',
+              args: ['hostname', 'insideportprofile', 'clusterid'],
+              mapping: {
+                zoneid: {
+                  params: (record) => { return record.zoneid }
+                }
+              }
             },
             {
               api: 'updateNetworkServiceProvider',
@@ -415,7 +442,7 @@ export default {
               listView: true,
               label: 'label.disable.provider',
               confirm: 'Please confirm that you would like to disable this provider?',
-              show: (record) => { return record && record.state === 'Enabled' },
+              show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Disabled' }
@@ -428,7 +455,7 @@ export default {
               listView: true,
               label: 'label.enable.provider',
               confirm: 'Please confirm that you would like to enable this provider?',
-              show: (record) => { return record && record.state === 'Disabled' },
+              show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Enabled' }
@@ -464,7 +491,7 @@ export default {
                   value: (record) => { return record.physicalnetworkid }
                 }
               },
-              columns: ['hostname', 'profile']
+              columns: ['hostname', 'insideportprofile', 'action']
             }
           ]
         },
@@ -477,7 +504,7 @@ export default {
               listView: true,
               label: 'label.disable.provider',
               confirm: 'Please confirm that you would like to disable this provider?',
-              show: (record) => { return record && record.state === 'Enabled' },
+              show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Disabled' }
@@ -490,7 +517,7 @@ export default {
               listView: true,
               label: 'label.enable.provider',
               confirm: 'Please confirm that you would like to enable this provider?',
-              show: (record) => { return record && record.state === 'Disabled' },
+              show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Enabled' }
@@ -508,7 +535,7 @@ export default {
               listView: true,
               icon: 'plus',
               label: 'label.add.F5.device',
-              args: ['hostname', 'username', 'password', 'networkdevicetype']
+              component: () => import('@/views/infra/network/providers/AddF5LoadBalancer.vue')
             },
             {
               api: 'updateNetworkServiceProvider',
@@ -516,7 +543,7 @@ export default {
               listView: true,
               label: 'label.disable.provider',
               confirm: 'Please confirm that you would like to disable this provider?',
-              show: (record) => { return record && record.state === 'Enabled' },
+              show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Disabled' }
@@ -529,12 +556,20 @@ export default {
               listView: true,
               label: 'label.enable.provider',
               confirm: 'Please confirm that you would like to enable this provider?',
-              show: (record) => { return record && record.state === 'Disabled' },
+              show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Enabled' }
                 }
               }
+            },
+            {
+              api: 'deleteNetworkServiceProvider',
+              listView: true,
+              icon: 'poweroff',
+              label: 'label.shutdown.provider',
+              confirm: 'Please confirm that you would like to delete this provider?',
+              show: (record) => { return record && record.id }
             }
           ],
           details: ['name', 'state', 'id', 'servicelist'],
@@ -558,7 +593,7 @@ export default {
               api: 'addGloboDnsHost',
               listView: true,
               icon: 'plus',
-              label: 'label.add.F5.device',
+              label: 'label.globo.dns.configuration',
               args: ['url', 'username', 'password']
             },
             {
@@ -567,7 +602,7 @@ export default {
               listView: true,
               label: 'label.disable.provider',
               confirm: 'Please confirm that you would like to disable this provider?',
-              show: (record) => { return record && record.state === 'Enabled' },
+              show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Disabled' }
@@ -580,12 +615,20 @@ export default {
               listView: true,
               label: 'label.enable.provider',
               confirm: 'Please confirm that you would like to enable this provider?',
-              show: (record) => { return record && record.state === 'Disabled' },
+              show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Enabled' }
                 }
               }
+            },
+            {
+              api: 'deleteNetworkServiceProvider',
+              listView: true,
+              icon: 'poweroff',
+              label: 'label.shutdown.provider',
+              confirm: 'Please confirm that you would like to delete this provider?',
+              show: (record) => { return record && record.id }
             }
           ],
           details: ['name', 'state', 'id', 'servicelist']
@@ -599,7 +642,7 @@ export default {
               listView: true,
               label: 'label.disable.provider',
               confirm: 'Please confirm that you would like to disable this provider?',
-              show: (record) => { return record && record.state === 'Enabled' },
+              show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Disabled' }
@@ -612,7 +655,7 @@ export default {
               listView: true,
               label: 'label.enable.provider',
               confirm: 'Please confirm that you would like to enable this provider?',
-              show: (record) => { return record && record.state === 'Disabled' },
+              show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Enabled' }
@@ -642,7 +685,7 @@ export default {
               listView: true,
               icon: 'plus',
               label: 'label.add.Srx.device',
-              args: ['url', 'username', 'password', 'networkdevicetype']
+              component: () => import('@/views/infra/network/providers/AddSrxFirewall.vue')
             },
             {
               api: 'updateNetworkServiceProvider',
@@ -650,7 +693,7 @@ export default {
               listView: true,
               label: 'label.disable.provider',
               confirm: 'Please confirm that you would like to disable this provider?',
-              show: (record) => { return record && record.state === 'Enabled' },
+              show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Disabled' }
@@ -663,12 +706,20 @@ export default {
               listView: true,
               label: 'label.enable.provider',
               confirm: 'Please confirm that you would like to enable this provider?',
-              show: (record) => { return record && record.state === 'Disabled' },
+              show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Enabled' }
                 }
               }
+            },
+            {
+              api: 'deleteNetworkServiceProvider',
+              listView: true,
+              icon: 'poweroff',
+              label: 'label.shutdown.provider',
+              confirm: 'Please confirm that you would like to delete this provider?',
+              show: (record) => { return record && record.id }
             }
           ],
           details: ['name', 'state', 'id', 'servicelist'],
@@ -701,7 +752,7 @@ export default {
               listView: true,
               label: 'label.disable.provider',
               confirm: 'Please confirm that you would like to disable this provider?',
-              show: (record) => { return record && record.state === 'Enabled' },
+              show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Disabled' }
@@ -714,7 +765,7 @@ export default {
               listView: true,
               label: 'label.enable.provider',
               confirm: 'Please confirm that you would like to enable this provider?',
-              show: (record) => { return record && record.state === 'Disabled' },
+              show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Enabled' }
@@ -760,7 +811,7 @@ export default {
               listView: true,
               label: 'label.disable.provider',
               confirm: 'Please confirm that you would like to disable this provider?',
-              show: (record) => { return record && record.state === 'Enabled' },
+              show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Disabled' }
@@ -773,7 +824,7 @@ export default {
               listView: true,
               label: 'label.enable.provider',
               confirm: 'Please confirm that you would like to enable this provider?',
-              show: (record) => { return record && record.state === 'Disabled' },
+              show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Enabled' }
@@ -819,7 +870,7 @@ export default {
               listView: true,
               label: 'label.disable.provider',
               confirm: 'Please confirm that you would like to disable this provider?',
-              show: (record) => { return record && record.state === 'Enabled' },
+              show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Disabled' }
@@ -832,7 +883,7 @@ export default {
               listView: true,
               label: 'label.enable.provider',
               confirm: 'Please confirm that you would like to enable this provider?',
-              show: (record) => { return record && record.state === 'Disabled' },
+              show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Enabled' }
@@ -858,7 +909,7 @@ export default {
                   value: (record) => { return record.physicalnetworkid }
                 }
               },
-              columns: ['name', 'username', 'url', 'action']
+              columns: ['name', 'url', 'username', 'action']
             }
           ]
         },
@@ -873,7 +924,7 @@ export default {
               listView: true,
               icon: 'plus',
               label: 'label.add.PA.device',
-              args: ['url', 'username', 'password', 'networkdevicetype']
+              component: () => import('@/views/infra/network/providers/AddPaloAltoFirewall.vue')
             },
             {
               api: 'updateNetworkServiceProvider',
@@ -881,7 +932,7 @@ export default {
               listView: true,
               label: 'label.disable.provider',
               confirm: 'Please confirm that you would like to disable this provider?',
-              show: (record) => { return record && record.state === 'Enabled' },
+              show: (record) => { return (record && record.id && record.state === 'Enabled') },
               mapping: {
                 state: {
                   value: (record) => { return 'Disabled' }
@@ -894,7 +945,7 @@ export default {
               listView: true,
               label: 'label.enable.provider',
               confirm: 'Please confirm that you would like to enable this provider?',
-              show: (record) => { return record && record.state === 'Disabled' },
+              show: (record) => { return (record && record.id && record.state === 'Disabled') },
               mapping: {
                 state: {
                   value: (record) => { return 'Enabled' }
@@ -936,7 +987,7 @@ export default {
               listView: true,
               label: 'label.disable.provider',
               confirm: 'Please confirm that you would like to disable this provider?',
-              show: (record) => { return record && record.state === 'Enabled' },
+              show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Disabled' }
@@ -949,7 +1000,7 @@ export default {
               listView: true,
               label: 'label.enable.provider',
               confirm: 'Please confirm that you would like to enable this provider?',
-              show: (record) => { return record && record.state === 'Disabled' },
+              show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Enabled' }
@@ -957,7 +1008,25 @@ export default {
               }
             }
           ],
-          details: ['name', 'state', 'id', 'servicelist']
+          details: ['name', 'state', 'id', 'servicelist'],
+          lists: [
+            {
+              title: 'instances',
+              api: 'listRouters',
+              mapping: {
+                listAll: {
+                  value: (record) => { return true }
+                },
+                zoneid: {
+                  value: (record) => { return record.zoneid }
+                },
+                forvpc: {
+                  value: (record) => { return false }
+                }
+              },
+              columns: ['hostname', 'zonename', 'state', 'action']
+            }
+          ]
         },
         {
           title: 'VpcVirtualRouter',
@@ -968,7 +1037,7 @@ export default {
               listView: true,
               label: 'label.disable.provider',
               confirm: 'Please confirm that you would like to disable this provider?',
-              show: (record) => { return record && record.state === 'Enabled' },
+              show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Disabled' }
@@ -981,7 +1050,7 @@ export default {
               listView: true,
               label: 'label.enable.provider',
               confirm: 'Please confirm that you would like to enable this provider?',
-              show: (record) => { return record && record.state === 'Disabled' },
+              show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
                   value: (record) => { return 'Enabled' }
@@ -1005,7 +1074,7 @@ export default {
                   value: () => { return true }
                 }
               },
-              columns: ['url']
+              columns: ['hostname', 'zonename', 'state', 'action']
             }
           ]
         }
@@ -1078,6 +1147,9 @@ export default {
         for (const key in values) {
           const input = values[key]
           for (const param of this.currentAction.fieldParams) {
+            if (param.name !== key) {
+              continue
+            }
             if (param.type === 'uuid') {
               params[key] = param.opts[input].id
             } else if (param.type === 'list') {
@@ -1108,6 +1180,7 @@ export default {
           params.id = this.nsp.id
           const hasJobId = await this.executeApi(this.currentAction.api, params)
           if (!hasJobId) {
+            await this.$message.success('Success')
             await this.fetchData()
           }
           this.actionLoading = false
@@ -1173,11 +1246,58 @@ export default {
         if (!action.component) {
           const apiParams = store.getters.apis[action.api].params || []
           this.currentAction.fieldParams = action.args.map(arg => {
-            return apiParams.filter(param => param.name === arg)[0]
+            const field = apiParams.filter(param => param.name === arg)[0]
+            if (field.type === 'uuid') {
+              this.listFieldOpts(field)
+            }
+            return field
           }) || []
           console.log(this.currentAction.fieldParams)
         }
       }
+    },
+    listFieldOpts (field) {
+      const paramName = field.name
+      const params = { listall: true }
+      const possibleName = 'list' + paramName.replace('ids', '').replace('id', '').toLowerCase() + 's'
+      let possibleApi
+      for (const api in store.getters.apis) {
+        if (api.toLowerCase().startsWith(possibleName)) {
+          possibleApi = api
+          break
+        }
+      }
+      if (this.currentAction.mapping) {
+        Object.keys(this.currentAction.mapping).forEach(key => {
+          if (this.currentAction.mapping[key].params) {
+            params[key] = this.currentAction.mapping[key].params(this.resource)
+          }
+        })
+      }
+      if (!possibleApi) {
+        return
+      }
+      field.loading = true
+      field.opts = []
+      api(possibleApi, params).then(json => {
+        field.loading = false
+        for (const obj in json) {
+          if (obj.includes('response')) {
+            for (const res in json[obj]) {
+              if (res === 'count') {
+                continue
+              }
+              field.opts = json[obj][res]
+              this.$forceUpdate()
+              break
+            }
+            break
+          }
+        }
+      }).catch(error => {
+        console.log(error.stack)
+        field.loading = false
+      })
     },
     async executeConfirmAction () {
       const params = {}
@@ -1213,7 +1333,7 @@ export default {
         let message = ''
         api(apiName, args).then(json => {
           for (const obj in json) {
-            if (obj.includes('response')) {
+            if (obj.includes('response') || obj.includes(apiName)) {
               for (const res in json[obj]) {
                 if (res === 'jobid') {
                   this.$store.dispatch('AddAsyncJob', {

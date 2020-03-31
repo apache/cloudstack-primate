@@ -25,15 +25,16 @@
       :loading="loading"
       :columns="columns"
       :dataSource="dataSource"
-      :rowKey="record => record.id || record.name || record.nvpdeviceid"
+      :rowKey="record => record.id || record.name || record.nvpdeviceid || record.resourceid"
       :pagination="false"
       :scroll="scrollable">
       <template slot="action" slot-scope="text, record">
         <a-tooltip placement="top">
           <template slot="title">
             <span v-if="resource.name==='BigSwitchBcf'">{{ $t('label.delete.BigSwitchBcf') }}</span>
-            <span v-if="resource.name==='BrocadeVcs'">{{ $t('label.delete.BrocadeVcs') }}</span>
-            <span v-if="resource.name==='NiciraNvp'">{{ $t('label.delete.NiciaNvp') }}</span>
+            <span v-else-if="resource.name==='BrocadeVcs'">{{ $t('label.delete.BrocadeVcs') }}</span>
+            <span v-else-if="resource.name==='NiciraNvp'">{{ $t('label.delete.NiciaNvp') }}</span>
+            <span v-else-if="resource.name==='CiscoVnmc'">{{ $t('label.delete.CiscoVnmc') }}</span>
           </template>
           <a-button
             type="danger"
@@ -112,9 +113,11 @@ export default {
     scrollable () {
       if (this.dataSource.length === 0) {
         return { y: '60vh', x: 'auto' }
+      } else if (this.columns.length > 3) {
+        return { y: '60vh', x: '50vw' }
       }
 
-      return { y: '60vh', x: '70vw' }
+      return { y: '60vh' }
     }
   },
   inject: ['providerChangePage', 'provideReload', 'parentPollActionCompletion'],
@@ -126,6 +129,7 @@ export default {
       this.providerChangePage(this.title, currentPage, pageSize)
     },
     onDelete (record) {
+      console.log(record)
       let apiName
       let confirmation
       let label
@@ -138,6 +142,20 @@ export default {
           apiName = 'deleteNiciraNvpDevice'
           confirmation = 'message.confirm.delete.NiciraNvp'
           params.nvpdeviceid = record.nvpdeviceid
+          break
+        case 'BrocadeVcs':
+          label = 'label.delete.BrocadeVcs'
+          name = record.hostname
+          apiName = 'deleteBrocadeVcsDevice'
+          confirmation = 'message.confirm.delete.BrocadeVcs'
+          params.vcsdeviceid = record.vcsdeviceid
+          break
+        case 'CiscoVnmc':
+          label = 'label.delete.CiscoVnmc'
+          name = record.hostname
+          apiName = 'deleteCiscoAsa1000vResource'
+          confirmation = 'message.confirm.delete.CiscoVnmc'
+          params.resourceid = record.resourceid
           break
         default:
           break
@@ -160,6 +178,7 @@ export default {
                 })
                 this.parentPollActionCompletion(jobId, this.action)
               } else {
+                this.$success('Success')
                 this.provideReload()
               }
               this.actionLoading = false
