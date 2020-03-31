@@ -22,15 +22,13 @@
         <div>
           <strong>{{ $t(item) }}</strong>
           <br />
-          <div v-if="nsp && nsp[item]">
-            <div v-if="item === 'servicelist'">
-              {{ nsp[item].join(', ') }}
-            </div>
-            <span v-else-if="item !== 'state'">{{ nsp[item] }}</span>
-            <span v-else>
-              <status :text="nsp[item] ? nsp[item] : 'Disabled'" displayText />
-            </span>
+          <div v-if="item === 'servicelist'">
+            {{ nsp[item] ? nsp[item].join(', ') : '' }}
           </div>
+          <span v-else-if="item !== 'state'">{{ nsp[item] ? nsp[item] : '' }}</span>
+          <span v-else>
+            <status :text="nsp[item] ? nsp[item] : 'Disabled'" displayText />
+          </span>
         </div>
       </a-list-item>
     </a-list>

@@ -1,0 +1,209 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+<template>
+  <div>
+    <strong>{{ title }}</strong>
+    <a-table
+      style="margin-top: 10px;"
+      size="small"
+      class="row-list-data"
+      :loading="loading"
+      :columns="columns"
+      :dataSource="dataSource"
+      :rowKey="record => record.id || record.name || record.nvpdeviceid"
+      :pagination="false"
+      :scroll="scrollable">
+      <template slot="action" slot-scope="text, record">
+        <a-tooltip placement="top">
+          <template slot="title">
+            <span v-if="resource.name==='BigSwitchBcf'">{{ $t('label.delete.BigSwitchBcf') }}</span>
+            <span v-if="resource.name==='BrocadeVcs'">{{ $t('label.delete.BrocadeVcs') }}</span>
+            <span v-if="resource.name==='NiciraNvp'">{{ $t('label.delete.NiciaNvp') }}</span>
+          </template>
+          <a-button
+            type="danger"
+            shape="circle"
+            icon="close"
+            size="small"
+            :loading="actionLoading"
+            @click="onDelete(record)"/>
+        </a-tooltip>
+      </template>
+    </a-table>
+    <a-pagination
+      size="small"
+      class="row-pagination"
+      :current="page"
+      :pageSize="pageSize"
+      :total="itemCount"
+      :showTotal="total => `Total ${total} items`"
+      :pageSizeOptions="['10', '20', '40', '80', '100']"
+      @change="changePage"
+      @showSizeChange="changePageSize"
+      showSizeChanger
+      showQuickJumper />
+  </div>
+</template>
+
+<script>
+import { api } from '@/api'
+
+export default {
+  name: 'ProviderListView',
+  props: {
+    title: {
+      type: String,
+      required: true
+    },
+    columns: {
+      type: Array,
+      required: true
+    },
+    dataSource: {
+      type: Array,
+      default: () => []
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    page: {
+      type: Number,
+      default: () => 1
+    },
+    pageSize: {
+      type: Number,
+      default: () => 10
+    },
+    itemCount: {
+      type: Number,
+      default: () => 0
+    },
+    resource: {
+      type: Object,
+      default: () => {}
+    },
+    action: {
+      type: Object,
+      default: () => {}
+    }
+  },
+  data () {
+    return {
+      actionLoading: false
+    }
+  },
+  computed: {
+    scrollable () {
+      if (this.dataSource.length === 0) {
+        return { y: '60vh', x: 'auto' }
+      }
+
+      return { y: '60vh', x: '70vw' }
+    }
+  },
+  inject: ['providerChangePage', 'provideReload', 'parentPollActionCompletion'],
+  methods: {
+    changePage (page, pageSize) {
+      this.providerChangePage(this.title, page, pageSize)
+    },
+    changePageSize (currentPage, pageSize) {
+      this.providerChangePage(this.title, currentPage, pageSize)
+    },
+    onDelete (record) {
+      let apiName
+      let confirmation
+      let label
+      let name
+      const params = {}
+      switch (this.resource.name) {
+        case 'NiciraNvp':
+          label = 'label.delete.NiciaNvp'
+          name = record.hostname
+          apiName = 'deleteNiciraNvpDevice'
+          confirmation = 'message.confirm.delete.NiciraNvp'
+          params.nvpdeviceid = record.nvpdeviceid
+          break
+        default:
+          break
+      }
+
+      this.$confirm({
+        title: this.$t('label.confirmation'),
+        content: confirmation,
+        onOk: async () => {
+          if (apiName) {
+            this.actionLoading = true
+            try {
+              const jobId = await this.executeDeleteRecord(apiName, params)
+              if (jobId) {
+                this.$store.dispatch('AddAsyncJob', {
+                  title: this.$t(label),
+                  jobid: jobId,
+                  description: this.$t(name),
+                  status: 'progress'
+                })
+                this.parentPollActionCompletion(jobId, this.action)
+              } else {
+                this.provideReload()
+              }
+              this.actionLoading = false
+            } catch (error) {
+              this.actionLoading = false
+              this.$notification.error({
+                message: 'Request Failed',
+                description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+              })
+            }
+          }
+        }
+      })
+    },
+    executeDeleteRecord (apiName, args) {
+      return new Promise((resolve, reject) => {
+        let jobId = null
+        api(apiName, args).then(json => {
+          for (const obj in json) {
+            if (obj.includes('response')) {
+              for (const res in json[obj]) {
+                if (res === 'jobid') {
+                  jobId = json[obj][res]
+                  break
+                }
+              }
+              break
+            }
+          }
+
+          resolve(jobId)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    }
+  }
+}
+</script>
+
+<style scoped lang="less">
+.row-pagination {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  text-align: right;
+}
+</style>

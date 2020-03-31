@@ -20,65 +20,97 @@
     <a-spin :spinning="fetchLoading">
       <a-tabs
         :tabPosition="device === 'mobile' ? 'top' : 'left'"
-        :animated="false">
-        <a-tab-pane v-for="nsp in hardcodedNsps" :key="nsp.title">
+        :animated="false"
+        @change="onTabChange">
+        <a-tab-pane
+          v-for="item in hardcodedNsps"
+          :key="item.title">
           <span slot="tab">
-            {{ $t(nsp.title) }}
-            <status :text="nsp.title in nsps ? nsps[nsp.title].state : 'Disabled'" style="margin-bottom: 6px; margin-left: 6px" />
+            {{ $t(item.title) }}
+            <status :text="item.title in nsps ? nsps[item.title].state : 'Disabled'" style="margin-bottom: 6px; margin-left: 6px" />
           </span>
-          <component
-            :is="nsp.component"
-            :nsp="nsps[nsp.title]"
-            :actions="nsp.actions"
-            :bordered="false"
-            :loading="fetchLoading"
-          />
+          <provider-item
+            v-if="tabKey===item.title"
+            :itemNsp="item"
+            :nsp="nsps[item.title]"
+            :resourceId="resource.id"
+            :zoneId="resource.zoneid"/>
         </a-tab-pane>
       </a-tabs>
     </a-spin>
-    <a-modal
-      :title="$t(currentAction.label)"
-      :visible="showFormAction"
-      :confirmLoading="actionLoading"
-      style="top: 20px;"
-      @ok="handleSubmit"
-      @cancel="handleClose"
-      centered
-    >
-      <a-form
-        :form="form"
-        layout="vertical">
-        <a-form-item
-          v-for="(field, index) in currentAction.fieldParams"
-          :key="index"
-          :label="$t(field.name)">
-          <span v-if="field.name==='password'">
-            <a-input-password
-              v-decorator="[field.name, {
-                rules: [
-                  {
+    <div v-if="showFormAction">
+      <keep-alive v-if="currentAction.component">
+        <a-modal
+          :title="$t(currentAction.label)"
+          :visible="showFormAction"
+          :closable="true"
+          style="top: 20px;"
+          @cancel="onCloseAction"
+          :confirmLoading="actionLoading"
+          :footer="null"
+          centered>
+          <component
+            :is="currentAction.component"
+            :resource="nsp"
+            :action="currentAction" />
+        </a-modal>
+      </keep-alive>
+      <a-modal
+        v-else
+        :title="$t(currentAction.label)"
+        :visible="showFormAction"
+        :confirmLoading="actionLoading"
+        style="top: 20px;"
+        @ok="handleSubmit"
+        @cancel="onCloseAction"
+        centered
+      >
+        <a-form
+          :form="form"
+          layout="vertical">
+          <a-form-item
+            v-for="(field, index) in currentAction.fieldParams"
+            :key="index"
+            :label="$t(field.name)">
+            <span v-if="field.name==='password'">
+              <a-input-password
+                v-decorator="[field.name, {
+                  rules: [
+                    {
+                      required: field.required,
+                      message: 'Please enter password'
+                    }
+                  ]
+                }]"
+                :placeholder="field.description" />
+            </span>
+            <span v-else-if="field.type==='boolean'">
+              <a-switch
+                v-decorator="[field.name, {
+                  rules: [{
                     required: field.required,
-                    message: 'Please enter password'
-                  }
-                ]
-              }]"
-              :placeholder="field.description" />
-          </span>
-          <span v-else>
-            <a-input
-              v-decorator="[field.name, {
-                rules: [
-                  {
-                    required: field.required,
-                    message: 'Please enter input'
-                  }
-                ]
-              }]"
-              :placeholder="field.description" />
-          </span>
-        </a-form-item>
-      </a-form>
-    </a-modal>
+                    message: 'Please provide input'
+                  }]
+                }]"
+                :placeholder="field.description"
+              />
+            </span>
+            <span v-else>
+              <a-input
+                v-decorator="[field.name, {
+                  rules: [
+                    {
+                      required: field.required,
+                      message: 'Please enter input'
+                    }
+                  ]
+                }]"
+                :placeholder="field.description" />
+            </span>
+          </a-form-item>
+        </a-form>
+      </a-modal>
+    </div>
   </div>
 </template>
 
@@ -87,11 +119,13 @@ import store from '@/store'
 import { api } from '@/api'
 import { mixinDevice } from '@/utils/mixin.js'
 import Status from '@/components/widgets/Status'
+import ProviderItem from '@/views/infra/network/providers/ProviderItem'
 
 export default {
   name: 'ServiceProvidersTab',
   components: {
-    Status
+    Status,
+    ProviderItem
   },
   mixins: [mixinDevice],
   props: {
@@ -112,7 +146,8 @@ export default {
       fetchLoading: false,
       actionLoading: false,
       showFormAction: false,
-      currentAction: {}
+      currentAction: {},
+      tabKey: 'BaremetalDhcpProvider'
     }
   },
   computed: {
@@ -120,16 +155,13 @@ export default {
       return [
         {
           title: 'BaremetalDhcpProvider',
-          component: () => import('@/views/infra/network/providers/BaremetalDhcpProvider.vue'),
           actions: [
             {
               api: 'addBaremetalDhcp',
-              isNew: true,
               listView: true,
               icon: 'plus',
               label: 'label.add.baremetal.dhcp.device',
               args: ['url', 'username', 'password'],
-              show: (record) => { return record && record.state === 'Enabled' },
               mapping: {
                 dhcpservertype: {
                   value: (record) => { return 'DHCPD' }
@@ -164,68 +196,824 @@ export default {
             },
             {
               api: 'deleteNetworkServiceProvider',
-              isDel: true,
               listView: true,
-              icon: 'delete',
+              icon: 'poweroff',
               label: 'label.shutdown.provider',
               confirm: 'Please confirm that you would like to delete this provider?',
-              show: (record) => { return record && record.state === 'Enabled' }
+              show: (record) => { return record && record.id }
+            }
+          ],
+          details: ['name', 'state', 'id', 'servicelist'],
+          lists: [
+            {
+              title: 'listdevice',
+              api: 'listBaremetalDhcp',
+              mapping: {
+                physicalnetworkid: {
+                  value: (record) => { return record.physicalnetworkid }
+                }
+              },
+              columns: ['url']
             }
           ]
         },
         {
-          title: 'BaremetalPxeProvider'
+          title: 'BaremetalPxeProvider',
+          actions: [
+            {
+              api: 'addBaremetalPxeKickStartServer',
+              listView: true,
+              icon: 'plus',
+              label: 'label.baremetal.pxe.device',
+              args: ['url', 'username', 'password', 'tftpdir'],
+              mapping: {
+                pxeservertype: {
+                  value: (record) => { return 'KICK_START' }
+                }
+              }
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'stop',
+              listView: true,
+              label: 'label.disable.provider',
+              confirm: 'Please confirm that you would like to disable this provider?',
+              show: (record) => { return record && record.state === 'Enabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Disabled' }
+                }
+              }
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'play-circle',
+              listView: true,
+              label: 'label.enable.provider',
+              confirm: 'Please confirm that you would like to enable this provider?',
+              show: (record) => { return record && record.state === 'Disabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Enabled' }
+                }
+              }
+            },
+            {
+              api: 'deleteNetworkServiceProvider',
+              listView: true,
+              icon: 'poweroff',
+              label: 'label.shutdown.provider',
+              confirm: 'Please confirm that you would like to delete this provider?',
+              show: (record) => { return record && record.id }
+            }
+          ],
+          details: ['name', 'state', 'id', 'servicelist'],
+          lists: [
+            {
+              title: 'listdevice',
+              api: 'listBaremetalPxeServers',
+              mapping: {
+                physicalnetworkid: {
+                  value: (record) => { return record.physicalnetworkid }
+                }
+              },
+              columns: ['url']
+            }
+          ]
         },
         {
-          title: 'BigSwitchBcf'
+          title: 'BigSwitchBcf',
+          actions: [
+            {
+              api: 'addBigSwitchBcfDevice',
+              listView: true,
+              icon: 'plus',
+              label: 'label.add.BigSwitchBcf.device',
+              args: ['hostname', 'username', 'password', 'nat']
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'stop',
+              listView: true,
+              label: 'label.disable.provider',
+              confirm: 'Please confirm that you would like to disable this provider?',
+              show: (record) => { return record && record.state === 'Enabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Disabled' }
+                }
+              }
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'play-circle',
+              listView: true,
+              label: 'label.enable.provider',
+              confirm: 'Please confirm that you would like to enable this provider?',
+              show: (record) => { return record && record.state === 'Disabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Enabled' }
+                }
+              }
+            },
+            {
+              api: 'deleteNetworkServiceProvider',
+              listView: true,
+              icon: 'poweroff',
+              label: 'label.shutdown.provider',
+              confirm: 'Please confirm that you would like to delete this provider?',
+              show: (record) => { return record && record.id }
+            }
+          ],
+          details: ['name', 'state', 'id', 'servicelist'],
+          lists: [
+            {
+              title: 'listdevice',
+              api: 'listBigSwitchBcfDevices',
+              mapping: {
+                physicalnetworkid: {
+                  value: (record) => { return record.physicalnetworkid }
+                }
+              },
+              columns: ['hostname', 'action']
+            }
+          ]
         },
         {
-          title: 'BrocadeVcs'
+          title: 'BrocadeVcs',
+          actions: [
+            {
+              api: 'addBrocadeVcsDevice',
+              listView: true,
+              icon: 'plus',
+              label: 'label.add.BigSwitchBcf.device',
+              args: ['hostname', 'username', 'password']
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'stop',
+              listView: true,
+              label: 'label.disable.provider',
+              confirm: 'Please confirm that you would like to disable this provider?',
+              show: (record) => { return record && record.state === 'Enabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Disabled' }
+                }
+              }
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'play-circle',
+              listView: true,
+              label: 'label.enable.provider',
+              confirm: 'Please confirm that you would like to enable this provider?',
+              show: (record) => { return record && record.state === 'Disabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Enabled' }
+                }
+              }
+            },
+            {
+              api: 'deleteNetworkServiceProvider',
+              listView: true,
+              icon: 'poweroff',
+              label: 'label.shutdown.provider',
+              confirm: 'Please confirm that you would like to delete this provider?',
+              show: (record) => { return record && record.id }
+            }
+          ],
+          details: ['name', 'state', 'id', 'servicelist'],
+          lists: [
+            {
+              title: 'listdevice',
+              api: 'listBrocadeVcsDevices',
+              mapping: {
+                physicalnetworkid: {
+                  value: (record) => { return record.physicalnetworkid }
+                }
+              },
+              columns: ['hostname', 'action']
+            }
+          ]
         },
         {
-          title: 'CiscoVnmc'
+          title: 'CiscoVnmc',
+          actions: [
+            {
+              api: 'addBrocadeVcsDevice',
+              listView: true,
+              icon: 'plus',
+              label: 'label.add.BigSwitchBcf.device',
+              args: ['hostname', 'username', 'password']
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'stop',
+              listView: true,
+              label: 'label.disable.provider',
+              confirm: 'Please confirm that you would like to disable this provider?',
+              show: (record) => { return record && record.state === 'Enabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Disabled' }
+                }
+              }
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'play-circle',
+              listView: true,
+              label: 'label.enable.provider',
+              confirm: 'Please confirm that you would like to enable this provider?',
+              show: (record) => { return record && record.state === 'Disabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Enabled' }
+                }
+              }
+            },
+            {
+              api: 'deleteNetworkServiceProvider',
+              listView: true,
+              icon: 'poweroff',
+              label: 'label.shutdown.provider',
+              confirm: 'Please confirm that you would like to delete this provider?',
+              show: (record) => { return record && record.id }
+            }
+          ],
+          details: ['name', 'state', 'id', 'servicelist'],
+          lists: [
+            {
+              title: 'listCiscoVnmcResources',
+              api: 'listCiscoVnmcResources',
+              mapping: {
+                physicalnetworkid: {
+                  value: (record) => { return record.physicalnetworkid }
+                }
+              },
+              columns: ['resource', 'provider']
+            },
+            {
+              title: 'listCiscoAsa1000vResources',
+              api: 'listCiscoAsa1000vResources',
+              mapping: {
+                physicalnetworkid: {
+                  value: (record) => { return record.physicalnetworkid }
+                }
+              },
+              columns: ['hostname', 'profile']
+            }
+          ]
         },
         {
-          title: 'ConfigDrive'
+          title: 'ConfigDrive',
+          actions: [
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'stop',
+              listView: true,
+              label: 'label.disable.provider',
+              confirm: 'Please confirm that you would like to disable this provider?',
+              show: (record) => { return record && record.state === 'Enabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Disabled' }
+                }
+              }
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'play-circle',
+              listView: true,
+              label: 'label.enable.provider',
+              confirm: 'Please confirm that you would like to enable this provider?',
+              show: (record) => { return record && record.state === 'Disabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Enabled' }
+                }
+              }
+            }
+          ],
+          details: ['name', 'state', 'id', 'servicelist', 'physicalnetworkid']
         },
         {
-          title: 'F5BigIp'
+          title: 'F5BigIp',
+          actions: [
+            {
+              api: 'addF5LoadBalancer',
+              listView: true,
+              icon: 'plus',
+              label: 'label.add.F5.device',
+              args: ['hostname', 'username', 'password', 'networkdevicetype']
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'stop',
+              listView: true,
+              label: 'label.disable.provider',
+              confirm: 'Please confirm that you would like to disable this provider?',
+              show: (record) => { return record && record.state === 'Enabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Disabled' }
+                }
+              }
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'play-circle',
+              listView: true,
+              label: 'label.enable.provider',
+              confirm: 'Please confirm that you would like to enable this provider?',
+              show: (record) => { return record && record.state === 'Disabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Enabled' }
+                }
+              }
+            }
+          ],
+          details: ['name', 'state', 'id', 'servicelist'],
+          lists: [
+            {
+              title: 'listdevice',
+              api: 'listF5LoadBalancers',
+              mapping: {
+                physicalnetworkid: {
+                  value: (record) => { return record.physicalnetworkid }
+                }
+              },
+              columns: ['hostname', 'status']
+            }
+          ]
         },
         {
-          title: 'GloboDns'
+          title: 'GloboDns',
+          actions: [
+            {
+              api: 'addGloboDnsHost',
+              listView: true,
+              icon: 'plus',
+              label: 'label.add.F5.device',
+              args: ['url', 'username', 'password']
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'stop',
+              listView: true,
+              label: 'label.disable.provider',
+              confirm: 'Please confirm that you would like to disable this provider?',
+              show: (record) => { return record && record.state === 'Enabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Disabled' }
+                }
+              }
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'play-circle',
+              listView: true,
+              label: 'label.enable.provider',
+              confirm: 'Please confirm that you would like to enable this provider?',
+              show: (record) => { return record && record.state === 'Disabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Enabled' }
+                }
+              }
+            }
+          ],
+          details: ['name', 'state', 'id', 'servicelist']
         },
         {
-          title: 'InternalLbVm'
+          title: 'InternalLbVm',
+          actions: [
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'stop',
+              listView: true,
+              label: 'label.disable.provider',
+              confirm: 'Please confirm that you would like to disable this provider?',
+              show: (record) => { return record && record.state === 'Enabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Disabled' }
+                }
+              }
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'play-circle',
+              listView: true,
+              label: 'label.enable.provider',
+              confirm: 'Please confirm that you would like to enable this provider?',
+              show: (record) => { return record && record.state === 'Disabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Enabled' }
+                }
+              }
+            }
+          ],
+          details: ['name', 'state', 'id', 'physicalnetworkid', 'destinationphysicalnetworkid', 'servicelist'],
+          lists: [
+            {
+              title: 'instances',
+              api: 'listInternalLoadBalancerVMs',
+              mapping: {
+                physicalnetworkid: {
+                  value: (record) => { return record.physicalnetworkid }
+                }
+              },
+              columns: ['name', 'zone', 'type', 'status', 'action']
+            }
+          ]
         },
         {
-          title: 'JuniperSRX'
+          title: 'JuniperSRX',
+          actions: [
+            {
+              api: 'addSrxFirewall',
+              listView: true,
+              icon: 'plus',
+              label: 'label.add.Srx.device',
+              args: ['url', 'username', 'password', 'networkdevicetype']
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'stop',
+              listView: true,
+              label: 'label.disable.provider',
+              confirm: 'Please confirm that you would like to disable this provider?',
+              show: (record) => { return record && record.state === 'Enabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Disabled' }
+                }
+              }
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'play-circle',
+              listView: true,
+              label: 'label.enable.provider',
+              confirm: 'Please confirm that you would like to enable this provider?',
+              show: (record) => { return record && record.state === 'Disabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Enabled' }
+                }
+              }
+            }
+          ],
+          details: ['name', 'state', 'id', 'servicelist'],
+          lists: [
+            {
+              title: 'listdevice',
+              api: 'listSrxFirewalls',
+              mapping: {
+                physicalnetworkid: {
+                  value: (record) => { return record.physicalnetworkid }
+                }
+              },
+              columns: ['ipaddress', 'fwdevicestate', 'action']
+            }
+          ]
         },
         {
-          title: 'Netscaler'
+          title: 'Netscaler',
+          actions: [
+            {
+              api: 'addNetscalerLoadBalancer',
+              icon: 'plus',
+              listView: true,
+              label: 'label.add.netScaler.device',
+              component: () => import('@/views/infra/network/providers/AddNetscalerLoadBalancer.vue')
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'stop',
+              listView: true,
+              label: 'label.disable.provider',
+              confirm: 'Please confirm that you would like to disable this provider?',
+              show: (record) => { return record && record.state === 'Enabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Disabled' }
+                }
+              }
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'play-circle',
+              listView: true,
+              label: 'label.enable.provider',
+              confirm: 'Please confirm that you would like to enable this provider?',
+              show: (record) => { return record && record.state === 'Disabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Enabled' }
+                }
+              }
+            },
+            {
+              api: 'deleteNetworkServiceProvider',
+              listView: true,
+              icon: 'poweroff',
+              label: 'label.shutdown.provider',
+              confirm: 'Please confirm that you would like to delete this provider?',
+              show: (record) => { return record && record.id }
+            }
+          ],
+          details: ['name', 'state', 'id', 'servicelist'],
+          lists: [
+            {
+              title: 'listdevice',
+              api: 'listNetscalerLoadBalancers',
+              mapping: {
+                physicalnetworkid: {
+                  value: (record) => { return record.physicalnetworkid }
+                }
+              },
+              columns: ['ipaddress', 'lbdevicestate']
+            }
+          ]
         },
         {
-          title: 'NiciraNvp'
+          title: 'NiciraNvp',
+          actions: [
+            {
+              api: 'addNiciraNvpDevice',
+              icon: 'plus',
+              listView: true,
+              label: 'label.add.NiciraNvp.device',
+              component: () => import('@/views/infra/network/providers/AddNiciraNvpDevice.vue')
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'stop',
+              listView: true,
+              label: 'label.disable.provider',
+              confirm: 'Please confirm that you would like to disable this provider?',
+              show: (record) => { return record && record.state === 'Enabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Disabled' }
+                }
+              }
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'play-circle',
+              listView: true,
+              label: 'label.enable.provider',
+              confirm: 'Please confirm that you would like to enable this provider?',
+              show: (record) => { return record && record.state === 'Disabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Enabled' }
+                }
+              }
+            },
+            {
+              api: 'deleteNetworkServiceProvider',
+              listView: true,
+              icon: 'poweroff',
+              label: 'label.shutdown.provider',
+              confirm: 'Please confirm that you would like to delete this provider?',
+              show: (record) => { return record && record.id }
+            }
+          ],
+          details: ['name', 'state', 'id', 'servicelist'],
+          lists: [
+            {
+              title: 'listdevice',
+              api: 'listNiciraNvpDevices',
+              mapping: {
+                physicalnetworkid: {
+                  value: (record) => { return record.physicalnetworkid }
+                }
+              },
+              columns: ['hostname', 'transportzoneuuid', 'l3gatewayserviceuuid', 'l2gatewayserviceuuid', 'action']
+            }
+          ]
         },
         {
-          title: 'Opendaylight'
+          title: 'Opendaylight',
+          actions: [
+            {
+              api: 'addOpenDaylightController',
+              listView: true,
+              icon: 'plus',
+              label: 'label.add.OpenDaylight.device',
+              args: ['url', 'username', 'password']
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'stop',
+              listView: true,
+              label: 'label.disable.provider',
+              confirm: 'Please confirm that you would like to disable this provider?',
+              show: (record) => { return record && record.state === 'Enabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Disabled' }
+                }
+              }
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'play-circle',
+              listView: true,
+              label: 'label.enable.provider',
+              confirm: 'Please confirm that you would like to enable this provider?',
+              show: (record) => { return record && record.state === 'Disabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Enabled' }
+                }
+              }
+            },
+            {
+              api: 'deleteNetworkServiceProvider',
+              listView: true,
+              icon: 'poweroff',
+              label: 'label.shutdown.provider',
+              confirm: 'Please confirm that you would like to delete this provider?',
+              show: (record) => { return record && record.id }
+            }
+          ],
+          details: ['name', 'state', 'id', 'servicelist'],
+          lists: [
+            {
+              title: 'label.opendaylight.controllers',
+              api: 'listOpenDaylightControllers',
+              mapping: {
+                physicalnetworkid: {
+                  value: (record) => { return record.physicalnetworkid }
+                }
+              },
+              columns: ['name', 'username', 'url', 'action']
+            }
+          ]
+        },
+        // {
+        //   title: 'Ovs'
+        // },
+        {
+          title: 'PaloAlto',
+          actions: [
+            {
+              api: 'addPaloAltoFirewall',
+              listView: true,
+              icon: 'plus',
+              label: 'label.add.PA.device',
+              args: ['url', 'username', 'password', 'networkdevicetype']
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'stop',
+              listView: true,
+              label: 'label.disable.provider',
+              confirm: 'Please confirm that you would like to disable this provider?',
+              show: (record) => { return record && record.state === 'Enabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Disabled' }
+                }
+              }
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'play-circle',
+              listView: true,
+              label: 'label.enable.provider',
+              confirm: 'Please confirm that you would like to enable this provider?',
+              show: (record) => { return record && record.state === 'Disabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Enabled' }
+                }
+              }
+            },
+            {
+              api: 'deleteNetworkServiceProvider',
+              listView: true,
+              icon: 'poweroff',
+              label: 'label.shutdown.provider',
+              confirm: 'Please confirm that you would like to delete this provider?',
+              show: (record) => { return record && record.id }
+            }
+          ],
+          details: ['name', 'state', 'id', 'servicelist'],
+          lists: [
+            {
+              title: 'listdevice',
+              api: 'listPaloAltoFirewalls',
+              mapping: {
+                physicalnetworkid: {
+                  value: (record) => { return record.physicalnetworkid }
+                }
+              },
+              columns: ['ipaddress', 'fwdevicestate', 'type', 'action']
+            }
+          ]
+        },
+        // {
+        //   title: 'SecurityGroupProvider'
+        // },
+        {
+          title: 'VirtualRouter',
+          actions: [
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'stop',
+              listView: true,
+              label: 'label.disable.provider',
+              confirm: 'Please confirm that you would like to disable this provider?',
+              show: (record) => { return record && record.state === 'Enabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Disabled' }
+                }
+              }
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'play-circle',
+              listView: true,
+              label: 'label.enable.provider',
+              confirm: 'Please confirm that you would like to enable this provider?',
+              show: (record) => { return record && record.state === 'Disabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Enabled' }
+                }
+              }
+            }
+          ],
+          details: ['name', 'state', 'id', 'servicelist']
         },
         {
-          title: 'Ovs'
-        },
-        {
-          title: 'PaloAlto'
-        },
-        {
-          title: 'SecurityGroupProvider'
-        },
-        {
-          title: 'VirtualRouter'
-        },
-        {
-          title: 'VpcVirtualRouter'
+          title: 'VpcVirtualRouter',
+          actions: [
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'stop',
+              listView: true,
+              label: 'label.disable.provider',
+              confirm: 'Please confirm that you would like to disable this provider?',
+              show: (record) => { return record && record.state === 'Enabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Disabled' }
+                }
+              }
+            },
+            {
+              api: 'updateNetworkServiceProvider',
+              icon: 'play-circle',
+              listView: true,
+              label: 'label.enable.provider',
+              confirm: 'Please confirm that you would like to enable this provider?',
+              show: (record) => { return record && record.state === 'Disabled' },
+              mapping: {
+                state: {
+                  value: (record) => { return 'Enabled' }
+                }
+              }
+            }
+          ],
+          details: ['name', 'state', 'id', 'servicelist'],
+          lists: [
+            {
+              title: 'instances',
+              api: 'listRouters',
+              mapping: {
+                forvpc: {
+                  value: (record) => { return true }
+                },
+                zoneid: {
+                  value: (record) => { return record.zoneid }
+                },
+                listAll: {
+                  value: () => { return true }
+                }
+              },
+              columns: ['url']
+            }
+          ]
         }
       ]
     }
+  },
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
   },
   mounted () {
     this.fetchData()
@@ -241,7 +1029,9 @@ export default {
   provide () {
     return {
       provideSetNsp: this.setNsp,
-      provideExecuteAction: this.executeAction
+      provideExecuteAction: this.executeAction,
+      provideCloseAction: this.onCloseAction,
+      provideReload: this.fetchData
     }
   },
   methods: {
@@ -251,7 +1041,7 @@ export default {
     fetchServiceProvider (name) {
       this.fetchLoading = true
       api('listNetworkServiceProviders', { physicalnetworkid: this.resource.id, name: name }).then(json => {
-        var sps = json.listnetworkserviceprovidersresponse.networkserviceprovider || []
+        const sps = json.listnetworkserviceprovidersresponse.networkserviceprovider || []
         if (sps.length > 0) {
           for (const sp of sps) {
             this.nsps[sp.name] = sp
@@ -267,6 +1057,9 @@ export default {
         this.fetchLoading = false
       })
     },
+    onTabChange (tabKey) {
+      this.tabKey = tabKey
+    },
     setNsp (nsp) {
       this.nsp = nsp
     },
@@ -281,7 +1074,6 @@ export default {
           return
         }
         const params = {}
-        params.id = this.nsp.id
         params.physicalnetworkid = this.nsp.physicalnetworkid
         for (const key in values) {
           const input = values[key]
@@ -306,24 +1098,67 @@ export default {
         this.actionLoading = true
 
         try {
+          if (!this.nsp.id) {
+            const serviceParams = {}
+            serviceParams.name = this.nsp.name
+            serviceParams.physicalnetworkid = this.nsp.physicalnetworkid
+            const networkServiceProvider = await this.addNetworkServiceProvider(serviceParams)
+            this.nsp = { ...this.nsp, ...networkServiceProvider }
+          }
+          params.id = this.nsp.id
           const hasJobId = await this.executeApi(this.currentAction.api, params)
           if (!hasJobId) {
             await this.fetchData()
           }
           this.actionLoading = false
-          this.handleClose()
+          this.onCloseAction()
         } catch (error) {
           this.actionLoading = false
           this.$notification.error({
             message: 'Request Failed',
-            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+            description: error
           })
         }
       })
     },
-    handleClose () {
+    onCloseAction () {
       this.currentAction = {}
       this.showFormAction = false
+    },
+    addNetworkServiceProvider (args) {
+      return new Promise((resolve, reject) => {
+        let message = ''
+        api('addNetworkServiceProvider', args).then(async json => {
+          const jobId = json.addnetworkserviceproviderresponse.jobid
+          if (jobId) {
+            const result = await this.pollJob(jobId)
+            if (result.jobstatus === 2) {
+              message = result.jobresult.errortext
+              reject(message)
+              return
+            }
+            resolve(result.jobresult.networkserviceprovider)
+          }
+        }).catch(error => {
+          message = (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+          reject(message)
+        })
+      })
+    },
+    async pollJob (jobId) {
+      return new Promise(resolve => {
+        const asyncJobInterval = setInterval(() => {
+          api('queryAsyncJobResult', { jobId }).then(async json => {
+            const result = json.queryasyncjobresultresponse
+            if (result.jobstatus === 0) {
+              return
+            }
+
+            clearInterval(asyncJobInterval)
+            resolve(result)
+          })
+        }, 1000)
+      })
     },
     executeAction (action) {
       this.currentAction = action
@@ -335,10 +1170,13 @@ export default {
         })
       } else {
         this.showFormAction = true
-        const apiParams = store.getters.apis[action.api].params || []
-        this.currentAction.fieldParams = action.args.map(arg => {
-          return apiParams.filter(param => param.name === arg)[0]
-        }) || []
+        if (!action.component) {
+          const apiParams = store.getters.apis[action.api].params || []
+          this.currentAction.fieldParams = action.args.map(arg => {
+            return apiParams.filter(param => param.name === arg)[0]
+          }) || []
+          console.log(this.currentAction.fieldParams)
+        }
       }
     },
     async executeConfirmAction () {
@@ -360,18 +1198,19 @@ export default {
           await this.fetchData()
         }
         this.actionLoading = false
-        this.handleClose()
-      } catch (error) {
+        this.onCloseAction()
+      } catch (message) {
         this.actionLoading = false
         this.$notification.error({
           message: 'Request Failed',
-          description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+          description: message
         })
       }
     },
     executeApi (apiName, args) {
       return new Promise((resolve, reject) => {
         let hasJobId = false
+        let message = ''
         api(apiName, args).then(json => {
           for (const obj in json) {
             if (obj.includes('response')) {
@@ -394,13 +1233,11 @@ export default {
 
           resolve(hasJobId)
         }).catch(error => {
-          reject(error)
+          message = (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+          reject(message)
         })
       })
     }
   }
 }
 </script>
-
-<style lang="less" scoped>
-</style>
