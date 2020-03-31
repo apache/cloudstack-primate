@@ -419,7 +419,7 @@
           <div class="resource-detail-item__label">{{ $t('zone') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="global" />
-            <router-link v-if="!resource.zoneid.includes(',')" :to="{ path: '/zone/' + resource.zoneid }">{{ resource.zonename || resource.zoneid }}</router-link>
+            <router-link v-if="!resource.zoneid.includes(',') && this.isAdmin()" :to="{ path: '/zone/' + resource.zoneid }">{{ resource.zonename || resource.zoneid }}</router-link>
             <span v-else>{{ resource.zone || resource.zonename }}</span>
           </div>
         </div>
@@ -441,7 +441,7 @@
           <div class="resource-detail-item__label">{{ $t('domain') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="block" />
-            <router-link v-if="!resource.domainid.includes(',')" :to="{ path: '/domain/' + resource.domainid }">{{ resource.domain || resource.domainid }}</router-link>
+            <router-link v-if="!resource.domainid.includes(',') && (this.isAdmin() || (this.isDomainAdmin() && resource.domain !=='ROOT'))" :to="{ path: '/domain/' + resource.domainid }">{{ resource.domain || resource.domainid }}</router-link>
             <span v-else>{{ resource.domain }}</span>
           </div>
         </div>
@@ -688,6 +688,12 @@ export default {
     }
   },
   methods: {
+    isAdmin () {
+      return ['Admin'].includes(this.$store.getters.userInfo.roletype)
+    },
+    isDomainAdmin () {
+      return ['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype)
+    },
     toSize (kb) {
       if (!kb) {
         return '0 KB'
