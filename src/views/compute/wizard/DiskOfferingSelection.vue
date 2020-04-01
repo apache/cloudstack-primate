@@ -93,15 +93,7 @@ export default {
     }
   },
   created () {
-    this.dataItems = []
-    this.dataItems.push({
-      id: '0',
-      name: this.$t('noselect'),
-      diskSize: undefined,
-      miniops: undefined,
-      maxiops: undefined,
-      isCustomized: undefined
-    })
+    this.initDataItem()
   },
   computed: {
     options () {
@@ -139,11 +131,23 @@ export default {
     },
     items (newData, oldData) {
       if (newData && newData.length > 0) {
+        this.initDataItem()
         this.dataItems = this.dataItems.concat(newData)
       }
     }
   },
   methods: {
+    initDataItem () {
+      this.dataItems = []
+      this.dataItems.push({
+        id: '0',
+        name: this.$t('noselect'),
+        diskSize: undefined,
+        miniops: undefined,
+        maxiops: undefined,
+        isCustomized: undefined
+      })
+    },
     onSelectRow (value) {
       this.selectedRowKeys = value
       this.$emit('select-disk-offering-item', value[0])
