@@ -618,7 +618,8 @@ export default {
   provide () {
     return {
       vmFetchTemplates: this.fetchAllTemplates,
-      vmFetchIsos: this.fetchAllIsos
+      vmFetchIsos: this.fetchAllIsos,
+      vmFetchNetworks: this.fetchNetwork
     }
   },
   methods: {
@@ -662,6 +663,10 @@ export default {
       })
 
       this.$set(this.options, 'keyboards', keyboardType)
+    },
+    fetchNetwork () {
+      const param = this.params.networks
+      this.fetchOptions(param, 'networks')
     },
     resetData () {
       this.vm = {}
