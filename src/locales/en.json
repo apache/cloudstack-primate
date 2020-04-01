@@ -1261,5 +1261,10 @@
 "label.launch.zone": "Launch Zone",
 "label.done": "Done",
 "label.fix.errors": "Fix errors",
-"error.something.went.wrong.please.correct.the.following": "Something went wrong; please correct the following"
+"error.something.went.wrong.please.correct.the.following": "Something went wrong; please correct the following",
+"filter": "Filter",
+"featured": "Featured",
+"community": "Community",
+"selfexecutable": "Self",
+"sharedexecutable": "Shared"
 }
