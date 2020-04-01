@@ -615,13 +615,14 @@ export default {
   created () {
     this.fetchData()
   },
+  provide () {
+    return {
+      vmFetchTemplates: this.fetchAllTemplates,
+      vmFetchIsos: this.fetchAllIsos
+    }
+  },
   methods: {
     fetchData () {
-      // this.fetchOptions(this.params.zones, 'zones')
-      // this.fetchOptions(this.params.pods, 'pods')
-      // this.fetchOptions(this.params.clusters, 'clusters')
-      // this.fetchOptions(this.params.hosts, 'hosts')
-      // this.fetchOptions(this.params.groups, 'groups')
       _.each(this.params, (param, name) => {
         if (param.isLoad) {
           this.fetchOptions(param, name)
@@ -888,11 +889,14 @@ export default {
         })
       })
     },
-    fetchAllTemplates () {
+    fetchAllTemplates (filterKey) {
       const promises = []
       this.options.templates = []
       this.loading.templates = true
       this.templateFilter.forEach((filter) => {
+        if (filterKey && filterKey !== filter) {
+          return true
+        }
         promises.push(this.fetchTemplates(filter))
       })
       Promise.all(promises).then(response => {
@@ -907,11 +911,14 @@ export default {
         this.loading.templates = false
       })
     },
-    fetchAllIsos () {
+    fetchAllIsos (filterKey) {
       const promises = []
       this.options.isos = []
       this.loading.isos = true
       this.isoFilter.forEach((filter) => {
+        if (filterKey && filterKey !== filter) {
+          return true
+        }
         promises.push(this.fetchIsos(filter))
       })
       Promise.all(promises).then(response => {
@@ -928,6 +935,7 @@ export default {
     },
     onSelectZoneId (value) {
       this.zoneId = value
+      this.zone = _.find(this.options.zones, (option) => option.id === this.zoneId)
       this.zoneSelected = true
       this.form.setFieldsValue({
         clusterid: undefined,

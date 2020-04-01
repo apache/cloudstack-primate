@@ -17,11 +17,55 @@
 
 <template>
   <div>
-    <a-input-search
-      class="search-input"
-      placeholder="Search"
-      v-model="filter"
-      @search="filterDataSource"/>
+    <span class="filter-group">
+      <a-input-search
+        class="search-input"
+        placeholder="Search"
+        v-model="filter"
+        @search="filterDataSource">
+        <a-popover
+          placement="bottomRight"
+          slot="addonAfter"
+          trigger="click"
+          v-model="visibleFilter">
+          <template slot="content">
+            <a-form
+              style="width: 170px"
+              :form="form"
+              layout="vertical"
+              @submit="handleSubmit">
+              <a-form-item :label="$t('filter')">
+                <a-select
+                  allowClear
+                  v-decorator="['filter']">
+                  <a-select-option
+                    v-for="(opt) in filterOpts"
+                    :key="opt.id">{{ $t(opt.name) }}</a-select-option>
+                </a-select>
+              </a-form-item>
+              <div class="filter-group-button">
+                <a-button
+                  class="filter-group-button-clear"
+                  type="default"
+                  size="small"
+                  icon="stop"
+                  @click="onClear">Clear</a-button>
+                <a-button
+                  class="filter-group-button-search"
+                  type="primary"
+                  size="small"
+                  icon="search"
+                  @click="handleSubmit">Search</a-button>
+              </div>
+            </a-form>
+          </template>
+          <a-button
+            class="filter-group-button"
+            icon="filter"
+            size="small"/>
+        </a-popover>
+      </a-input-search>
+    </span>
     <a-spin :spinning="loading">
       <a-tabs
         tabPosition="top"
@@ -80,7 +124,21 @@ export default {
       filteredItems: this.items,
       checkedValue: '',
       dataSource: {},
-      itemCount: {}
+      itemCount: {},
+      visibleFilter: false,
+      filterOpts: [{
+        id: 'featured',
+        name: 'featured'
+      }, {
+        id: 'community',
+        name: 'community'
+      }, {
+        id: 'selfexecutable',
+        name: 'selfexecutable'
+      }, {
+        id: 'sharedexecutable',
+        name: 'sharedexecutable'
+      }]
     }
   },
   watch: {
@@ -99,6 +157,10 @@ export default {
       }
     }
   },
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
+  },
+  inject: ['vmFetchTemplates', 'vmFetchIsos'],
   methods: {
     mappingDataSource () {
       let mappedItems = {}
@@ -164,6 +226,28 @@ export default {
       }
 
       return arrResult
+    },
+    handleSubmit (e) {
+      e.preventDefault()
+      this.form.validateFields((err, values) => {
+        if (err) {
+          return
+        }
+        if (this.inputDecorator === 'template') {
+          this.vmFetchTemplates(values.filter)
+        } else {
+          this.vmFetchIsos(values.filter)
+        }
+      })
+    },
+    onClear () {
+      const field = { filter: undefined }
+      this.form.setFieldsValue(field)
+      if (this.inputDecorator === 'template') {
+        this.vmFetchTemplates()
+      } else {
+        this.vmFetchIsos()
+      }
     }
   }
 }
@@ -187,5 +271,33 @@ export default {
 
   /deep/.ant-tabs-nav-scroll {
     min-height: 45px;
+  }
+
+  .filter-group {
+    /deep/.ant-input-group-addon {
+      padding: 0 5px;
+    }
+
+    &-button {
+      background: inherit;
+      border: 0;
+      padding: 0;
+    }
+
+    &-button {
+      position: relative;
+      display: block;
+      min-height: 25px;
+
+      &-clear {
+        position: absolute;
+        left: 0;
+      }
+
+      &-search {
+        position: absolute;
+        right: 0;
+      }
+    }
   }
 </style>
