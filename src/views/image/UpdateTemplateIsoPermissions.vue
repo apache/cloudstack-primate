@@ -95,7 +95,7 @@
 import { api } from '@/api'
 
 export default {
-  name: 'UpdateTemplatePermissions',
+  name: 'UpdateTemplateIsoPermissions',
   props: {
     resource: {
       type: Object,
@@ -117,33 +117,39 @@ export default {
       accountError: false,
       projectError: false,
       showAccountSelect: true,
-      loading: false
+      loading: false,
+      isImageTypeIso: false
     }
   },
   computed: {
     accountsList () {
-      return this.accounts
+      return this.accounts.length > 0 ? this.accounts
         .filter(a =>
           this.selectedOperation === 'Add'
             ? !this.permittedAccounts.includes(a.name)
             : this.permittedAccounts.includes(a.name)
-        )
+        ) : this.accounts
     },
     projectsList () {
-      return this.projects
+      return this.projects > 0 ? this.projects
         .filter(p =>
           this.selectedOperation === 'Add'
             ? !this.permittedProjects.includes(p.id)
             : this.permittedProjects.includes(p.id)
-        )
+        ) : this.projects
     }
   },
   mounted () {
+    this.isImageTypeIso = this.$route.meta.name === 'iso'
     this.fetchData()
   },
   methods: {
     fetchData () {
-      this.fetchTemplatePermissions()
+      if (this.isImageTypeIso) {
+        this.fetchIsoPermissions()
+      } else {
+        this.fetchTemplatePermissions()
+      }
       if (this.selectedShareWith === 'Account') {
         this.selectedAccounts = []
         this.fetchAccounts()
@@ -189,6 +195,22 @@ export default {
         this.loading = false
       })
     },
+    fetchIsoPermissions () {
+      this.loading = true
+      api('listIsoPermissions', {
+        id: this.resource.id
+      }).then(response => {
+        const permission = response.listtemplatepermissionsresponse.templatepermission
+        if (permission && permission.account) {
+          this.permittedAccounts = permission.account
+        }
+        if (permission && permission.projectids) {
+          this.permittedProjects = permission.projectids
+        }
+      }).finally(e => {
+        this.loading = false
+      })
+    },
     handleChange (selectedItems) {
       if (this.selectedOperation === 'Add' || this.selectedOperation === 'Remove') {
         if (this.selectedShareWith === 'Account') {
@@ -216,7 +238,9 @@ export default {
         variableValue = this.projects.filter(p => this.selectedProjects.includes(p.name)).map(p => p.id).join(',')
       }
       this.loading = true
-      api('updateTemplatePermissions', {
+      const apiName = this.isImageTypeIso ? 'updateIsoPermissions' : 'updateTemplatePermissions'
+      const resourceType = this.isImageTypeIso ? 'ISO' : 'template'
+      api(apiName, {
         [variableKey]: variableValue,
         id: this.resource.id,
         ispublic: this.resource.isPublic,
@@ -226,12 +250,12 @@ export default {
       })
         .then(response => {
           this.$notification.success({
-            message: 'Successfully updated template permissions'
+            message: 'Successfully updated ' + resourceType + ' permissions'
           })
         })
         .catch(error => {
           this.$notification.error({
-            message: 'Failed to update template permissions',
+            message: 'Failed to update ' + resourceType + ' permissions',
             description: error.response.data.updatetemplatepermissions.errortext
           })
         })
