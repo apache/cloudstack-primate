@@ -44,21 +44,21 @@
                         :loading="loading.zones"
                       ></a-select>
                     </a-form-item>
-                    <a-form-item :label="this.$t('podId')">
+                    <a-form-item :label="this.$t('podId')" v-if="this.isAdmin()">
                       <a-select
                         v-decorator="['podid']"
                         :options="podSelectOptions"
                         :loading="loading.pods"
                       ></a-select>
                     </a-form-item>
-                    <a-form-item :label="this.$t('clusterid')">
+                    <a-form-item :label="this.$t('clusterid')" v-if="this.isAdmin()">
                       <a-select
                         v-decorator="['clusterid']"
                         :options="clusterSelectOptions"
                         :loading="loading.clusters"
                       ></a-select>
                     </a-form-item>
-                    <a-form-item :label="this.$t('hostId')">
+                    <a-form-item :label="this.$t('hostId')" v-if="this.isAdmin()">
                       <a-select
                         v-decorator="['hostid']"
                         :options="hostSelectOptions"
@@ -648,6 +648,9 @@ export default {
       this.zoneSelected = false
       this.form.resetFields()
       this.fetchData()
+    },
+    isAdmin () {
+      return ['Admin'].includes(this.$store.getters.userInfo.roletype)
     },
     updateFieldValue (name, value) {
       if (name === 'templateid') {
