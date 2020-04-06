@@ -446,6 +446,8 @@ export default {
             zoneid: _.get(this.zone, 'id'),
             canusefordeploy: true,
             projectid: store.getters.project.id,
+            domainid: store.getters.project.id ? null : store.getters.userInfo.domainid,
+            account: store.getters.project.id ? null : store.getters.userInfo.account,
             page: 1,
             pageSize: 10,
             keyword: undefined
