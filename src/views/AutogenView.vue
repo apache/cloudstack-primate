@@ -517,6 +517,13 @@ export default {
         this.loading = false
       })
     },
+    removeStringStartSubstringIfPresent (str, searchstr) {
+      var index = str.indexOf(searchstr)
+      if (index !== 0) {
+        return str
+      }
+      return str.slice(index + searchstr.length)
+    },
     onSearch (value) {
       this.searchQuery = value
       this.page = 1
@@ -563,7 +570,7 @@ export default {
         }
       }
       this.currentAction.loading = false
-      if (action.dataView && action.icon === 'edit') {
+      if (action.dataView && ['copy', 'edit'].includes(action.icon)) {
         this.fillEditFormFieldValues()
       }
     },
@@ -572,8 +579,11 @@ export default {
         return
       }
       var paramName = param.name
+      var extractedParamName = paramName.replace('ids', '').replace('id', '').toLowerCase()
+      extractedParamName = this.removeStringStartSubstringIfPresent(extractedParamName, 'source')
+      extractedParamName = this.removeStringStartSubstringIfPresent(extractedParamName, 'dest')
       var params = { listall: true }
-      const possibleName = 'list' + paramName.replace('ids', '').replace('id', '').toLowerCase() + 's'
+      const possibleName = 'list' + extractedParamName + 's'
       var possibleApi
       if (this.currentAction.mapping && param.name in this.currentAction.mapping && this.currentAction.mapping[param.name].api) {
         possibleApi = this.currentAction.mapping[param.name].api
@@ -655,6 +665,7 @@ export default {
         let fieldName = null
         if (field.type === 'uuid' || field.type === 'list' || field.name === 'account' || (this.currentAction.mapping && field.name in this.currentAction.mapping)) {
           fieldName = field.name.replace('ids', 'name').replace('id', 'name')
+          fieldName = this.removeStringStartSubstringIfPresent(fieldName, 'source')
         } else {
           fieldName = field.name
         }
