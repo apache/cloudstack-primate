@@ -345,14 +345,14 @@ export default {
         const resource = this.treeVerticalData.filter(item => item.id === this.selectedTreeKey)
 
         if (resource && resource[0]) {
-          this.treeVerticalData.filter((item, index) => {
-            if (item.id === this.selectedTreeKey) {
-              this.$delete(this.treeVerticalData, index)
-              if (index > 0 && this.treeVerticalData.length > 0) {
-                this.onSelect([this.treeVerticalData[index - 1].id], { selected: true })
+          for (var i = 0; i < this.treeVerticalData.length; ++i) {
+            if (this.treeVerticalData[i].id === this.selectedTreeKey) {
+              this.$delete(this.treeVerticalData, i)
+              if (i > 0 && this.treeVerticalData.length > 0) {
+                this.onSelect([this.treeVerticalData[0].id], { selected: true })
               }
             }
-          })
+          }
         }
       } else {
         jsonResponse = this.createResourceData(jsonResponse)
