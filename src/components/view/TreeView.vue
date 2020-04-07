@@ -349,7 +349,7 @@ export default {
             if (this.treeVerticalData[i].id === this.selectedTreeKey) {
               this.$delete(this.treeVerticalData, i)
               if (i > 0 && this.treeVerticalData.length > 0) {
-                this.onSelect([this.treeVerticalData[0].id], { selected: true })
+                this.onSelect([this.treeVerticalData[i - 1].id], { selected: true })
               }
             }
           }
