@@ -102,6 +102,11 @@ export default {
   },
   inject: ['provideSetNsp', 'provideExecuteAction'],
   watch: {
+    loading (newValue, oldValue) {
+      if (newValue !== oldValue && !newValue) {
+        this.fetchData()
+      }
+    },
     nsp (newData, oldData) {
       if (newData && Object.keys(newData).length > 0) {
         this.nsp = newData

@@ -31,6 +31,7 @@
           </span>
           <provider-item
             v-if="tabKey===item.title"
+            :loading="loading"
             :itemNsp="item"
             :nsp="nsps[item.title]"
             :resourceId="resource.id"
