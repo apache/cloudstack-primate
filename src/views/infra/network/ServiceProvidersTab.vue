@@ -158,7 +158,6 @@ export default {
     return {
       nsps: {},
       nsp: {},
-      details: ['name', 'state', 'id', 'servicelist'],
       fetchLoading: false,
       actionLoading: false,
       showFormAction: false,
@@ -583,7 +582,7 @@ export default {
                   value: (record) => { return record.physicalnetworkid }
                 }
               },
-              columns: ['hostname', 'status']
+              columns: ['ipaddress', 'status', 'action']
             }
           ]
         },
@@ -674,7 +673,7 @@ export default {
                   value: (record) => { return record.physicalnetworkid }
                 }
               },
-              columns: ['name', 'zone', 'type', 'status', 'action']
+              columns: ['name', 'zone', 'type', 'status']
             }
           ]
         },
@@ -1025,7 +1024,7 @@ export default {
                   value: (record) => { return false }
                 }
               },
-              columns: ['hostname', 'zonename', 'state', 'action']
+              columns: ['hostname', 'zonename', 'state']
             }
           ]
         },
@@ -1075,7 +1074,7 @@ export default {
                   value: () => { return true }
                 }
               },
-              columns: ['hostname', 'zonename', 'state', 'action']
+              columns: ['hostname', 'zonename', 'state']
             }
           ]
         }

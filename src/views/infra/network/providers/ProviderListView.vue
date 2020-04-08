@@ -17,7 +17,7 @@
 
 <template>
   <div>
-    <strong>{{ title }}</strong>
+    <strong>{{ $t(title) }}</strong>
     <a-table
       style="margin-top: 10px;"
       size="small"
@@ -34,7 +34,17 @@
             <span v-if="resource.name==='BigSwitchBcf'">{{ $t('label.delete.BigSwitchBcf') }}</span>
             <span v-else-if="resource.name==='BrocadeVcs'">{{ $t('label.delete.BrocadeVcs') }}</span>
             <span v-else-if="resource.name==='NiciraNvp'">{{ $t('label.delete.NiciaNvp') }}</span>
-            <span v-else-if="resource.name==='CiscoVnmc'">{{ $t('label.delete.CiscoVnmc') }}</span>
+            <span v-else-if="resource.name==='F5BigIp'">{{ $t('label.delete.F5BigIp') }}</span>
+            <span v-else-if="resource.name==='JuniperSRX'">{{ $t('label.delete.JuniperSRX') }}</span>
+            <span v-else-if="resource.name==='Netscaler'">{{ $t('label.delete.Netscaler') }}</span>
+            <span v-else-if="resource.name==='Opendaylight'">{{ $t('label.delete.Opendaylight') }}</span>
+            <span v-else-if="resource.name==='PaloAlto'">{{ $t('label.delete.PaloAlto') }}</span>
+            <span v-else-if="resource.name==='CiscoVnmc' && title==='listCiscoVnmcResources'">
+              {{ $t('label.delete.CiscoVnmc') }}
+            </span>
+            <span v-else-if="resource.name==='CiscoVnmc' && title==='listCiscoAsa1000vResources'">
+              {{ $t('label.delete.Cisco1000Vnmc') }}
+            </span>
           </template>
           <a-button
             type="danger"
@@ -136,6 +146,20 @@ export default {
       let name
       const params = {}
       switch (this.resource.name) {
+        case 'BigSwitchBcf':
+          label = 'label.delete.NiciaNvp'
+          name = record.hostname
+          apiName = 'deleteBigSwitchBcfDevice'
+          confirmation = 'message.confirm.delete.BigSwitchBcf'
+          params.bcfdeviceid = record.bcfdeviceid
+          break
+        case 'F5BigIp':
+          label = 'label.delete.F5BigIp'
+          name = record.ipaddress
+          apiName = 'deleteF5LoadBalancer'
+          confirmation = 'message.confirm.delete.F5BigIp'
+          params.lbdeviceid = record.lbdeviceid
+          break
         case 'NiciraNvp':
           label = 'label.delete.NiciaNvp'
           name = record.hostname
@@ -150,11 +174,46 @@ export default {
           confirmation = 'message.confirm.delete.BrocadeVcs'
           params.vcsdeviceid = record.vcsdeviceid
           break
+        case 'JuniperSRX':
+          label = 'label.delete.JuniperSRX'
+          name = record.ipaddress
+          apiName = 'deleteSrxFirewall'
+          confirmation = 'message.confirm.delete.JuniperSRX'
+          params.fwdeviceid = record.fwdeviceid
+          break
+        case 'Netscaler':
+          label = 'label.delete.Netscaler'
+          name = record.ipaddress
+          apiName = 'deleteNetscalerLoadBalancer'
+          confirmation = 'message.confirm.delete.Netscaler'
+          params.lbdeviceid = record.lbdeviceid
+          break
+        case 'Opendaylight':
+          label = 'label.delete.Opendaylight'
+          name = record.name
+          apiName = 'deleteOpenDaylightController'
+          confirmation = 'message.confirm.delete.Opendaylight'
+          params.id = record.id
+          break
+        case 'PaloAlto':
+          label = 'label.delete.PaloAlto'
+          name = record.ipaddress
+          apiName = 'deletePaloAltoFirewall'
+          confirmation = 'message.confirm.delete.PaloAlto'
+          params.fwdeviceid = record.fwdeviceid
+          break
         case 'CiscoVnmc':
-          label = 'label.delete.CiscoVnmc'
+          if (this.title === 'listCiscoVnmcResources') {
+            label = 'label.delete.CiscoVnmc'
+            apiName = 'deleteCiscoVnmcResource'
+            confirmation = 'message.confirm.delete.CiscoVnmc'
+          } else {
+            label = 'label.delete.Cisco1000Vnmc'
+            apiName = 'deleteCiscoAsa1000vResource'
+            confirmation = 'message.confirm.delete.Cisco1000Vnmc'
+          }
+
           name = record.hostname
-          apiName = 'deleteCiscoAsa1000vResource'
-          confirmation = 'message.confirm.delete.CiscoVnmc'
           params.resourceid = record.resourceid
           break
         default:
