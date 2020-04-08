@@ -168,6 +168,14 @@ export default {
         this.oldTreeViewData = this.treeViewData
         this.rootKey = this.treeViewData[0].key
       }
+
+      if (Object.keys(this.resource).length > 0) {
+        const resourceIndex = this.treeVerticalData.findIndex(item => item.id === this.resource.id)
+        if (resourceIndex === -1) {
+          this.resource = this.treeVerticalData[0] || {}
+          this.$el.querySelector(`[title=${this.resource.name}]`).click()
+        }
+      }
     },
     treeSelected () {
       if (Object.keys(this.treeSelected).length === 0) {
@@ -416,8 +424,15 @@ export default {
     getResponseJsonData (json) {
       let responseName
       let objectName
+      let hasJobId = false
       for (const key in json) {
         if (key.includes('response')) {
+          for (const res in json[key]) {
+            if (res === 'jobid') {
+              hasJobId = true
+              break
+            }
+          }
           responseName = key
           break
         }
@@ -430,6 +445,9 @@ export default {
 
         objectName = key
         break
+      }
+      if (hasJobId) {
+        return {}
       }
       return json[responseName][objectName]
     },
