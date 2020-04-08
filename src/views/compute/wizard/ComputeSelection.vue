@@ -88,11 +88,28 @@ export default {
     },
     tableSource () {
       return this.computeItems.map((item) => {
+        var cpuNumberValue = item.cpunumber + ''
+        var cpuSpeedValue = (item.cpuspeed !== null && item.cpuspeed !== undefined && item.cpuspeed > 0) ? parseFloat(item.cpuspeed / 1000.0).toFixed(2) + '' : ''
+        var ramValue = item.memory + ''
+        if (item.iscustomized === true) {
+          cpuNumberValue = ''
+          ramValue = ''
+          if ('serviceofferingdetails' in item &&
+            'mincpunumber' in item.serviceofferingdetails &&
+            'maxcpunumber' in item.serviceofferingdetails) {
+            cpuNumberValue = item.serviceofferingdetails.mincpunumber + '-' + item.serviceofferingdetails.maxcpunumber
+          }
+          if ('serviceofferingdetails' in item &&
+            'minmemory' in item.serviceofferingdetails &&
+            'maxmemory' in item.serviceofferingdetails) {
+            ramValue = item.serviceofferingdetails.minmemory + '-' + item.serviceofferingdetails.maxmemory
+          }
+        }
         return {
           key: item.id,
           name: item.name,
-          cpu: `${item.cpunumber} CPU x ${parseFloat(item.cpuspeed / 1000.0).toFixed(2)} Ghz`,
-          ram: `${item.memory} MB`
+          cpu: cpuNumberValue.length > 0 ? `${cpuNumberValue} CPU x ${cpuSpeedValue} Ghz` : '',
+          ram: ramValue.length > 0 ? `${ramValue} MB` : ''
         }
       })
     },
