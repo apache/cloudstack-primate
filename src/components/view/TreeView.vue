@@ -61,17 +61,14 @@
             v-for="tab in tabs"
             :tab="$t(tab.name)"
             :key="tab.name"
-            v-if="checkShowTabDetail(tab)">
+            v-if="checkShowTabDetail(tab.name)">
             <component
               :is="tab.component"
               :resource="resource"
               :items="items"
               :tab="tabActive"
               :loading="loading"
-              :bordered="false"
-              :params="tab.params"
-              :fields="tab.fields"
-              :disabled="resource && resource.level === 0" />
+              :bordered="false" />
           </a-tab-pane>
         </a-tabs>
       </a-card>
@@ -170,14 +167,6 @@ export default {
       if (this.treeViewData.length > 0) {
         this.oldTreeViewData = this.treeViewData
         this.rootKey = this.treeViewData[0].key
-      }
-
-      if (Object.keys(this.resource).length > 0) {
-        const resourceIndex = this.treeVerticalData.findIndex(item => item.id === this.resource.id)
-        if (resourceIndex === -1) {
-          this.resource = this.treeVerticalData[0] || {}
-          this.$el.querySelector(`[title=${this.resource.name}]`).click()
-        }
       }
     },
     treeSelected () {
@@ -427,15 +416,8 @@ export default {
     getResponseJsonData (json) {
       let responseName
       let objectName
-      let hasJobId = false
       for (const key in json) {
         if (key.includes('response')) {
-          for (const res in json[key]) {
-            if (res === 'jobid') {
-              hasJobId = true
-              break
-            }
-          }
           responseName = key
           break
         }
@@ -449,17 +431,19 @@ export default {
         objectName = key
         break
       }
-      if (hasJobId) {
-        return {}
-      }
       return json[responseName][objectName]
     },
-    checkShowTabDetail (tab) {
-      if ('show' in tab) {
-        return tab.show(this.resource, this.$route, store.getters.userInfo)
+    checkShowTabDetail (tabKey) {
+      // get tab item from the route
+      const itemTab = this.tabs.filter(item => item.name === tabKey)
+
+      // check tab item not exists
+      if (!itemTab || !itemTab[0]) {
+        return false
       }
+
       // get permission from the route
-      const permission = tab.permission ? tab.permission[0] : ''
+      const permission = itemTab[0].permission ? itemTab[0].permission[0] : ''
 
       // check permission not exists
       if (!permission || permission === '') {
