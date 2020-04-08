@@ -134,13 +134,31 @@
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
                   <div v-if="zoneSelected">
-                    <compute-selection
+                    <compute-offering-selection
                       :compute-items="options.serviceOfferings"
                       :value="serviceOffering ? serviceOffering.id : ''"
                       :loading="loading.serviceOfferings"
                       @select-compute-item="($event) => updateComputeOffering($event)"
                       @handle-search-filter="($event) => handleSearchFilter('serviceOfferings', $event)"
-                    ></compute-selection>
+                    ></compute-offering-selection>
+                    <compute-selection
+                      v-if="serviceOffering && serviceOffering.iscustomized"
+                      cpunumber-input-decorator="cpunumber"
+                      cpuspeed-input-decorator="cpuspeed"
+                      memory-input-decorator="memory"
+                      :isConstrained="'serviceofferingdetails' in serviceOffering"
+                      :minCpu="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.mincpunumber*1 : 1"
+                      :maxCpu="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.maxcpunumber*1 : Number.MAX_SAFE_INTEGER"
+                      :minMemory="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.minmemory*1 : 1"
+                      :maxMemory="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.maxmemory*1 : Number.MAX_SAFE_INTEGER"
+                      @update-compute-cpunumber="updateFieldValue"
+                      @update-compute-cpuspeed="updateFieldValue"
+                      @update-compute-memory="updateFieldValue" />
+                    <a-form-item class="form-item-hidden" v-if="serviceOffering && serviceOffering.iscustomized">
+                      <a-input v-decorator="['cpunumber']"/>
+                      <a-input v-decorator="['cpuspeed']" v-if="serviceOffering && !(serviceOffering.cpuspeed > 0)"/>
+                      <a-input v-decorator="['memory']"/>
+                    </a-form-item>
                   </div>
                 </template>
               </a-step>
@@ -261,6 +279,7 @@ import { mixin, mixinDevice } from '@/utils/mixin.js'
 import store from '@/store'
 
 import InfoCard from '@/components/view/InfoCard'
+import ComputeOfferingSelection from './wizard/ComputeOfferingSelection'
 import ComputeSelection from './wizard/ComputeSelection'
 import DiskOfferingSelection from '@views/compute/wizard/DiskOfferingSelection'
 import DiskSizeSelection from '@views/compute/wizard/DiskSizeSelection'
@@ -281,6 +300,7 @@ export default {
     DiskSizeSelection,
     DiskOfferingSelection,
     InfoCard,
+    ComputeOfferingSelection,
     ComputeSelection
   },
   props: {
@@ -743,6 +763,17 @@ export default {
         }
         // step 3: select service offering
         deployVmData.serviceofferingid = values.computeofferingid
+        if (values.cpunumber || values.cpuspeed || values.memory) {
+          if (values.cpunumber) {
+            deployVmData['details[0].cpuNumber'] = values.cpunumber
+          }
+          if (values.cpuspeed) {
+            deployVmData['details[0].cpuSpeed'] = values.cpuspeed
+          }
+          if (values.memory) {
+            deployVmData['details[0].memory'] = values.memory
+          }
+        }
         // step 4: select disk offering
         deployVmData.diskofferingid = values.diskofferingid
         if (values.size) {

@@ -16,139 +16,121 @@
 // under the License.
 
 <template>
-  <div>
-    <a-input-search
-      style="width: 25vw;float: right;margin-bottom: 10px; z-index: 8"
-      placeholder="Search"
-      v-model="filter"
-      @search="handleSearch" />
-    <a-table
-      :columns="columns"
-      :dataSource="tableSource"
-      :pagination="{showSizeChanger: true}"
-      :rowSelection="rowSelection"
-      :loading="loading"
-      size="middle"
-      @change="handleTableChange"
-      :scroll="{ y: 225 }"
-    >
-      <span slot="cpuTitle"><a-icon type="appstore" /> {{ $t('cpu') }}</span>
-      <span slot="ramTitle"><a-icon type="bulb" /> {{ $t('memory') }}</span>
-    </a-table>
-  </div>
+  <a-col>
+    <a-row>
+      <a-col>
+        <a-form-item :label="this.$t('cpunumber')">
+          <a-row>
+            <a-col :span="10" v-show="isConstrained">
+              <a-slider
+                :min="minCpu"
+                :max="maxCpu"
+                v-model="cpuNumberInputValue"
+                @change="($event) => updateComputeCpuNumber($event)"
+              />
+            </a-col>
+            <a-col :span="4">
+              <a-input-number
+                v-model="cpuNumberInputValue"
+                :formatter="value => `${value}`"
+                @change="($event) => updateComputeCpuNumber($event)"
+              />
+            </a-col>
+          </a-row>
+        </a-form-item>
+      </a-col>
+      <a-col v-show="!isConstrained">
+        <a-form-item :label="this.$t('cpuspeed')">
+          <a-input-number
+            v-model="cpuSpeedInputValue"
+            @change="($event) => updateComputeCpuSpeed($event)"
+          />
+        </a-form-item>
+      </a-col>
+    </a-row>
+    <a-row>
+      <a-form-item :label="this.$t('memory')">
+        <a-row>
+          <a-col :span="10" v-show="isConstrained">
+            <a-slider
+              :min="minMemory"
+              :max="maxMemory"
+              v-model="memoryInputValue"
+              @change="($event) => updateComputeMemory($event)"
+            />
+          </a-col>
+          <a-col :span="4">
+            <a-input-number
+              v-model="memoryInputValue"
+              :formatter="value => `${value}`"
+              @change="($event) => updateComputeMemory($event)"
+            />
+          </a-col>
+        </a-row>
+      </a-form-item>
+    </a-row>
+  </a-col>
 </template>
 
 <script>
 export default {
   name: 'ComputeSelection',
   props: {
-    computeItems: {
-      type: Array,
-      default: () => []
+    isConstrained: {
+      type: Boolean,
+      default: true
     },
-    value: {
+    minCpu: {
+      type: Number,
+      default: 1
+    },
+    maxCpu: {
+      type: Number,
+      default: 2
+    },
+    minMemory: {
+      type: Number,
+      default: 1
+    },
+    maxMemory: {
+      type: Number,
+      default: 256
+    },
+    cpunumberInputDecorator: {
       type: String,
       default: ''
     },
-    loading: {
-      type: Boolean,
-      default: false
+    cpuspeedInputDecorator: {
+      type: String,
+      default: ''
+    },
+    memoryInputDecorator: {
+      type: String,
+      default: ''
     }
   },
   data () {
     return {
-      filter: '',
-      columns: [
-        {
-          dataIndex: 'name',
-          title: this.$t('serviceOfferingId'),
-          width: '40%'
-        },
-        {
-          dataIndex: 'cpu',
-          slots: { title: 'cpuTitle' },
-          width: '30%'
-        },
-        {
-          dataIndex: 'ram',
-          slots: { title: 'ramTitle' },
-          width: '30%'
-        }
-      ],
-      selectedRowKeys: []
-    }
-  },
-  computed: {
-    options () {
-      return {
-        page: 1,
-        pageSize: 10,
-        keyword: ''
-      }
-    },
-    tableSource () {
-      return this.computeItems.map((item) => {
-        var cpuNumberValue = item.cpunumber + ''
-        var cpuSpeedValue = (item.cpuspeed !== null && item.cpuspeed !== undefined && item.cpuspeed > 0) ? parseFloat(item.cpuspeed / 1000.0).toFixed(2) + '' : ''
-        var ramValue = item.memory + ''
-        if (item.iscustomized === true) {
-          cpuNumberValue = ''
-          ramValue = ''
-          if ('serviceofferingdetails' in item &&
-            'mincpunumber' in item.serviceofferingdetails &&
-            'maxcpunumber' in item.serviceofferingdetails) {
-            cpuNumberValue = item.serviceofferingdetails.mincpunumber + '-' + item.serviceofferingdetails.maxcpunumber
-          }
-          if ('serviceofferingdetails' in item &&
-            'minmemory' in item.serviceofferingdetails &&
-            'maxmemory' in item.serviceofferingdetails) {
-            ramValue = item.serviceofferingdetails.minmemory + '-' + item.serviceofferingdetails.maxmemory
-          }
-        }
-        return {
-          key: item.id,
-          name: item.name,
-          cpu: cpuNumberValue.length > 0 ? `${cpuNumberValue} CPU x ${cpuSpeedValue} Ghz` : '',
-          ram: ramValue.length > 0 ? `${ramValue} MB` : ''
-        }
-      })
-    },
-    rowSelection () {
-      return {
-        type: 'radio',
-        selectedRowKeys: this.selectedRowKeys,
-        onChange: this.onSelectRow
-      }
-    }
-  },
-  watch: {
-    value (newValue, oldValue) {
-      if (newValue && newValue !== oldValue) {
-        this.selectedRowKeys = [newValue]
-      }
+      cpuNumberInputValue: 1,
+      cpuSpeedInputValue: 1,
+      memoryInputValue: 1
     }
   },
   methods: {
-    onSelectRow (value) {
-      this.selectedRowKeys = value
-      this.$emit('select-compute-item', value[0])
+    updateComputeCpuNumber (value) {
+      console.log('hfhkjdhfskj')
+      this.$emit('update-compute-cpunumber', this.cpunumberInputDecorator, value)
     },
-    handleSearch (value) {
-      this.filter = value
-      this.options.keyword = this.filter
-      this.$emit('handle-search-filter', this.options)
+    updateComputeCpuSpeed (value) {
+      this.$emit('update-compute-cpuspeed', this.cpuspeedInputDecorator, value)
     },
-    handleTableChange (pagination) {
-      this.options.page = pagination.current
-      this.options.pageSize = pagination.pageSize
-      this.$emit('handle-search-filter', this.options)
+    updateComputeMemory (value) {
+      this.$emit('update-compute-memory', this.memoryInputDecorator, value)
     }
   }
 }
 </script>
 
-<style lang="less" scoped>
-  .ant-table-wrapper {
-    margin: 2rem 0;
-  }
+<style scoped>
+
 </style>
