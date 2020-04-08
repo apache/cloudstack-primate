@@ -256,7 +256,9 @@ export default {
         .catch(error => {
           this.$notification.error({
             message: 'Failed to update ' + resourceType + ' permissions',
-            description: error.response.data.updatetemplatepermissions.errortext
+            description: this.isImageTypeIso
+              ? error.response.data.updateisopermissions.errortext
+              : error.response.data.updatetemplatepermissions.errortext
           })
         })
         .finally(e => {
