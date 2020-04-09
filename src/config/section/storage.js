@@ -159,15 +159,35 @@ export default {
           }
         },
         {
+          api: 'recoverVolume',
+          icon: 'medicine-box',
+          label: 'Recover Volume',
+          dataView: true,
+          show: (record, store) => {
+            return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) || store.getters.features.allowuserexpungerecovervolume) && record.state === 'Destroy'
+          }
+        },
+        {
           api: 'deleteVolume',
           icon: 'delete',
           label: 'Delete Volume',
           dataView: true,
           groupAction: true,
-          show: (record, store) => { // g_allowUserExpungeRecoverVolume
+          show: (record, store) => {
             return ['Expunging', 'Expunged', 'UploadError'].includes(record.state) ||
-              (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && record.state === 'Destroy') ||
-              (['Allocated', 'Uploaded'].includes(record.state) && record.type !== 'ROOT')
+              ((['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) || store.getters.features.allowuserexpungerecovervolume) && record.state === 'Destroy')
+          }
+        },
+        {
+          api: 'destroyVolume',
+          icon: 'delete',
+          label: 'Destroy Volume',
+          dataView: true,
+          args: (record, store) => {
+            return (!['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && !store.getters.features.allowuserexpungerecovervolumestore) ? [] : ['expunge']
+          },
+          show: (record, store) => {
+            return (['Allocated', 'Uploaded'].includes(record.state) && record.type !== 'ROOT')
           }
         }
       ]
