@@ -973,7 +973,6 @@ export default {
     },
     onSelectZoneId (value) {
       this.zoneId = value
-      this.zone = _.find(this.options.zones, (option) => option.id === this.zoneId)
       this.zoneSelected = true
       this.form.setFieldsValue({
         clusterid: undefined,
