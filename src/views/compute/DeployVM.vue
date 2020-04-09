@@ -115,6 +115,17 @@
                           :loading="loading.isos"
                           @update-template-iso="updateFieldValue"
                         ></template-iso-selection>
+                        <a-form-item :label="this.$t('hypervisor')">
+                          <a-select
+                            v-decorator="['hypervisor', {
+                              initialValue: hypervisorSelectOptions && hypervisorSelectOptions.length > 0 ? hypervisorSelectOptions[0].value : null,
+                              rules: [{ required: true, message: 'Please select option' }]
+                            }]"
+                            :options="hypervisorSelectOptions"
+                            @change="value => this.hypervisor = value"
+                          >
+                          </a-select>
+                        </a-form-item>
                       </p>
                     </a-card>
                     <a-form-item class="form-item-hidden">
@@ -317,6 +328,7 @@ export default {
       options: {
         templates: [],
         isos: [],
+        hypervisors: [],
         serviceOfferings: [],
         diskOfferings: [],
         zones: [],
@@ -333,6 +345,7 @@ export default {
         deploy: false,
         templates: false,
         isos: false,
+        hypervisors: false,
         serviceOfferings: false,
         diskOfferings: false,
         affinityGroups: false,
@@ -347,6 +360,7 @@ export default {
       instanceConfig: [],
       template: {},
       iso: {},
+      hypervisor: '',
       serviceOffering: {},
       diskOffering: {},
       affinityGroups: [],
@@ -433,6 +447,12 @@ export default {
         zones: {
           list: 'listZones'
         },
+        hypervisors: {
+          list: 'listHypervisors',
+          options: {
+            zoneid: _.get(this.zone, 'id')
+          }
+        },
         affinityGroups: {
           list: 'listAffinityGroups',
           options: {
@@ -497,6 +517,14 @@ export default {
         }
       })
     },
+    hypervisorSelectOptions () {
+      return this.options.hypervisors.map((hypervisor) => {
+        return {
+          label: hypervisor.name,
+          value: hypervisor.name
+        }
+      })
+    },
     podSelectOptions () {
       return this.options.pods.map((pod) => {
         return {
@@ -547,6 +575,8 @@ export default {
     instanceConfig (instanceConfig) {
       this.template = _.find(this.options.templates, (option) => option.id === instanceConfig.templateid)
       this.iso = _.find(this.options.isos, (option) => option.id === instanceConfig.isoid)
+      var hypervisorItem = _.find(this.options.hypervisors, (option) => option.name === instanceConfig.hypervisor)
+      this.hypervisor = hypervisorItem ? hypervisorItem.name : null
       this.serviceOffering = _.find(this.options.serviceOfferings, (option) => option.id === instanceConfig.computeofferingid)
       this.diskOffering = _.find(this.options.diskOfferings, (option) => option.id === instanceConfig.diskofferingid)
       this.zone = _.find(this.options.zones, (option) => option.id === instanceConfig.zoneid)
@@ -571,6 +601,9 @@ export default {
         this.vm.templatename = this.iso.displaytext
         this.vm.ostypeid = this.iso.ostypeid
         this.vm.ostypename = this.iso.ostypename
+        if (this.hypervisor) {
+          this.vm.hypervisor = this.hypervisor
+        }
       }
 
       if (this.serviceOffering) {
@@ -760,6 +793,9 @@ export default {
         }
         if (values.rootdisksize && values.rootdisksize > 0) {
           deployVmData.rootdisksize = values.rootdisksize
+        }
+        if (values.hypervisor && values.hypervisor.length > 0) {
+          deployVmData.hypervisor = values.hypervisor
         }
         // step 3: select service offering
         deployVmData.serviceofferingid = values.computeofferingid
