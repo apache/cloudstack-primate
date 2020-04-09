@@ -776,8 +776,8 @@ export default {
         deployVmData.hostid = values.hostid
         deployVmData.group = values.group
         deployVmData.keyboard = values.keyboard
-        if (values.keyboard && values.keyboard.length > 0) {
-          deployVmData.userdata = encodeURIComponent(btoa(this.sanitizeReverse(values.keyboard)))
+        if (values.userdata && values.userdata.length > 0) {
+          deployVmData.userdata = encodeURIComponent(btoa(this.sanitizeReverse(values.userdata)))
         }
         // step 2: select template/iso
         if (this.tabKey === 'templateid') {
@@ -973,6 +973,7 @@ export default {
     },
     onSelectZoneId (value) {
       this.zoneId = value
+      this.zone = _.find(this.options.zones, (option) => option.id === value)
       this.zoneSelected = true
       this.form.setFieldsValue({
         clusterid: undefined,
