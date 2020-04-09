@@ -81,6 +81,10 @@ export default {
     itemCount: {
       type: Number,
       default: 0
+    },
+    osType: {
+      type: String,
+      default: ''
     }
   },
   data () {
@@ -90,16 +94,9 @@ export default {
       pageSize: 10
     }
   },
-  created () {
+  mounted () {
     this.value = this.selected
     this.$emit('emit-update-template-iso', this.inputDecorator, this.value)
-  },
-  watch: {
-    inputDecorator (value) {
-      if (value === 'templateid') {
-        this.value = this.selected
-      }
-    }
   },
   computed: {
     pagination () {

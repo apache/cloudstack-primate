@@ -68,15 +68,18 @@
     </span>
     <a-spin :spinning="loading">
       <a-tabs
-        tabPosition="top"
         :animated="false"
-        :defaultActiveKey="Object.keys(dataSource)[0]">
+        :defaultActiveKey="Object.keys(dataSource)[0]"
+        tabPosition="top"
+        v-model="osType"
+        @change="changeOsName">
         <a-tab-pane v-for="(osList, osName) in dataSource" :key="osName">
           <span slot="tab">
             <os-logo :os-name="osName"></os-logo>
           </span>
           <TemplateIsoRadioGroup
-            :osType="osName"
+            v-if="osType===osName"
+            :osType="osType"
             :osList="dataSource[osName]"
             :input-decorator="inputDecorator"
             :selected="checkedValue"
@@ -138,7 +141,8 @@ export default {
       }, {
         id: 'sharedexecutable',
         name: 'sharedexecutable'
-      }]
+      }],
+      osType: ''
     }
   },
   watch: {
@@ -150,6 +154,7 @@ export default {
         this.checkedValue = items[0].id
       }
       this.dataSource = this.mappingDataSource()
+      this.osType = Object.keys(this.dataSource)[0]
     },
     inputDecorator (newValue, oldValue) {
       if (newValue !== oldValue) {
@@ -186,6 +191,7 @@ export default {
       return mappedItems
     },
     updateTemplateIso (name, id) {
+      this.checkedValue = id
       this.$emit('update-template-iso', name, id)
     },
     filterDataSource (strQuery) {
@@ -248,6 +254,9 @@ export default {
       } else {
         this.vmFetchIsos()
       }
+    },
+    changeOsName (value) {
+      this.osType = value
     }
   }
 }
