@@ -19,7 +19,7 @@ export default {
   name: 'offering',
   title: 'Offerings',
   icon: 'shopping',
-  permission: ['listServiceOfferings'],
+  permission: ['listServiceOfferings', 'createDomain'],
   children: [
     {
       name: 'computeoffering',
