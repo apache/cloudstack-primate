@@ -226,7 +226,9 @@
         :loading="loading"
         :columns="columns"
         :items="items"
+        :removedItemCount="removedItemCount"
         @refresh="this.fetchData"
+        @selection-changed="this.onListViewSelectionChange"
         v-if="!treeView" />
       <a-pagination
         class="row-element"
@@ -301,6 +303,7 @@ export default {
       searchQuery: '',
       resource: {},
       selectedRowKeys: [],
+      removedItemCount: 0,
       currentAction: {},
       showAction: false,
       dataView: false,
@@ -522,6 +525,9 @@ export default {
       this.page = 1
       this.fetchData()
     },
+    onListViewSelectionChange (selectedKeys) {
+      this.selectedRowKeys = selectedKeys
+    },
     closeAction () {
       this.currentAction.loading = false
       this.showAction = false
@@ -666,13 +672,22 @@ export default {
     },
     handleSubmit (e) {
       e.preventDefault()
+      this.removedItemCount = 0
       this.form.validateFields((err, values) => {
         console.log(values)
         if (!err) {
           this.currentAction.loading = true
           const params = {}
-          if ('id' in this.resource && this.currentAction.params.map(i => { return i.name }).includes('id')) {
-            params.id = this.resource.id
+          if (this.dataView) {
+            if ('id' in this.resource && this.currentAction.params.map(i => { return i.name }).includes('id')) {
+              params.id = this.resource.id
+            }
+          } else {
+            if (!this.treeView && this.selectedRowKeys && this.selectedRowKeys.length > 0) {
+              if (this.currentAction.params.map(i => { return i.name }).includes('ids')) {
+                params.ids = this.selectedRowKeys.join()
+              }
+            }
           }
           for (const key in values) {
             const input = values[key]
@@ -712,7 +727,7 @@ export default {
 
           if (this.currentAction.mapping) {
             for (const key in this.currentAction.mapping) {
-              if (!this.currentAction.mapping[key].value) {
+              if (!this.currentAction.mapping[key].value || key in params) {
                 continue
               }
               params[key] = this.currentAction.mapping[key].value(this.resource, params)
@@ -726,6 +741,11 @@ export default {
           var hasJobId = false
           api(this.currentAction.api, params).then(json => {
             // set action data for reload tree-view
+            if (this.currentAction.api.startsWith('delete') ||
+              this.currentAction.api.startsWith('destroy') ||
+              this.currentAction.api.startsWith('archive')) {
+              this.removedItemCount = this.selectedRowKeys.length
+            }
             if (this.treeView) {
               this.actionData.push(json)
             }

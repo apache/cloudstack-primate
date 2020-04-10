@@ -227,6 +227,10 @@ export default {
       type: Array,
       required: true
     },
+    removedItemCount: {
+      type: Number,
+      required: true
+    },
     loading: {
       type: Boolean,
       default: false
@@ -245,6 +249,13 @@ export default {
       return this.selectedRowKeys.length > 0
     }
   },
+  watch: {
+    removedItemCount (newValue, oldValue) {
+      if (newValue > 0) {
+        this.selectedRowKeys = []
+      }
+    }
+  },
   methods: {
     getRowClassName (record, index) {
       if (index % 2 === 0) {
@@ -255,6 +266,7 @@ export default {
     onSelectChange (selectedRowKeys) {
       console.log('selectedRowKeys changed: ', selectedRowKeys)
       this.selectedRowKeys = selectedRowKeys
+      this.$emit('selection-changed', this.selectedRowKeys)
     },
     changeProject (project) {
       this.$store.dispatch('SetProject', project)
