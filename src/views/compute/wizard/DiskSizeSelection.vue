@@ -17,8 +17,8 @@
 
 <template>
   <a-form-item :label="this.$t('diskSize')">
-    <a-row>
-      <a-col :span="10">
+    <a-row :gutter="12">
+      <a-col :md="10" :lg="10">
         <a-slider
           :min="0"
           :max="1024"
@@ -26,7 +26,7 @@
           @change="($event) => updateDickSize($event)"
         />
       </a-col>
-      <a-col :span="4">
+      <a-col :md="4" :lg="4">
         <a-input-number
           v-model="inputValue"
           :formatter="value => `${value} GB`"
@@ -58,7 +58,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-
-</style>

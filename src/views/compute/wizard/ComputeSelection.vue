@@ -16,66 +16,82 @@
 // under the License.
 
 <template>
-  <a-col>
-    <a-row>
-      <a-col>
-        <a-form-item :label="this.$t('cpunumber')">
-          <a-row>
-            <a-col :span="10" v-show="isConstrained">
-              <a-slider
-                :min="minCpu"
-                :max="maxCpu"
-                v-model="cpuNumberInputValue"
-                @change="($event) => updateComputeCpuNumber($event)"
-              />
-            </a-col>
-            <a-col :span="4">
-              <a-input-number
-                v-model="cpuNumberInputValue"
-                :formatter="value => `${value}`"
-                @change="($event) => updateComputeCpuNumber($event)"
-              />
-            </a-col>
-          </a-row>
-        </a-form-item>
-      </a-col>
-      <a-col v-show="!isConstrained">
-        <a-form-item :label="this.$t('cpuspeed')">
-          <a-input-number
-            v-model="cpuSpeedInputValue"
-            @change="($event) => updateComputeCpuSpeed($event)"
-          />
-        </a-form-item>
-      </a-col>
-    </a-row>
-    <a-row>
-      <a-form-item :label="this.$t('memory')">
-        <a-row>
-          <a-col :span="10" v-show="isConstrained">
-            <a-slider
-              :min="minMemory"
-              :max="maxMemory"
-              v-model="memoryInputValue"
-              @change="($event) => updateComputeMemory($event)"
-            />
-          </a-col>
-          <a-col :span="4">
+  <a-card>
+    <a-col>
+      <a-row>
+        <a-col :md="colContraned" :lg="colContraned">
+          <a-form-item
+            :label="this.$t('cpunumber')"
+            :validate-status="errors.cpu.status"
+            :help="errors.cpu.message">
+            <a-row :gutter="12">
+              <a-col :md="10" :lg="10" v-show="isConstrained">
+                <a-slider
+                  :min="minCpu"
+                  :max="maxCpu"
+                  v-model="cpuNumberInputValue"
+                  @change="($event) => updateComputeCpuNumber($event)"
+                />
+              </a-col>
+              <a-col :md="4" :lg="4">
+                <a-input-number
+                  v-model="cpuNumberInputValue"
+                  :formatter="value => `${value}`"
+                  @change="($event) => updateComputeCpuNumber($event)"
+                />
+              </a-col>
+            </a-row>
+          </a-form-item>
+        </a-col>
+        <a-col :md="8" :lg="8" v-show="!isConstrained">
+          <a-form-item
+            :label="this.$t('cpuspeed')"
+            :validate-status="errors.cpuspeed.status"
+            :help="errors.cpuspeed.message">
             <a-input-number
-              v-model="memoryInputValue"
-              :formatter="value => `${value}`"
-              @change="($event) => updateComputeMemory($event)"
+              v-model="cpuSpeedInputValue"
+              @change="($event) => updateComputeCpuSpeed($event)"
             />
-          </a-col>
-        </a-row>
-      </a-form-item>
-    </a-row>
-  </a-col>
+          </a-form-item>
+        </a-col>
+        <a-col :md="colContraned" :lg="colContraned">
+          <a-form-item
+            :label="this.$t('memory')"
+            :validate-status="errors.memory.status"
+            :help="errors.memory.message">
+            <a-row :gutter="12">
+              <a-col :md="10" :lg="10" v-show="isConstrained">
+                <a-slider
+                  :min="minMemory"
+                  :max="maxMemory"
+                  v-model="memoryInputValue"
+                  @change="($event) => updateComputeMemory($event)"
+                />
+              </a-col>
+              <a-col :md="4" :lg="4">
+                <a-input-number
+                  v-model="memoryInputValue"
+                  :formatter="value => `${value} MB`"
+                  :parser="value => value.replace(' MB', '')"
+                  @change="($event) => updateComputeMemory($event)"
+                />
+              </a-col>
+            </a-row>
+          </a-form-item>
+        </a-col>
+      </a-row>
+    </a-col>
+  </a-card>
 </template>
 
 <script>
 export default {
   name: 'ComputeSelection',
   props: {
+    computeOfferingId: {
+      type: String,
+      default: () => ''
+    },
     isConstrained: {
       type: Boolean,
       default: true
@@ -113,24 +129,99 @@ export default {
     return {
       cpuNumberInputValue: 1,
       cpuSpeedInputValue: 1,
-      memoryInputValue: 1
+      memoryInputValue: 1,
+      errors: {
+        cpu: {
+          status: '',
+          message: ''
+        },
+        cpuspeed: {
+          status: '',
+          message: ''
+        },
+        memory: {
+          status: '',
+          message: ''
+        }
+      }
     }
+  },
+  computed: {
+    colContraned () {
+      return this.isConstrained ? 12 : 8
+    }
+  },
+  watch: {
+    computeOfferingId (newValue, oldValue) {
+      if (newValue !== oldValue) {
+        this.cpuNumberInputValue = this.minCpu
+        this.memoryInputValue = this.minMemory
+      }
+    }
+  },
+  mounted () {
+    this.cpuNumberInputValue = this.minCpu
+    this.memoryInputValue = this.minMemory
   },
   methods: {
     updateComputeCpuNumber (value) {
-      console.log('hfhkjdhfskj')
+      if (!this.validateInput('cpu', value)) {
+        return
+      }
       this.$emit('update-compute-cpunumber', this.cpunumberInputDecorator, value)
     },
     updateComputeCpuSpeed (value) {
       this.$emit('update-compute-cpuspeed', this.cpuspeedInputDecorator, value)
     },
     updateComputeMemory (value) {
+      if (!this.validateInput('memory', value)) {
+        return
+      }
       this.$emit('update-compute-memory', this.memoryInputDecorator, value)
+    },
+    validateInput (input, value) {
+      this.errors[input].status = ''
+      this.errors[input].message = ''
+
+      if (value === null || value === undefined || value.length === 0) {
+        this.errors[input].status = 'error'
+        this.errors[input].message = this.$t('message.error.required.input')
+        return false
+      }
+
+      if (!this.isConstrained) {
+        return true
+      }
+
+      let min
+      let max
+
+      switch (input) {
+        case 'cpu':
+          min = this.minCpu
+          max = this.maxCpu
+          break
+        case 'memory':
+          min = this.minMemory
+          max = this.maxMemory
+          break
+      }
+
+      if (!this.checkValidRange(value, min, max)) {
+        this.errors[input].status = 'error'
+        this.errors[input].message = this.$t('message.error.invalid.range', { min: min, max: max })
+        return false
+      }
+
+      return true
+    },
+    checkValidRange (value, min, max) {
+      if (value < min || value > max) {
+        return false
+      }
+
+      return true
     }
   }
 }
 </script>
-
-<style scoped>
-
-</style>

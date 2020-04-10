@@ -152,6 +152,7 @@
                       cpunumber-input-decorator="cpunumber"
                       cpuspeed-input-decorator="cpuspeed"
                       memory-input-decorator="memory"
+                      :computeOfferingId="instanceConfig.computeofferingid"
                       :isConstrained="'serviceofferingdetails' in serviceOffering"
                       :minCpu="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.mincpunumber*1 : 1"
                       :maxCpu="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.maxcpunumber*1 : Number.MAX_SAFE_INTEGER"
@@ -160,11 +161,19 @@
                       @update-compute-cpunumber="updateFieldValue"
                       @update-compute-cpuspeed="updateFieldValue"
                       @update-compute-memory="updateFieldValue" />
-                    <a-form-item class="form-item-hidden" v-if="serviceOffering && serviceOffering.iscustomized">
-                      <a-input v-decorator="['cpunumber']"/>
-                      <a-input v-decorator="['cpuspeed']" v-if="serviceOffering && !(serviceOffering.cpuspeed > 0)"/>
-                      <a-input v-decorator="['memory']"/>
-                    </a-form-item>
+                    <span v-if="serviceOffering && serviceOffering.iscustomized">
+                      <a-form-item class="form-item-hidden" >
+                        <a-input v-decorator="['cpunumber']"/>
+                      </a-form-item>
+                      <a-form-item
+                        class="form-item-hidden"
+                        v-if="serviceOffering && !(serviceOffering.cpuspeed > 0)">
+                        <a-input v-decorator="['cpuspeed']"/>
+                      </a-form-item>
+                      <a-form-item class="form-item-hidden">
+                        <a-input v-decorator="['memory']"/>
+                      </a-form-item>
+                    </span>
                   </div>
                 </template>
               </a-step>
@@ -350,7 +359,7 @@ export default {
         hosts: false,
         groups: false
       },
-      instanceConfig: [],
+      instanceConfig: {},
       template: {},
       iso: {},
       serviceOffering: {},
@@ -628,6 +637,9 @@ export default {
     this.form.getFieldDecorator('isoid', { initialValue: undefined, preserve: true })
     this.form.getFieldDecorator('networkids', { initialValue: [], preserve: true })
     this.form.getFieldDecorator('keypair', { initialValue: undefined, preserve: true })
+    this.form.getFieldDecorator('cpunumber', { initialValue: undefined, preserve: true })
+    this.form.getFieldDecorator('cpuSpeed', { initialValue: undefined, preserve: true })
+    this.form.getFieldDecorator('memory', { initialValue: undefined, preserve: true })
     this.apiParams = {}
     this.apiDeployVirtualMachine = this.$store.getters.apis.deployVirtualMachine || {}
     this.apiDeployVirtualMachine.params.forEach(param => {
