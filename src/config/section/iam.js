@@ -320,7 +320,7 @@ export default {
       name: 'role',
       title: 'Roles',
       icon: 'idcard',
-      permission: ['listRoles'],
+      permission: ['listRoles', 'createRole'],
       columns: ['name', 'type', 'description'],
       details: ['name', 'id', 'type', 'description'],
       tabs: [{
