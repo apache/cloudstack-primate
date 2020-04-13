@@ -720,6 +720,7 @@ export default {
       if (this.instanceConfig.zoneid) {
         exclude.push('zones')
         this.options.zones = await this.fetchZones()
+        await this.fetchOptions(this.params.groups, 'groups')
         await this.onSelectZoneId(this.instanceConfig.zoneid)
       } else {
         await _.each(this.params, (param, name) => {
