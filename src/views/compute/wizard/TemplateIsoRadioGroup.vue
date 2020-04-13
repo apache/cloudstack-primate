@@ -85,6 +85,10 @@ export default {
     osType: {
       type: String,
       default: ''
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
@@ -95,7 +99,12 @@ export default {
     }
   },
   mounted () {
-    this.value = this.selected
+    if (this.inputDecorator === 'templateid') {
+      this.value = !this.preFillContent.templateid ? this.selected : this.preFillContent.templateid
+    } else {
+      this.value = !this.preFillContent.isoid ? this.selected : this.preFillContent.isoid
+    }
+
     this.$emit('emit-update-template-iso', this.inputDecorator, this.value)
   },
   computed: {

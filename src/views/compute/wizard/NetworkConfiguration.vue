@@ -51,6 +51,10 @@ export default {
     value: {
       type: String,
       default: ''
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {

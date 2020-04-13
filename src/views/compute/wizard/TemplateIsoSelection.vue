@@ -84,6 +84,7 @@
             :input-decorator="inputDecorator"
             :selected="checkedValue"
             :itemCount="itemCount[osName]"
+            :preFillContent="preFillContent"
             @handle-filter-tag="filterDataSource"
             @emit-update-template-iso="updateTemplateIso"
           ></TemplateIsoRadioGroup>
@@ -119,6 +120,10 @@ export default {
     loading: {
       type: Boolean,
       default: false
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {

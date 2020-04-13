@@ -53,6 +53,10 @@ export default {
     loading: {
       type: Boolean,
       default: false
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
@@ -89,6 +93,12 @@ export default {
           this.$emit('select-affinity-group-item', rows)
         }
       }
+    }
+  },
+  mounted () {
+    if (this.preFillContent.affinitygroupids) {
+      this.selectedRowKeys = this.preFillContent.affinitygroupids
+      this.$emit('select-affinity-group-item', this.preFillContent.affinitygroupids)
     }
   },
   watch: {

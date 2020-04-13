@@ -107,10 +107,12 @@
                           :items="options.templates"
                           :selected="tabKey"
                           :loading="loading.templates"
+                          :preFillContent="instanceConfig"
                           @update-template-iso="updateFieldValue"
                         ></template-iso-selection>
                         <disk-size-selection
                           input-decorator="rootdisksize"
+                          :preFillContent="instanceConfig"
                           @update-disk-size="updateFieldValue"/>
                       </p>
                       <p v-else>
@@ -119,12 +121,15 @@
                           :items="options.isos"
                           :selected="tabKey"
                           :loading="loading.isos"
+                          :preFillContent="instanceConfig"
                           @update-template-iso="updateFieldValue"
                         ></template-iso-selection>
                         <a-form-item :label="this.$t('hypervisor')">
                           <a-select
                             v-decorator="['hypervisor', {
-                              initialValue: hypervisorSelectOptions && hypervisorSelectOptions.length > 0 ? hypervisorSelectOptions[0].value : null,
+                              initialValue: hypervisorSelectOptions && hypervisorSelectOptions.length > 0
+                                ? hypervisorSelectOptions[0].value
+                                : null,
                               rules: [{ required: true, message: 'Please select option' }]
                             }]"
                             :options="hypervisorSelectOptions"
@@ -155,6 +160,7 @@
                       :compute-items="options.serviceOfferings"
                       :value="serviceOffering ? serviceOffering.id : ''"
                       :loading="loading.serviceOfferings"
+                      :preFillContent="instanceConfig"
                       @select-compute-item="($event) => updateComputeOffering($event)"
                       @handle-search-filter="($event) => handleSearchFilter('serviceOfferings', $event)"
                     ></compute-offering-selection>
@@ -163,6 +169,7 @@
                       cpunumber-input-decorator="cpunumber"
                       cpuspeed-input-decorator="cpuspeed"
                       memory-input-decorator="memory"
+                      :preFillContent="instanceConfig"
                       :computeOfferingId="instanceConfig.computeofferingid"
                       :isConstrained="'serviceofferingdetails' in serviceOffering"
                       :minCpu="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.mincpunumber*1 : 1"
@@ -197,12 +204,14 @@
                       :items="options.diskOfferings"
                       :value="diskOffering ? diskOffering.id : ''"
                       :loading="loading.diskOfferings"
+                      :preFillContent="instanceConfig"
                       @select-disk-offering-item="($event) => updateDiskOffering($event)"
                       @handle-search-filter="($event) => handleSearchFilter('diskOfferings', $event)"
                     ></disk-offering-selection>
                     <disk-size-selection
                       v-if="diskOffering && diskOffering.iscustomized"
                       input-decorator="size"
+                      :preFillContent="instanceConfig"
                       @update-disk-size="updateFieldValue" />
                     <a-form-item class="form-item-hidden">
                       <a-input v-decorator="['size']"/>
@@ -219,6 +228,7 @@
                       :items="options.affinityGroups"
                       :value="affinityGroupIds"
                       :loading="loading.affinityGroups"
+                      :preFillContent="instanceConfig"
                       @select-affinity-group-item="($event) => updateAffinityGroups($event)"
                       @handle-search-filter="($event) => handleSearchFilter('affinityGroups', $event)"
                     ></affinity-group-selection>
@@ -235,12 +245,14 @@
                       :value="networkOfferingIds"
                       :loading="loading.networks"
                       :zoneId="zoneId"
+                      :preFillContent="instanceConfig"
                       @select-network-item="($event) => updateNetworks($event)"
                       @handle-search-filter="($event) => handleSearchFilter('networks', $event)"
                     ></network-selection>
                     <network-configuration
                       v-if="networks.length > 0"
                       :items="networks"
+                      :preFillContent="instanceConfig"
                       @update-network-config="($event) => updateNetworkConfig($event)"
                       @select-default-network-item="($event) => updateDefaultNetworks($event)"
                     ></network-configuration>
@@ -256,6 +268,7 @@
                       :items="options.sshKeyPairs"
                       :value="sshKeyPair ? sshKeyPair.name : ''"
                       :loading="loading.sshKeyPairs"
+                      :preFillContent="instanceConfig"
                       @select-ssh-key-pair-item="($event) => updateSshKeyPairs($event)"
                       @handle-search-filter="($event) => handleSearchFilter('sshKeyPairs', $event)"
                     />
@@ -526,7 +539,8 @@ export default {
           }
         },
         groups: {
-          list: 'listInstanceGroups'
+          list: 'listInstanceGroups',
+          isLoad: true
         }
       }
     },
@@ -661,13 +675,12 @@ export default {
           this.form.setFieldsValue({ isoid: null })
         }
         this.instanceConfig = { ...this.form.getFieldsValue(), ...fields }
-        this.vm = this.instanceConfig
+        this.vm = Object.assign({}, this.instanceConfig)
       }
     })
     this.form.getFieldDecorator('computeofferingid', { initialValue: undefined, preserve: true })
     this.form.getFieldDecorator('diskofferingid', { initialValue: undefined, preserve: true })
     this.form.getFieldDecorator('affinitygroupids', { initialValue: [], preserve: true })
-    this.form.getFieldDecorator('isoid', { initialValue: undefined, preserve: true })
     this.form.getFieldDecorator('networkids', { initialValue: [], preserve: true })
     this.form.getFieldDecorator('keypair', { initialValue: undefined, preserve: true })
     this.form.getFieldDecorator('cpunumber', { initialValue: undefined, preserve: true })
@@ -679,7 +692,8 @@ export default {
       this.apiParams[param.name] = param
     })
   },
-  created () {
+  mounted () {
+    this.fillValue()
     this.fetchData()
   },
   provide () {
@@ -690,14 +704,32 @@ export default {
     }
   },
   methods: {
-    fetchData () {
-      _.each(this.params, (param, name) => {
-        if (param.isLoad) {
-          this.fetchOptions(param, name)
-        }
-      })
+    fillValue () {
+      this.form.getFieldDecorator('name', { initialValue: this.instanceConfig.name })
+      this.form.getFieldDecorator('zoneid', { initialValue: this.instanceConfig.zoneid })
+      this.form.getFieldDecorator('podid', { initialValue: this.instanceConfig.podid })
+      this.form.getFieldDecorator('clusterid', { initialValue: this.instanceConfig.clusterid })
+      this.form.getFieldDecorator('hostid', { initialValue: this.instanceConfig.hostid })
+      this.form.getFieldDecorator('group', { initialValue: this.instanceConfig.group })
+      this.form.getFieldDecorator('keyboard', { initialValue: this.instanceConfig.keyboard })
+      this.form.getFieldDecorator('userdata', { initialValue: this.instanceConfig.userdata })
+      this.form.getFieldDecorator('hypervisor', { initialValue: this.instanceConfig.hypervisor })
+    },
+    async fetchData () {
+      const exclude = []
+      if (this.instanceConfig.zoneid) {
+        exclude.push('zones')
+        this.options.zones = await this.fetchZones()
+        await this.onSelectZoneId(this.instanceConfig.zoneid)
+      } else {
+        await _.each(this.params, (param, name) => {
+          if (param.isLoad) {
+            this.fetchOptions(param, name)
+          }
+        })
+      }
 
-      this.fetchKeyboard()
+      await this.fetchKeyboard()
       Vue.nextTick().then(() => {
         this.instanceConfig = this.form.getFieldsValue() // ToDo: maybe initialize with some other defaults
       })
@@ -746,13 +778,13 @@ export default {
         this.tabKey = 'templateid'
         this.form.setFieldsValue({
           templateid: value,
-          isoid: undefined
+          isoid: null
         })
       } else if (name === 'isoid') {
         this.tabKey = 'isoid'
         this.form.setFieldsValue({
           isoid: value,
-          templateid: undefined
+          templateid: null
         })
       } else {
         this.form.setFieldsValue({
@@ -907,6 +939,20 @@ export default {
           })
         }).finally(() => {
           this.loading.deploy = false
+        })
+      })
+    },
+    fetchZones () {
+      return new Promise((resolve) => {
+        this.loading.zones = true
+        const param = this.params.zones
+        api(param.list, { listall: true }).then(json => {
+          const zones = json.listzonesresponse.zone || []
+          resolve(zones)
+        }).catch(function (error) {
+          console.log(error.stack)
+        }).finally(() => {
+          this.loading.zones = false
         })
       })
     },

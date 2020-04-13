@@ -121,6 +121,10 @@ export default {
     zoneId: {
       type: String,
       default: () => ''
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
@@ -135,6 +139,12 @@ export default {
         loading: false,
         opts: []
       }
+    }
+  },
+  mounted () {
+    if (this.preFillContent.networkids) {
+      this.selectedRowKeys = this.preFillContent.networkids
+      this.$emit('select-network-item', this.preFillContent.networkids)
     }
   },
   computed: {

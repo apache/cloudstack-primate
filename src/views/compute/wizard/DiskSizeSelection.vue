@@ -31,6 +31,7 @@
           v-model="inputValue"
           :formatter="value => `${value} GB`"
           :parser="value => value.replace(' GB', '')"
+          @change="($event) => updateDickSize($event)"
         />
       </a-col>
     </a-row>
@@ -44,6 +45,10 @@ export default {
     inputDecorator: {
       type: String,
       default: ''
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
@@ -51,7 +56,18 @@ export default {
       inputValue: 0
     }
   },
+  mounted () {
+    this.fillValue()
+  },
   methods: {
+    fillValue () {
+      if (this.inputDecorator === 'rootdisksize') {
+        this.inputValue = this.preFillContent.rootdisksize ? this.preFillContent.rootdisksize : 0
+      } else if (this.inputDecorator === 'size') {
+        this.inputValue = this.preFillContent.size ? this.preFillContent.size : 0
+      }
+      this.$emit('update-disk-size', this.inputDecorator, this.inputValue)
+    },
     updateDickSize (value) {
       this.$emit('update-disk-size', this.inputDecorator, value)
     }

@@ -53,6 +53,10 @@ export default {
     loading: {
       type: Boolean,
       default: false
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
@@ -119,6 +123,12 @@ export default {
         selectedRowKeys: this.selectedRowKeys,
         onChange: this.onSelectRow
       }
+    }
+  },
+  mounted () {
+    if (this.preFillContent.computeofferingid) {
+      this.selectedRowKeys = [this.preFillContent.computeofferingid]
+      this.$emit('select-compute-item', this.preFillContent.computeofferingid)
     }
   },
   watch: {

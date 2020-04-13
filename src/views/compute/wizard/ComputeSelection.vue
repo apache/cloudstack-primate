@@ -123,6 +123,10 @@ export default {
     memoryInputDecorator: {
       type: String,
       default: ''
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
@@ -162,8 +166,20 @@ export default {
   mounted () {
     this.cpuNumberInputValue = this.minCpu
     this.memoryInputValue = this.minMemory
+    this.fillValue()
   },
   methods: {
+    fillValue () {
+      if (this.preFillContent.cpunumber) {
+        this.cpuNumberInputValue = this.preFillContent.cpunumber
+      }
+      if (this.preFillContent.cpuspeed) {
+        this.cpuSpeedInputValue = this.preFillContent.cpuspeed
+      }
+      if (this.preFillContent.memory) {
+        this.memoryInputValue = this.preFillContent.memory
+      }
+    },
     updateComputeCpuNumber (value) {
       if (!this.validateInput('cpu', value)) {
         return

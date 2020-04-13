@@ -53,6 +53,10 @@ export default {
     loading: {
       type: Boolean,
       default: false
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
@@ -81,6 +85,12 @@ export default {
   },
   created () {
     this.initDataItem()
+  },
+  mounted () {
+    if (this.preFillContent.keypair) {
+      this.selectedRowKeys = [this.preFillContent.keypair]
+      this.$emit('select-ssh-key-pair-item', this.preFillContent.keypair)
+    }
   },
   computed: {
     options () {

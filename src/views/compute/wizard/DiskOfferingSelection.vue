@@ -64,6 +64,10 @@ export default {
     loading: {
       type: Boolean,
       default: false
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
@@ -121,6 +125,12 @@ export default {
         selectedRowKeys: this.selectedRowKeys,
         onChange: this.onSelectRow
       }
+    }
+  },
+  mounted () {
+    if (this.preFillContent.diskofferingid) {
+      this.selectedRowKeys = [this.preFillContent.diskofferingid]
+      this.$emit('select-disk-offering-item', this.preFillContent.diskofferingid)
     }
   },
   watch: {
