@@ -95,16 +95,16 @@ export default {
       }
     }
   },
-  mounted () {
-    if (this.preFillContent.affinitygroupids) {
-      this.selectedRowKeys = this.preFillContent.affinitygroupids
-      this.$emit('select-affinity-group-item', this.preFillContent.affinitygroupids)
-    }
-  },
   watch: {
     value (newValue, oldValue) {
       if (newValue && !_.isEqual(newValue, oldValue)) {
         this.selectedRowKeys = newValue
+      }
+    },
+    loading () {
+      if (!this.loading && this.preFillContent.affinitygroupids) {
+        this.selectedRowKeys = this.preFillContent.affinitygroupids
+        this.$emit('select-affinity-group-item', this.preFillContent.affinitygroupids)
       }
     }
   },

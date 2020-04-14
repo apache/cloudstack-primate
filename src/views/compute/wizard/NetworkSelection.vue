@@ -141,12 +141,6 @@ export default {
       }
     }
   },
-  mounted () {
-    if (this.preFillContent.networkids) {
-      this.selectedRowKeys = this.preFillContent.networkids
-      this.$emit('select-network-item', this.preFillContent.networkids)
-    }
-  },
   computed: {
     options () {
       return {
@@ -213,6 +207,12 @@ export default {
     value (newValue, oldValue) {
       if (newValue && !_.isEqual(newValue, oldValue)) {
         this.selectedRowKeys = newValue
+      }
+    },
+    loading () {
+      if (!this.loading && this.preFillContent.networkids) {
+        this.selectedRowKeys = this.preFillContent.networkids
+        this.$emit('select-network-item', this.preFillContent.networkids)
       }
     }
   },

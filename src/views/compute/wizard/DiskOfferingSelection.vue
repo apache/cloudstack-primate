@@ -127,12 +127,6 @@ export default {
       }
     }
   },
-  mounted () {
-    if (this.preFillContent.diskofferingid) {
-      this.selectedRowKeys = [this.preFillContent.diskofferingid]
-      this.$emit('select-disk-offering-item', this.preFillContent.diskofferingid)
-    }
-  },
   watch: {
     value (newValue, oldValue) {
       if (newValue && newValue !== oldValue) {
@@ -143,6 +137,12 @@ export default {
       if (newData && newData.length > 0) {
         this.initDataItem()
         this.dataItems = this.dataItems.concat(newData)
+      }
+    },
+    loading () {
+      if (!this.loading && this.preFillContent.diskofferingid) {
+        this.selectedRowKeys = [this.preFillContent.diskofferingid]
+        this.$emit('select-disk-offering-item', this.preFillContent.diskofferingid)
       }
     }
   },

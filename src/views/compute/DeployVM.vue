@@ -107,12 +107,12 @@
                           :items="options.templates"
                           :selected="tabKey"
                           :loading="loading.templates"
-                          :preFillContent="instanceConfig"
+                          :preFillContent="dataPreFill"
                           @update-template-iso="updateFieldValue"
                         ></template-iso-selection>
                         <disk-size-selection
                           input-decorator="rootdisksize"
-                          :preFillContent="instanceConfig"
+                          :preFillContent="dataPreFill"
                           @update-disk-size="updateFieldValue"/>
                       </p>
                       <p v-else>
@@ -121,7 +121,7 @@
                           :items="options.isos"
                           :selected="tabKey"
                           :loading="loading.isos"
-                          :preFillContent="instanceConfig"
+                          :preFillContent="dataPreFill"
                           @update-template-iso="updateFieldValue"
                         ></template-iso-selection>
                         <a-form-item :label="this.$t('hypervisor')">
@@ -160,7 +160,7 @@
                       :compute-items="options.serviceOfferings"
                       :value="serviceOffering ? serviceOffering.id : ''"
                       :loading="loading.serviceOfferings"
-                      :preFillContent="instanceConfig"
+                      :preFillContent="dataPreFill"
                       @select-compute-item="($event) => updateComputeOffering($event)"
                       @handle-search-filter="($event) => handleSearchFilter('serviceOfferings', $event)"
                     ></compute-offering-selection>
@@ -169,7 +169,7 @@
                       cpunumber-input-decorator="cpunumber"
                       cpuspeed-input-decorator="cpuspeed"
                       memory-input-decorator="memory"
-                      :preFillContent="instanceConfig"
+                      :preFillContent="dataPreFill"
                       :computeOfferingId="instanceConfig.computeofferingid"
                       :isConstrained="'serviceofferingdetails' in serviceOffering"
                       :minCpu="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.mincpunumber*1 : 1"
@@ -204,14 +204,14 @@
                       :items="options.diskOfferings"
                       :value="diskOffering ? diskOffering.id : ''"
                       :loading="loading.diskOfferings"
-                      :preFillContent="instanceConfig"
+                      :preFillContent="dataPreFill"
                       @select-disk-offering-item="($event) => updateDiskOffering($event)"
                       @handle-search-filter="($event) => handleSearchFilter('diskOfferings', $event)"
                     ></disk-offering-selection>
                     <disk-size-selection
                       v-if="diskOffering && diskOffering.iscustomized"
                       input-decorator="size"
-                      :preFillContent="instanceConfig"
+                      :preFillContent="dataPreFill"
                       @update-disk-size="updateFieldValue" />
                     <a-form-item class="form-item-hidden">
                       <a-input v-decorator="['size']"/>
@@ -228,7 +228,7 @@
                       :items="options.affinityGroups"
                       :value="affinityGroupIds"
                       :loading="loading.affinityGroups"
-                      :preFillContent="instanceConfig"
+                      :preFillContent="dataPreFill"
                       @select-affinity-group-item="($event) => updateAffinityGroups($event)"
                       @handle-search-filter="($event) => handleSearchFilter('affinityGroups', $event)"
                     ></affinity-group-selection>
@@ -245,14 +245,14 @@
                       :value="networkOfferingIds"
                       :loading="loading.networks"
                       :zoneId="zoneId"
-                      :preFillContent="instanceConfig"
+                      :preFillContent="dataPreFill"
                       @select-network-item="($event) => updateNetworks($event)"
                       @handle-search-filter="($event) => handleSearchFilter('networks', $event)"
                     ></network-selection>
                     <network-configuration
                       v-if="networks.length > 0"
                       :items="networks"
-                      :preFillContent="instanceConfig"
+                      :preFillContent="dataPreFill"
                       @update-network-config="($event) => updateNetworkConfig($event)"
                       @select-default-network-item="($event) => updateDefaultNetworks($event)"
                     ></network-configuration>
@@ -268,7 +268,7 @@
                       :items="options.sshKeyPairs"
                       :value="sshKeyPair ? sshKeyPair.name : ''"
                       :loading="loading.sshKeyPairs"
-                      :preFillContent="instanceConfig"
+                      :preFillContent="dataPreFill"
                       @select-ssh-key-pair-item="($event) => updateSshKeyPairs($event)"
                       @handle-search-filter="($event) => handleSearchFilter('sshKeyPairs', $event)"
                     />
@@ -345,6 +345,10 @@ export default {
   props: {
     visible: {
       type: Boolean
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   mixins: [mixin, mixinDevice],
@@ -430,7 +434,8 @@ export default {
           tab: this.$t('ISOs')
         }
       ],
-      tabKey: 'templateid'
+      tabKey: 'templateid',
+      dataPreFill: {}
     }
   },
   computed: {
@@ -477,13 +482,15 @@ export default {
         },
         zones: {
           list: 'listZones',
-          isLoad: true
+          isLoad: true,
+          field: 'zoneid'
         },
         hypervisors: {
           list: 'listHypervisors',
           options: {
             zoneid: _.get(this.zone, 'id')
-          }
+          },
+          field: 'hypervisor'
         },
         affinityGroups: {
           list: 'listAffinityGroups',
@@ -520,14 +527,16 @@ export default {
           isLoad: !this.isNormalAndDomainUser,
           options: {
             zoneid: _.get(this.zone, 'id')
-          }
+          },
+          field: 'podid'
         },
         clusters: {
           list: 'listClusters',
           isLoad: !this.isNormalAndDomainUser,
           options: {
             zoneid: _.get(this.zone, 'id')
-          }
+          },
+          field: 'clusterid'
         },
         hosts: {
           list: 'listHosts',
@@ -536,11 +545,13 @@ export default {
             zoneid: _.get(this.zone, 'id'),
             state: 'Up',
             type: 'Routing'
-          }
+          },
+          field: 'hostid'
         },
         groups: {
           list: 'listInstanceGroups',
-          isLoad: true
+          isLoad: true,
+          field: 'group'
         }
       }
     },
@@ -663,7 +674,7 @@ export default {
       }
     }
   },
-  beforeCreate () {
+  created () {
     this.form = this.$form.createForm(this, {
       onValuesChange: (props, fields) => {
         if (fields.isoid) {
@@ -686,14 +697,9 @@ export default {
     this.form.getFieldDecorator('cpunumber', { initialValue: undefined, preserve: true })
     this.form.getFieldDecorator('cpuSpeed', { initialValue: undefined, preserve: true })
     this.form.getFieldDecorator('memory', { initialValue: undefined, preserve: true })
-    this.apiParams = {}
-    this.apiDeployVirtualMachine = this.$store.getters.apis.deployVirtualMachine || {}
-    this.apiDeployVirtualMachine.params.forEach(param => {
-      this.apiParams[param.name] = param
-    })
   },
   mounted () {
-    this.fillValue()
+    this.dataPreFill = this.preFillContent && Object.keys(this.preFillContent).length > 0 ? this.preFillContent : {}
     this.fetchData()
   },
   provide () {
@@ -704,36 +710,38 @@ export default {
     }
   },
   methods: {
-    fillValue () {
-      this.form.getFieldDecorator('name', { initialValue: this.instanceConfig.name })
-      this.form.getFieldDecorator('zoneid', { initialValue: this.instanceConfig.zoneid })
-      this.form.getFieldDecorator('podid', { initialValue: this.instanceConfig.podid })
-      this.form.getFieldDecorator('clusterid', { initialValue: this.instanceConfig.clusterid })
-      this.form.getFieldDecorator('hostid', { initialValue: this.instanceConfig.hostid })
-      this.form.getFieldDecorator('group', { initialValue: this.instanceConfig.group })
-      this.form.getFieldDecorator('keyboard', { initialValue: this.instanceConfig.keyboard })
-      this.form.getFieldDecorator('userdata', { initialValue: this.instanceConfig.userdata })
-      this.form.getFieldDecorator('hypervisor', { initialValue: this.instanceConfig.hypervisor })
+    fillValue (field) {
+      this.form.getFieldDecorator([field], { initialValue: this.dataPreFill[field] })
     },
-    async fetchData () {
-      const exclude = []
-      if (this.instanceConfig.zoneid) {
-        exclude.push('zones')
-        this.options.zones = await this.fetchZones()
-        await this.fetchOptions(this.params.groups, 'groups')
-        await this.onSelectZoneId(this.instanceConfig.zoneid)
+    fetchData () {
+      if (this.dataPreFill.zoneid) {
+        this.fetchDataByZone(this.dataPreFill.zoneid)
       } else {
-        await _.each(this.params, (param, name) => {
+        _.each(this.params, (param, name) => {
           if (param.isLoad) {
             this.fetchOptions(param, name)
           }
         })
       }
 
-      await this.fetchKeyboard()
+      this.fetchKeyboard()
       Vue.nextTick().then(() => {
+        ['name', 'keyboard', 'userdata'].forEach(this.fillValue)
         this.instanceConfig = this.form.getFieldsValue() // ToDo: maybe initialize with some other defaults
       })
+    },
+    async fetchDataByZone (zoneId) {
+      this.fillValue('zoneid')
+      this.options.zones = await this.fetchZones()
+      this.zoneId = zoneId
+      this.zoneSelected = true
+      this.tabKey = 'templateid'
+      await _.each(this.params, (param, name) => {
+        if (!('isLoad' in param) || param.isLoad) {
+          this.fetchOptions(param, name, ['zones'])
+        }
+      })
+      await this.fetchAllTemplates()
     },
     fetchKeyboard () {
       const keyboardType = []
@@ -986,6 +994,9 @@ export default {
             param.opts = response
             this.options[name] = response
             this.$forceUpdate()
+            if (param.field) {
+              this.fillValue(param.field)
+            }
           })
         })
       }).catch(function (error) {
@@ -1067,6 +1078,7 @@ export default {
       })
     },
     onSelectZoneId (value) {
+      this.dataPreFill = {}
       this.zoneId = value
       this.zone = _.find(this.options.zones, (option) => option.id === value)
       this.zoneSelected = true

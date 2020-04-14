@@ -86,12 +86,6 @@ export default {
   created () {
     this.initDataItem()
   },
-  mounted () {
-    if (this.preFillContent.keypair) {
-      this.selectedRowKeys = [this.preFillContent.keypair]
-      this.$emit('select-ssh-key-pair-item', this.preFillContent.keypair)
-    }
-  },
   computed: {
     options () {
       return {
@@ -128,6 +122,12 @@ export default {
       if (newData && newData.length > 0) {
         this.initDataItem()
         this.dataItems = this.dataItems.concat(newData)
+      }
+    },
+    loading () {
+      if (!this.loading && this.preFillContent.keypair) {
+        this.selectedRowKeys = [this.preFillContent.keypair]
+        this.$emit('select-ssh-key-pair-item', this.preFillContent.keypair)
       }
     }
   },

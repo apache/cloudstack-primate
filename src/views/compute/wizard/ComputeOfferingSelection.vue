@@ -125,16 +125,16 @@ export default {
       }
     }
   },
-  mounted () {
-    if (this.preFillContent.computeofferingid) {
-      this.selectedRowKeys = [this.preFillContent.computeofferingid]
-      this.$emit('select-compute-item', this.preFillContent.computeofferingid)
-    }
-  },
   watch: {
     value (newValue, oldValue) {
       if (newValue && newValue !== oldValue) {
         this.selectedRowKeys = [newValue]
+      }
+    },
+    loading () {
+      if (!this.loading && this.preFillContent.computeofferingid) {
+        this.selectedRowKeys = [this.preFillContent.computeofferingid]
+        this.$emit('select-compute-item', this.preFillContent.computeofferingid)
       }
     }
   },
