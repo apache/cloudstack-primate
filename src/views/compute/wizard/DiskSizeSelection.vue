@@ -16,7 +16,9 @@
 // under the License.
 
 <template>
-  <a-form-item :label="this.$t('diskSize')">
+  <a-form-item
+    :label="this.$t('diskSize')"
+    class="form-item">
     <a-row :gutter="12">
       <a-col :md="10" :lg="10">
         <a-slider
@@ -74,3 +76,9 @@ export default {
   }
 }
 </script>
+
+<style scoped lang="less">
+  .form-item {
+    margin: 0 5px;
+  }
+</style>
