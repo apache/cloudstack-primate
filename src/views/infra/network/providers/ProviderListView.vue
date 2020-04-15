@@ -34,19 +34,28 @@
             <span v-if="resource.name==='BigSwitchBcf'">{{ $t('label.delete.BigSwitchBcf') }}</span>
             <span v-else-if="resource.name==='BrocadeVcs'">{{ $t('label.delete.BrocadeVcs') }}</span>
             <span v-else-if="resource.name==='NiciraNvp'">{{ $t('label.delete.NiciaNvp') }}</span>
-            <span v-else-if="resource.name==='F5BigIp'">{{ $t('label.delete.F5BigIp') }}</span>
-            <span v-else-if="resource.name==='JuniperSRX'">{{ $t('label.delete.JuniperSRX') }}</span>
+            <span v-else-if="resource.name==='F5BigIp'">{{ $t('label.delete.F5') }}</span>
+            <span v-else-if="resource.name==='JuniperSRX'">{{ $t('label.delete.SRX') }}</span>
             <span v-else-if="resource.name==='Netscaler'">{{ $t('label.delete.Netscaler') }}</span>
-            <span v-else-if="resource.name==='Opendaylight'">{{ $t('label.delete.Opendaylight') }}</span>
-            <span v-else-if="resource.name==='PaloAlto'">{{ $t('label.delete.PaloAlto') }}</span>
+            <span v-else-if="resource.name==='Opendaylight'">{{ $t('label.delete.OpenDaylight.device') }}</span>
+            <span v-else-if="resource.name==='PaloAlto'">{{ $t('label.delete.PA') }}</span>
             <span v-else-if="resource.name==='CiscoVnmc' && title==='listCiscoVnmcResources'">
-              {{ $t('label.delete.CiscoVnmc') }}
+              {{ $t('label.delete.ciscovnmc.resource') }}
             </span>
             <span v-else-if="resource.name==='CiscoVnmc' && title==='listCiscoAsa1000vResources'">
-              {{ $t('label.delete.Cisco1000Vnmc') }}
+              {{ $t('label.delete.ciscoASA1000v') }}
             </span>
           </template>
           <a-button
+            v-if="resource.name==='Ovs'"
+            type="default"
+            shape="circle"
+            icon="setting"
+            size="small"
+            :loading="actionLoading"
+            @click="onConfigureOvs(record)"/>
+          <a-button
+            v-else
             type="danger"
             shape="circle"
             icon="close"
@@ -147,17 +156,17 @@ export default {
       const params = {}
       switch (this.resource.name) {
         case 'BigSwitchBcf':
-          label = 'label.delete.NiciaNvp'
+          label = 'label.delete.BigSwitchBcf'
           name = record.hostname
           apiName = 'deleteBigSwitchBcfDevice'
           confirmation = 'message.confirm.delete.BigSwitchBcf'
           params.bcfdeviceid = record.bcfdeviceid
           break
         case 'F5BigIp':
-          label = 'label.delete.F5BigIp'
+          label = 'label.delete.F5'
           name = record.ipaddress
           apiName = 'deleteF5LoadBalancer'
-          confirmation = 'message.confirm.delete.F5BigIp'
+          confirmation = 'message.confirm.delete.F5'
           params.lbdeviceid = record.lbdeviceid
           break
         case 'NiciraNvp':
@@ -175,42 +184,42 @@ export default {
           params.vcsdeviceid = record.vcsdeviceid
           break
         case 'JuniperSRX':
-          label = 'label.delete.JuniperSRX'
+          label = 'label.delete.SRX'
           name = record.ipaddress
           apiName = 'deleteSrxFirewall'
-          confirmation = 'message.confirm.delete.JuniperSRX'
+          confirmation = 'message.confirm.delete.SRX'
           params.fwdeviceid = record.fwdeviceid
           break
         case 'Netscaler':
           label = 'label.delete.Netscaler'
           name = record.ipaddress
           apiName = 'deleteNetscalerLoadBalancer'
-          confirmation = 'message.confirm.delete.Netscaler'
+          confirmation = 'message.confirm.delete.NetScaler'
           params.lbdeviceid = record.lbdeviceid
           break
         case 'Opendaylight':
-          label = 'label.delete.Opendaylight'
+          label = 'label.delete.OpenDaylight.device'
           name = record.name
           apiName = 'deleteOpenDaylightController'
           confirmation = 'message.confirm.delete.Opendaylight'
           params.id = record.id
           break
         case 'PaloAlto':
-          label = 'label.delete.PaloAlto'
+          label = 'label.delete.PA'
           name = record.ipaddress
           apiName = 'deletePaloAltoFirewall'
-          confirmation = 'message.confirm.delete.PaloAlto'
+          confirmation = 'message.confirm.delete.PA'
           params.fwdeviceid = record.fwdeviceid
           break
         case 'CiscoVnmc':
           if (this.title === 'listCiscoVnmcResources') {
-            label = 'label.delete.CiscoVnmc'
+            label = 'label.delete.ciscovnmc.resource'
             apiName = 'deleteCiscoVnmcResource'
-            confirmation = 'message.confirm.delete.CiscoVnmc'
+            confirmation = 'message.confirm.delete.ciscovnmc.resource'
           } else {
-            label = 'label.delete.Cisco1000Vnmc'
+            label = 'label.delete.ciscoASA1000v'
             apiName = 'deleteCiscoAsa1000vResource'
-            confirmation = 'message.confirm.delete.Cisco1000Vnmc'
+            confirmation = 'message.confirm.delete.ciscoASA1000v'
           }
 
           name = record.hostname
@@ -252,6 +261,41 @@ export default {
         }
       })
     },
+    onConfigureOvs (record) {
+      const params = {}
+      params.id = record.id
+      params.enabled = true
+
+      this.$confirm({
+        title: this.$t('label.confirmation'),
+        content: this.$t('message.confirm.configure.ovs'),
+        onOk: async () => {
+          this.actionLoading = true
+          try {
+            const jobId = await this.configureOvsElement(params)
+            if (jobId) {
+              this.$store.dispatch('AddAsyncJob', {
+                title: this.$t('label.configure.ovs'),
+                jobid: jobId,
+                description: this.$t(record.id),
+                status: 'progress'
+              })
+              this.parentPollActionCompletion(jobId, this.action)
+            } else {
+              this.$success('Success')
+              this.provideReload()
+            }
+            this.actionLoading = false
+          } catch (error) {
+            this.actionLoading = false
+            this.$notification.error({
+              message: 'Request Failed',
+              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+            })
+          }
+        }
+      })
+    },
     executeDeleteRecord (apiName, args) {
       return new Promise((resolve, reject) => {
         let jobId = null
@@ -268,6 +312,16 @@ export default {
             }
           }
 
+          resolve(jobId)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    configureOvsElement (args) {
+      return new Promise((resolve, reject) => {
+        api('configureOvsElement', args).then(json => {
+          const jobId = json.configureovselementresponse.jobid
           resolve(jobId)
         }).catch(error => {
           reject(error)

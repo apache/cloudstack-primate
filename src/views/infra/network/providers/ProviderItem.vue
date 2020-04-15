@@ -20,7 +20,7 @@
     <a-row :gutter="12">
       <a-col :md="24" :lg="24" style="text-align: right">
         <action-button
-          :actions="this.provider.actions"
+          :actions="provider.actions"
           :resource="resource"
           :loading="loading"
           @exec-action="handleExecAction"/>
@@ -28,14 +28,15 @@
     </a-row>
     <provider-detail
       style="margin-top: 10px"
-      :details="this.provider.details"
+      :details="provider.details"
       :nsp="resource"
       :loading="loading" />
     <div
-      v-for="(list, index) in this.listData"
+      v-for="(list, index) in listData"
       :key="index">
       <provider-list-view
-        style="margin-top: 10px"
+        style="border-top: 1px solid #ddd; padding-top: 5px;"
+        v-if="resource.id"
         :title="list.title"
         :action="currentAction"
         :dataSource="list.data"

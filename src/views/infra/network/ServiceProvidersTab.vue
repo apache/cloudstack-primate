@@ -684,7 +684,7 @@ export default {
               api: 'addSrxFirewall',
               listView: true,
               icon: 'plus',
-              label: 'label.add.Srx.device',
+              label: 'label.add.SRX.device',
               component: () => import('@/views/infra/network/providers/AddSrxFirewall.vue')
             },
             {
@@ -791,7 +791,7 @@ export default {
                   value: (record) => { return record.physicalnetworkid }
                 }
               },
-              columns: ['ipaddress', 'lbdevicestate']
+              columns: ['ipaddress', 'lbdevicestate', 'action']
             }
           ]
         },
@@ -913,9 +913,22 @@ export default {
             }
           ]
         },
-        // {
-        //   title: 'Ovs'
-        // },
+        {
+          title: 'Ovs',
+          details: ['name', 'state', 'id', 'servicelist'],
+          lists: [
+            {
+              title: 'listOvsElements',
+              api: 'listOvsElements',
+              mapping: {
+                nspid: {
+                  value: (record) => { return record.id }
+                }
+              },
+              columns: ['account', 'domain', 'enabled', 'project', 'action']
+            }
+          ]
+        },
         {
           title: 'PaloAlto',
           actions: [
@@ -976,7 +989,8 @@ export default {
           ]
         },
         // {
-        //   title: 'SecurityGroupProvider'
+        //   title: 'SecurityGroupProvider',
+        //   details: ['name', 'state', 'id', 'servicelist'],
         // },
         {
           title: 'VirtualRouter',
