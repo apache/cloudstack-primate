@@ -172,8 +172,7 @@ export default {
       if (Object.keys(this.resource).length > 0) {
         const resourceIndex = this.treeVerticalData.findIndex(item => item.id === this.resource.id)
         if (resourceIndex === -1) {
-          this.resource = this.treeVerticalData[0] || {}
-          this.$el.querySelector(`[title=${this.resource.name}]`).click()
+          this.$el.querySelector(`[title=${this.resource.parentdomainname}]`).click()
         }
       }
     },
