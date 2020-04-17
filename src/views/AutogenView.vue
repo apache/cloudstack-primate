@@ -748,9 +748,10 @@ export default {
             var hasJobId = false
             api(this.currentAction.api, params).then(json => {
               // set action data for reload tree-view
-              if (this.currentAction.api.startsWith('delete') ||
+              if (this.currentAction.api &&
+                (this.currentAction.api.startsWith('delete') ||
                 this.currentAction.api.startsWith('destroy') ||
-                this.currentAction.api.startsWith('archive')) {
+                this.currentAction.api.startsWith('archive'))) {
                 if (selectedIds.length > 0) {
                   this.removedRowKeys = [this.selectedIds[i]]
                 } else {
