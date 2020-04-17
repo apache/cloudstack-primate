@@ -226,7 +226,7 @@
         :loading="loading"
         :columns="columns"
         :items="items"
-        :removedItemCount="removedItemCount"
+        :removedRowKeys="removedRowKeys"
         @refresh="this.fetchData"
         @selection-changed="this.onListViewSelectionChange"
         v-if="!treeView" />
@@ -303,7 +303,7 @@ export default {
       searchQuery: '',
       resource: {},
       selectedRowKeys: [],
-      removedItemCount: 0,
+      removedRowKeys: [],
       currentAction: {},
       showAction: false,
       dataView: false,
@@ -672,12 +672,13 @@ export default {
     },
     handleSubmit (e) {
       e.preventDefault()
-      this.removedItemCount = 0
+      this.removedRowKeys = []
       this.form.validateFields((err, values) => {
         console.log(values)
         if (!err) {
           this.currentAction.loading = true
           const params = {}
+          var selectedIds = []
           if (this.dataView) {
             if ('id' in this.resource && this.currentAction.params.map(i => { return i.name }).includes('id')) {
               params.id = this.resource.id
@@ -686,6 +687,8 @@ export default {
             if (!this.treeView && this.selectedRowKeys && this.selectedRowKeys.length > 0) {
               if (this.currentAction.params.map(i => { return i.name }).includes('ids')) {
                 params.ids = this.selectedRowKeys.join()
+              } else {
+                selectedIds = this.selectedRowKeys
               }
             }
           }
@@ -734,51 +737,60 @@ export default {
             }
           }
 
-          console.log(this.currentAction)
-          console.log(this.resource)
-          console.log(params)
-
-          var hasJobId = false
-          api(this.currentAction.api, params).then(json => {
-            // set action data for reload tree-view
-            if (this.currentAction.api.startsWith('delete') ||
-              this.currentAction.api.startsWith('destroy') ||
-              this.currentAction.api.startsWith('archive')) {
-              this.removedItemCount = this.selectedRowKeys.length
+          for (var i = 0; i === 0 || i < selectedIds.length; ++i) {
+            if (selectedIds.length > i && this.currentAction.params.map(i => { return i.name }).includes('id')) {
+              params.id = selectedIds[i]
             }
-            if (this.treeView) {
-              this.actionData.push(json)
-            }
+            console.log(this.currentAction)
+            console.log(this.resource)
+            console.log(params)
 
-            for (const obj in json) {
-              if (obj.includes('response')) {
-                for (const res in json[obj]) {
-                  if (res === 'jobid') {
-                    this.$store.dispatch('AddAsyncJob', { title: this.$t(this.currentAction.label), jobid: json[obj][res], description: this.resource.name, status: 'progress' })
-                    this.pollActionCompletion(json[obj][res], this.currentAction)
-                    hasJobId = true
-                    break
-                  }
+            var hasJobId = false
+            api(this.currentAction.api, params).then(json => {
+              // set action data for reload tree-view
+              if (this.currentAction.api.startsWith('delete') ||
+                this.currentAction.api.startsWith('destroy') ||
+                this.currentAction.api.startsWith('archive')) {
+                if (selectedIds.length > 0) {
+                  this.removedRowKeys = [this.selectedIds[i]]
+                } else {
+                  this.removedRowKeys = this.selectedRowKeys
                 }
-                break
               }
-            }
-            if ((this.currentAction.icon === 'delete' || ['archiveEvents'].includes(this.currentAction.api)) && this.dataView) {
-              this.$router.go(-1)
-            } else {
-              if (!hasJobId) {
-                this.fetchData()
+              if (this.treeView) {
+                this.actionData.push(json)
               }
-            }
-          }).catch(error => {
-            console.log(error)
-            this.$notification.error({
-              message: 'Request Failed',
-              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+
+              for (const obj in json) {
+                if (obj.includes('response')) {
+                  for (const res in json[obj]) {
+                    if (res === 'jobid') {
+                      this.$store.dispatch('AddAsyncJob', { title: this.$t(this.currentAction.label), jobid: json[obj][res], description: this.resource.name, status: 'progress' })
+                      this.pollActionCompletion(json[obj][res], this.currentAction)
+                      hasJobId = true
+                      break
+                    }
+                  }
+                  break
+                }
+              }
+              if ((this.currentAction.icon === 'delete' || ['archiveEvents'].includes(this.currentAction.api)) && this.dataView) {
+                this.$router.go(-1)
+              } else {
+                if (!hasJobId) {
+                  this.fetchData()
+                }
+              }
+            }).catch(error => {
+              console.log(error)
+              this.$notification.error({
+                message: 'Request Failed',
+                description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+              })
+            }).finally(f => {
+              this.closeAction()
             })
-          }).finally(f => {
-            this.closeAction()
-          })
+          }
         }
       })
     },

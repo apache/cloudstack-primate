@@ -227,8 +227,8 @@ export default {
       type: Array,
       required: true
     },
-    removedItemCount: {
-      type: Number,
+    removedRowKeys: {
+      type: Array,
       required: true
     },
     loading: {
@@ -250,10 +250,10 @@ export default {
     }
   },
   watch: {
-    removedItemCount (newValue, oldValue) {
-      if (newValue > 0) {
-        this.selectedRowKeys = []
-      }
+    removedRowKeys (newValue, oldValue) {
+      this.selectedRowKeys = this.selectedRowKeys.filter(function (item) {
+        return newValue.indexOf(item) < 0
+      })
     }
   },
   methods: {
