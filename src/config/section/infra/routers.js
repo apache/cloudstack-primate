@@ -89,7 +89,8 @@ export default {
         type: {
           options: ['ping', 'traceroute', 'arping']
         }
-      }
+      },
+      response: (result) => { return (result && result.diagnostics && result.diagnostics.stdout) ? '<pre>' + result.diagnostics.stdout + '</pre>' : 'Invalid response' }
     },
     {
       api: 'getDiagnosticsData',
