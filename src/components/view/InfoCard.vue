@@ -388,7 +388,8 @@
           <div class="resource-detail-item__label">{{ $t('storagePool') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="database" />
-            <router-link :to="{ path: '/storagepool/' + resource.storageid }">{{ resource.storage || resource.storageid }} </router-link>
+            <router-link v-if="$router.resolve('/storagepool/' + resource.storageid).route.name !== '404'" :to="{ path: '/storagepool/' + resource.storageid }">{{ resource.storage || resource.storageid }} </router-link>
+            <span v-else>{{ resource.storage || resource.storageid }}</span>
             <a-tag style="margin-left: 5px;" v-if="resource.storagetype">
               {{ resource.storagetype }}
             </a-tag>
@@ -398,28 +399,31 @@
           <div class="resource-detail-item__label">{{ $t('hostname') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="desktop" />
-            <router-link :to="{ path: '/host/' + resource.hostid }">{{ resource.hostname || resource.hostid }} </router-link>
+            <router-link v-if="$router.resolve('/host/' + resource.hostid).route.name !== '404'" :to="{ path: '/host/' + resource.hostid }">{{ resource.hostname || resource.hostid }} </router-link>
+            <span v-else>{{ resource.hostname || resource.hostid }}</span>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.clusterid">
           <div class="resource-detail-item__label">{{ $t('clusterid') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="cluster" />
-            <router-link :to="{ path: '/cluster/' + resource.clusterid }">{{ resource.clustername || resource.cluster || resource.clusterid }}</router-link>
+            <router-link v-if="$router.resolve('/cluster/' + resource.clusterid).route.name !== '404'" :to="{ path: '/cluster/' + resource.clusterid }">{{ resource.clustername || resource.cluster || resource.clusterid }}</router-link>
+            <span v-else>{{ resource.clustername || resource.cluster || resource.clusterid }}</span>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.podid">
           <div class="resource-detail-item__label">{{ $t('podId') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="appstore" />
-            <router-link :to="{ path: '/pod/' + resource.podid }">{{ resource.podname || resource.pod || resource.podid }}</router-link>
+            <router-link v-if="$router.resolve('/pod/' + resource.podid).route.name !== '404'" :to="{ path: '/pod/' + resource.podid }">{{ resource.podname || resource.pod || resource.podid }}</router-link>
+            <span v-else>{{ resource.podname || resource.pod || resource.podid }}</span>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.zoneid">
           <div class="resource-detail-item__label">{{ $t('zone') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="global" />
-            <router-link v-if="!resource.zoneid.includes(',') && this.isAdmin()" :to="{ path: '/zone/' + resource.zoneid }">{{ resource.zonename || resource.zoneid }}</router-link>
+            <router-link v-if="$router.resolve('/zone/' + resource.zoneid).route.name !== '404'" :to="{ path: '/zone/' + resource.zoneid }">{{ resource.zonename || resource.zoneid }}</router-link>
             <span v-else>{{ resource.zone || resource.zonename }}</span>
           </div>
         </div>
@@ -434,14 +438,15 @@
           <div class="resource-detail-item__label">{{ $t('role') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="idcard" />
-            <router-link :to="{ path: '/role/' + resource.roleid }">{{ resource.rolename || resource.role || resource.roleid }}</router-link>
+            <router-link v-if="$router.resolve('/role/' + resource.roleid).route.name !== '404'" :to="{ path: '/role/' + resource.roleid }">{{ resource.rolename || resource.role || resource.roleid }}</router-link>
+            <span v-else>{{ resource.rolename || resource.role || resource.roleid }}</span>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.domainid">
           <div class="resource-detail-item__label">{{ $t('domain') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="block" />
-            <router-link v-if="!resource.domainid.includes(',') && (this.isAdmin() || (this.isDomainAdmin() && resource.domain !=='ROOT'))" :to="{ path: '/domain/' + resource.domainid }">{{ resource.domain || resource.domainid }}</router-link>
+            <router-link v-if="$router.resolve('/domain/' + resource.domainid).route.name !== '404'" :to="{ path: '/domain/' + resource.domainid }">{{ resource.domain || resource.domainid }}</router-link>
             <span v-else>{{ resource.domain }}</span>
           </div>
         </div>
@@ -449,7 +454,7 @@
           <div class="resource-detail-item__label">{{ $t('Management Servers') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="rocket" />
-            <router-link :to="{ path: '/managementserver/' + resource.managementserverid }">{{ resource.managementserver || resource.managementserverid }}</router-link>
+            <router-link v-if="$router.resolve('/managementserver/' + resource.managementserverid).route.name !== '404'" :to="{ path: '/managementserver/' + resource.managementserverid }">{{ resource.managementserver || resource.managementserverid }}</router-link>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.created">
@@ -688,12 +693,6 @@ export default {
     }
   },
   methods: {
-    isAdmin () {
-      return ['Admin'].includes(this.$store.getters.userInfo.roletype)
-    },
-    isDomainAdmin () {
-      return ['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype)
-    },
     toSize (kb) {
       if (!kb) {
         return '0 KB'
