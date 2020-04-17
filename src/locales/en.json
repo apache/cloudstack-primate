@@ -1261,6 +1261,7 @@
 "label.launch.zone": "Launch Zone",
 "label.done": "Done",
 "label.fix.errors": "Fix errors",
+"label.zone": "Zone",
 "error.something.went.wrong.please.correct.the.following": "Something went wrong; please correct the following",
 "confirmpassword": "Confirm password",
 "label.confirmpassword.description": "Type the same password again.",
