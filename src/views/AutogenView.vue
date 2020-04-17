@@ -20,7 +20,7 @@
     <a-card class="breadcrumb-card">
       <a-row>
         <a-col :span="14" style="padding-left: 6px">
-          <breadcrumb>
+          <breadcrumb :resource="resource">
             <a-tooltip placement="bottom" slot="end">
               <template slot="title">
                 {{ "Refresh" }}
@@ -111,10 +111,16 @@
             <a-form-item
               v-for="(field, fieldIndex) in currentAction.paramFields"
               :key="fieldIndex"
-              :label="$t(field.name)"
               :v-bind="field.name"
               v-if="!(currentAction.mapping && field.name in currentAction.mapping && currentAction.mapping[field.name].value)"
             >
+              <span slot="label">
+                {{ $t(field.name) }}
+                <a-tooltip :title="field.description">
+                  <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                </a-tooltip>
+              </span>
+
               <span v-if="field.type==='boolean'">
                 <a-switch
                   v-decorator="[field.name, {
@@ -136,7 +142,10 @@
                   </a-select-option>
                 </a-select>
               </span>
-              <span v-else-if="field.type==='uuid' || (field.name==='account' && !['addAccountToProject'].includes(currentAction.api)) || field.name==='keypair'">
+              <span
+                v-else-if="field.type==='uuid' ||
+                  (field.name==='account' && !['addAccountToProject', 'createAccount'].includes(currentAction.api)) ||
+                  field.name==='keypair'">
                 <a-select
                   showSearch
                   optionFilterProp="children"
@@ -198,8 +207,7 @@
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: 'Please enter input' }]
                   }]"
-                  :placeholder="field.description"
-                />
+                  :placeholder="field.description" />
               </span>
             </a-form-item>
           </a-form>
@@ -227,7 +235,7 @@
         :pageSize="pageSize"
         :total="itemCount"
         :showTotal="total => `Total ${total} items`"
-        :pageSizeOptions="['10', '20', '40', '80', '100']"
+        :pageSizeOptions="['10', '20', '40', '80', '100', '500']"
         @change="changePage"
         @showSizeChange="changePageSize"
         showSizeChanger
@@ -325,19 +333,7 @@ export default {
   },
   watch: {
     '$route' (to, from) {
-      // The route config creates two groups of section components one for each
-      // related paths. Once these two groups of components are mounted, on
-      // route changes this method is called twice causing multiple API calls.
-      // The following fixes this issue by using logical XOR to identify the
-      // current component against related `to` route and the path the component
-      // was in and only calls fetchData if `to` route and currentPath are of
-      // the same group of routes.
-
-      const related = ['/project', '/event', '/dashboard']
-      const toPath = related.map(o => to.fullPath.includes(o)).includes(true)
-      const inPath = related.map(o => this.currentPath.includes(o)).includes(true)
-      this.needToFetchData = ((toPath ^ inPath) === 0)
-      if (this.needToFetchData && to.fullPath !== from.fullPath && !to.fullPath.includes('action/')) {
+      if (to.fullPath !== from.fullPath && !to.fullPath.includes('action/')) {
         this.searchQuery = ''
         this.page = 1
         this.itemCount = 0
@@ -372,10 +368,6 @@ export default {
         Object.assign(params, this.$route.meta.params)
       }
 
-      if (this.searchQuery !== '') {
-        params.keyword = this.searchQuery
-      }
-
       this.treeView = this.$route && this.$route.meta && this.$route.meta.treeView
 
       if (this.$route && this.$route.params && this.$route.params.id) {
@@ -399,6 +391,14 @@ export default {
 
       if (this.apiName === '' || this.apiName === undefined) {
         return
+      }
+
+      if (this.searchQuery !== '') {
+        if (this.apiName === 'listRoles') {
+          params.name = this.searchQuery
+        } else {
+          params.keyword = this.searchQuery
+        }
       }
 
       if (!this.columnKeys || this.columnKeys.length === 0) {
@@ -457,6 +457,7 @@ export default {
             break
           }
         }
+        this.itemCount = 0
         for (const key in json[responseName]) {
           if (key === 'count') {
             this.itemCount = json[responseName].count
@@ -518,6 +519,7 @@ export default {
     },
     onSearch (value) {
       this.searchQuery = value
+      this.page = 1
       this.fetchData()
     },
     closeAction () {
@@ -553,7 +555,7 @@ export default {
 
       this.showAction = true
       for (const param of this.currentAction.paramFields) {
-        if (param.type === 'list' && param.name === 'hosttags') {
+        if (param.type === 'list' && ['tags', 'hosttags'].includes(param.name)) {
           param.type = 'string'
         }
         if (param.type === 'uuid' || param.type === 'list' || param.name === 'account' || (this.currentAction.mapping && param.name in this.currentAction.mapping)) {
@@ -561,6 +563,9 @@ export default {
         }
       }
       this.currentAction.loading = false
+      if (action.dataView && action.icon === 'edit') {
+        this.fillEditFormFieldValues()
+      }
     },
     listUuidOpts (param) {
       if (this.currentAction.mapping && param.name in this.currentAction.mapping && !this.currentAction.mapping[param.name].api) {
@@ -643,6 +648,22 @@ export default {
         action
       })
     },
+    fillEditFormFieldValues () {
+      const form = this.form
+      this.currentAction.paramFields.map(field => {
+        let fieldValue = null
+        let fieldName = null
+        if (field.type === 'uuid' || field.type === 'list' || field.name === 'account' || (this.currentAction.mapping && field.name in this.currentAction.mapping)) {
+          fieldName = field.name.replace('ids', 'name').replace('id', 'name')
+        } else {
+          fieldName = field.name
+        }
+        fieldValue = this.resource[fieldName] ? this.resource[fieldName] : null
+        if (fieldValue) {
+          form.getFieldDecorator(field.name, { initialValue: fieldValue })
+        }
+      })
+    },
     handleSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
@@ -670,7 +691,7 @@ export default {
                 } else if (param.type === 'list') {
                   params[key] = input.map(e => { return param.opts[e].id }).reduce((str, name) => { return str + ',' + name })
                 } else if (param.name === 'account' || param.name === 'keypair') {
-                  if (['addAccountToProject'].includes(this.currentAction.api)) {
+                  if (['addAccountToProject', 'createAccount'].includes(this.currentAction.api)) {
                     params[key] = input
                   } else {
                     params[key] = param.opts[input].name
@@ -722,7 +743,7 @@ export default {
                 break
               }
             }
-            if (this.currentAction.icon === 'delete' && this.dataView) {
+            if ((this.currentAction.icon === 'delete' || ['archiveEvents'].includes(this.currentAction.api)) && this.dataView) {
               this.$router.go(-1)
             } else {
               if (!hasJobId) {

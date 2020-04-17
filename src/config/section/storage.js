@@ -27,7 +27,7 @@ export default {
       permission: ['listVolumesMetrics', 'listVolumes'],
       resourceType: 'Volume',
       columns: ['name', 'state', 'type', 'vmname', 'size', 'physicalsize', 'utilization', 'diskkbsread', 'diskkbswrite', 'diskiopstotal', 'storage', 'account', 'zonename'],
-      details: ['name', 'id', 'type', 'deviceid', 'sizegb', 'physicalsize', 'provisioningtype', 'utilization', 'diskkbsread', 'diskkbswrite', 'diskioread', 'diskiowrite', 'diskiopstotal', 'path'],
+      details: ['name', 'id', 'type', 'storagetype', 'diskofferingdisplaytext', 'deviceid', 'sizegb', 'physicalsize', 'provisioningtype', 'utilization', 'diskkbsread', 'diskkbswrite', 'diskioread', 'diskiowrite', 'diskiopstotal', 'miniops', 'maxiops', 'path'],
       related: [{
         name: 'snapshot',
         title: 'Snapshots',
@@ -39,9 +39,9 @@ export default {
           icon: 'plus',
           label: 'Create Volume',
           listView: true,
-          args: ['name', 'zoneid', 'diskofferingid']
-        },
-        {
+          popup: true,
+          component: () => import('@/views/storage/CreateVolume.vue')
+        }, {
           api: 'getUploadParamsForVolume',
           icon: 'cloud-upload',
           label: 'Upload Local Volume',
@@ -107,7 +107,8 @@ export default {
           icon: 'fullscreen',
           label: 'Resize Volume',
           dataView: true,
-          args: ['size']
+          popup: true,
+          component: () => import('@/views/storage/ResizeVolume.vue')
         },
         {
           api: 'migrateVolume',
@@ -221,8 +222,8 @@ export default {
       icon: 'camera',
       permission: ['listVMSnapshot'],
       resourceType: 'VMSnapshot',
-      columns: ['name', 'state', 'type', 'current', 'parent', 'created', 'account'],
-      details: ['name', 'id', 'displayname', 'description', 'type', 'current', 'parent', 'virtualmachineid', 'account', 'domain', 'created'],
+      columns: ['displayname', 'state', 'type', 'current', 'parentName', 'created', 'account'],
+      details: ['name', 'id', 'displayname', 'description', 'type', 'current', 'parentName', 'virtualmachineid', 'account', 'domain', 'created'],
       actions: [
         {
           api: 'revertToVMSnapshot',
@@ -248,6 +249,58 @@ export default {
               value: (record) => { return record.id }
             }
           }
+        }
+      ]
+    },
+    {
+      name: 'backup',
+      title: 'Backups',
+      icon: 'cloud-upload',
+      permission: ['listBackups'],
+      columns: [{ name: (record) => { return record.virtualmachinename } }, 'status', 'type', 'created', 'account', 'zone'],
+      details: ['virtualmachinename', 'id', 'type', 'externalid', 'size', 'virtualsize', 'volumes', 'backupofferingname', 'zone', 'account', 'domain', 'created'],
+      actions: [
+        {
+          api: 'restoreBackup',
+          icon: 'sync',
+          label: 'Restore Backup',
+          dataView: true
+        },
+        {
+          api: 'restoreVolumeFromBackupAndAttachToVM',
+          icon: 'paper-clip',
+          label: 'Restore Volume and Attach',
+          dataView: true,
+          args: ['backupid', 'virtualmachineid', 'volumeid'],
+          mapping: {
+            backupid: {
+              value: (record) => { return record.id }
+            },
+            volumeid: {
+              options: ['todo: handle custom volume ID']
+            }
+          }
+        },
+        {
+          api: 'removeVirtualMachineFromBackupOffering',
+          icon: 'scissor',
+          label: 'Expunge Offering Assignment and Delete Backups',
+          dataView: true,
+          args: ['forced', 'virtualmachineid'],
+          mapping: {
+            forced: {
+              value: (record) => { return true }
+            },
+            virtualmachineid: {
+              value: (record) => { return record.virtualmachineid }
+            }
+          }
+        },
+        {
+          api: 'deleteBackup',
+          icon: 'delete',
+          label: 'Delete Backup',
+          dataView: true
         }
       ]
     }

@@ -24,12 +24,13 @@
             <div class="avatar">
               <slot name="avatar">
                 <os-logo v-if="resource.ostypeid || resource.ostypename" :osId="resource.ostypeid" :osName="resource.ostypename" size="4x" />
-                <a-icon v-else style="font-size: 36px" :type="$route.meta.icon" />
+                <a-icon v-else-if="typeof $route.meta.icon ==='string'" style="font-size: 36px" :type="$route.meta.icon" />
+                <a-icon v-else style="font-size: 36px" :component="$route.meta.icon" />
               </slot>
             </div>
             <slot name="name">
               <h4 class="name">
-                {{ resource.displayname || resource.name || resource.displaytext || resource.hostname || resource.username || resource.ipaddress }}
+                {{ resource.displayname || resource.displaytext || resource.name || resource.hostname || resource.username || resource.ipaddress || resource.virtualmachinename }}
               </h4>
               <console style="margin-left: 10px" :resource="resource" size="default" v-if="resource.id" />
             </slot>
@@ -48,10 +49,10 @@
               <a-tag v-if="resource.hypervisor">
                 {{ resource.hypervisor }}
               </a-tag>
-              <a-tag v-if="'haenable' in resource" :color="resource.haenable ? 'green': 'red'">
+              <a-tag v-if="resource.haenable">
                 {{ $t('haenable') }}
               </a-tag>
-              <a-tag v-if="'isdynamicallyscalable' in resource" :color="resource.isdynamicallyscalable ? 'green': 'red'">
+              <a-tag v-if="resource.isdynamicallyscalable">
                 {{ $t('isdynamicallyscalable') }}
               </a-tag>
               <a-tag v-if="resource.scope">
@@ -73,6 +74,21 @@
             <span>{{ resource.state || resource.status }}</span>
           </div>
         </div>
+        <div class="resource-detail-item" v-if="resource.allocationstate">
+          <div class="resource-detail-item__label">{{ $t('allocationstate') }}</div>
+          <div class="resource-detail-item__details">
+            <status class="status" :text="resource.allocationstate"/>
+            <span>{{ resource.allocationstate }}</span>
+          </div>
+        </div>
+        <div class="resource-detail-item" v-if="resource.resourcestate">
+          <div class="resource-detail-item__label">{{ $t('resourcestate') }}</div>
+          <div class="resource-detail-item__details">
+            <status class="status" :text="resource.resourcestate"/>
+            <span>{{ resource.resourcestate }}</span>
+          </div>
+        </div>
+
         <div class="resource-detail-item" v-if="resource.id">
           <div class="resource-detail-item__label">{{ $t('id') }}</div>
           <div class="resource-detail-item__details">
@@ -199,8 +215,8 @@
           <div class="resource-detail-item__label">{{ $t('disksize') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="hdd" />
-            <span style="width: 100%;" v-if="resource.volumes">{{ (resource.volumes.reduce((total, item) => total += item.size, 0) / (1024 * 1024 * 1024.0)).toFixed(2) }} GB Storage</span>
-            <span style="width: 100%;" v-else-if="resource.sizegb">{{ resource.sizegb }}</span>
+            <span style="width: 100%;" v-if="$route.meta.name === 'vm' && resource.volumes">{{ (resource.volumes.reduce((total, item) => total += item.size, 0) / (1024 * 1024 * 1024.0)).toFixed(2) }} GB Storage</span>
+            <span style="width: 100%;" v-else-if="resource.sizegb || resource.size">{{ resource.sizegb || (resource.size/1024.0) }}</span>
           </div>
           <div style="margin-left: 25px; margin-top: 5px" v-if="resource.diskkbsread && resource.diskkbswrite && resource.diskioread && resource.diskiowrite">
             <a-tag style="margin-bottom: 5px;">Read {{ toSize(resource.diskkbsread) }}</a-tag>
@@ -317,6 +333,17 @@
             <router-link :to="{ path: '/vpc/' + resource.vpcid }">{{ resource.vpcname || resource.vpcid }}</router-link>
           </div>
         </div>
+        <div class="resource-detail-item" v-if="resource.affinitygroup && resource.affinitygroup.length > 0">
+          <div class="resource-detail-item__label">{{ $t('affinitygroup') }}</div>
+          <a-icon type="swap" />
+          <span
+            v-for="(group, index) in resource.affinitygroup"
+            :key="group.id"
+          >
+            <router-link :to="{ path: '/affinitygroup/' + group.id }">{{ group.name }}</router-link>
+            <span v-if="index + 1 < resource.affinitygroup.length">, </span>
+          </span>
+        </div>
         <div class="resource-detail-item" v-if="resource.serviceofferingname && resource.serviceofferingid">
           <div class="resource-detail-item__label">{{ $t('serviceofferingname') }}</div>
           <div class="resource-detail-item__details">
@@ -337,6 +364,11 @@
             <a-icon type="hdd" />
             <router-link :to="{ path: '/diskoffering/' + resource.diskofferingid }">{{ resource.diskofferingname || resource.diskofferingid }} </router-link>
           </div>
+        </div>
+        <div class="resource-detail-item" v-if="resource.backupofferingid">
+          <div class="resource-detail-item__label">{{ $t('backupofferingid') }}</div>
+          <a-icon type="cloud-upload" />
+          <router-link :to="{ path: '/backupoffering/' + resource.backupofferingid }">{{ resource.backupofferingname || resource.backupofferingid }} </router-link>
         </div>
         <div class="resource-detail-item" v-if="resource.networkofferingid">
           <div class="resource-detail-item__label">{{ $t('networkofferingid') }}</div>
@@ -387,7 +419,8 @@
           <div class="resource-detail-item__label">{{ $t('zone') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="global" />
-            <router-link :to="{ path: '/zone/' + resource.zoneid }">{{ resource.zonename || resource.zoneid }}</router-link>
+            <router-link v-if="!resource.zoneid.includes(',')" :to="{ path: '/zone/' + resource.zoneid }">{{ resource.zonename || resource.zoneid }}</router-link>
+            <span v-else>{{ resource.zone || resource.zonename }}</span>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.account">
@@ -408,7 +441,8 @@
           <div class="resource-detail-item__label">{{ $t('domain') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="block" />
-            <router-link :to="{ path: '/domain/' + resource.domainid }">{{ resource.domain || resource.domainid }}</router-link>
+            <router-link v-if="!resource.domainid.includes(',')" :to="{ path: '/domain/' + resource.domainid }">{{ resource.domain || resource.domainid }}</router-link>
+            <span v-else>{{ resource.domain }}</span>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.managementserverid">
@@ -423,16 +457,6 @@
           <div class="resource-detail-item__details">
             <a-icon type="calendar" />{{ resource.created }}
           </div>
-        </div>
-        <div class="resource-detail-item" v-if="resource.affinitygroup && resource.affinitygroup.length > 0">
-          <a-icon type="swap" />
-          <span
-            v-for="(group, index) in resource.affinitygroup"
-            :key="group.id"
-          >
-            <router-link :to="{ path: '/affinitygroup/' + group.id }">{{ group.name }}</router-link>
-            <span v-if="index + 1 < resource.affinitygroup.length">, </span>
-          </span>
         </div>
       </div>
 
@@ -476,7 +500,7 @@
               <template slot="title">
                 <span>Copy {{ $t('secretkey') }}</span>
               </template>
-              <a-button shape="circle" type="dashed" size="small" v-clipboard:copy="resource.apikey">
+              <a-button shape="circle" type="dashed" size="small" v-clipboard:copy="resource.secretkey">
                 <a-icon type="copy"/>
               </a-button>
             </a-tooltip>
@@ -804,7 +828,7 @@ export default {
       margin-bottom: 0;
       font-size: 18px;
       line-height: 1;
-      word-wrap: break-word;
+      word-break: break-all;
       text-align: left;
     }
 
@@ -812,7 +836,7 @@ export default {
 }
 .resource-detail-item {
   margin-bottom: 20px;
-  word-break: break-word;
+  word-break: break-all;
 
   &__details {
     display: flex;

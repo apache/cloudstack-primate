@@ -83,7 +83,7 @@ export default {
       title: 'Accounts',
       icon: 'team',
       permission: ['listAccounts'],
-      columns: ['name', 'state', 'firstname', 'lastname', 'rolename', 'roletype', 'domain'],
+      columns: ['name', 'state', 'rolename', 'roletype', 'domain'],
       details: ['name', 'id', 'rolename', 'roletype', 'domain', 'networkdomain', 'iptotal', 'vmtotal', 'volumetotal', 'receivedbytes', 'sentbytes', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit'],
       related: [{
         name: 'accountuser',
@@ -100,7 +100,12 @@ export default {
           component: () => import('@/views/iam/SSLCertificateTab.vue')
         },
         {
-          name: 'Settings',
+          name: 'limits',
+          show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
+          component: () => import('@/components/view/ResourceLimitTab.vue')
+        },
+        {
+          name: 'settings',
           component: () => import('@/components/view/SettingsTab.vue')
         }
       ],
@@ -126,9 +131,17 @@ export default {
         {
           api: 'updateAccount',
           icon: 'edit',
-          label: 'label.update.account',
+          label: 'Update Account',
           dataView: true,
-          args: ['newname', 'domainid', 'roleid', 'networkdomain', 'details']
+          args: ['newname', 'account', 'domainid', 'networkdomain'],
+          mapping: {
+            account: {
+              value: (record) => { return record.name }
+            },
+            domainid: {
+              value: (record) => { return record.domainid }
+            }
+          }
         },
         {
           api: 'updateResourceCount',
@@ -226,8 +239,14 @@ export default {
         {
           name: 'details',
           component: () => import('@/components/view/DetailsTab.vue')
-        }, {
-          name: 'Settings',
+        },
+        {
+          name: 'limits',
+          show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
+          component: () => import('@/components/view/ResourceLimitTab.vue')
+        },
+        {
+          name: 'settings',
           component: () => import('@/components/view/SettingsTab.vue')
         }
       ],
