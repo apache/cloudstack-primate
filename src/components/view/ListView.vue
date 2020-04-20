@@ -127,7 +127,7 @@
     </a>
     <a slot="account" slot-scope="text, record" href="javascript:;">
       <router-link
-        :to="{ path: `${$route.path}/${record.accountid}`, query: { account: record.account, domainid: record.domainid } }"
+        :to="{ path: `${$route.path}/${record.account}`, query: { account: record.account, domainid: record.domainid, quota: true } }"
         v-if="record.accountid && 'quota' in record">{{ text }}</router-link>
       <router-link :to="{ path: '/account/' + record.accountid }" v-else-if="record.accountid">{{ text }}</router-link>
       <router-link :to="{ path: '/account', query: { name: record.account, domainid: record.domainid } }" v-else>{{ text }}</router-link>

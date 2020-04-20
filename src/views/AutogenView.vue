@@ -389,6 +389,10 @@ export default {
         }
       }
 
+      if (Object.keys(this.$route.query).length > 0 && this.$route.query.quota) {
+        return
+      }
+
       if (this.apiName === '' || this.apiName === undefined) {
         return
       }

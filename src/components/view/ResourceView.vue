@@ -57,6 +57,7 @@ import DetailsTab from '@/components/view/DetailsTab'
 import InfoCard from '@/components/view/InfoCard'
 import ResourceLayout from '@/layouts/ResourceLayout'
 import { api } from '@/api'
+import moment from 'moment'
 
 export default {
   name: 'ResourceView',
@@ -88,14 +89,16 @@ export default {
       activeTab: '',
       networkService: null,
       fetchLoading: false,
-      resourceData: {}
+      resourceData: {},
+      pattern: 'YYYY-MM-DD'
     }
   },
   watch: {
     resource: function (newItem, oldItem) {
       this.resource = newItem
       this.resourceData = Object.assign({}, this.resource)
-      if ('quota' in this.resource) {
+
+      if (Object.keys(this.$route.query).length > 0 && this.$route.query.quota) {
         this.fetchResourceQuota()
         return
       }
@@ -132,9 +135,13 @@ export default {
       }
       api('quotaBalance', params).then(json => {
         const quotaBalance = json.quotabalanceresponse.balance || {}
-        this.$set(this.resourceData, 'currency', `${this.resourceData.currency} ${quotaBalance.startquota}`)
-        this.$set(this.resourceData, 'credits', quotaBalance.credits)
-        this.$set(this.resourceData, 'startdate', quotaBalance.startdate)
+        if (Object.keys(quotaBalance).length > 0) {
+          quotaBalance.currency = `${quotaBalance.currency} ${quotaBalance.startquota}`
+          quotaBalance.startdate = moment(quotaBalance.startdate).format(this.pattern)
+          quotaBalance.account = this.$route.params.id ? this.$route.params.id : null
+          quotaBalance.domainid = this.$route.query.domainid ? this.$route.query.domainid : null
+        }
+        this.resourceData = Object.assign({}, this.resourceData, quotaBalance)
       }).finally(() => {
         this.fetchLoading = false
       })
