@@ -112,6 +112,11 @@ export default {
       }
     }
   },
+  mounted () {
+    if (Object.keys(this.$route.query).length > 0 && this.$route.query.quota) {
+      this.fetchResourceQuota()
+    }
+  },
   methods: {
     onTabChange (key) {
       this.activeTab = key
