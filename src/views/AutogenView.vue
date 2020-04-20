@@ -285,7 +285,8 @@ export default {
       parentFetchData: this.fetchData,
       parentToggleLoading: this.toggleLoading,
       parentStartLoading: this.startLoading,
-      parentFinishLoading: this.finishLoading
+      parentFinishLoading: this.finishLoading,
+      parentChangeResource: this.changeResource
     }
   },
   data () {

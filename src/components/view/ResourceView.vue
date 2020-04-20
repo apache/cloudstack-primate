@@ -93,6 +93,7 @@ export default {
       pattern: 'YYYY-MM-DD'
     }
   },
+  inject: ['parentChangeResource'],
   watch: {
     resource: function (newItem, oldItem) {
       this.resource = newItem
@@ -147,6 +148,7 @@ export default {
           quotaBalance.domainid = this.$route.query.domainid ? this.$route.query.domainid : null
         }
         this.resourceData = Object.assign({}, this.resourceData, quotaBalance)
+        this.parentChangeResource(this.resourceData)
       }).finally(() => {
         this.fetchLoading = false
       })
