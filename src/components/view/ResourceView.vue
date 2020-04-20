@@ -19,10 +19,10 @@
   <resource-layout>
     <div slot="left">
       <slot name="info-card">
-        <info-card :resource="resource" :loading="loading" />
+        <info-card :resource="resourceData" :loading="loading || fetchLoading" />
       </slot>
     </div>
-    <a-spin :spinning="loading" slot="right">
+    <a-spin :spinning="loading || fetchLoading" slot="right">
       <a-card
         class="spin-content"
         :bordered="true"
@@ -30,7 +30,7 @@
         <component
           v-if="tabs.length === 1"
           :is="tabs[0].component"
-          :resource="resource"
+          :resource="resourceData"
           :loading="loading"
           :tab="tabs[0].name" />
         <a-tabs
@@ -44,7 +44,7 @@
             :tab="$t(tab.name)"
             :key="tab.name"
             v-if="showHideTab(tab)">
-            <component :is="tab.component" :resource="resource" :loading="loading" :tab="activeTab" />
+            <component :is="tab.component" :resource="resourceData" :loading="loading" :tab="activeTab" />
           </a-tab-pane>
         </a-tabs>
       </a-card>
@@ -86,12 +86,20 @@ export default {
   data () {
     return {
       activeTab: '',
-      networkService: null
+      networkService: null,
+      fetchLoading: false,
+      resourceData: {}
     }
   },
   watch: {
     resource: function (newItem, oldItem) {
       this.resource = newItem
+      this.resourceData = Object.assign({}, this.resource)
+      if ('quota' in this.resource) {
+        this.fetchResourceQuota()
+        return
+      }
+
       if (newItem.id === oldItem.id) return
 
       if (this.resource.associatednetworkid) {
@@ -115,6 +123,21 @@ export default {
       } else {
         return true
       }
+    },
+    fetchResourceQuota () {
+      this.fetchLoading = true
+      const params = {}
+      if (Object.keys(this.$route.query).length > 0) {
+        Object.assign(params, this.$route.query)
+      }
+      api('quotaBalance', params).then(json => {
+        const quotaBalance = json.quotabalanceresponse.balance || {}
+        this.$set(this.resourceData, 'currency', `${this.resourceData.currency} ${quotaBalance.startquota}`)
+        this.$set(this.resourceData, 'credits', quotaBalance.credits)
+        this.$set(this.resourceData, 'startdate', quotaBalance.startdate)
+      }).finally(() => {
+        this.fetchLoading = false
+      })
     }
   }
 }
