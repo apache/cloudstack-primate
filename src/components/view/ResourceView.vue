@@ -97,12 +97,14 @@ export default {
   watch: {
     resource: function (newItem, oldItem) {
       this.resource = newItem
-      this.resourceData = Object.assign({}, this.resource)
 
       if (Object.keys(this.$route.query).length > 0 && this.$route.query.quota) {
-        this.fetchResourceQuota()
-        return
+        if (newItem.account !== this.resourceData.account) {
+          this.fetchResourceQuota()
+        }
       }
+
+      this.resourceData = Object.assign({}, this.resource)
 
       if (newItem.id === oldItem.id) return
 

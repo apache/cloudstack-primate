@@ -27,7 +27,38 @@ export default {
       icon: 'bars',
       permission: ['quotaSummary'],
       columns: ['account', 'domain', 'state', 'currency', 'balance', 'quota'],
-      details: ['account', 'domain', 'state', 'currency', 'balance', 'quota', 'startdate', 'enddate']
+      details: ['account', 'domain', 'state', 'currency', 'balance', 'quota', 'startdate', 'enddate'],
+      tabs: [
+        {
+          name: 'details',
+          component: () => import('@/components/view/DetailsTab.vue')
+        },
+        {
+          name: 'Quota Usage',
+          component: () => import('@/views/plugins/quota/QuotaUsage.vue')
+        },
+        {
+          name: 'Quota Balance',
+          component: () => import('@/views/plugins/quota/QuotaBalance.vue')
+        }
+      ],
+      actions: [
+        {
+          api: 'quotaCredits',
+          icon: 'plus',
+          label: 'label.quota.add.credits',
+          dataView: true,
+          args: ['value', 'min_balance', 'quota_enforce'],
+          mapping: {
+            account: {
+              value: (record) => { return record.account }
+            },
+            domainid: {
+              value: (record) => { return record.domainid }
+            }
+          }
+        }
+      ]
     },
     {
       name: 'quotatariff',
