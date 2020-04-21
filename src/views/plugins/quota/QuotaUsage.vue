@@ -58,9 +58,6 @@ export default {
       totalQuota: 0
     }
   },
-  mounted () {
-    this.fetchData()
-  },
   computed: {
     columns () {
       return [
@@ -84,6 +81,17 @@ export default {
         }
       ]
     }
+  },
+  watch: {
+    tab (newTab, oldTab) {
+      this.tab = newTab
+      if (this.tab === 'label.quota.statement.quota') {
+        this.fetchData()
+      }
+    }
+  },
+  mounted () {
+    this.fetchData()
   },
   methods: {
     async fetchData () {

@@ -452,11 +452,17 @@ export default {
         params.value = values.value
         params.startdate = values.startdate.format(this.pattern)
 
+        this.actionLoading = true
+
         api('quotaTariffUpdate', {}, 'POST', params).then(json => {
           const tariffResponse = json.quotatariffupdateresponse.quotatariff || {}
           if (Object.keys(tariffResponse).length > 0) {
             const effectiveDate = moment(tariffResponse.effectiveDate).format(this.pattern)
-            this.$router.replace({ path: 'quotatariff', query: { startdate: effectiveDate } })
+            const query = this.$route.query
+            if (query.startdate !== effectiveDate) {
+              this.$router.replace({ path: 'quotatariff', query: { startdate: effectiveDate } })
+            }
+            this.$emit('refresh')
           }
 
           this.showTariffAction = false
@@ -465,6 +471,8 @@ export default {
             message: 'Request Failed',
             description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
           })
+        }).finally(() => {
+          this.actionLoading = false
         })
       })
     },

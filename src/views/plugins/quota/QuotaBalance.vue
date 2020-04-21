@@ -84,6 +84,14 @@ export default {
       ]
     }
   },
+  watch: {
+    tab (newTab, oldTab) {
+      this.tab = newTab
+      if (this.tab === 'label.quota.statement.balance') {
+        this.fetchData()
+      }
+    }
+  },
   mounted () {
     this.fetchData()
   },

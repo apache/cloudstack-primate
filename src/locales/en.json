@@ -1273,5 +1273,6 @@
 "label.quota.statement.balance":"Quota Balance",
 "label.quota.statement.quota":"Quota Usage",
 "label.quota.configuration":"Quota Configuration",
-"label.quota.tariff.effectivedate":"Effective Date"
+"label.quota.tariff.effectivedate":"Effective Date",
+"tariffActions": "Actions"
 }
