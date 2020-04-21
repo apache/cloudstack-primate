@@ -1268,7 +1268,6 @@
 "featured": "Featured",
 "community": "Community",
 "selfexecutable": "Self",
-"sharedexecutable": "Shared"
-"label.zone": "Zone",
-"error.something.went.wrong.please.correct.the.following": "Something went wrong; please correct the following"
+"sharedexecutable": "Shared",
+"label.zone": "Zone"
 }

@@ -102,9 +102,14 @@ export default {
       }
     },
     loading () {
-      if (!this.loading && this.preFillContent.affinitygroupids) {
-        this.selectedRowKeys = this.preFillContent.affinitygroupids
-        this.$emit('select-affinity-group-item', this.preFillContent.affinitygroupids)
+      if (!this.loading) {
+        if (this.preFillContent.affinitygroupids) {
+          this.selectedRowKeys = this.preFillContent.affinitygroupids
+          this.$emit('select-affinity-group-item', this.preFillContent.affinitygroupids)
+        } else {
+          this.selectedRowKeys = []
+          this.$emit('select-affinity-group-item', null)
+        }
       }
     }
   },

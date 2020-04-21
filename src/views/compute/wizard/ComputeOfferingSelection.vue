@@ -132,9 +132,14 @@ export default {
       }
     },
     loading () {
-      if (!this.loading && this.preFillContent.computeofferingid) {
-        this.selectedRowKeys = [this.preFillContent.computeofferingid]
-        this.$emit('select-compute-item', this.preFillContent.computeofferingid)
+      if (!this.loading) {
+        if (this.preFillContent.computeofferingid) {
+          this.selectedRowKeys = [this.preFillContent.computeofferingid]
+          this.$emit('select-compute-item', this.preFillContent.computeofferingid)
+        } else {
+          this.selectedRowKeys = []
+          this.$emit('select-compute-item', null)
+        }
       }
     }
   },

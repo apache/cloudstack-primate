@@ -140,9 +140,14 @@ export default {
       }
     },
     loading () {
-      if (!this.loading && this.preFillContent.diskofferingid) {
-        this.selectedRowKeys = [this.preFillContent.diskofferingid]
-        this.$emit('select-disk-offering-item', this.preFillContent.diskofferingid)
+      if (!this.loading) {
+        if (this.preFillContent.diskofferingid) {
+          this.selectedRowKeys = [this.preFillContent.diskofferingid]
+          this.$emit('select-disk-offering-item', this.preFillContent.diskofferingid)
+        } else {
+          this.selectedRowKeys = ['0']
+          this.$emit('select-disk-offering-item', '0')
+        }
       }
     }
   },

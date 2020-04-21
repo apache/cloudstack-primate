@@ -125,9 +125,14 @@ export default {
       }
     },
     loading () {
-      if (!this.loading && this.preFillContent.keypair) {
-        this.selectedRowKeys = [this.preFillContent.keypair]
-        this.$emit('select-ssh-key-pair-item', this.preFillContent.keypair)
+      if (!this.loading) {
+        if (this.preFillContent.keypair) {
+          this.selectedRowKeys = [this.preFillContent.keypair]
+          this.$emit('select-ssh-key-pair-item', this.preFillContent.keypair)
+        } else {
+          this.selectedRowKeys = [this.$t('noselect')]
+          this.$emit('select-ssh-key-pair-item', this.$t('noselect'))
+        }
       }
     }
   },

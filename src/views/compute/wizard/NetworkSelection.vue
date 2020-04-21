@@ -210,9 +210,14 @@ export default {
       }
     },
     loading () {
-      if (!this.loading && this.preFillContent.networkids) {
-        this.selectedRowKeys = this.preFillContent.networkids
-        this.$emit('select-network-item', this.preFillContent.networkids)
+      if (!this.loading) {
+        if (this.preFillContent.networkids) {
+          this.selectedRowKeys = this.preFillContent.networkids
+          this.$emit('select-network-item', this.preFillContent.networkids)
+        } else {
+          this.selectedRowKeys = []
+          this.$emit('select-network-item', null)
+        }
       }
     }
   },
