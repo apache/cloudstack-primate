@@ -1264,5 +1264,14 @@
 "label.done": "Done",
 "label.fix.errors": "Fix errors",
 "label.zone": "Zone",
-"error.something.went.wrong.please.correct.the.following": "Something went wrong; please correct the following"
+"error.something.went.wrong.please.correct.the.following": "Something went wrong; please correct the following",
+"label.quota.total":"Total",
+"label.quota.type.name":"Usage Type",
+"label.quota.type.unit":"Usage Unit",
+"label.quota.usage":"Quota Consumption",
+"label.quota.value":"Quota Value",
+"label.quota.statement.balance":"Quota Balance",
+"label.quota.statement.quota":"Quota Usage",
+"label.quota.configuration":"Quota Configuration",
+"label.quota.tariff.effectivedate":"Effective Date"
 }
