@@ -16,11 +16,132 @@
 // under the License.
 
 <template>
-  <div>// TODO: Quota Balance</div>
+  <div>
+    <a-table
+      size="small"
+      :loading="loading"
+      :columns="columns"
+      :dataSource="dataSource"
+      :rowKey="record => record.name"
+      :pagination="false"
+      :scroll="{ y: '55vh' }"
+    >
+      <template slot="quota" slot-scope="text">
+        <span v-if="text!==null">{{ `${currency} ${text}` }}</span>
+      </template>
+      <template slot="credit" slot-scope="text">
+        <span v-if="text!==null">{{ `${currency} ${text}` }}</span>
+      </template>
+    </a-table>
+  </div>
 </template>
 
 <script>
+import { api } from '@/api'
+import moment from 'moment'
+
 export default {
-  name: 'QuotaBalance'
+  name: 'QuotaBalance',
+  props: {
+    resource: {
+      type: Object,
+      required: true
+    },
+    tab: {
+      type: String,
+      default: () => ''
+    }
+  },
+  data () {
+    return {
+      loading: false,
+      pattern: 'YYYY-MM-DD',
+      currency: '',
+      dataSource: []
+    }
+  },
+  computed: {
+    columns () {
+      return [
+        {
+          title: this.$t('date'),
+          dataIndex: 'date',
+          width: 'calc(100% / 3)',
+          scopedSlots: { customRender: 'date' }
+        },
+        {
+          title: this.$t('label.quota.value'),
+          dataIndex: 'quota',
+          width: 'calc(100% / 3)',
+          scopedSlots: { customRender: 'quota' }
+        },
+        {
+          title: this.$t('credit'),
+          dataIndex: 'credit',
+          width: 'calc(100% / 3)',
+          scopedSlots: { customRender: 'credit' }
+        }
+      ]
+    }
+  },
+  mounted () {
+    this.fetchData()
+  },
+  methods: {
+    async fetchData () {
+      this.dataSource = []
+      this.loading = true
+
+      try {
+        const quotaBalance = await this.quotaBalance()
+        this.currency = quotaBalance.currency
+        this.dataSource = await this.createDataSource(quotaBalance)
+        this.loading = false
+      } catch (e) {
+        console.log(e)
+        this.loading = false
+      }
+    },
+    createDataSource (quotaBalance) {
+      const dataSource = []
+      const credits = quotaBalance.credits || []
+
+      dataSource.push({
+        date: moment(quotaBalance.enddate).format(this.pattern),
+        quota: quotaBalance.endquota,
+        credit: null
+      })
+      dataSource.push({
+        date: moment(quotaBalance.startdate).format(this.pattern),
+        quota: quotaBalance.startquota,
+        credit: null
+      })
+      credits.map(item => {
+        dataSource.push({
+          date: moment(item.updated_on).format(this.pattern),
+          quota: null,
+          credit: item.credits
+        })
+      })
+
+      return dataSource
+    },
+    quotaBalance () {
+      return new Promise((resolve, reject) => {
+        const params = {}
+        params.domainid = this.resource.domainid
+        params.account = this.resource.account
+        params.startdate = moment(this.resource.startdate).format(this.pattern)
+        params.enddate = moment(this.resource.enddate).format(this.pattern)
+
+        api('quotaBalance', params).then(json => {
+          const quotaBalance = json.quotabalanceresponse.balance || {}
+          resolve(quotaBalance)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    }
+  }
 }
 </script>
