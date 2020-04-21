@@ -401,6 +401,8 @@ export default {
       if (this.searchQuery !== '') {
         if (this.apiName === 'listRoles') {
           params.name = this.searchQuery
+        } else if (this.apiName === 'quotaEmailTemplateList') {
+          params.templatetype = this.searchQuery
         } else {
           params.keyword = this.searchQuery
         }
