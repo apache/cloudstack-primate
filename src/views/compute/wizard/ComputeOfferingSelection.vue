@@ -137,8 +137,8 @@ export default {
           this.selectedRowKeys = [this.preFillContent.computeofferingid]
           this.$emit('select-compute-item', this.preFillContent.computeofferingid)
         } else {
-          this.selectedRowKeys = []
-          this.$emit('select-compute-item', null)
+          this.selectedRowKeys = [this.computeItems[0].id]
+          this.$emit('select-compute-item', this.computeItems[0].id)
         }
       }
     }
