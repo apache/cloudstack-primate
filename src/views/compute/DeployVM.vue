@@ -896,7 +896,7 @@ export default {
           deployVmData.size = values.size
         }
         // step 5: select an affinity group
-        deployVmData.affinitygroupids = values.affinitygroupids.length > 0 ? values.affinitygroupids.join(',') : null
+        deployVmData.affinitygroupids = values.affinitygroupids.join(',')
         // step 6: select network
         if (values.networkids && values.networkids.length > 0) {
           for (let i = 0; i < values.networkids.length; i++) {
