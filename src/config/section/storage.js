@@ -116,7 +116,7 @@ export default {
           label: 'Migrate Volume',
           args: ['volumeid', 'storageid', 'livemigrate'],
           dataView: true,
-          show: (record, store) => { return record && record.state === 'Ready' && record.virtualmachineid != null && ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) },
+          show: (record, store) => { return record && record.state === 'Ready' && ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) },
           popup: true,
           component: () => import('@/views/storage/MigrateVolume.vue'),
           mapping: {
@@ -187,7 +187,7 @@ export default {
             return (!['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && !store.getters.features.allowuserexpungerecovervolumestore) ? [] : ['expunge']
           },
           show: (record, store) => {
-            return (['Allocated', 'Uploaded'].includes(record.state) && record.type !== 'ROOT')
+            return (!['Creating'].includes(record.state) && record.type !== 'ROOT' && !('virtualmachineid' in record))
           }
         }
       ]
