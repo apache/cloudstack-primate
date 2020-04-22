@@ -20,15 +20,15 @@ module.exports = {
     'js',
     'jsx',
     'json',
-    'vue',
-    'svg'
+    'vue'
   ],
   transform: {
     '^.+\\.vue$': 'vue-jest',
-    '.+\\.(css|styl|less|sass|scss|svg|png|jpg|ttf|woff|woff2)?.+$': 'jest-transform-stub',
+    '.+\\.(css|styl|less|sass|scss|png|svg|jpg|ttf|woff|woff2)?$': 'jest-transform-stub',
     '^.+\\.jsx?$': 'babel-jest'
   },
   moduleNameMapper: {
+    '.+\\.svg?.+$': 'jest-transform-stub',
     '^@/(.*)$': '<rootDir>/src/$1'
   },
   snapshotSerializers: [
@@ -37,7 +37,9 @@ module.exports = {
   testMatch: [
     '**/tests/unit/**/*.spec.(js|jsx|ts|tsx)|**/__tests__/*.(js|jsx|ts|tsx)'
   ],
-  transformIgnorePatterns: ['<rootDir>/node_modules/(?!(ant-design-vue)/)'],
+  transformIgnorePatterns: [
+    '<rootDir>/node_modules/(?!ant-design-vue|vue)'
+  ],
   testURL: 'http://localhost/',
-  setupFiles: ['./tests/setup.js']
+  setupFiles: ['<rootDir>/tests/setup.js']
 }
