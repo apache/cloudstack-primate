@@ -18,7 +18,7 @@
 <template>
   <div class="form-layout">
     <a-form layout="vertical" :form="form">
-      <a-form-item :label="$t('volumeid')">
+      <a-form-item :label="$t('volume')">
         <a-select
           allowClear
           v-decorator="['volumeid', {
@@ -32,7 +32,7 @@
           </a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item :label="$t('virtualmachineid')">
+      <a-form-item :label="$t('vm')">
         <a-select
           showSearch
           allowClear
@@ -97,7 +97,7 @@ export default {
     },
     fetchVirtualMachine () {
       this.virtualMachineOptions.loading = true
-      api('listVirtualMachines').then(json => {
+      api('listVirtualMachines', { zoneid: this.resource.zoneid }).then(json => {
         this.virtualMachineOptions.opts = json.listvirtualmachinesresponse.virtualmachine || []
         this.$forceUpdate()
       }).catch(error => {

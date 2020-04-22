@@ -16,15 +16,15 @@
 // under the License.
 
 <template>
-  <div class="snapshot-layout">
-    <a-tabs defaultActiveKey="1">
+  <div class="backup-layout">
+    <a-tabs defaultActiveKey="1" :animated="false">
       <a-tab-pane :tab="$t('schedule')" key="1">
         <FormSchedule
           :loading="loading"
           :resource="resource"
           :dataSource="dataSource"/>
       </a-tab-pane>
-      <a-tab-pane :tab="$t('label.scheduled.backup')" key="2">
+      <a-tab-pane :tab="$t('label.scheduled.backups')" key="2">
         <BackupSchedule
           :loading="loading"
           :resource="resource"
@@ -85,8 +85,11 @@ export default {
 }
 </script>
 
-<style scoped>
-  .snapshot-layout {
-    max-width: 45vw;
+<style scoped lang="less">
+  .backup-layout {
+    width: 80vw;
+    @media (min-width: 800px) {
+      width: 600px;
+    }
   }
 </style>
