@@ -447,7 +447,7 @@
           <div class="resource-detail-item__details">
             <a-icon type="block" />
             <router-link v-if="$router.resolve('/domain/' + resource.domainid).route.name !== '404'" :to="{ path: '/domain/' + resource.domainid }">{{ resource.domain || resource.domainid }}</router-link>
-            <span v-else>{{ resource.domain }}</span>
+            <span v-else>{{ resource.domain || resource.domainid }}</span>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.managementserverid">
@@ -455,6 +455,7 @@
           <div class="resource-detail-item__details">
             <a-icon type="rocket" />
             <router-link v-if="$router.resolve('/managementserver/' + resource.managementserverid).route.name !== '404'" :to="{ path: '/managementserver/' + resource.managementserverid }">{{ resource.managementserver || resource.managementserverid }}</router-link>
+            <span v-else>{{ resource.managementserver || resource.managementserverid }}</span>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.created">
