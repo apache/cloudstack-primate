@@ -457,6 +457,7 @@ export default {
             break
           }
         }
+        this.itemCount = 0
         for (const key in json[responseName]) {
           if (key === 'count') {
             this.itemCount = json[responseName].count
@@ -742,7 +743,7 @@ export default {
                 break
               }
             }
-            if (this.currentAction.icon === 'delete' && this.dataView) {
+            if ((this.currentAction.icon === 'delete' || ['archiveEvents'].includes(this.currentAction.api)) && this.dataView) {
               this.$router.go(-1)
             } else {
               if (!hasJobId) {
