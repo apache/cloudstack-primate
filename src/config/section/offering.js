@@ -133,13 +133,34 @@ export default {
       }]
     },
     {
+      name: 'backupoffering',
+      title: 'Backup Offerings',
+      icon: 'cloud-upload',
+      permission: ['listBackupOfferings'],
+      columns: ['name', 'description', 'zoneid'],
+      details: ['name', 'id', 'description', 'externalid', 'zone', 'created'],
+      actions: [{
+        api: 'importBackupOffering',
+        icon: 'plus',
+        label: 'Import Offering',
+        listView: true,
+        popup: true,
+        component: () => import('@/views/offering/ImportBackupOffering.vue')
+      }, {
+        api: 'deleteBackupOffering',
+        icon: 'delete',
+        label: 'Delete Offering',
+        dataView: true
+      }]
+    },
+    {
       name: 'networkoffering',
       title: 'Network Offerings',
       icon: 'wifi',
       permission: ['listNetworkOfferings'],
       params: { isrecursive: 'true' },
       columns: ['name', 'state', 'guestiptype', 'traffictype', 'networkrate', 'tags', 'domain', 'zone', 'order'],
-      details: ['name', 'id', 'displaytext', 'guestiptype', 'traffictype', 'networkrate', 'ispersistent', 'egressdefaultpolicy', 'availability', 'conservemode', 'specifyvlan', 'specifyipranges', 'supportspublicaccess', 'supportsstrechedl2subnet', 'service', 'tags', 'domain', 'zone'],
+      details: ['name', 'id', 'displaytext', 'guestiptype', 'traffictype', 'networkrate', 'ispersistent', 'egressdefaultpolicy', 'availability', 'conservemode', 'specifyvlan', 'specifyipranges', 'supportspublicaccess', 'supportsstrechedl2subnet', 'tags', 'service', 'domain', 'zone'],
       actions: [{
         api: 'createNetworkOffering',
         icon: 'plus',
@@ -203,8 +224,8 @@ export default {
       permission: ['listVPCOfferings'],
       params: { isrecursive: 'true' },
       resourceType: 'VpcOffering',
-      columns: ['name', 'state', 'displaytext', 'domain', 'zone'],
-      details: ['name', 'id', 'displaytext', 'distributedvpcrouter', 'service', 'tags', 'domain', 'zone', 'created'],
+      columns: ['name', 'state', 'displaytext', 'domain', 'zone', 'order'],
+      details: ['name', 'id', 'displaytext', 'distributedvpcrouter', 'tags', 'service', 'domain', 'zone', 'created'],
       related: [{
         name: 'vpc',
         title: 'VPCs',
