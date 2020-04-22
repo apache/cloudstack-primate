@@ -135,19 +135,6 @@ export default {
           }
         },
         {
-          api: 'createSnapshot',
-          icon: 'camera',
-          label: 'Create VM Volume Snapshot',
-          dataView: true,
-          args: ['volumeId', 'name', 'quiescevm', 'asyncBackup'],
-          show: (record) => {
-            return ((['Running'].includes(record.state) && record.hypervisor !== 'LXC') ||
-              (['Stopped'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC'))
-          },
-          mapping: {
-          }
-        },
-        {
           api: 'assignVirtualMachineToBackupOffering',
           icon: 'folder-add',
           label: 'Assign VM to Backup Offering',
@@ -254,7 +241,7 @@ export default {
           label: 'Change Service Offering',
           dataView: true,
           args: ['serviceofferingid'],
-          show: (record) => { return ['Running'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC' }
+          show: (record) => { return ['Stopped'].includes(record.state) || (['Running'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC') }
         },
         {
           api: 'migrateVirtualMachine',
