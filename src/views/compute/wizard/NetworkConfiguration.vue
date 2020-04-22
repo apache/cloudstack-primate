@@ -28,13 +28,13 @@
     <template slot="ipAddress" slot-scope="text, record">
       <a-input
         style="width: 150px;"
-        :placeholder="$t('ipAddress')"
+        :placeholder="$t('ipaddress')"
         @change="($event) => updateNetworkData('ipAddress', record.id, $event.target.value)" />
     </template>
     <template slot="macAddress" slot-scope="text, record">
       <a-input
         style="width: 150px;"
-        :placeholder="$t('macAddress')"
+        :placeholder="$t('macaddress')"
         @change="($event) => updateNetworkData('macAddress', record.id, $event.target.value)" />
     </template>
   </a-table>

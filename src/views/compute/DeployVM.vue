@@ -497,16 +497,17 @@ export default {
           options: {
             page: 1,
             pageSize: 10,
-            keyword: undefined
+            keyword: undefined,
+            listall: false
           }
         },
         sshKeyPairs: {
           list: 'listSSHKeyPairs',
           options: {
-            zoneid: _.get(this.zone, 'id'),
             page: 1,
             pageSize: 10,
-            keyword: undefined
+            keyword: undefined,
+            listall: false
           }
         },
         networks: {
@@ -550,6 +551,9 @@ export default {
         },
         groups: {
           list: 'listInstanceGroups',
+          options: {
+            listall: false
+          },
           isLoad: true,
           field: 'group'
         }
@@ -896,7 +900,7 @@ export default {
           deployVmData.size = values.size
         }
         // step 5: select an affinity group
-        deployVmData.affinitygroupids = values.affinitygroupids.join(',')
+        deployVmData.affinitygroupids = (values.affinitygroupids || []).join(',')
         // step 6: select network
         if (values.networkids && values.networkids.length > 0) {
           for (let i = 0; i < values.networkids.length; i++) {
@@ -975,7 +979,9 @@ export default {
       param.loading = true
       param.opts = []
       const options = param.options || {}
-      options.listall = true
+      if (!('listall' in options)) {
+        options.listall = true
+      }
       api(param.list, options).then((response) => {
         param.loading = false
         _.map(response, (responseItem, responseKey) => {

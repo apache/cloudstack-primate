@@ -28,12 +28,6 @@
       <template slot="title">
         {{ $t('addNewNetworks') }}
       </template>
-      <a-button
-        type="primary"
-        icon="plus"
-        shape="circle"
-        style="margin-right: 5px; float: right; z-index: 8"
-        @click="onShowActionForm" />
     </a-tooltip>
     <a-table
       :loading="loading"
@@ -61,40 +55,6 @@
         </a-list-item>
       </a-list>
     </a-table>
-    <a-modal
-      :title="$t('addNewNetworks')"
-      :visible="showActionForm"
-      :closable="true"
-      style="top: 20px;"
-      @ok="handleSubmit"
-      @cancel="onCloseAction"
-      :confirmLoading="actionLoading"
-      centered>
-      <div>
-        <a-form
-          :form="form"
-          layout="vertical"
-          @submit="handleSubmit">
-          <a-form-item :label="$t('name')">
-            <a-input
-              v-decorator="['name', {
-                rules: [{ required: true, message: 'Please enter input' }]
-              }]"/>
-          </a-form-item>
-          <a-form-item :label="$t('networkOfferingId')">
-            <a-select
-              v-decorator="['networkOfferingId', {
-                rules: [{ required: true, message: 'Please select option' }]
-              }]"
-              :loading="networkOffering.loading">
-              <a-select-option
-                v-for="(opt) in networkOffering.opts"
-                :key="opt.id">{{ opt.name || opt.displaytext }}</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-form>
-      </div>
-    </a-modal>
   </div>
 </template>
 
@@ -133,8 +93,6 @@ export default {
       selectedRowKeys: [],
       vpcs: [],
       filteredInfo: null,
-      showActionForm: false,
-      actionLoading: false,
       networkOffering: {
         loading: false,
         opts: []
@@ -255,26 +213,6 @@ export default {
       this.options.pageSize = pagination.pageSize
       this.$emit('handle-search-filter', this.options)
     },
-    async onShowActionForm () {
-      this.showActionForm = true
-      this.networkOffering.loading = true
-
-      try {
-        this.networkOffering.opts = await this.listNetworkOfferings()
-        this.networkOffering.loading = false
-        this.$forceUpdate()
-      } catch (e) {
-        console.log(e.stack)
-        this.networkOffering.loading = false
-      }
-    },
-    onCloseAction () {
-      this.showActionForm = false
-      this.form.setFieldsValue({
-        name: undefined,
-        networkOfferingId: undefined
-      })
-    },
     listNetworkOfferings () {
       return new Promise((resolve, reject) => {
         const args = {}
@@ -290,34 +228,6 @@ export default {
           resolve(listNetworkOfferings)
         }).catch(error => {
           resolve(error)
-        })
-      })
-    },
-    handleSubmit (e) {
-      e.preventDefault()
-
-      this.form.validateFields((error, values) => {
-        if (error) {
-          return
-        }
-        const params = {}
-        params.zoneId = this.zoneId
-        params.name = values.name
-        params.displayText = values.name
-        params.networkOfferingId = values.networkOfferingId
-
-        this.actionLoading = true
-        api('createNetwork', params).then(json => {
-          this.vmFetchNetworks()
-          this.onCloseAction()
-        }).catch(error => {
-          const errorMsg = 'Failed to create new network, unable to proceed to deploy VM. Error: ' + error.message
-          this.$notification.error({
-            message: 'Request Failed',
-            description: errorMsg
-          })
-        }).finally(() => {
-          this.actionLoading = false
         })
       })
     }

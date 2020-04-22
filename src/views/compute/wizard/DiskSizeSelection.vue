@@ -25,16 +25,17 @@
           :min="0"
           :max="1024"
           v-model="inputValue"
-          @change="($event) => updateDickSize($event)"
+          @change="($event) => updateDiskSize($event)"
         />
       </a-col>
       <a-col :md="4" :lg="4">
-        <a-input-number
-          v-model="inputValue"
-          :formatter="value => `${value} GB`"
-          :parser="value => value.replace(' GB', '')"
-          @change="($event) => updateDickSize($event)"
-        />
+        <span style="display: inline-flex">
+          <a-input-number
+            v-model="inputValue"
+            @change="($event) => updateDiskSize($event)"
+          />
+          <span style="padding-top: 6px">GB</span>
+        </span>
       </a-col>
     </a-row>
   </a-form-item>
@@ -70,7 +71,7 @@ export default {
       }
       this.$emit('update-disk-size', this.inputDecorator, this.inputValue)
     },
-    updateDickSize (value) {
+    updateDiskSize (value) {
       this.$emit('update-disk-size', this.inputDecorator, value)
     }
   }
