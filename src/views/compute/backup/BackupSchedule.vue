@@ -60,7 +60,7 @@
       <div slot="action" class="account-button-action" slot-scope="text, record">
         <a-tooltip placement="top">
           <template slot="title">
-            {{ $t('label.delete.schedule') }}
+            {{ $t('label.delete') }}
           </template>
           <a-button
             type="danger"
@@ -158,7 +158,7 @@ export default {
       api('deleteBackupSchedule', params).then(json => {
         if (json.deletebackupscheduleresponse.success) {
           this.$notification.success({
-            message: this.$t('label.header.backup.schedule'),
+            message: this.$t('label.scheduled.backups'),
             description: 'Successfully deleted Configure VM backup schedule'
           })
         }

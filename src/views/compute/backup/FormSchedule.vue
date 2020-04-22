@@ -268,7 +268,7 @@ export default {
         this.actionLoading = true
         api('createBackupSchedule', params).then(json => {
           this.$notification.success({
-            message: this.$t('label.header.backup.schedule'),
+            message: this.$t('label.scheduled.backups'),
             description: 'Successfully Configure VM backup schedule'
           })
           this.refreshSchedule()
