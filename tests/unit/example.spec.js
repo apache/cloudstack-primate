@@ -1,6 +1,4 @@
-import Vue from 'vue'
 import { mount } from '@vue/test-utils'
-import { ATooltip } from 'ant-design-vue'
 import Status from '@/components/widgets/Status'
 
 describe('AutogenView', () => {
@@ -14,8 +12,6 @@ describe('AutogenView', () => {
   //     $route
   //   }
   // })
-
-
 
   it('renders the correct markup', () => {
     const propsData = {

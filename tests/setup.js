@@ -3,12 +3,10 @@ import Antd from 'ant-design-vue'
 
 Vue.use(Antd)
 
-window.matchMedia = jest.fn().mockImplementation(query => {
+window.matchMedia = window.matchMedia || function () {
   return {
     matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(),
-    removeListener: jest.fn()
+    addListener: function () {},
+    removeListener: function () {}
   }
-})
+}
