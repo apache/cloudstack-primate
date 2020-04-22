@@ -632,8 +632,16 @@ export default {
         successMethod: result => {
           this.fetchData()
           if (action.response) {
-            const description = action.response(result.jobresult)
+            var description = action.response(result.jobresult)
             if (description) {
+              if (typeof description === 'object') {
+                var keys = Object.keys(description)
+                var parsedString = ''
+                keys.forEach(key => {
+                  parsedString += '<b>' + key + '</b>' + ': ' + description[key].replace(/\n/g, '<br/>') + '<br/><br/>'
+                })
+                description = parsedString
+              }
               this.$notification.info({
                 message: this.$t(action.label),
                 description: (<span domPropsInnerHTML={description}></span>),
