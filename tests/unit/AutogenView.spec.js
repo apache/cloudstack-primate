@@ -1,136 +1,73 @@
 import { mount } from '@vue/test-utils'
 import VueRouter from 'vue-router'
+import { localVue, configI18n } from './../setup'
 import AutogenView from '@/views/AutogenView'
-import { localVue, i18n } from '../setup'
-import {BasicLayout} from "../../src/layouts";
 
-describe('AutogenView', () => {
-  // it('beforeRouteUpdate', () => {
-  //   const $route = {
-  //     name: 'account',
-  //     path: '/account',
-  //     fullPath: '/account',
-  //     matched: [],
-  //     meta: {
-  //       params: {},
-  //       docHelp: 'docHelp'
-  //     },
-  //     query: {}
-  //   }
-  //   const wrapper = mount(AutogenView, {
-  //     localVue,
-  //     i18n,
-  //     mocks: {
-  //       $route
-  //     }
-  //   })
-  //   const beforeRouteUpdate = wrapper.vm.$options.beforeRouteUpdate
-  //   const nextFun = jest.fn()
-  //   beforeRouteUpdate.call(wrapper.vm, {}, {}, nextFun)
-  //   expect(wrapper.vm.currentPath).toEqual('/account')
-  //   expect(nextFun).toHaveBeenCalled()
-  // })
-  //
-  // it('beforeRouteLeave', () => {
-  //   const $route = {
-  //     name: 'account',
-  //     path: '/account',
-  //     fullPath: '/account',
-  //     matched: [],
-  //     meta: {
-  //       params: {},
-  //       docHelp: 'docHelp'
-  //     },
-  //     query: {}
-  //   }
-  //   const wrapper = mount(AutogenView, {
-  //     localVue,
-  //     i18n,
-  //     mocks: {
-  //       $route
-  //     }
-  //   })
-  //   const beforeRouteLeave = wrapper.vm.$options.beforeRouteLeave
-  //   const nextFun = jest.fn()
-  //   beforeRouteLeave.call(wrapper.vm, {}, {}, nextFun)
-  //   expect(nextFun).toHaveBeenCalled()
-  //   // expect(wrapper.vm.currentPath).toEqual('/account')
-  // })
-  //
-  // it('should be have router name', function () {
-  //   const $route = {
-  //     name: 'account',
-  //     path: '/account',
-  //     fullPath: '/account',
-  //     matched: [],
-  //     meta: {
-  //       params: {},
-  //       docHelp: 'docHelp'
-  //     },
-  //     query: {}
-  //   }
-  //   const wrapper = mount(AutogenView, {
-  //     localVue,
-  //     i18n,
-  //     mocks: {
-  //       $route
-  //     }
-  //   })
-  //
-  //   expect(wrapper.vm.routeName).toEqual('account')
-  // })
+const i18n = configI18n()
+const routes = [{
+  path: '/',
+  name: 'home',
+  meta: { icon: 'home' },
+  redirect: '/dashboard',
+  children: [{
+    name: 'dashboard',
+    path: '/dashboard',
+    meta: {}
+  }, {
+    name: 'domain',
+    path: '/domain',
+    meta: {}
+  }]
+}]
+const router = new VueRouter({ routes: routes })
 
-  describe('Watchers - $route', () => {
-    localVue.use(VueRouter)
-    const router = new VueRouter({
-      routes: [
-        {
-          path: '/',
-          name: 'index',
-          component: BasicLayout,
-          meta: { icon: 'home' },
-          redirect: '/dashboard',
-          children: [
-            {
-              path: '/dashboard',
-              name: 'dashboard',
-              meta: {}
-            },
-            {
-              path: '/account',
-              name: 'account',
-              meta: {}
-            },
-            {
-              path: '/domain',
-              name: 'domain',
-              meta: {}
-            }
-          ]
-        }
-      ]
-    })
+describe('AutogenView.vue', () => {
+  // test Navigation Gaurd
+  describe('Navigation Gaurd', () => {
     const wrapper = mount(AutogenView, {
       localVue,
       router,
       i18n
     })
 
-    let spy
+    router.push({ name: 'domain' })
 
-    beforeAll(() => {
-      spy = jest.spyOn(wrapper.vm, 'fetchData')
+    it('is called beforeRouteUpdate', () => {
+      const beforeRouteUpdate = wrapper.vm.$options.beforeRouteUpdate
+      const nextFun = jest.fn()
+      beforeRouteUpdate[0].call(wrapper.vm, {}, {}, nextFun)
+      expect(wrapper.vm.currentPath).toEqual('/domain')
+      expect(nextFun).toHaveBeenCalled()
     })
 
-    afterEach(() => {
+    it('is called beforeRouteLeave', () => {
+      const beforeRouteLeave = wrapper.vm.$options.beforeRouteLeave
+      const nextFun = jest.fn()
+      beforeRouteLeave[0].call(wrapper.vm, {}, {}, nextFun)
+      expect(wrapper.vm.currentPath).toEqual('/domain')
+      expect(nextFun).toHaveBeenCalled()
+    })
+  })
+
+  // test Watchers
+  describe('Watchers', () => {
+    const wrapper = mount(AutogenView, {
+      localVue,
+      router,
+      i18n
+    })
+
+    const spy = jest.spyOn(wrapper.vm, 'fetchData')
+
+    it('is not called fetchData when route not changes', () => {
+      expect(spy).not.toBeCalled()
       spy.mockClear()
     })
 
-    it('should call fetchData when route changes', () => {
+    it('is called fetchData when route changes', () => {
       router.push({ name: 'domain' })
-      setTimeout(() => {
-        expect(spy).toBeCalled()
-      }, 0)
+      setTimeout(() => { expect(spy).toBeCalled() })
+      spy.mockClear()
     })
   })
 })

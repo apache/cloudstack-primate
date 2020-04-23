@@ -1,22 +1,28 @@
 import Vue from 'vue'
+import VueI18n from 'vue-i18n'
+import VueRouter from 'vue-router'
 import Antd from 'ant-design-vue'
 import { createLocalVue } from '@vue/test-utils'
-import localeEn from '@/locales/en'
-import VueI18n from 'vue-i18n'
 
 const localVue = createLocalVue()
 
 Vue.use(Antd)
 localVue.use(VueI18n)
+localVue.use(VueRouter)
 
 module.exports = {
   localVue,
-  i18n: new VueI18n({
-    locale: 'en',
-    fallbackLocale: 'en',
-    silentTranslationWarn: true,
-    messages: { en: localeEn }
-  })
+  configI18n: (locale = 'en', localeMessages = {}) => {
+    const messages = {}
+    messages[locale] = localeMessages
+
+    return new VueI18n({
+      locale: locale,
+      fallbackLocale: locale,
+      silentTranslationWarn: true,
+      messages: messages
+    })
+  }
 }
 
 window.matchMedia = window.matchMedia || function () {
