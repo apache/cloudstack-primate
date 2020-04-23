@@ -72,11 +72,7 @@
                       ></a-select>
                     </a-form-item>
                     <a-form-item :label="this.$t('group')">
-                      <a-select
-                        v-decorator="['group']"
-                        :options="groupsSelectOptions"
-                        :loading="loading.groups"
-                      ></a-select>
+                      <a-input v-decorator="['group']" />
                     </a-form-item>
                     <a-form-item :label="this.$t('keyboard')">
                       <a-select
@@ -548,14 +544,6 @@ export default {
             type: 'Routing'
           },
           field: 'hostid'
-        },
-        groups: {
-          list: 'listInstanceGroups',
-          options: {
-            listall: false
-          },
-          isLoad: true,
-          field: 'group'
         }
       }
     },
@@ -607,14 +595,6 @@ export default {
         return {
           label: this.$t(keyboard.description),
           value: keyboard.id
-        }
-      })
-    },
-    groupsSelectOptions () {
-      return this.options.groups.map((group) => {
-        return {
-          label: group.name,
-          value: group.id
         }
       })
     }
@@ -1098,7 +1078,7 @@ export default {
       this.tabKey = 'templateid'
       _.each(this.params, (param, name) => {
         if (!('isLoad' in param) || param.isLoad) {
-          this.fetchOptions(param, name, ['zones', 'groups'])
+          this.fetchOptions(param, name, ['zones'])
         }
       })
       this.fetchAllTemplates()
