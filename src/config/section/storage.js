@@ -150,7 +150,7 @@ export default {
           icon: 'picture',
           label: 'Create Template from Volume',
           dataView: true,
-          show: (record) => { return record.type === 'ROOT' && record.vmstate === 'Stopped' },
+          show: (record) => { return (record.type === 'ROOT' && record.vmstate === 'Stopped') || (record.type !== 'ROOT' && !('virtualmachineid' in record) && !['Allocated', 'Uploaded'].includes(record.state)) },
           args: ['volumeid', 'name', 'displaytext', 'ostypeid', 'ispublic', 'isfeatured', 'isdynamicallyscalable', 'requireshvm', 'passwordenabled', 'sshkeyenabled'],
           mapping: {
             volumeid: {
