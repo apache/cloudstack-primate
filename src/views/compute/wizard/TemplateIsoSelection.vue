@@ -288,8 +288,27 @@ export default {
   }
 
   .filter-group {
+    /deep/.ant-input-affix-wrapper {
+      float: right;
+      width: calc(100% - 32px);
+
+      .ant-input {
+        border-radius: 4px;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+    }
+
     /deep/.ant-input-group-addon {
-      padding: 0 5px;
+      float: left;
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      border-right: 0;
+      border-left: 1px solid #d9d9d9;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      padding: 0 0 0 1px;
     }
 
     &-button {
@@ -301,7 +320,7 @@ export default {
     &-button {
       position: relative;
       display: block;
-      min-height: 25px;
+      min-height: 30px;
 
       &-clear {
         position: absolute;
