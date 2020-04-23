@@ -45,6 +45,21 @@
                       ></a-select>
                     </a-form-item>
                     <a-form-item
+                      v-if="form.getFieldValue('isoid')"
+                      :label="this.$t('hypervisor')">
+                      <a-select
+                        v-decorator="['hypervisor', {
+                          initialValue: hypervisorSelectOptions && hypervisorSelectOptions.length > 0
+                            ? hypervisorSelectOptions[0].value
+                            : null,
+                          rules: [{ required: true, message: 'Please select option' }]
+                        }]"
+                        :options="hypervisorSelectOptions"
+                        @change="value => this.hypervisor = value"
+                      >
+                      </a-select>
+                    </a-form-item>
+                    <a-form-item
                       v-if="!isNormalAndDomainUser"
                       :label="this.$t('podId')">
                       <a-select
@@ -120,19 +135,6 @@
                           :preFillContent="dataPreFill"
                           @update-template-iso="updateFieldValue"
                         ></template-iso-selection>
-                        <a-form-item :label="this.$t('hypervisor')">
-                          <a-select
-                            v-decorator="['hypervisor', {
-                              initialValue: hypervisorSelectOptions && hypervisorSelectOptions.length > 0
-                                ? hypervisorSelectOptions[0].value
-                                : null,
-                              rules: [{ required: true, message: 'Please select option' }]
-                            }]"
-                            :options="hypervisorSelectOptions"
-                            @change="value => this.hypervisor = value"
-                          >
-                          </a-select>
-                        </a-form-item>
                       </p>
                     </a-card>
                     <a-form-item class="form-item-hidden">
