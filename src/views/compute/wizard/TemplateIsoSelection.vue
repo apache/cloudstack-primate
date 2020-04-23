@@ -244,7 +244,7 @@ export default {
         if (err) {
           return
         }
-        if (this.inputDecorator === 'template') {
+        if (this.inputDecorator === 'templateid') {
           this.vmFetchTemplates(values.filter)
         } else {
           this.vmFetchIsos(values.filter)
@@ -254,7 +254,7 @@ export default {
     onClear () {
       const field = { filter: undefined }
       this.form.setFieldsValue(field)
-      if (this.inputDecorator === 'template') {
+      if (this.inputDecorator === 'templateid') {
         this.vmFetchTemplates()
       } else {
         this.vmFetchIsos()
