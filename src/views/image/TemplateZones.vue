@@ -31,6 +31,23 @@
             <span v-if="record.isready">{{ $t('Yes') }}</span>
             <span v-else>{{ $t('No') }}</span>
           </div>
+
+          <template slot="action" slot-scope="text, record">
+            <span style="margin-right: 5px">
+              <a-button
+                type="copy"
+                icon="copy"
+                shape="circle"
+                @click="handleCopyAction(record)" />
+            </span>
+            <span style="margin-right: 5px">
+              <a-button
+                type="danger"
+                icon="delete"
+                shape="circle"
+                @click="handleDeleteAction(record)" />
+            </span>
+          </template>
         </a-table>
         <a-pagination
           class="row-element"
@@ -89,6 +106,13 @@ export default {
         title: this.$t('isready'),
         dataIndex: 'isready',
         scopedSlots: { customRender: 'isready' }
+      },
+      {
+        title: this.$t('action'),
+        dataIndex: 'action',
+        fixed: 'right',
+        width: 100,
+        scopedSlots: { customRender: 'action' }
       }
     ]
   },
@@ -141,6 +165,26 @@ export default {
       this.page = currentPage
       this.pageSize = pageSize
       this.fetchData()
+    },
+    handleCopyAction (record) {
+      var action = {
+        api: 'copyTemplate',
+        icon: 'copy',
+        label: 'Copy Template',
+        args: ['sourcezoneid', 'destzoneids'],
+        dataView: true
+      }
+      this.$emit('exec-action', action)
+    },
+    handleDeleteAction (record) {
+      var action = {
+        api: 'deleteTemplate',
+        icon: 'delete',
+        label: 'Delete Template',
+        args: ['zoneid'],
+        dataView: true
+      }
+      this.$emit('exec-action', action)
     }
   }
 }
