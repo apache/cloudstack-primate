@@ -16,6 +16,8 @@
 // under the License.
 
 module.exports = {
+  testURL: 'http://localhost/',
+  setupFiles: ['<rootDir>/tests/setup.js'],
   moduleFileExtensions: [
     'js',
     'jsx',
@@ -39,7 +41,11 @@ module.exports = {
   ],
   transformIgnorePatterns: [
     '<rootDir>/node_modules/(?!ant-design-vue|vue)'
-  ],
-  testURL: 'http://localhost/',
-  setupFiles: ['<rootDir>/tests/setup.js']
+  ]
+  // collectCoverage: true,
+  // collectCoverageFrom: [
+  //   '<rootDir>/src/**/*.{js,vue}',
+  //   '!**/node_modules/**'
+  // ],
+  // coverageReporters: ['html', 'text-summary']
 }
