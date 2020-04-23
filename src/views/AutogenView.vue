@@ -545,12 +545,20 @@ export default {
         return 0
       })
       this.currentAction.paramFields = []
-      if (action.args && action.args.length > 0) {
-        this.currentAction.paramFields = action.args.map(function (arg) {
-          return paramFields.filter(function (param) {
-            return param.name.toLowerCase() === arg.toLowerCase()
-          })[0]
-        })
+      var args = []
+      if ('args' in action) {
+        if (Array.isArray(action.args)) {
+          args = action.args
+        } else {
+          args = action.args(action.resource, this.$store.getters)
+        }
+        if (args.length > 0) {
+          this.currentAction.paramFields = args.map(function (arg) {
+            return paramFields.filter(function (param) {
+              return param.name.toLowerCase() === arg.toLowerCase()
+            })[0]
+          })
+        }
       }
 
       this.showAction = true
