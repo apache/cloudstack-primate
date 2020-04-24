@@ -74,7 +74,7 @@ describe('Status', () => {
 
   it('test getBadgeStatus method with return processing value', () => {
     const propsData = {
-      text: 'Starting',
+      text: 'Migrating',
       displayText: true
     }
 

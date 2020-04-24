@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import Vuex from 'vuex'
 import VueI18n from 'vue-i18n'
 import VueRouter from 'vue-router'
 import Antd from 'ant-design-vue'
@@ -9,18 +10,23 @@ const localVue = createLocalVue()
 Vue.use(Antd)
 localVue.use(VueI18n)
 localVue.use(VueRouter)
+localVue.use(Vuex)
 
 module.exports = {
   localVue,
-  configI18n: (locale = 'en', localeMessages = {}) => {
-    const messages = {}
-    messages[locale] = localeMessages
-
+  configI18n: (locale = 'en', messages = {}) => {
     return new VueI18n({
       locale: locale,
-      fallbackLocale: locale,
-      silentTranslationWarn: true,
       messages: messages
+    })
+  },
+  configStore: (apis) => {
+    return new Vuex.Store({
+      getters: () => {
+        return {
+          apis: apis
+        }
+      }
     })
   }
 }
