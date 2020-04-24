@@ -57,9 +57,10 @@
               <h4>{{ $t(stat.name) }}</h4>
               <a-progress
                 type="dashboard"
-                :status="getStatus(parseFloat(stat.percentused))"
-                :percent="parseFloat(stat.percentused)"
+                :status="getStatus(parseFloat(stat.percentused, 10))"
+                :percent="parseFloat(stat.percentused, 10)"
                 :format="percent => `${parseFloat(stat.percentused, 10).toFixed(2)}%`"
+                :strokeColor="getStrokeColor(parseFloat(stat.percentused, 10))"
                 :width="100" />
             </div>
             <template slot="footer"><center>{{ displayData(stat.name, stat.capacityused) }} / {{ displayData(stat.name, stat.capacitytotal) }}</center></template>
@@ -164,6 +165,24 @@ export default {
         return 'active'
       }
       return 'normal'
+    },
+    getStrokeColor (value) {
+      if (value > 100) {
+        return '#cf1322'
+      }
+      if (value > 85) {
+        return '#f5222d'
+      }
+      if (value > 80) {
+        return '#ff4d4f'
+      }
+      if (value > 75) {
+        return '#fa541c'
+      }
+      if (value > 25) {
+        return '#2db7f5'
+      }
+      return '#52c41a'
     },
     displayData (dataType, value) {
       switch (dataType) {
