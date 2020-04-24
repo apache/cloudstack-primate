@@ -100,8 +100,14 @@ export default {
           component: () => import('@/views/iam/SSLCertificateTab.vue')
         },
         {
+          name: 'limits',
+          show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
+          component: () => import('@/components/view/ResourceLimitTab.vue')
+        },
+        {
           name: 'Settings',
-          component: () => import('@/components/view/SettingsTab.vue')
+          component: () => import('@/components/view/SettingsTab.vue'),
+          show: (record, route, user) => { return ['Admin'].includes(user.roletype) }
         }
       ],
       actions: [
@@ -234,9 +240,16 @@ export default {
         {
           name: 'details',
           component: () => import('@/components/view/DetailsTab.vue')
-        }, {
+        },
+        {
+          name: 'limits',
+          show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
+          component: () => import('@/components/view/ResourceLimitTab.vue')
+        },
+        {
           name: 'Settings',
-          component: () => import('@/components/view/SettingsTab.vue')
+          component: () => import('@/components/view/SettingsTab.vue'),
+          show: (record, route, user) => { return ['Admin'].includes(user.roletype) }
         }
       ],
       treeView: true,

@@ -396,6 +396,8 @@ export default {
       if (this.searchQuery !== '') {
         if (this.apiName === 'listRoles') {
           params.name = this.searchQuery
+        } else if (this.apiName === 'quotaEmailTemplateList') {
+          params.templatetype = this.searchQuery
         } else {
           params.keyword = this.searchQuery
         }
@@ -448,6 +450,12 @@ export default {
         delete params.treeView
       }
 
+      if (['listTemplates', 'listIsos'].includes(this.apiName) && !this.dataView) {
+        if (['Admin'].includes(this.$store.getters.userInfo.roletype)) {
+          params.templatefilter = 'all'
+        }
+      }
+
       api(this.apiName, params).then(json => {
         var responseName
         var objectName
@@ -457,6 +465,7 @@ export default {
             break
           }
         }
+        this.itemCount = 0
         for (const key in json[responseName]) {
           if (key === 'count') {
             this.itemCount = json[responseName].count
@@ -468,6 +477,9 @@ export default {
         this.items = json[responseName][objectName]
         if (!this.items || this.items.length === 0) {
           this.items = []
+        }
+        if (['listTemplates', 'listIsos'].includes(this.apiName) && this.items.length > 1) {
+          this.items = [...new Map(this.items.map(x => [x.id, x])).values()]
         }
         if (this.treeView) {
           this.treeData = this.generateTreeData(this.items)
@@ -742,7 +754,7 @@ export default {
                 break
               }
             }
-            if (this.currentAction.icon === 'delete' && this.dataView) {
+            if ((this.currentAction.icon === 'delete' || ['archiveEvents'].includes(this.currentAction.api)) && this.dataView) {
               this.$router.go(-1)
             } else {
               if (!hasJobId) {
