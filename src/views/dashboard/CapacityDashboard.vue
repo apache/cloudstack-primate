@@ -167,22 +167,10 @@ export default {
       return 'normal'
     },
     getStrokeColor (value) {
-      if (value > 100) {
-        return '#cf1322'
-      }
-      if (value > 85) {
-        return '#f5222d'
-      }
       if (value > 80) {
-        return '#ff4d4f'
+        return 'red'
       }
-      if (value > 75) {
-        return '#fa541c'
-      }
-      if (value > 25) {
-        return '#2db7f5'
-      }
-      return '#52c41a'
+      return '#1890ff'
     },
     displayData (dataType, value) {
       switch (dataType) {
