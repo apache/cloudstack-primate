@@ -270,6 +270,16 @@
                   </div>
                 </template>
               </a-step>
+              <a-step
+                :title="this.$t('enter BIOS setup')"
+                :status="zoneSelected ? 'process' : 'wait'">
+                <template slot="description">
+                  <div v-if="zoneSelected">
+                    <a-checkbox
+                      @change="enterBiosChoiceChanged">enter BIOS setup</a-checkbox>
+                  </div>
+                </template>
+              </a-step>
             </a-steps>
             <div class="card-footer">
               <!-- ToDo extract as component -->
@@ -416,7 +426,8 @@ export default {
         DISK_OFFERING: 3,
         AFFINITY_GROUP: 4,
         NETWORK: 5,
-        SSH_KEY_PAIR: 6
+        SSH_KEY_PAIR: 6,
+        ENABLE_BIOS_SETUP: 7
       },
       initDataConfig: {},
       defaultNetwork: '',
@@ -433,7 +444,8 @@ export default {
         }
       ],
       tabKey: 'templateid',
-      dataPreFill: {}
+      dataPreFill: {},
+      bootintobios: false
     }
   },
   computed: {
@@ -833,6 +845,9 @@ export default {
         keypair: name
       })
     },
+    enterBiosChoiceChanged (event) {
+      this.bootintobios = event.target.checked
+    },
     getText (option) {
       return _.get(option, 'displaytext', _.get(option, 'name'))
     },
@@ -931,6 +946,8 @@ export default {
         deployVmData.keypair = values.keypair
         deployVmData.name = values.name
         deployVmData.displayname = values.name
+        // step 8: enter setup
+        deployVmData.bootintobios = this.bootintobios
         const title = this.$t('label.launch.vm')
         const description = values.name || ''
         const password = this.$t('label.password')
