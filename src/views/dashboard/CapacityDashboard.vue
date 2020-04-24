@@ -167,7 +167,7 @@ export default {
       return 'normal'
     },
     getStrokeColor (value) {
-      if (value > 80) {
+      if (value >= 80) {
         return 'red'
       }
       return '#1890ff'
