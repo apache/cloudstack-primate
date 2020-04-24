@@ -95,21 +95,6 @@ export default {
           popup: true,
           show: (record, store) => { return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) || record.templatetype !== 'BUILTIN') },
           component: () => import('@/views/image/UpdateTemplatePermissions')
-        },
-        {
-          api: 'copyTemplate',
-          icon: 'copy',
-          label: 'Copy Template',
-          args: ['sourcezoneid', 'destzoneids'],
-          dataView: true
-        },
-        {
-          api: 'deleteTemplate',
-          icon: 'delete',
-          label: 'Delete Template',
-          args: ['zoneid'],
-          dataView: true,
-          groupAction: true
         }
       ]
     },
