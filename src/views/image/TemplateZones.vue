@@ -63,7 +63,7 @@
       </a-col>
     </a-row>
     <a-modal
-      :title="$t('copy.template')"
+      :title="$t('label.action.copy.template')"
       :visible="showCopyActionForm"
       :closable="true"
       style="top: 20px;"
@@ -210,9 +210,6 @@ export default {
         this.fetchLoading = false
       })
     },
-    arrayHasItems (array) {
-      return array !== null && array !== undefined && Array.isArray(array) && array.length > 0
-    },
     handleChangePage (page, pageSize) {
       this.page = page
       this.pageSize = pageSize
@@ -223,20 +220,10 @@ export default {
       this.pageSize = pageSize
       this.fetchData()
     },
-    handleCopyAction (record) {
-      var action = {
-        api: 'copyTemplate',
-        icon: 'copy',
-        label: 'Copy Template',
-        args: ['sourcezoneid', 'destzoneids'],
-        dataView: true
-      }
-      this.$emit('exec-action', action)
-    },
     onShowConfirmDelete (record) {
       const self = this
       let title = this.$t('deleteconfirm')
-      title = title.replace('{name}', record.name + ' for ' + record.zonename)
+      title = title.replace('{name}', 'template ' + record.name + ' for ' + record.zonename)
       this.$confirm({
         title: title,
         okText: 'OK',
@@ -306,11 +293,9 @@ export default {
     },
     onShowCopyTemplate (record) {
       this.currentRecord = record
-      if (this.arrayHasItems(this.zones)) {
-        this.form.setFieldsValue({
-          zoneid: []
-        })
-      }
+      this.form.setFieldsValue({
+        zoneid: []
+      })
       this.fetchZoneData()
       this.showCopyActionForm = true
     },
