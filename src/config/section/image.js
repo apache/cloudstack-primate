@@ -166,21 +166,6 @@ export default {
           label: 'Update ISO Permissions',
           dataView: true,
           args: ['op', 'accounts', 'projectids']
-        },
-        {
-          api: 'copyIso',
-          icon: 'copy',
-          label: 'Copy ISO',
-          args: ['sourcezoneid', 'destzoneids'],
-          dataView: true
-        },
-        {
-          api: 'deleteIso',
-          icon: 'delete',
-          label: 'Delete ISO',
-          args: ['zoneid'],
-          dataView: true,
-          groupAction: true
         }
       ]
     },

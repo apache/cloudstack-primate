@@ -31,6 +31,23 @@
             <span v-if="record.isready">{{ $t('Yes') }}</span>
             <span v-else>{{ $t('No') }}</span>
           </div>
+
+          <template slot="action" slot-scope="text, record">
+            <span style="margin-right: 5px">
+              <a-button
+                type="copy"
+                icon="copy"
+                shape="circle"
+                @click="onShowCopyIso(record)" />
+            </span>
+            <span style="margin-right: 5px">
+              <a-button
+                type="danger"
+                icon="delete"
+                shape="circle"
+                @click="onShowConfirmDelete(record)" />
+            </span>
+          </template>
         </a-table>
         <a-pagination
           class="row-element"
@@ -45,6 +62,47 @@
           showSizeChanger/>
       </a-col>
     </a-row>
+    <a-modal
+      :title="$t('label.action.copy.ISO')"
+      :visible="showCopyActionForm"
+      :closable="true"
+      style="top: 20px;"
+      @ok="handleCopyIsoSubmit"
+      @cancel="onCloseCopyForm"
+      :confirmLoading="copyLoading"
+      centered>
+      <a-spin :spinning="copyLoading">
+        <a-form
+          :form="form"
+          @submit="handleCopyIsoSubmit"
+          layout="vertical">
+          <a-form-item :label="$t('zoneid')">
+            <a-select
+              id="zone-selection"
+              mode="multiple"
+              v-decorator="['zoneid', {
+                rules: [
+                  {
+                    required: true,
+                    message: 'Please select option'
+                  }
+                ]
+              }]"
+              showSearch
+              optionFilterProp="children"
+              :filterOption="(input, option) => {
+                return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }"
+              :loading="zoneLoading"
+              :placeholder="apiParams.destzoneids.description">
+              <a-select-option v-for="(opt, optIndex) in this.zones" :key="optIndex">
+                {{ opt.name || opt.description }}
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-form>
+      </a-spin>
+    </a-modal>
   </div>
 </template>
 
@@ -72,8 +130,21 @@ export default {
       page: 1,
       pageSize: 10,
       itemCount: 0,
-      fetchLoading: false
+      fetchLoading: false,
+      showCopyActionForm: false,
+      currentRecord: {},
+      zones: [],
+      zoneLoading: false,
+      copyLoading: false
     }
+  },
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
+    this.apiConfig = this.$store.getters.apis.copyIso || {}
+    this.apiParams = {}
+    this.apiConfig.params.forEach(param => {
+      this.apiParams[param.name] = param
+    })
   },
   created () {
     this.columns = [
@@ -91,6 +162,13 @@ export default {
         title: this.$t('isready'),
         dataIndex: 'isready',
         scopedSlots: { customRender: 'isready' }
+      },
+      {
+        title: this.$t('action'),
+        dataIndex: 'action',
+        fixed: 'right',
+        width: 100,
+        scopedSlots: { customRender: 'action' }
       }
     ]
     this.detailColumn = ['name', 'id', 'zonename', 'zoneid']
@@ -144,6 +222,123 @@ export default {
       this.page = currentPage
       this.pageSize = pageSize
       this.fetchData()
+    },
+    onShowConfirmDelete (record) {
+      const self = this
+      let title = this.$t('deleteconfirm')
+      title = title.replace('{name}', 'ISO ' + record.name + ' for ' + record.zonename)
+      this.$confirm({
+        title: title,
+        okText: 'OK',
+        okType: 'danger',
+        cancelText: 'Cancel',
+        onOk () {
+          self.deleteIso(record)
+        }
+      })
+    },
+    checkForAddAsyncJob (json, title, description) {
+      let hasJobId = false
+
+      for (const obj in json) {
+        if (obj.includes('response')) {
+          for (const res in json[obj]) {
+            if (res === 'jobid') {
+              hasJobId = true
+              const jobId = json[obj][res]
+              this.$store.dispatch('AddAsyncJob', {
+                title: title,
+                jobid: jobId,
+                description: description,
+                status: 'progress'
+              })
+              break
+            }
+          }
+        }
+      }
+
+      return hasJobId
+    },
+    deleteIso (record) {
+      const title = this.$t('label.action.delete.ISO')
+      const loading = this.$message.loading(title + 'in progress ' + record.name + ' for ' + record.zonename, 0)
+      const params = {}
+      params.account = record.zoneid
+      params.id = record.id
+      api('deleteIso', params).then(json => {
+        const hasJobId = this.checkForAddAsyncJob(json, title, record.id)
+        if (hasJobId) {
+          this.fetchData()
+        }
+      }).catch(error => {
+        // show error
+        this.$notification.error({
+          message: 'Request Failed',
+          description: error.response.headers['x-description']
+        })
+      }).finally(() => {
+        setTimeout(loading, 1000)
+      })
+    },
+    fetchZoneData () {
+      this.zones = []
+      const params = {}
+      params.listAll = true
+      this.zoneLoading = true
+      api('listZones', params).then(json => {
+        var listZones = json.listzonesresponse.zone
+        listZones = listZones.filter((zone) => this.currentRecord.zoneid !== zone.id)
+        this.zones = this.zones.concat(listZones)
+      }).finally(() => {
+        this.zoneLoading = false
+      })
+    },
+    onShowCopyIso (record) {
+      this.currentRecord = record
+      this.form.setFieldsValue({
+        zoneid: []
+      })
+      this.fetchZoneData()
+      this.showCopyActionForm = true
+    },
+    onCloseCopyForm () {
+      this.currentRecord = {}
+      this.showCopyActionForm = false
+    },
+    handleCopyIsoSubmit (e) {
+      e.preventDefault()
+      this.form.validateFields((err, values) => {
+        if (err) {
+          return
+        }
+        this.copyLoading = true
+        const params = {
+          id: this.currentRecord.id,
+          sourcezoneid: this.currentRecord.zoneid
+        }
+        var zoneIndexes = values.zoneid
+        if (zoneIndexes && zoneIndexes.length > 0) {
+          var zoneIds = []
+          for (var j = 0; j < zoneIndexes.length; j++) {
+            zoneIds = zoneIds.concat(this.zones[zoneIndexes[j]].id)
+          }
+          params.destzoneids = zoneIds.join()
+        }
+        api('copyIso', params).then(json => {
+          this.$message.success('Successfully copied ISO: ' + this.currentRecord.name)
+        }).catch(error => {
+          this.$notification.error({
+            message: 'Request Failed',
+            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+          })
+        }).finally(() => {
+          this.$emit('refresh-data')
+          this.copyLoading = false
+          this.onCloseCopyForm()
+          this.fetchData()
+        })
+      })
     }
   }
 }
