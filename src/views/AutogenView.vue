@@ -399,6 +399,8 @@ export default {
       if (this.searchQuery !== '') {
         if (this.apiName === 'listRoles') {
           params.name = this.searchQuery
+        } else if (this.apiName === 'quotaEmailTemplateList') {
+          params.templatetype = this.searchQuery
         } else {
           params.keyword = this.searchQuery
         }
@@ -451,6 +453,12 @@ export default {
         delete params.treeView
       }
 
+      if (['listTemplates', 'listIsos'].includes(this.apiName) && !this.dataView) {
+        if (['Admin'].includes(this.$store.getters.userInfo.roletype)) {
+          params.templatefilter = 'all'
+        }
+      }
+
       api(this.apiName, params).then(json => {
         var responseName
         var objectName
@@ -472,6 +480,9 @@ export default {
         this.items = json[responseName][objectName]
         if (!this.items || this.items.length === 0) {
           this.items = []
+        }
+        if (['listTemplates', 'listIsos'].includes(this.apiName) && this.items.length > 1) {
+          this.items = [...new Map(this.items.map(x => [x.id, x])).values()]
         }
         if (this.treeView) {
           this.treeData = this.generateTreeData(this.items)
