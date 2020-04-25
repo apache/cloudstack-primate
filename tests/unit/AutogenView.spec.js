@@ -1,10 +1,10 @@
 import { mount } from '@vue/test-utils'
 import VueRouter from 'vue-router'
-import axios from 'axios'
 import { localVue, configI18n, configStore } from './../setup'
 import AutogenView from '@/views/AutogenView'
-import Vuex from "vuex";
-import getters from "../../src/store/getters";
+import user from '@/store/modules/user'
+import moxios from 'moxios'
+import { axios } from '@/utils/request'
 
 const routes = [{
   path: '/',
@@ -139,47 +139,53 @@ describe('AutogenView.vue', () => {
   describe('Method', () => {
     // fetchData
     describe('fetchData', () => {
-      routes[0].children.push({
-        name: 'router-2',
-        path: '/router-2',
-        meta: {
-          icon: 'router-2',
-          permission: ['routerGet2']
-        }
-      })
-      const router = new VueRouter({ routes: routes })
-      mount(AutogenView, {
-        localVue,
-        router,
-        i18n,
-        mocks: {
-          $store: {
-            state: {
-              user: {
-                apis: {
-                  test: '123'
-                }
-              }
-            }
+      const newRoutes = [{
+        path: '/',
+        name: 'default-router',
+        meta: { icon: 'default' },
+        redirect: '/router-1',
+        children: [{
+          name: 'router-1',
+          path: '/router-1',
+          meta: { 
+            icon: 'router-1',
+            permission: ['routerGet2']
           }
+        }]
+      }]
+      const router = new VueRouter({ routes: newRoutes })
+      user.state.apis = {
+        routerGet2: {
+          params: {},
+          response: []
         }
-      })
-
-      let mock
+      }
 
       beforeEach(() => {
-        mock = jest.spyOn(axios, 'get')
+        moxios.install(axios)
       })
 
       afterEach(() => {
-        mock.mockRestore()
+        moxios.uninstall()
       })
 
-      it('route query is not empty', async () => {
-        router.push({ name: 'router-2' })
-        // mock.mockResolvedValue()
-        //
-        // expect(mock).toHaveBeenCalledWith('/api/client/', {})
+      it('calls `axios()` with `endpoint`, `method` and `body`', (done) => {
+        const expectedPosts = ['Post1', 'Post2']
+
+        const wrapper = mount(AutogenView, {
+          localVue,
+          router,
+          i18n
+        })
+
+        moxios.wait(() => {
+          const request = moxios.requests.mostRecent()
+          request.respondWith({ status: 200, response: expectedPosts }) // mocked response
+
+          // console.log(moxios.requests.at(0).url)
+          // expect(moxios.requests.mostRecent().url).toHaveBeenCalledWith('https://jsonplaceholder.typicode.com/posts?q=an')
+          done()
+        })
       })
     })
   })
