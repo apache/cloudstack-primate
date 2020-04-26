@@ -170,7 +170,11 @@ describe('AutogenView.vue', () => {
       })
 
       it('calls `axios()` with `endpoint`, `method` and `body`', (done) => {
-        const expectedPosts = ['Post1', 'Post2']
+        const expectedResponse = {
+          routerget2response: {
+            router: []
+          }
+        }
 
         const wrapper = mount(AutogenView, {
           localVue,
@@ -180,7 +184,7 @@ describe('AutogenView.vue', () => {
 
         moxios.wait(() => {
           const request = moxios.requests.mostRecent()
-          request.respondWith({ status: 200, response: expectedPosts }) // mocked response
+          request.respondWith({ status: 200, response: expectedResponse }) // mocked response
 
           // console.log(moxios.requests.at(0).url)
           // expect(moxios.requests.mostRecent().url).toHaveBeenCalledWith('https://jsonplaceholder.typicode.com/posts?q=an')
