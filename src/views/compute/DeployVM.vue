@@ -87,6 +87,12 @@
                         v-decorator="['userdata']">
                       </a-textarea>
                     </a-form-item>
+                    <a-form-item :label="this.$t('bootIntoSetup')" >
+                      <a-switch
+                        @change="event => { this.bootintosetup = event.target.checked }"
+                        v-decorator="['bootIntoSetup']">
+                      </a-switch>
+                    </a-form-item>
                   </div>
                 </template>
               </a-step>
@@ -267,16 +273,6 @@
                       @select-ssh-key-pair-item="($event) => updateSshKeyPairs($event)"
                       @handle-search-filter="($event) => handleSearchFilter('sshKeyPairs', $event)"
                     />
-                  </div>
-                </template>
-              </a-step>
-              <a-step
-                :title="this.$t('bootIntoSetup')"
-                :status="zoneSelected ? 'process' : 'wait'">
-                <template slot="description">
-                  <div v-if="zoneSelected">
-                    <a-checkbox
-                      @change="event => { this.bootintosetup = event.target.checked }">Boot into setup</a-checkbox>
                   </div>
                 </template>
               </a-step>
