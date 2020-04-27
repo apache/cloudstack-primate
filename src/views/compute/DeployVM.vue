@@ -251,9 +251,14 @@
                       v-if="networks.length > 0"
                       :items="networks"
                       :preFillContent="dataPreFill"
+                      :networkCreate="networkCreate"
                       @update-network-config="($event) => updateNetworkConfig($event)"
                       @select-default-network-item="($event) => updateDefaultNetworks($event)"
                     ></network-configuration>
+                    <networks-creation
+                      :zoneId="zoneId"
+                      @handle-update-network="updateDataCreatedNetwork">
+                    </networks-creation>
                   </div>
                 </template>
               </a-step>
@@ -316,14 +321,15 @@ import { mixin, mixinDevice } from '@/utils/mixin.js'
 import store from '@/store'
 
 import InfoCard from '@/components/view/InfoCard'
-import ComputeOfferingSelection from './wizard/ComputeOfferingSelection'
-import ComputeSelection from './wizard/ComputeSelection'
+import ComputeOfferingSelection from '@views/compute/wizard/ComputeOfferingSelection'
+import ComputeSelection from '@views/compute/wizard/ComputeSelection'
 import DiskOfferingSelection from '@views/compute/wizard/DiskOfferingSelection'
 import DiskSizeSelection from '@views/compute/wizard/DiskSizeSelection'
 import TemplateIsoSelection from '@views/compute/wizard/TemplateIsoSelection'
 import AffinityGroupSelection from '@views/compute/wizard/AffinityGroupSelection'
 import NetworkSelection from '@views/compute/wizard/NetworkSelection'
 import NetworkConfiguration from '@views/compute/wizard/NetworkConfiguration'
+import NetworksCreation from '@views/compute/wizard/NetworksCreation'
 import SshKeyPairSelection from '@views/compute/wizard/SshKeyPairSelection'
 
 export default {
@@ -338,7 +344,8 @@ export default {
     DiskOfferingSelection,
     InfoCard,
     ComputeOfferingSelection,
-    ComputeSelection
+    ComputeSelection,
+    NetworksCreation
   },
   props: {
     visible: {
@@ -422,6 +429,7 @@ export default {
       initDataConfig: {},
       defaultNetwork: '',
       networkConfig: [],
+      networkCreate: {},
       tabList: [
         {
           key: 'templateid',
@@ -819,6 +827,10 @@ export default {
     updateNetworkConfig (networks) {
       this.networkConfig = networks
     },
+    updateDataCreatedNetwork (network) {
+      this.networkCreate = network
+      console.log(this.networkCreate)
+    },
     updateSshKeyPairs (name) {
       if (name === this.$t('noselect')) {
         this.form.setFieldsValue({
@@ -884,15 +896,29 @@ export default {
         // step 5: select an affinity group
         deployVmData.affinitygroupids = (values.affinitygroupids || []).join(',')
         // step 6: select network
+        const arrNetwork = []
         if (values.networkids && values.networkids.length > 0) {
           for (let i = 0; i < values.networkids.length; i++) {
-            deployVmData['iptonetworklist[' + i + '].networkid'] = values.networkids[i]
-            if (this.networkConfig.length > 0) {
-              const networkConfig = this.networkConfig.filter((item) => item.key === values.networkids[i])
-              if (networkConfig && networkConfig.length > 0) {
-                deployVmData['iptonetworklist[' + i + '].ip'] = networkConfig[0].ipAddress ? networkConfig[0].ipAddress : undefined
-                deployVmData['iptonetworklist[' + i + '].mac'] = networkConfig[0].macAddress ? networkConfig[0].macAddress : undefined
+            if (values.networkids[i] === this.defaultNetwork) {
+              const ipToNetwork = {
+                networkid: this.defaultNetwork
               }
+              arrNetwork.unshift(ipToNetwork)
+            } else {
+              const ipToNetwork = {
+                networkid: values.networkids[i]
+              }
+              arrNetwork.push(ipToNetwork)
+            }
+          }
+        }
+        for (let j = 0; j < arrNetwork.length; j++) {
+          deployVmData['iptonetworklist[' + j + '].networkid'] = arrNetwork[j].networkid
+          if (this.networkConfig.length > 0) {
+            const networkConfig = this.networkConfig.filter((item) => item.key === arrNetwork[j].networkid)
+            if (networkConfig && networkConfig.length > 0) {
+              deployVmData['iptonetworklist[' + j + '].ip'] = networkConfig[0].ipAddress ? networkConfig[0].ipAddress : undefined
+              deployVmData['iptonetworklist[' + j + '].mac'] = networkConfig[0].macAddress ? networkConfig[0].macAddress : undefined
             }
           }
         }

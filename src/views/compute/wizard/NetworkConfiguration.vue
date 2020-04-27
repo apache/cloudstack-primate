@@ -19,7 +19,7 @@
   <a-table
     :columns="columns"
     :dataSource="dataItems"
-    :pagination="{showSizeChanger: true}"
+    :pagination="false"
     :rowSelection="rowSelection"
     :rowKey="record => record.id"
     size="middle"
@@ -36,6 +36,15 @@
         style="width: 150px;"
         :placeholder="$t('macaddress')"
         @change="($event) => updateNetworkData('macAddress', record.id, $event.target.value)" />
+    </template>
+    <template slot="actions" slot-scope="text, record">
+      <a-popconfirm
+        v-if="record.isCreate"
+        title="Sure to delete?"
+        @confirm="removeItem(record.id)"
+      >
+        <a-button type="link">Delete</a-button>
+      </a-popconfirm>
     </template>
   </a-table>
 </template>
@@ -55,6 +64,10 @@ export default {
     preFillContent: {
       type: Object,
       default: () => {}
+    },
+    networkCreate: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
@@ -64,7 +77,7 @@ export default {
         {
           dataIndex: 'name',
           title: this.$t('defaultNetwork'),
-          width: '40%'
+          width: '30%'
         },
         {
           dataIndex: 'ip',
@@ -77,6 +90,11 @@ export default {
           title: this.$t('macaddress'),
           width: '30%',
           scopedSlots: { customRender: 'macAddress' }
+        },
+        {
+          dataIndex: 'actions',
+          width: '10%',
+          scopedSlots: { customRender: 'actions' }
         }
       ],
       selectedRowKeys: [],
@@ -114,6 +132,11 @@ export default {
           this.selectedRowKeys = [this.dataItems[0].id]
         }
       }
+    },
+    networkCreate (newData, oldData) {
+      if (!newData || newData.length === 0) return
+      this.networkCreate = newData
+      this.dataItems.push(this.networkCreate)
     }
   },
   methods: {
@@ -137,6 +160,12 @@ export default {
         }
       })
       this.$emit('update-network-config', this.networks)
+    },
+    removeItem (id) {
+      this.dataItems = this.dataItems.filter(item => item.id !== id)
+      if (this.selectedRowKeys.includes(id)) {
+        this.selectedRowKeys = [this.dataItems[0].id]
+      }
     }
   }
 }
