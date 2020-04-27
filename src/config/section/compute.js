@@ -108,7 +108,7 @@ export default {
           message: 'message.action.reboot.instance',
           dataView: true,
           show: (record) => { return ['Running'].includes(record.state) },
-          args: ['bootintobios']
+          args: ['bootintosetup']
         },
         {
           api: 'restoreVirtualMachine',
