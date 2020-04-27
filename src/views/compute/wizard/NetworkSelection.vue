@@ -22,13 +22,6 @@
       placeholder="Search"
       v-model="filter"
       @search="handleSearch" />
-    <a-tooltip
-      arrowPointAtCenter
-      placement="bottomRight">
-      <template slot="title">
-        {{ $t('addNewNetworks') }}
-      </template>
-    </a-tooltip>
     <a-table
       :loading="loading"
       :columns="columns"
@@ -173,8 +166,8 @@ export default {
           this.selectedRowKeys = this.preFillContent.networkids
           this.$emit('select-network-item', this.preFillContent.networkids)
         } else {
-          this.selectedRowKeys = []
-          this.$emit('select-network-item', null)
+          this.selectedRowKeys = [this.items[0].id]
+          this.$emit('select-network-item', this.selectedRowKeys)
         }
       }
     }
