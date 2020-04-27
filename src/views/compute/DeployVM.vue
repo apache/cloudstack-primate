@@ -276,7 +276,7 @@
                 <template slot="description">
                   <div v-if="zoneSelected">
                     <a-checkbox
-                      @change="enterBiosChoiceChanged">enter BIOS setup</a-checkbox>
+                      @change="event => { this.bootintobios = event.target.checked }">enter BIOS setup</a-checkbox>
                   </div>
                 </template>
               </a-step>
