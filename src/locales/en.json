@@ -1285,5 +1285,6 @@
 "diskiopsreadrate": "Disk Read Rate (IOPS)",
 "diskiopswriterate": "Disk Write Rate (IOPS)",
 "none": "None",
-"maxcpunumber": "Max CPU Cores"
+"maxcpunumber": "Max CPU Cores",
+"message.template.iso": "Please select a template or ISO to continue"
 }
