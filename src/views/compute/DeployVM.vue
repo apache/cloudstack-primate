@@ -254,6 +254,7 @@
                       :networkCreate="networkCreate"
                       @update-network-config="($event) => updateNetworkConfig($event)"
                       @select-default-network-item="($event) => updateDefaultNetworks($event)"
+                      @handle-update-network="updateDataCreatedNetwork"
                     ></network-configuration>
                     <networks-creation
                       :zoneId="zoneId"
@@ -430,6 +431,7 @@ export default {
       defaultNetwork: '',
       networkConfig: [],
       networkCreate: {},
+      dataNetworkCreated: [],
       tabList: [
         {
           key: 'templateid',
@@ -827,9 +829,13 @@ export default {
     updateNetworkConfig (networks) {
       this.networkConfig = networks
     },
-    updateDataCreatedNetwork (network) {
-      this.networkCreate = network
-      console.log(this.networkCreate)
+    updateDataCreatedNetwork (network, isRemove) {
+      if (!isRemove) {
+        this.networkCreate = network
+        this.networks.push(network)
+      } else {
+        this.networks = this.networks.filter(item => item.id !== network.id)
+      }
     },
     updateSshKeyPairs (name) {
       if (name === this.$t('noselect')) {
@@ -848,10 +854,36 @@ export default {
     handleSubmit (e) {
       console.log('wizard submit')
       e.preventDefault()
-      this.form.validateFields((err, values) => {
+      this.form.validateFields(async (err, values) => {
         if (err) {
           return
         }
+
+        if (!values.templateid && !values.isoid) {
+          this.$notification.error({
+            message: 'Request Failed',
+            description: this.$t('message.template.iso')
+          })
+          return
+        }
+
+        this.loading.deploy = true
+
+        let networkIds = []
+        let newNetworkIds = []
+
+        try {
+          // add new network
+          newNetworkIds = await this.createNetworks(values.zoneid)
+        } catch (error) {
+          this.$notification.error({
+            message: 'Request Failed',
+            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+          })
+          this.loading.deploy = false
+          return
+        }
+
         const deployVmData = {}
         // step 1 : select zone
         deployVmData.zoneid = values.zoneid
@@ -897,16 +929,21 @@ export default {
         deployVmData.affinitygroupids = (values.affinitygroupids || []).join(',')
         // step 6: select network
         const arrNetwork = []
-        if (values.networkids && values.networkids.length > 0) {
-          for (let i = 0; i < values.networkids.length; i++) {
-            if (values.networkids[i] === this.defaultNetwork) {
+        if (newNetworkIds && newNetworkIds.length > 0) {
+          networkIds = newNetworkIds.concat(values.networkids)
+        } else {
+          networkIds = values.networkids
+        }
+        if (networkIds.length > 0) {
+          for (let i = 0; i < networkIds.length; i++) {
+            if (networkIds[i] === this.defaultNetwork) {
               const ipToNetwork = {
                 networkid: this.defaultNetwork
               }
               arrNetwork.unshift(ipToNetwork)
             } else {
               const ipToNetwork = {
-                networkid: values.networkids[i]
+                networkid: networkIds[i]
               }
               arrNetwork.push(ipToNetwork)
             }
@@ -928,7 +965,6 @@ export default {
         deployVmData.displayname = values.name
         const title = this.$t('Launch Virtual Machine')
         const description = deployVmData.name ? deployVmData.name : values.zoneid
-        this.loading.deploy = true
         api('deployVirtualMachine', deployVmData).then(response => {
           const jobId = response.deployvirtualmachineresponse.jobid
           if (jobId) {
@@ -1047,12 +1083,12 @@ export default {
         })
       })
     },
-    fetchAllTemplates (filterKey) {
+    fetchAllTemplates (filterKeys) {
       const promises = []
       this.options.templates = []
       this.loading.templates = true
       this.templateFilter.forEach((filter) => {
-        if (filterKey && filterKey !== filter) {
+        if (filterKeys && !filterKeys.includes(filter)) {
           return true
         }
         promises.push(this.fetchTemplates(filter))
@@ -1128,6 +1164,62 @@ export default {
         .replace(/&gt;/g, '>')
 
       return reversedValue
+    },
+    createNetworks (zoneId) {
+      return new Promise((resolve, reject) => {
+        const networksAdd = this.networks.filter(network => network.isCreate === true)
+        if (networksAdd.length === 0) {
+          resolve()
+          return
+        }
+        const networkIds = []
+        const promises = []
+        networksAdd.forEach((item) => {
+          const params = {}
+          params.zoneid = zoneId
+          params.name = item.name
+          params.displayText = item.name
+          params.networkOfferingId = item.networkOfferingId
+          params.vpcid = item.vpcid
+
+          promises.push(this.createNetwork(params, item.id))
+        })
+
+        Promise.all(promises).then(response => {
+          response.forEach(network => {
+            const configIndex = this.networkConfig.findIndex(config => config.key === network.key)
+            if (configIndex > -1) {
+              this.networkConfig[configIndex].key = network.networkid
+            }
+            if (this.defaultNetwork === network.key) {
+              this.defaultNetwork = network.networkid
+            }
+            const indexAdd = this.networks.filter(network => network.id === network.key)
+            if (indexAdd > -1) {
+              this.networks[indexAdd].id = network.networkid
+              this.networks[indexAdd].isCreate = false
+            }
+            networkIds.push(network.networkid)
+            resolve(networkIds)
+          })
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    createNetwork (params, key) {
+      return new Promise((resolve, reject) => {
+        api('createNetwork', params).then(json => {
+          const networkRes = _.get(json, 'createnetworkresponse.network', [])
+          const result = {
+            networkid: networkRes.id,
+            key: key
+          }
+          resolve(result)
+        }).catch(error => {
+          reject(error)
+        })
+      })
     }
   }
 }

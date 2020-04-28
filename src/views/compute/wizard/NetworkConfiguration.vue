@@ -64,10 +64,6 @@ export default {
     preFillContent: {
       type: Object,
       default: () => {}
-    },
-    networkCreate: {
-      type: Object,
-      default: () => {}
     }
   },
   data () {
@@ -135,11 +131,6 @@ export default {
           this.$emit('select-default-network-item', this.dataItems[0].id)
         }
       }
-    },
-    networkCreate (newData, oldData) {
-      if (!newData || newData.length === 0) return
-      this.networkCreate = newData
-      this.dataItems.push(this.networkCreate)
     }
   },
   methods: {
@@ -148,7 +139,8 @@ export default {
       this.$emit('select-default-network-item', value[0])
     },
     updateNetworkData (name, key, value) {
-      if (this.networks.length === 0) {
+      const index = this.networks.findIndex(item => item.key === key)
+      if (index === -1) {
         const networkItem = {}
         networkItem.key = key
         networkItem[name] = value
@@ -167,8 +159,12 @@ export default {
     removeItem (id) {
       this.dataItems = this.dataItems.filter(item => item.id !== id)
       if (this.selectedRowKeys.includes(id)) {
-        this.selectedRowKeys = [this.dataItems[0].id]
+        if (this.dataItems && this.dataItems.length > 0) {
+          this.selectedRowKeys = [this.dataItems[0].id]
+          this.$emit('select-default-network-item', this.dataItems[0].id)
+        }
       }
+      this.$emit('handle-update-network', { id: id }, true)
     }
   }
 }

@@ -17,34 +17,42 @@
 
 <template>
   <div>
-    <a-row :gutter="12" v-if="isAddNew">
-      <a-col :md="6" :lg="6">
-        <a-form-item :label="$t('networks')">
-          <a-input
-            v-model="inputNetwork"
-            :placeholder="$t('networks')"/>
-        </a-form-item>
-      </a-col>
-      <a-col :md="12" :lg="12">
-        <a-form-item :label="$t('networkOfferingId')">
-          <a-select
-            v-model="networkOfferingId"
-            :placeholder="$t('networkOfferingId')"
-            :options="networkOfferingOptions"
-          ></a-select>
-        </a-form-item>
-      </a-col>
-      <a-col :md="6" :lg="6">
-        <a-form-item :label="$t('vpc')">
-          <a-select
-            v-model="vpc"
-            :placeholder="$t('vpc')"
-            :options="vpcOptions"
-            style="min-width: 12vw"
-          ></a-select>
-        </a-form-item>
-      </a-col>
-    </a-row>
+    <a-form
+      :form="form"
+      @submit="handleSubmit">
+      <a-row :gutter="12" v-if="isAddNew">
+        <a-col :md="6" :lg="6">
+          <a-form-item :label="$t('networks')">
+            <a-input
+              v-decorator="['name', {
+                rules: [{ required: true, message: 'Please enter input' }]
+              }]"
+              :placeholder="$t('networks')"/>
+          </a-form-item>
+        </a-col>
+        <a-col :md="12" :lg="12">
+          <a-form-item :label="$t('networkOfferingId')">
+            <a-select
+              v-decorator="['networkofferingid', {
+                rules: [{ required: true, message: 'Please select option' }]
+              }]"
+              :placeholder="$t('networkOfferingId')"
+              :options="networkOfferingOptions"
+            ></a-select>
+          </a-form-item>
+        </a-col>
+        <a-col :md="6" :lg="6">
+          <a-form-item :label="$t('vpc')">
+            <a-select
+              v-decorator="['vpcid']"
+              :placeholder="$t('vpc')"
+              :options="vpcOptions"
+              style="min-width: 12vw"
+            ></a-select>
+          </a-form-item>
+        </a-col>
+      </a-row>
+    </a-form>
 
     <div style="text-align: right; margin-top: 1rem;">
       <a-button
@@ -56,7 +64,7 @@
       <a-button
         v-else
         type="primary"
-        @click="saveNewItem"
+        @click="handleSubmit"
       >{{ $t('add') }}
       </a-button>
     </div>
@@ -108,10 +116,6 @@ export default {
       ],
       networkOfferings: [],
       vpcs: [],
-      dataNetworkCreated: [],
-      inputNetwork: undefined,
-      networkOfferingId: undefined,
-      vpc: undefined,
       isAddNew: false,
       dataNetwork: {
         name: undefined,
@@ -120,6 +124,9 @@ export default {
         isCreate: false
       }
     }
+  },
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
   },
   computed: {
     network () {
@@ -157,13 +164,13 @@ export default {
       specifyvlan: false,
       state: 'Enabled'
     }).then((response) => {
-      this.networkOfferings = _.get(response, 'listnetworkofferingsresponse.networkoffering')
+      this.networkOfferings = _.get(response, 'listnetworkofferingsresponse.networkoffering') || []
     })
     // ToDo: Remove this redundant api call – see the NetworkSelection component
     api('listVPCs', {
       projectid: store.getters.project.id
     }).then((response) => {
-      this.vpcs = _.get(response, 'listvpcsresponse.vpc')
+      this.vpcs = _.get(response, 'listvpcsresponse.vpc') || []
       this.vpcs.unshift({
         name: this.$t('all'),
         id: -1
@@ -172,26 +179,31 @@ export default {
   },
   methods: {
     addNewItem () {
-      this.name = undefined
-      this.networkOfferingId = undefined
-      this.vpc = undefined
+      this.form.setFieldsValue({
+        name: undefined,
+        networkOfferingId: undefined,
+        vpcid: undefined
+      })
       this.dataNetwork = {}
 
       this.isAddNew = true
     },
-    saveNewItem () {
-      this.dataNetwork.name = this.inputNetwork
-      this.dataNetwork.networkOfferingId = this.networkOfferingId
-      this.dataNetwork.vpc = this.vpc
-      this.dataNetwork.id = this.randomKey()
-      this.dataNetwork.isCreate = true
+    handleSubmit (e) {
+      e.preventDefault()
+      this.form.validateFields((error, values) => {
+        if (error) {
+          return
+        }
 
-      this.isAddNew = false
-      this.$emit('handle-update-network', this.dataNetwork)
-    },
-    removeItem (key) {
-      this.networkItems = this.networkItems.filter((item) => item.key !== key)
-      this.dataNetworkCreated = this.dataNetworkCreated.filter((item) => item.key !== key)
+        this.dataNetwork.name = values.name
+        this.dataNetwork.networkOfferingId = values.networkofferingid
+        this.dataNetwork.vpcid = values.vpcid
+        this.dataNetwork.id = this.randomKey()
+        this.dataNetwork.isCreate = true
+
+        this.isAddNew = false
+        this.$emit('handle-update-network', this.dataNetwork)
+      })
     },
     randomKey () {
       const now = new Date()
