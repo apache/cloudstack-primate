@@ -106,8 +106,10 @@ export default {
   },
   created () {
     this.dataItems = this.items
-    this.selectedRowKeys = [this.dataItems[0].id]
-    this.$emit('select-default-network-item', this.selectedRowKeys)
+    if (this.dataItems.length > 0) {
+      this.selectedRowKeys = [this.dataItems[0].id]
+      this.$emit('select-default-network-item', this.dataItems[0].id)
+    }
   },
   computed: {
     rowSelection () {
@@ -130,6 +132,7 @@ export default {
         const keyEx = this.dataItems.filter((item) => this.selectedRowKeys.includes(item.id))
         if (!keyEx || keyEx.length === 0) {
           this.selectedRowKeys = [this.dataItems[0].id]
+          this.$emit('select-default-network-item', this.dataItems[0].id)
         }
       }
     },

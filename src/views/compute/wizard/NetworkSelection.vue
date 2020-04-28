@@ -166,8 +166,13 @@ export default {
           this.selectedRowKeys = this.preFillContent.networkids
           this.$emit('select-network-item', this.preFillContent.networkids)
         } else {
-          this.selectedRowKeys = [this.items[0].id]
-          this.$emit('select-network-item', this.selectedRowKeys)
+          if (this.items && this.items.length > 0) {
+            this.selectedRowKeys = [this.items[0].id]
+            this.$emit('select-network-item', this.selectedRowKeys)
+          } else {
+            this.selectedRowKeys = []
+            this.$emit('select-network-item', [])
+          }
         }
       }
     }
