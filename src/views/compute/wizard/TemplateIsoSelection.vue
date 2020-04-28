@@ -37,6 +37,7 @@
               <a-form-item :label="$t('filter')">
                 <a-select
                   allowClear
+                  mode="multiple"
                   v-decorator="['filter']">
                   <a-select-option
                     v-for="(opt) in filterOpts"
@@ -244,21 +245,23 @@ export default {
         if (err) {
           return
         }
-        if (this.inputDecorator === 'templateid') {
-          this.vmFetchTemplates(values.filter)
-        } else {
-          this.vmFetchIsos(values.filter)
-        }
+        const filtered = values.filter || []
+        this.filter = ''
+        filtered.map(item => {
+          if (this.filter.length === 0) {
+            this.filter += 'is: ' + item
+          } else {
+            this.filter += '; is: ' + item
+          }
+        })
+        this.filterDataSource(this.filter)
       })
     },
     onClear () {
       const field = { filter: undefined }
       this.form.setFieldsValue(field)
-      if (this.inputDecorator === 'templateid') {
-        this.vmFetchTemplates()
-      } else {
-        this.vmFetchIsos()
-      }
+      this.filter = ''
+      this.filterDataSource('')
     },
     changeOsName (value) {
       this.osType = value
