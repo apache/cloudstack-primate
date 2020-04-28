@@ -36,6 +36,14 @@
               </a-button>
             </a-tooltip>
           </breadcrumb>
+          <a-select
+            v-if="!dataView && !treeView && filterKey && filterOptions && filterOptions.length > 0"
+            :value="filterSelectedOption"
+            @change="onFilterChange">
+            <a-select-option v-for="(opt) in filterOptions" :key="opt">
+              {{ opt }}
+            </a-select-option>
+          </a-select>
         </a-col>
         <a-col :span="10">
           <span style="float: right">
@@ -318,6 +326,21 @@ export default {
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
+    var filterData = this.$route.meta.filter
+    this.filterKey = undefined
+    this.filterOptions = undefined
+    this.filterSelectedOption = undefined
+    if (filterData && Array.isArray(filterData) &&
+      filterData.length === 2 &&
+      filterData[0] && filterData[0].length > 0 &&
+      Array.isArray(filterData[1]) && filterData[1].length > 0) {
+      this.filterKey = filterData[0]
+      this.filterOptions = filterData[1]
+      if (this.filterOptions[0] !== 'All') {
+        this.filterOptions.unshift('All')
+      }
+      this.filterSelectedOption = this.filterOptions[0]
+    }
   },
   mounted () {
     this.currentPath = this.$route.fullPath
@@ -456,6 +479,10 @@ export default {
         }
       }
 
+      if (this.filterKey && this.filterSelectedOption && this.filterSelectedOption !== 'All') {
+        params[this.filterKey] = this.filterSelectedOption
+      }
+
       api(this.apiName, params).then(json => {
         var responseName
         var objectName
@@ -527,6 +554,14 @@ export default {
       }).finally(f => {
         this.loading = false
       })
+    },
+    onFilterChange (value) {
+      if (this.filterKey === undefined ||
+        this.filterKey === null ||
+        this.filterKey.length === 0 ||
+        this.filterSelectedOption === value) return
+      this.filterSelectedOption = value
+      this.fetchData()
     },
     onSearch (value) {
       this.searchQuery = value
