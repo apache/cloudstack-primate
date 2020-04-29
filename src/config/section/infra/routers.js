@@ -103,7 +103,7 @@ export default {
           value: (record) => { return record.id }
         }
       },
-      response: (result) => { return ((result && result.diagnostics && result && result.diagnostics.url && `Please click the link to download the retrieved diagnostics: <p><a href='${result.diagnostics.url}'>${result.diagnostics.url}</a></p>`) || 'Invalid response') }
+      response: (result) => { return result && result.diagnostics && result.diagnostics.url ? `Please click the link to download the retrieved diagnostics: <p><a href='${result.diagnostics.url}'>${result.diagnostics.url}</a></p>` : 'Invalid response' }
     },
     {
       api: 'destroyRouter',
