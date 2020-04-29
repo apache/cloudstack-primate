@@ -32,9 +32,13 @@
             <span v-else>{{ $t('No') }}</span>
           </div>
 
-          <template slot="action" slot-scope="text, record">
+          <template
+            slot="action"
+            slot-scope="text, record"
+            v-if="'copyTemplate' in $store.getters.apis || 'deleteTemplate' in $store.getters.apis">
             <span style="margin-right: 5px">
               <a-button
+                v-if="'copyTemplate' in $store.getters.apis"
                 type="copy"
                 icon="copy"
                 shape="circle"
@@ -42,6 +46,7 @@
             </span>
             <span style="margin-right: 5px">
               <a-button
+                v-if="'deleteTemplate' in $store.getters.apis"
                 type="danger"
                 icon="delete"
                 shape="circle"
@@ -63,6 +68,7 @@
       </a-col>
     </a-row>
     <a-modal
+      v-if="'copyTemplate' in $store.getters.apis"
       :title="$t('label.action.copy.template')"
       :visible="showCopyActionForm"
       :closable="true"
@@ -138,9 +144,9 @@ export default {
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
-    this.apiConfig = this.$store.getters.apis.copyTemplate || {}
+    this.apiConfigParams = (this.$store.getters.apis.copyTemplate && this.$store.getters.apis.copyTemplate.params) || []
     this.apiParams = {}
-    this.apiConfig.params.forEach(param => {
+    this.apiConfigParams.forEach(param => {
       this.apiParams[param.name] = param
     })
   },
