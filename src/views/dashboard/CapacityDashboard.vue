@@ -57,10 +57,10 @@
               <h4>{{ $t(stat.name) }}</h4>
               <a-progress
                 type="dashboard"
-                :status="getStatus(parseFloat(stat.percentused, 10))"
-                :percent="parseFloat(stat.percentused, 10)"
-                :format="percent => `${parseFloat(stat.percentused, 10).toFixed(2)}%`"
-                :strokeColor="getStrokeColor(parseFloat(stat.percentused, 10))"
+                :status="getStatus(parseFloat(stat.percentused))"
+                :percent="parseFloat(stat.percentused)"
+                :format="percent => `${parseFloat(stat.percentused).toFixed(2)}%`"
+                :strokeColor="getStrokeColor(parseFloat(stat.percentused))"
                 :width="100" />
             </div>
             <template slot="footer"><center>{{ displayData(stat.name, stat.capacityused) }} / {{ displayData(stat.name, stat.capacitytotal) }}</center></template>
