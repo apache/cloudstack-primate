@@ -60,7 +60,7 @@
                 :status="getStatus(parseFloat(stat.percentused))"
                 :percent="parseFloat(stat.percentused)"
                 :format="percent => `${parseFloat(stat.percentused).toFixed(2)}%`"
-                :strokeColor="getStrokeColor(parseFloat(stat.percentused))"
+                :strokeColor="getStrokeColour(parseFloat(stat.percentused))"
                 :width="100" />
             </div>
             <template slot="footer"><center>{{ displayData(stat.name, stat.capacityused) }} / {{ displayData(stat.name, stat.capacitytotal) }}</center></template>
@@ -166,11 +166,11 @@ export default {
       }
       return 'normal'
     },
-    getStrokeColor (value) {
+    getStrokeColour (value) {
       if (value >= 80) {
         return 'red'
       }
-      return '#1890ff'
+      return 'primary'
     },
     displayData (dataType, value) {
       switch (dataType) {
