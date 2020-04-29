@@ -94,7 +94,7 @@ export default {
     },
     {
       api: 'getDiagnosticsData',
-      icon: 'experiment',
+      icon: 'download',
       label: 'label.action.get.diagnostics',
       dataView: true,
       show: (record) => { return record.state === 'Running' },
