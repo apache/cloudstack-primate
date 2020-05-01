@@ -176,6 +176,13 @@ export default {
         } else {
           api('createSSHKeyPair', params).then(json => {
             this.$message.success('Successfully created SSH key pair: ' + values.name)
+            if (json.createsshkeypairresponse && json.createsshkeypairresponse.keypair && json.createsshkeypairresponse.keypair.privatekey) {
+              this.$notification.info({
+                message: this.$t('label.create.ssh.key.pair'),
+                description: (<span domPropsInnerHTML={'<pre>' + json.createsshkeypairresponse.keypair.privatekey + '</pre>'}></span>),
+                duration: 0
+              })
+            }
           }).catch(error => {
             this.$notification.error({
               message: 'Request Failed',
