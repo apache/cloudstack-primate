@@ -108,7 +108,9 @@ export default {
   },
   methods: {
     fetchData () {
-      this.fetchDomainData()
+      if (this.isAdminOrDomainAdmin()) {
+        this.fetchDomainData()
+      }
     },
     isAdminOrDomainAdmin () {
       return ['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype)
