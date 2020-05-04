@@ -89,11 +89,12 @@ export default {
         type: {
           options: ['ping', 'traceroute', 'arping']
         }
-      }
+      },
+      response: (result) => { return result && result.diagnostics ? `<strong>Output</strong>:<br/>${result.diagnostics.stdout}<br/><strong>Error</strong>: ${result.diagnostics.stderr}<br/><strong>Exit Code</strong>: ${result.diagnostics.exitcode}` : 'Invalid response' }
     },
     {
       api: 'getDiagnosticsData',
-      icon: 'experiment',
+      icon: 'download',
       label: 'label.action.get.diagnostics',
       dataView: true,
       show: (record) => { return record.state === 'Running' },
@@ -102,7 +103,8 @@ export default {
         targetid: {
           value: (record) => { return record.id }
         }
-      }
+      },
+      response: (result) => { return result && result.diagnostics && result.diagnostics.url ? `Please click the link to download the retrieved diagnostics: <p><a href='${result.diagnostics.url}'>${result.diagnostics.url}</a></p>` : 'Invalid response' }
     },
     {
       api: 'destroyRouter',
