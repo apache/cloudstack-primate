@@ -132,12 +132,11 @@ export default {
       default:
         this.offeringType = this.$route.meta.name
     }
-    this.apiParamsConfig = this.$store.getters.apis['update' + this.offeringType] || {}
     this.apiParams = {}
+    this.apiParamsConfig = this.$store.getters.apis['update' + this.offeringType] || {}
     this.apiParamsConfig.params.forEach(param => {
       this.apiParams[param.name] = param
     })
-    console.log(this.offeringType)
   },
   created () {
     this.zones = [
