@@ -804,6 +804,7 @@
 "ovm3vip": "Master Vip IP",
 "ovmnetworklabel": "OVM Traffic Label",
 "palp": "Palo Alto Log Profile",
+"params": "Parameters",
 "parentName": "Parent",
 "passive": "Passive",
 "password": "Password",
@@ -1273,5 +1274,17 @@
 "featured": "Featured",
 "community": "Community",
 "selfexecutable": "Self",
-"sharedexecutable": "Shared"
+"sharedexecutable": "Shared",
+"fixed": "Fixed Offering",
+"customconstrained": "Custom Constrained",
+"customunconstrained": "Custom Unconstrained",
+"iscustomizeddiskiops": "Custom IOPS",
+"diskiopsmin": "Min IOPS",
+"diskiopsmax": "Max IOPS",
+"diskbytesreadrate": "Disk Read Rate (BPS)",
+"diskbyteswriterate": "Disk Write Rate (BPS)",
+"diskiopsreadrate": "Disk Read Rate (IOPS)",
+"diskiopswriterate": "Disk Write Rate (IOPS)",
+"none": "None",
+"maxcpunumber": "Max CPU Cores"
 }
