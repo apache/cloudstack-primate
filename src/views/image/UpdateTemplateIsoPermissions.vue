@@ -275,7 +275,11 @@ export default {
   .form {
     display: flex;
     flex-direction: column;
-    width: 50vw;
+    width: 80vw;
+
+    @media (min-width: 700px) {
+      width: 500px;
+    }
 
     &__item {
       display: flex;
