@@ -42,10 +42,4 @@ module.exports = {
   transformIgnorePatterns: [
     '<rootDir>/node_modules/(?!ant-design-vue|vue)'
   ]
-  // collectCoverage: true,
-  // collectCoverageFrom: [
-  //   '<rootDir>/src/**/*.{js,vue}',
-  //   '!**/node_modules/**'
-  // ],
-  // coverageReporters: ['html', 'text-summary']
 }
