@@ -465,6 +465,7 @@ export default {
             break
           }
         }
+        this.itemCount = 0
         for (const key in json[responseName]) {
           if (key === 'count') {
             this.itemCount = json[responseName].count
