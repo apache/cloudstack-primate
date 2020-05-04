@@ -15,31 +15,24 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import Vue from 'vue'
+import Vuex from 'vuex'
+import Antd from 'ant-design-vue'
+import { createLocalVue } from '@vue/test-utils'
+
+const localVue = createLocalVue()
+
+Vue.use(Antd)
+localVue.use(Vuex)
+
+window.matchMedia = window.matchMedia || function () {
+  return {
+    matches: false,
+    addListener: function () {},
+    removeListener: function () {}
+  }
+}
+
 module.exports = {
-  testURL: 'http://localhost/',
-  setupFiles: ['<rootDir>/tests/setup.js'],
-  moduleFileExtensions: [
-    'js',
-    'jsx',
-    'json',
-    'vue'
-  ],
-  transform: {
-    '^.+\\.vue$': 'vue-jest',
-    '.+\\.(css|styl|less|sass|scss|png|svg|jpg|ttf|woff|woff2)?$': 'jest-transform-stub',
-    '^.+\\.jsx?$': 'babel-jest'
-  },
-  moduleNameMapper: {
-    '.+\\.svg?.+$': 'jest-transform-stub',
-    '^@/(.*)$': '<rootDir>/src/$1'
-  },
-  snapshotSerializers: [
-    'jest-serializer-vue'
-  ],
-  testMatch: [
-    '**/tests/unit/**/*.spec.(js|jsx|ts|tsx)|**/__tests__/*.(js|jsx|ts|tsx)'
-  ],
-  transformIgnorePatterns: [
-    '<rootDir>/node_modules/(?!ant-design-vue|vue)'
-  ]
+  localVue
 }
