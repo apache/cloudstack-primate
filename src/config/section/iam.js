@@ -222,9 +222,9 @@ export default {
       name: 'domain',
       title: 'Domains',
       icon: 'block',
-      permission: ['listDomains', 'listDomainChildren'],
-      resourceType: 'Domain',
-      columns: ['name', 'state', 'path', 'parentdomainname', 'level'],
+      component: () => import('@/views/iam/TreeDomain.vue'),
+      // permission: ['listDomains', 'listDomainChildren'],
+      // resourceType: 'Domain',
       details: ['name', 'id', 'path', 'parentdomainname', 'level', 'networkdomain', 'iptotal', 'vmtotal', 'volumetotal', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit'],
       related: [{
         name: 'account',
@@ -252,7 +252,6 @@ export default {
           show: (record, route, user) => { return ['Admin'].includes(user.roletype) }
         }
       ],
-      treeView: true,
       actions: [
         {
           api: 'createDomain',
