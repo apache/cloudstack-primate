@@ -124,7 +124,10 @@ export default {
           label: 'Create VM Snapshot',
           dataView: true,
           args: ['virtualmachineid', 'name', 'description', 'snapshotmemory', 'quiescevm'],
-          show: (record) => { return ['Running'].includes(record.state) },
+          show: (record) => {
+            return ((['Running'].includes(record.state) && record.hypervisor !== 'LXC') ||
+              (['Stopped'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC'))
+          },
           mapping: {
             virtualmachineid: {
               value: (record, params) => { return record.id }
@@ -230,7 +233,7 @@ export default {
           label: 'Scale VM',
           dataView: true,
           args: ['serviceofferingid', 'details'],
-          show: (record) => { return record.hypervisor !== 'KVM' }
+          show: (record) => { return ['Running'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC' }
         },
         {
           api: 'changeServiceForVirtualMachine',
@@ -238,7 +241,7 @@ export default {
           label: 'Change Service Offering',
           dataView: true,
           args: ['serviceofferingid'],
-          show: (record) => { return ['Stopped'].includes(record.state) }
+          show: (record) => { return ['Stopped'].includes(record.state) || (['Running'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC') }
         },
         {
           api: 'migrateVirtualMachine',
@@ -454,14 +457,8 @@ export default {
           icon: 'plus',
           label: 'Create SSH Key Pair',
           listView: true,
-          args: ['name', 'account', 'domainid']
-        },
-        {
-          api: 'registerSSHKeyPair',
-          icon: 'key',
-          label: 'Register SSH Public Key',
-          listView: true,
-          args: ['name', 'account', 'domainid', 'publickey']
+          popup: true,
+          component: () => import('@/views/compute/CreateSSHKeyPair.vue')
         },
         {
           api: 'deleteSSHKeyPair',
