@@ -556,6 +556,7 @@
 "label.delete.secondary.staging.store": "Delete Secondary Staging Store",
 "label.delete.sslcertificate": "Delete SSL Certificate",
 "label.delete.ucs.manager": "Delete UCS Manager",
+"label.delete.domain": "Delete Domain",
 "label.destroy.router": "Destroy router",
 "label.direct.ips":"Shared Network IPs",
 "label.disable.host": "Disable Host",

@@ -222,9 +222,8 @@ export default {
       name: 'domain',
       title: 'Domains',
       icon: 'block',
-      component: () => import('@/views/iam/TreeDomain.vue'),
-      // permission: ['listDomains', 'listDomainChildren'],
-      // resourceType: 'Domain',
+      permission: ['listDomains', 'listDomainChildren'],
+      resourceType: 'Domain',
       details: ['name', 'id', 'path', 'parentdomainname', 'level', 'networkdomain', 'iptotal', 'vmtotal', 'volumetotal', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit'],
       related: [{
         name: 'account',
@@ -315,7 +314,8 @@ export default {
           show: (record) => { return record.level !== 0 },
           args: ['cleanup']
         }
-      ]
+      ],
+      component: () => import('@/views/iam/DomainView.vue')
     },
     {
       name: 'role',
