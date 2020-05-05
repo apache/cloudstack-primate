@@ -22,21 +22,39 @@
         :form="form"
         @submit="handleSubmit"
         layout="vertical">
-        <a-form-item :label="$t('currentpassword')" v-if="!this.isAdminOrDomainAdmin()">
+        <a-form-item v-if="!this.isAdminOrDomainAdmin()">
+          <span slot="label">
+            {{ $t('currentpassword') }}
+            <a-tooltip :title="apiParams.currentpassword.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
           <a-input-password
             v-decorator="['currentpassword', {
               rules: [{ required: true, message: 'Please enter current password' }]
             }]"
             :placeholder="apiParams.currentpassword.description"/>
         </a-form-item>
-        <a-form-item :label="$t('password')">
+        <a-form-item>
+          <span slot="label">
+            {{ $t('password') }}
+            <a-tooltip :title="apiParams.password.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
           <a-input-password
             v-decorator="['password', {
               rules: [{ required: true, message: 'Please enter new password' }]
             }]"
             :placeholder="apiParams.password.description"/>
         </a-form-item>
-        <a-form-item :label="$t('confirmpassword')">
+        <a-form-item>
+          <span slot="label">
+            {{ $t('confirmpassword') }}
+            <a-tooltip :title="apiParams.password.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
           <a-input-password
             v-decorator="['confirmpassword', {
               rules: [
@@ -65,7 +83,7 @@
 import { api } from '@/api'
 
 export default {
-  name: 'ChangedUserPassword',
+  name: 'ChangeUserPassword',
   props: {
     resource: {
       type: Object,
@@ -79,20 +97,13 @@ export default {
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
-    this.apiConfig = this.$store.getters.apis.updateUser || {}
     this.apiParams = {}
+    this.apiConfig = this.$store.getters.apis.updateUser || {}
     this.apiConfig.params.forEach(param => {
       this.apiParams[param.name] = param
     })
   },
-  created () {
-  },
-  mounted () {
-    this.fetchData()
-  },
   methods: {
-    fetchData () {
-    },
     isAdminOrDomainAdmin () {
       return ['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype)
     },
@@ -130,10 +141,13 @@ export default {
           params.currentpassword = values.currentpassword
         }
         api('updateUser', params).then(json => {
-          this.$message.success('Successfully password for user: ' + this.resource.name)
+          this.$notification.success({
+            message: this.$t('label.action.change.password'),
+            description: 'Successfully changed password for user "' + this.resource.username + '"'
+          })
         }).catch(error => {
           this.$notification.error({
-            message: 'Request Failed',
+            message: 'Error',
             description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
           })
         }).finally(() => {

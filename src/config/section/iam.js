@@ -46,7 +46,7 @@ export default {
         {
           api: 'updateUser',
           icon: 'key',
-          label: 'Change Password',
+          label: 'label.action.change.password',
           dataView: true,
           popup: true,
           component: () => import('@/views/iam/ChangeUserPassword.vue')
@@ -54,27 +54,27 @@ export default {
         {
           api: 'registerUserKeys',
           icon: 'file-protect',
-          label: 'Generate Keys',
+          label: 'label.action.generate.keys',
           dataView: true
         },
         {
           api: 'enableUser',
           icon: 'play-circle',
-          label: 'Enable User',
+          label: 'label.action.enable.user',
           dataView: true,
           show: (record) => { return record.state === 'disabled' }
         },
         {
           api: 'disableUser',
           icon: 'pause-circle',
-          label: 'Disable User',
+          label: 'label.action.disable.user',
           dataView: true,
           show: (record) => { return record.state === 'enabled' }
         },
         {
           api: 'deleteUser',
           icon: 'delete',
-          label: 'Delete user',
+          label: 'label.action.delete.user',
           dataView: true
         }
       ]
@@ -101,8 +101,14 @@ export default {
           component: () => import('@/views/iam/SSLCertificateTab.vue')
         },
         {
+          name: 'limits',
+          show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
+          component: () => import('@/components/view/ResourceLimitTab.vue')
+        },
+        {
           name: 'Settings',
-          component: () => import('@/components/view/SettingsTab.vue')
+          component: () => import('@/components/view/SettingsTab.vue'),
+          show: (record, route, user) => { return ['Admin'].includes(user.roletype) }
         }
       ],
       actions: [
@@ -235,9 +241,16 @@ export default {
         {
           name: 'details',
           component: () => import('@/components/view/DetailsTab.vue')
-        }, {
+        },
+        {
+          name: 'limits',
+          show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
+          component: () => import('@/components/view/ResourceLimitTab.vue')
+        },
+        {
           name: 'Settings',
-          component: () => import('@/components/view/SettingsTab.vue')
+          component: () => import('@/components/view/SettingsTab.vue'),
+          show: (record, route, user) => { return ['Admin'].includes(user.roletype) }
         }
       ],
       treeView: true,
