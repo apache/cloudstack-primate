@@ -1286,5 +1286,7 @@
 "diskiopswriterate": "Disk Write Rate (IOPS)",
 "none": "None",
 "maxcpunumber": "Max CPU Cores",
-"message.template.iso": "Please select a template or ISO to continue"
+"message.template.iso": "Please select a template or ISO to continue",
+"message.deployvm.password": "Password of new VM {displayname} is {password}",
+"label.launch.vm": "Launch Virtual Machine"
 }
