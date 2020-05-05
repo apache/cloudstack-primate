@@ -556,11 +556,9 @@ export default {
         return 0
       })
       this.currentAction.paramFields = []
-      var args = []
       if ('args' in action) {
-        if (Array.isArray(action.args)) {
-          args = action.args
-        } else {
+        var args = action.args
+        if (typeof action.args === 'function') {
           args = action.args(action.resource, this.$store.getters)
         }
         if (args.length > 0) {

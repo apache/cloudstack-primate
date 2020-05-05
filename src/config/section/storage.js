@@ -41,7 +41,8 @@ export default {
           listView: true,
           popup: true,
           component: () => import('@/views/storage/CreateVolume.vue')
-        }, {
+        },
+        {
           api: 'getUploadParamsForVolume',
           icon: 'cloud-upload',
           label: 'Upload Local Volume',
@@ -67,7 +68,7 @@ export default {
           label: 'Attach Volume',
           args: ['virtualmachineid'],
           dataView: true,
-          show: (record) => { return record.type !== 'ROOT' && !('virtualmachineid' in record) }
+          show: (record) => { return record.type !== 'ROOT' && record.state !== 'Destroy' && !('virtualmachineid' in record) }
         },
         {
           api: 'detachVolume',
@@ -108,6 +109,7 @@ export default {
           label: 'Resize Volume',
           dataView: true,
           popup: true,
+          show: (record) => { return record.state !== 'Destroy' },
           component: () => import('@/views/storage/ResizeVolume.vue')
         },
         {
@@ -133,7 +135,7 @@ export default {
           icon: 'cloud-download',
           label: 'Download Volume',
           dataView: true,
-          show: (record) => { return record && record.state === 'Ready' && (record.vmstate === 'Stopped' || record.virtualmachineid == null) },
+          show: (record) => { return record && record.state === 'Ready' && (record.vmstate === 'Stopped' || record.virtualmachineid == null) && record.state !== 'Destroy' },
           args: ['zoneid', 'mode'],
           mapping: {
             zoneid: {
@@ -150,7 +152,7 @@ export default {
           icon: 'picture',
           label: 'Create Template from Volume',
           dataView: true,
-          show: (record) => { return (record.type === 'ROOT' && record.vmstate === 'Stopped') || (record.type !== 'ROOT' && !('virtualmachineid' in record) && !['Allocated', 'Uploaded'].includes(record.state)) },
+          show: (record) => { return (record.type === 'ROOT' && record.vmstate === 'Stopped') || (record.type !== 'ROOT' && !('virtualmachineid' in record) && !['Allocated', 'Uploaded', 'Destroy'].includes(record.state)) },
           args: ['volumeid', 'name', 'displaytext', 'ostypeid', 'ispublic', 'isfeatured', 'isdynamicallyscalable', 'requireshvm', 'passwordenabled', 'sshkeyenabled'],
           mapping: {
             volumeid: {
@@ -164,7 +166,7 @@ export default {
           label: 'Recover Volume',
           dataView: true,
           show: (record, store) => {
-            return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) || store.getters.features.allowuserexpungerecovervolume) && record.state === 'Destroy'
+            return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) || store.features.allowuserexpungerecovervolume) && record.state === 'Destroy'
           }
         },
         {
@@ -175,7 +177,7 @@ export default {
           groupAction: true,
           show: (record, store) => {
             return ['Expunging', 'Expunged', 'UploadError'].includes(record.state) ||
-              ((['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) || store.getters.features.allowuserexpungerecovervolume) && record.state === 'Destroy')
+              ((['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) || store.features.allowuserexpungerecovervolume) && record.state === 'Destroy')
           }
         },
         {
@@ -184,10 +186,10 @@ export default {
           label: 'Destroy Volume',
           dataView: true,
           args: (record, store) => {
-            return (!['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && !store.getters.features.allowuserexpungerecovervolumestore) ? [] : ['expunge']
+            return (!['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && !store.features.allowuserexpungerecovervolumestore) ? [] : ['expunge']
           },
           show: (record, store) => {
-            return (!['Creating'].includes(record.state) && record.type !== 'ROOT' && !('virtualmachineid' in record))
+            return (!['Creating'].includes(record.state) && record.type !== 'ROOT' && !('virtualmachineid' in record) && record.state !== 'Destroy')
           }
         }
       ]
@@ -231,7 +233,8 @@ export default {
           api: 'revertSnapshot',
           icon: 'sync',
           label: 'Revert Snapshot',
-          dataView: true
+          dataView: true,
+          show: (record) => { return record.revertable }
         },
         {
           api: 'deleteSnapshot',
