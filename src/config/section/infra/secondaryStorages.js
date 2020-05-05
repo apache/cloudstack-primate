@@ -31,6 +31,14 @@ export default {
   }],
   actions: [
     {
+      api: 'migrateSecondaryStorageData',
+      icon: 'drag',
+      label: 'label.migrate.data.from.image.store',
+      listView: true,
+      popup: true,
+      component: () => import('@/views/infra/MigrateData.vue')
+    },
+    {
       api: 'addImageStore',
       icon: 'plus',
       label: 'label.add.secondary.storage',
