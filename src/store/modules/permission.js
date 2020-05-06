@@ -20,7 +20,6 @@ import { asyncRouterMap, constantRouterMap } from '@/config/router'
 function hasApi (apis, route) {
   if (route.meta && route.meta.permission) {
     for (const permission of route.meta.permission) {
-      console.log(route.meta.name, permission)
       if (!apis.includes(permission)) {
         return false
       }
