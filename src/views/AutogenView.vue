@@ -556,12 +556,18 @@ export default {
         return 0
       })
       this.currentAction.paramFields = []
-      if (action.args && action.args.length > 0) {
-        this.currentAction.paramFields = action.args.map(function (arg) {
-          return paramFields.filter(function (param) {
-            return param.name.toLowerCase() === arg.toLowerCase()
-          })[0]
-        })
+      if ('args' in action) {
+        var args = action.args
+        if (typeof action.args === 'function') {
+          args = action.args(action.resource, this.$store.getters)
+        }
+        if (args.length > 0) {
+          this.currentAction.paramFields = args.map(function (arg) {
+            return paramFields.filter(function (param) {
+              return param.name.toLowerCase() === arg.toLowerCase()
+            })[0]
+          })
+        }
       }
 
       this.showAction = true
@@ -736,11 +742,6 @@ export default {
 
           var hasJobId = false
           api(this.currentAction.api, params).then(json => {
-            // set action data for reload tree-view
-            if (this.treeView) {
-              this.actionData.push(json)
-            }
-
             for (const obj in json) {
               if (obj.includes('response')) {
                 for (const res in json[obj]) {
@@ -758,7 +759,14 @@ export default {
               this.$router.go(-1)
             } else {
               if (!hasJobId) {
+                // set action data for reload tree-view
+                if (this.treeView) {
+                  this.actionData.push(json)
+                }
                 this.fetchData()
+              } else {
+                this.$set(this.resource, 'isDel', true)
+                this.actionData.push(this.resource)
               }
             }
           }).catch(error => {
