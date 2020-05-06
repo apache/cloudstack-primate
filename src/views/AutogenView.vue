@@ -396,6 +396,8 @@ export default {
       if (this.searchQuery !== '') {
         if (this.apiName === 'listRoles') {
           params.name = this.searchQuery
+        } else if (this.apiName === 'quotaEmailTemplateList') {
+          params.templatetype = this.searchQuery
         } else {
           params.keyword = this.searchQuery
         }
@@ -448,6 +450,12 @@ export default {
         delete params.treeView
       }
 
+      if (['listTemplates', 'listIsos'].includes(this.apiName) && !this.dataView) {
+        if (['Admin'].includes(this.$store.getters.userInfo.roletype)) {
+          params.templatefilter = 'all'
+        }
+      }
+
       api(this.apiName, params).then(json => {
         var responseName
         var objectName
@@ -469,6 +477,9 @@ export default {
         this.items = json[responseName][objectName]
         if (!this.items || this.items.length === 0) {
           this.items = []
+        }
+        if (['listTemplates', 'listIsos'].includes(this.apiName) && this.items.length > 1) {
+          this.items = [...new Map(this.items.map(x => [x.id, x])).values()]
         }
         if (this.treeView) {
           this.treeData = this.generateTreeData(this.items)
@@ -545,12 +556,18 @@ export default {
         return 0
       })
       this.currentAction.paramFields = []
-      if (action.args && action.args.length > 0) {
-        this.currentAction.paramFields = action.args.map(function (arg) {
-          return paramFields.filter(function (param) {
-            return param.name.toLowerCase() === arg.toLowerCase()
-          })[0]
-        })
+      if ('args' in action) {
+        var args = action.args
+        if (typeof action.args === 'function') {
+          args = action.args(action.resource, this.$store.getters)
+        }
+        if (args.length > 0) {
+          this.currentAction.paramFields = args.map(function (arg) {
+            return paramFields.filter(function (param) {
+              return param.name.toLowerCase() === arg.toLowerCase()
+            })[0]
+          })
+        }
       }
 
       this.showAction = true
@@ -635,7 +652,7 @@ export default {
             const description = action.response(result.jobresult)
             if (description) {
               this.$notification.info({
-                message: action.label,
+                message: this.$t(action.label),
                 description: (<span domPropsInnerHTML={description}></span>),
                 duration: 0
               })
@@ -725,11 +742,6 @@ export default {
 
           var hasJobId = false
           api(this.currentAction.api, params).then(json => {
-            // set action data for reload tree-view
-            if (this.treeView) {
-              this.actionData.push(json)
-            }
-
             for (const obj in json) {
               if (obj.includes('response')) {
                 for (const res in json[obj]) {
@@ -747,7 +759,14 @@ export default {
               this.$router.go(-1)
             } else {
               if (!hasJobId) {
+                // set action data for reload tree-view
+                if (this.treeView) {
+                  this.actionData.push(json)
+                }
                 this.fetchData()
+              } else {
+                this.$set(this.resource, 'isDel', true)
+                this.actionData.push(this.resource)
               }
             }
           }).catch(error => {
