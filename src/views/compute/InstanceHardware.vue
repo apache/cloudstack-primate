@@ -422,10 +422,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyApiError(error)
         this.loadingNic = false
       })
     },
@@ -455,10 +452,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyApiError(error)
         this.loadingNic = false
       })
     },
@@ -568,10 +562,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.addiptovmnicresponse.errortext
-        })
+        this.$notifyApiError(error)
         this.loadingNic = false
       })
     },
@@ -602,10 +593,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyApiError(error)
         this.loadingNic = false
         this.fetchSecondaryIPs(this.selectedNicId)
       })

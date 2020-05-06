@@ -77,3 +77,16 @@ export const pollJobPlugin = {
   }
 
 }
+
+export const jobResultNotifierPlugin = {
+
+  install (Vue) {
+    Vue.prototype.$notifyApiError = function (error) {
+      notification.error({
+        message: (error.response && error.response.status && `Error ${error.response.status}`) || 'Request Failed',
+        description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+      })
+    }
+  }
+
+}

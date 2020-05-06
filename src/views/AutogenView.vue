@@ -771,10 +771,7 @@ export default {
             }
           }).catch(error => {
             console.log(error)
-            this.$notification.error({
-              message: 'Request Failed',
-              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-            })
+            this.$notifyApiError(error)
           }).finally(f => {
             this.closeAction()
           })
