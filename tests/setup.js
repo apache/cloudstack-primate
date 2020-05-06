@@ -23,7 +23,7 @@ import VueStorage from 'vue-ls'
 import config from '@/config/settings'
 import { createLocalVue } from '@vue/test-utils'
 
-import mockI18n from './mock/i18n'
+import mockI18n from './mock/mockI18n'
 import mockStore from './mock/mockStore'
 
 const localVue = createLocalVue()
