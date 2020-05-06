@@ -522,7 +522,7 @@
         <div class="title">Tags</div>
         <div>
           <template v-for="(tag, index) in tags">
-            <a-tag :key="index" :closable="true" :afterClose="() => handleDeleteTag(tag)">
+            <a-tag :key="index" :closable="'deleteTags' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
               {{ tag.key }} = {{ tag.value }}
             </a-tag>
           </template>
@@ -545,7 +545,7 @@
               </a-button>
             </a-input-group>
           </div>
-          <a-tag v-else @click="showInput" style="background: #fff; borderStyle: dashed;">
+          <a-tag @click="showInput" style="background: #fff; borderStyle: dashed;" v-if="inputVisible &&('createTag' in $store.getters.apis)">
             <a-icon type="plus" /> New Tag
           </a-tag>
         </div>

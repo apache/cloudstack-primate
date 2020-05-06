@@ -52,7 +52,7 @@
         </div>
         <div class="form__item">
           <div class="form__label" style="white-space: nowrap;">{{ $t('label.add.VMs') }}</div>
-          <a-button type="primary" @click="handleOpenAddVMModal">Add</a-button>
+          <a-button :disabled="!('createLoadBalancerRule' in $store.getters.apis)" type="primary" @click="handleOpenAddVMModal">Add</a-button>
         </div>
       </div>
     </div>
@@ -107,7 +107,7 @@
       </template>
       <template slot="actions" slot-scope="record">
         <div class="actions">
-          <a-button size="small" shape="circle" icon="edit" @click="() => openEditRuleModal(record)"></a-button>
+          <a-button size="small" shape="circle" icon="edit" @click="() => openEditRuleModal(record)" :disabled="!('editLoadBalancerRule' in $store.getters.apis)"></a-button>
           <a-button size="small" shape="circle" icon="tag" @click="() => openTagsModal(record.id)" />
           <a-popconfirm
             :title="$t('label.delete') + '?'"
@@ -115,7 +115,7 @@
             okText="Yes"
             cancelText="No"
           >
-            <a-button size="small" shape="circle" type="danger" icon="delete" />
+            <a-button size="small" shape="circle" type="danger" icon="delete" :disabled="!('deleteLoadBalancerRule' in $store.getters.apis)" />
           </a-popconfirm>
         </div>
       </template>
@@ -150,14 +150,14 @@
             <a-input v-decorator="['value', { rules: [{ required: true, message: 'Please specify a tag value'}] }]" />
           </a-form-item>
         </div>
-        <a-button type="primary" html-type="submit">{{ $t('label.add') }}</a-button>
+        <a-button :disabled="'createTags' in $store.getters.apis" type="primary" html-type="submit">{{ $t('label.add') }}</a-button>
       </a-form>
 
       <a-divider></a-divider>
 
       <div v-show="!tagsModalLoading" class="tags-container">
         <div class="tags" v-for="(tag, index) in tags" :key="index">
-          <a-tag :key="index" :closable="true" :afterClose="() => handleDeleteTag(tag)">
+          <a-tag :key="index" :closable="'deleteTag' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
             {{ tag.key }} = {{ tag.value }}
           </a-tag>
         </div>

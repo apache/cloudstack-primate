@@ -64,7 +64,7 @@
           </div>
         </div>
         <div class="form__item" style="flex: 0">
-          <a-button type="primary" @click="handleAddRule">{{ $t('label.add') }}</a-button>
+          <a-button :disabled="!('authorizeSecurityGroupInress' in $store.getters.apis) && !('authorizeSecurityGroupEgress' in $store.getters.apis)" type="primary" @click="handleAddRule">{{ $t('label.add') }}</a-button>
         </div>
       </div>
     </div>
@@ -92,7 +92,12 @@
           okText="Yes"
           cancelText="No"
         >
-          <a-button shape="round" type="danger" icon="delete" class="rule-action" />
+          <a-button
+            shape="round"
+            type="danger"
+            icon="delete"
+            class="rule-action"
+            :disabled="!('revokeSecurityGroupIngress' in $store.getters.apis) && !('revokeSecurityGroupEgress' in $store.getters.apis)" />
         </a-popconfirm>
       </template>
     </a-table>

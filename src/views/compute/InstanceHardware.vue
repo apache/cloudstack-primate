@@ -89,7 +89,11 @@
       </a-collapse-panel>
 
       <a-collapse-panel :header="'Network Adapter(s): ' + (vm && vm.nic ? vm.nic.length : 0)" key="3" >
-        <a-button type="primary" @click="showAddModal" :loading="loadingNic">
+        <a-button
+          type="primary"
+          @click="showAddModal"
+          :loading="loadingNic"
+          :disabled="!('addNicToVirtualMachine' in $store.getters.apis)">
           <a-icon type="plus"></a-icon> {{ $t('label.network.addVM') }}
         </a-button>
         <a-divider class="divider-small" />
@@ -119,6 +123,7 @@
                       v-if="!item.isdefault"
                     >
                       <a-button
+                        :disabled="!('updateDefaultNicForVirtualMachine' in $store.getters.apis)"
                         icon="check-square"
                         size="small"
                         shape="round" />
@@ -131,6 +136,7 @@
                         icon="swap"
                         size="small"
                         shape="round"
+                        :disabled="!('updateVmNicIp' in $store.getters.apis)"
                         @click="editIpAddressNic = item.id; showUpdateIpModal = true" />
                     </a-tooltip>
                     <a-tooltip placement="bottom" v-if="item.type !== 'L2'">
@@ -141,6 +147,7 @@
                         icon="environment"
                         size="small"
                         shape="round"
+                        :disabled="(!('addIpToNic' in $store.getters.apis) && !('addIpToNic' in $store.getters.apis))"
                         @click="fetchSecondaryIPs(item.id)" />
                     </a-tooltip>
                     <a-popconfirm
@@ -151,6 +158,7 @@
                       v-if="!item.isdefault"
                     >
                       <a-button
+                        :disabled="!('removeNicFromVirtualMachine' in $store.getters.apis)"
                         type="danger"
                         icon="delete"
                         size="small"

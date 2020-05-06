@@ -53,7 +53,7 @@
           <a-input v-model="newRule.icmpcode"></a-input>
         </div>
         <div class="form__item">
-          <a-button type="primary" icon="plus" @click="addRule">{{ $t('add') }}</a-button>
+          <a-button :disabled="!('createEgressFirewallRule' in $store.getters.apis)" type="primary" icon="plus" @click="addRule">{{ $t('add') }}</a-button>
         </div>
       </div>
     </div>
@@ -78,7 +78,7 @@
         {{ record.icmpcode || record.endport >= 0 ? record.icmpcode || record.endport : 'All' }}
       </template>
       <template slot="actions" slot-scope="record">
-        <a-button shape="round" type="danger" icon="delete" @click="deleteRule(record)" />
+        <a-button shape="round" type="danger" :disabled="!('deleteEgressFirewallRule' in $store.getters.apis)" icon="delete" @click="deleteRule(record)" />
       </template>
     </a-table>
     <a-pagination
