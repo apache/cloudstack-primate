@@ -52,14 +52,14 @@
               <a-input v-decorator="['value', { rules: [{ required: true, message: 'Please specify a tag value'}] }]" />
             </a-form-item>
           </div>
-          <a-button type="primary" :disabled="'createTag' in $store.getters.apis" html-type="submit">{{ $t('label.add') }}</a-button>
+          <a-button type="primary" :disabled="'createTags' in $store.getters.apis" html-type="submit">{{ $t('label.add') }}</a-button>
         </a-form>
 
         <a-divider style="margin-top: 0;"></a-divider>
 
         <div class="tags-container">
           <div class="tags" v-for="(tag, index) in tags" :key="index">
-            <a-tag :key="index" :closable="'deleteTag' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
+            <a-tag :key="index" :closable="'deleteTags' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
               {{ tag.key }} = {{ tag.value }}
             </a-tag>
           </div>
