@@ -129,34 +129,43 @@ export default {
           }
         }
 
+        const title = 'Data Migration'
         api('migrateSecondaryStorageData', params).then(response => {
-          this.$pollJob({
-            jobId: response.migratesecondarystoragedataresponse.jobid,
-            successMessage: `Successfully Migrated data`,
-            successMethod: () => {
-              this.$store.dispatch('AddAsyncJob', {
-                title: `Successfully Migrated data from ${values.from}`,
-                jobid: response.migratesecondarystoragedataresponse.jobid,
-                status: 'progress'
-              })
-              this.closeAction()
-            },
-            errorMessage: 'Failed to migrate data',
-            errorMethod: () => {
-              this.closeAction()
-            },
-            catchMessage: 'Error encountered while fetching async job result',
-            catchMethod: () => {
-              this.closeAction()
-            }
-          })
+          const hasJobId = this.checkForAddAsyncJob(response, title)
+          if (hasJobId) {
+            console.log('job id: ', hasJobId)
+            this.fetchImageStores()
+          }
         }).catch(error => {
+          // show error
           this.$notification.error({
-            message: `Error ${error.response.status}`,
-            description: error.response.data.errorresponse.errortext
+            message: 'Request Failed',
+            description: error.response.headers['x-description']
           })
+        }).finally(() => {
+          this.closeAction()
         })
       })
+    },
+    checkForAddAsyncJob (json, title) {
+      let hasJobId = false
+      for (const obj in json) {
+        if (obj.includes('response')) {
+          for (const res in json[obj]) {
+            if (res === 'jobid') {
+              hasJobId = true
+              const jobId = json[obj][res]
+              console.log('job id: ', jobId)
+              this.$store.dispatch('AddAsyncJob', {
+                title: title,
+                jobid: jobId,
+                status: 'progress'
+              })
+            }
+          }
+        }
+      }
+      return hasJobId
     },
     closeAction () {
       this.$emit('close-action')
