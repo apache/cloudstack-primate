@@ -279,7 +279,7 @@ export default {
           icon: 'key',
           label: 'Reset Instance Password',
           dataView: true,
-          show: (record) => { return ['Stopped'].includes(record.state) },
+          show: (record) => { return ['Running', 'Stopped'].includes(record.state) },
           response: (result) => { return result.virtualmachine && result.virtualmachine.password ? `Password of the VM is ${result.virtualmachine.password}` : null }
         },
         {
@@ -288,7 +288,7 @@ export default {
           label: 'Reset SSH Key',
           dataView: true,
           args: ['keypair'],
-          show: (record) => { return ['Stopped'].includes(record.state) },
+          show: (record) => { return ['Running', 'Stopped'].includes(record.state) },
           mapping: {
             keypair: {
               api: 'listSSHKeyPairs'
@@ -315,14 +315,14 @@ export default {
           icon: 'medicine-box',
           label: 'label.recover.vm',
           dataView: true,
-          show: (record) => { return ['Destroyed'].includes(record.state) }
+          show: (record, store) => { return ['Destroyed'].includes(record.state) && store.features.allowuserexpungerecovervm }
         },
         {
           api: 'expungeVirtualMachine',
           icon: 'delete',
           label: 'label.action.expunge.instance',
           dataView: true,
-          show: (record) => { return ['Destroyed'].includes(record.state) }
+          show: (record, store) => { return ['Destroyed', 'Expunging'].includes(record.state) && store.features.allowuserexpungerecovervm }
         },
         {
           api: 'destroyVirtualMachine',
@@ -330,7 +330,8 @@ export default {
           label: 'label.action.destroy.instance',
           args: ['expunge', 'volumeids'],
           dataView: true,
-          groupAction: true
+          groupAction: true,
+          show: (record) => { return ['Running', 'Stopped', 'Error'].includes(record.state) }
         }
       ]
     },
