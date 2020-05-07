@@ -18,6 +18,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import Antd from 'ant-design-vue'
+import VueRouter from 'vue-router'
 import VueI18n from 'vue-i18n'
 import VueStorage from 'vue-ls'
 import config from '@/config/settings'
@@ -25,12 +26,14 @@ import { createLocalVue } from '@vue/test-utils'
 
 import mockI18n from './mock/mockI18n'
 import mockStore from './mock/mockStore'
+import mockRouter from './mock/mockRouter'
 
 const localVue = createLocalVue()
 
 Vue.use(Antd)
 Vue.use(VueStorage, config.storageOptions)
 
+localVue.use(VueRouter)
 localVue.use(VueI18n)
 localVue.use(Vuex)
 
@@ -45,5 +48,6 @@ window.matchMedia = window.matchMedia || function () {
 module.exports = {
   localVue,
   mockI18n,
-  mockStore
+  mockStore,
+  mockRouter
 }
