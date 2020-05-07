@@ -199,10 +199,7 @@ export default {
           catchMethod: () => this.fetchData()
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyApiError(error)
         this.fetchData()
       })
     },
@@ -229,10 +226,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.createegressfirewallruleresponse.errortext
-        })
+        this.$notifyApiError(error)
         this.resetAllRules()
         this.fetchData()
       })

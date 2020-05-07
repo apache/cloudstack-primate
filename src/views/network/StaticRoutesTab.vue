@@ -115,10 +115,7 @@ export default {
       api('listStaticRoutes', { gatewayid: this.resource.id }).then(json => {
         this.routes = json.liststaticroutesresponse.staticroute
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyApiError(error)
       }).finally(() => {
         this.componentLoading = false
       })
@@ -156,10 +153,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.headers['x-description']
-        })
+        this.$notifyApiError(error)
         this.fetchData()
         this.componentLoading = false
       })
@@ -193,10 +187,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.headers['x-description']
-        })
+        this.$notifyApiError(error)
         this.fetchData()
         this.componentLoading = false
       })
@@ -209,10 +200,7 @@ export default {
       }).then(response => {
         this.tags = response.listtagsresponse.tag
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyApiError(error)
       })
     },
     handleDeleteTag (tag) {
@@ -243,10 +231,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.deletetagsresponse.errortext
-        })
+        this.$notifyApiError(error)
         this.tagsLoading = false
       })
     },
@@ -286,10 +271,7 @@ export default {
             }
           })
         }).catch(error => {
-          this.$notification.error({
-            message: `Error ${error.response.status}`,
-            description: error.response.data.createtagsresponse.errortext
-          })
+          this.$notifyApiError(error)
           this.tagsLoading = false
         })
       })

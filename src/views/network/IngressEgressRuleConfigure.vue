@@ -267,12 +267,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: this.tabType === 'ingress'
-            ? error.response.data.authorizesecuritygroupingressresponse.errortext
-            : error.response.data.authorizesecuritygroupegressresponse.errortext
-        })
+        this.$notifyApiError(error)
         this.parentToggleLoading()
       })
     },
@@ -304,11 +299,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: this.tabType === 'ingress' ? error.response.data.revokesecuritygroupingressresponse.errortext
-            : error.response.data.revokesecuritygroupegressresponse.errortext
-        })
+        this.$notifyApiError(error)
         this.parentToggleLoading()
       })
     },
@@ -320,10 +311,7 @@ export default {
       }).then(response => {
         this.tags = response.listtagsresponse.tag
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyApiError(error)
       })
     },
     handleDeleteTag (tag) {
@@ -361,10 +349,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.deletetagsresponse.errortext
-        })
+        this.$notifyApiError(error)
         this.parentToggleLoading()
         this.tagsLoading = false
       })
@@ -412,10 +397,7 @@ export default {
             }
           })
         }).catch(error => {
-          this.$notification.error({
-            message: `Error ${error.response.status}`,
-            description: error.response.data.createtagsresponse.errortext
-          })
+          this.$notifyApiError(error)
           this.parentToggleLoading()
           this.tagsLoading = false
         })

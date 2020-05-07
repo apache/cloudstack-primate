@@ -213,10 +213,7 @@ export default {
         this.firewallRules = response.listfirewallrulesresponse.firewallrule || []
         this.totalCount = response.listfirewallrulesresponse.count || 0
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyApiError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -235,10 +232,7 @@ export default {
           catchMethod: () => this.fetchData()
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyApiError(error)
         this.fetchData()
       })
     },
@@ -265,10 +259,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.createfirewallruleresponse.errortext
-        })
+        this.$notifyApiError(error)
         this.resetAllRules()
         this.fetchData()
       })
@@ -301,10 +292,7 @@ export default {
       }).then(response => {
         this.tags = response.listtagsresponse.tag
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyApiError(error)
         this.closeModal()
       })
     },
@@ -339,10 +327,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.createtagsresponse.errortext
-        })
+        this.$notifyApiError(error)
         this.closeModal()
       }).finally(() => {
         this.addTagLoading = false
@@ -378,10 +363,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.deletetagsresponse.errortext
-        })
+        this.$notifyApiError(error)
         this.closeModal()
       })
     },
