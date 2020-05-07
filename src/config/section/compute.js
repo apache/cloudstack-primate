@@ -88,11 +88,14 @@ export default {
           groupAction: true,
           show: (record) => { return ['Stopped'].includes(record.state) },
           args: (record, store) => {
-            var fieldsToReturn = ['podid', 'clusterid', 'hostid']
-            if (record.hypervisor === 'VMware') {
-              fieldsToReturn.add('bootintosetup')
+            var fieldsToReturn = []
+            if (['Admin'].includes(store.userInfo.roletype)) {
+              fieldsToReturn = ['podid', 'clusterid', 'hostid']
             }
-            return ['Admin'].includes(store.userInfo.roletype) ? fieldsToReturn " []
+            if (record.hypervisor === 'VMware') {
+              fieldsToReturn = fieldsToReturn.concat(['bootintosetup'])
+            }
+            return fieldsToReturn
           },
           response: (result) => { return result.virtualmachine && result.virtualmachine.password ? `Password of the VM is ${result.virtualmachine.password}` : null }
         },
