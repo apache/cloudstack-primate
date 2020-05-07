@@ -76,7 +76,8 @@ export default {
           icon: 'edit',
           label: 'Update VM',
           dataView: true,
-          args: ['name', 'displayname', 'ostypeid', 'isdynamicallyscalable', 'haenable', 'group']
+          args: ['name', 'displayname', 'ostypeid', 'isdynamicallyscalable', 'haenable', 'group'],
+          show: (record) => { return ['Stopped'].includes(record.state) }
         },
         {
           api: 'startVirtualMachine',
@@ -112,6 +113,7 @@ export default {
           label: 'label.reinstall.vm',
           dataView: true,
           args: ['virtualmachineid', 'templateid'],
+          show: (record) => { return ['Running', 'Stopped'].includes(record.state) },
           mapping: {
             virtualmachineid: {
               value: (record) => { return record.id }
@@ -196,7 +198,7 @@ export default {
           label: 'label.action.attach.iso',
           dataView: true,
           args: ['id', 'virtualmachineid'],
-          show: (record) => { return !record.isoid },
+          show: (record) => { return ['Running', 'Stopped'].includes(record.state) && !record.isoid },
           mapping: {
             id: {
               api: 'listIsos'
@@ -212,7 +214,7 @@ export default {
           label: 'label.action.detach.iso',
           dataView: true,
           args: ['virtualmachineid'],
-          show: (record) => { return 'isoid' in record && record.isoid },
+          show: (record) => { return ['Running', 'Stopped'].includes(record.state) && 'isoid' in record && record.isoid },
           mapping: {
             virtualmachineid: {
               value: (record, params) => { return record.id }
@@ -248,7 +250,7 @@ export default {
           icon: 'drag',
           label: 'label.migrate.instance.to.host',
           dataView: true,
-          show: (record) => { return ['Running'].includes(record.state) },
+          show: (record, store) => { return ['Running'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) },
           component: () => import('@/views/compute/MigrateWizard'),
           popup: true,
           args: ['hostid', 'virtualmachineid'],
@@ -263,7 +265,7 @@ export default {
           icon: 'drag',
           label: 'label.migrate.instance.to.ps',
           dataView: true,
-          show: (record) => { return ['Stopped'].includes(record.state) },
+          show: (record, store) => { return ['Stopped'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) },
           args: ['storageid', 'virtualmachineid'],
           mapping: {
             storageid: {
