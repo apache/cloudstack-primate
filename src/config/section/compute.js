@@ -114,7 +114,7 @@ export default {
           message: 'message.action.reboot.instance',
           dataView: true,
           show: (record) => { return ['Running'].includes(record.state) },
-          args: (record) => { return (record.hypervisorType === 'VMware') ? ['bootintosetup'] : [] }
+          args: (record) => { return record.hypervisor === 'VMware' ? ['bootintosetup'] : [] }
         },
         {
           api: 'restoreVirtualMachine',
