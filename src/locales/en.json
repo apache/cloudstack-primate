@@ -441,6 +441,7 @@
 "label.action.stop.systemvm": "Stop System VM",
 "label.action.take.snapshot": "Take Snapshot",
 "label.action.unmanage.cluster": "Unmanage Cluster",
+"label.action.unmanage.virtualmachine": "Unmanage VM",
 "label.action.update.offering.access": "Update Offering Access",
 "label.action.update.resource.count": "Update Resource Count",
 "label.action.vmsnapshot.create": "Take VM Snapshot",
