@@ -27,8 +27,9 @@ export default {
       title: 'Templates',
       icon: 'save',
       permission: ['listTemplates'],
-      params: { templatefilter: 'executable' },
+      params: { templatefilter: 'self' },
       resourceType: 'Template',
+      filters: ['self', 'shared', 'featured', 'community'],
       columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain', 'order'],
       details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'directdownload', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created'],
       related: [{
@@ -103,8 +104,9 @@ export default {
       title: 'ISOs',
       icon: 'usb',
       permission: ['listIsos'],
-      params: { isofilter: 'executable' },
+      params: { isofilter: 'self' },
       resourceType: 'ISO',
+      filters: ['self', 'shared', 'featured', 'community'],
       columns: ['name', 'ostypename', 'account', 'domain'],
       details: ['name', 'id', 'displaytext', 'checksum', 'ostypename', 'size', 'bootable', 'isready', 'directdownload', 'isextractable', 'ispublic', 'isfeatured', 'crosszones', 'account', 'domain', 'created'],
       related: [{
