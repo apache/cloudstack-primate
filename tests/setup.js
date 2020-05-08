@@ -45,9 +45,17 @@ window.matchMedia = window.matchMedia || function () {
   }
 }
 
+const decodeHtml = (html) => {
+  const text = document.createElement('textarea')
+  text.innerHTML = html
+
+  return text.value
+}
+
 module.exports = {
   localVue,
   mockI18n,
   mockStore,
-  mockRouter
+  mockRouter,
+  decodeHtml
 }
