@@ -199,7 +199,7 @@ export default {
           catchMethod: () => this.fetchData()
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.fetchData()
       })
     },
@@ -226,7 +226,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.resetAllRules()
         this.fetchData()
       })

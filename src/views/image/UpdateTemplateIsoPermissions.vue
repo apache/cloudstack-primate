@@ -254,7 +254,7 @@ export default {
           })
         })
         .catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         })
         .finally(e => {
           this.loading = false

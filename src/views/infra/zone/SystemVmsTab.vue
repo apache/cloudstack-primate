@@ -110,7 +110,7 @@ export default {
       api('listSystemVms', { zoneid: this.resource.id }).then(json => {
         this.vms = json.listsystemvmsresponse.systemvm || []
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchLoading = false
       })

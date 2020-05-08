@@ -216,7 +216,7 @@ export default {
         this.$parent.$parent.close()
         this.parentFetchData()
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.$parent.$parent.close()
         this.parentFetchData()
       })

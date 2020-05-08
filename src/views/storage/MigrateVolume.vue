@@ -91,7 +91,7 @@ export default {
           this.storagePools = response.findstoragepoolsformigrationresponse.storagepool || []
           this.selectedStoragePool = this.storagePools[0].id || ''
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
           this.closeModal()
         })
       } else {
@@ -101,7 +101,7 @@ export default {
           this.storagePools = response.liststoragepoolsresponse.storagepool || []
           this.selectedStoragePool = this.storagePools[0].id || ''
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
           this.closeModal()
         })
       }
@@ -113,7 +113,7 @@ export default {
         this.diskOfferings = response.listdiskofferingsresponse.diskoffering
         this.selectedDiskOffering = this.diskOfferings[0].id
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.closeModal()
       })
     },
@@ -149,7 +149,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.closeModal()
       })
     }

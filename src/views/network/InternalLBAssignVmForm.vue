@@ -175,7 +175,7 @@ export default {
         this.iLb.vmguestip[index] = this.nics[index][0]
         this.addVmModalNicLoading = false
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.closeModal()
       })
     },

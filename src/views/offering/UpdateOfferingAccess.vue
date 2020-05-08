@@ -285,7 +285,7 @@ export default {
             description: this.$t('label.action.update.offering.access')
           })
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.loading = false
           this.closeAction()

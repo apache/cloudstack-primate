@@ -368,7 +368,7 @@ export default {
         api('createVPCOffering', params).then(json => {
           this.$message.success('VPC offering created: ' + values.name)
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.loading = false
           this.$emit('refresh-data')

@@ -833,7 +833,7 @@ export default {
         api('createServiceOffering', params).then(json => {
           this.$message.success((this.isSystem ? 'Service offering created: ' : 'Compute offering created: ') + values.name)
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.loading = false
           this.$emit('refresh-data')

@@ -193,7 +193,7 @@ export default {
           return { name: k, value: details[k], edit: false }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(f => {
         this.loading = false
         this.showAddDetail = false

@@ -946,7 +946,7 @@ export default {
           }
           this.$router.back()
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.loading.deploy = false
         })

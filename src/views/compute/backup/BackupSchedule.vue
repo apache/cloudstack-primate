@@ -164,7 +164,7 @@ export default {
         }
         this.refreshSchedule()
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.actionLoading = false
       })

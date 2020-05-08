@@ -268,7 +268,7 @@ export default {
       }).then(response => {
         this.items = response.listvlaniprangesresponse.vlaniprange ? response.listvlaniprangesresponse.vlaniprange : []
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.componentLoading = false
       })
@@ -285,7 +285,7 @@ export default {
           this.form.setFieldsValue({ domain: this.domains[0].id })
         }
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.domainsLoading = false
       })
@@ -304,7 +304,7 @@ export default {
         domainid: this.addAccount.domain,
         account: this.addAccount.account
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.addAccountModal = false
         this.domainsLoading = false
@@ -314,7 +314,7 @@ export default {
     handleRemoveAccount (id) {
       this.componentLoading = true
       api('releasePublicIpRange', { id }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchData()
       })
@@ -348,7 +348,7 @@ export default {
           message: 'Removed IP Range'
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.componentLoading = false
         this.fetchData()

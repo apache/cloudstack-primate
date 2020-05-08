@@ -188,7 +188,7 @@ export default {
         this.zoneId = this.zonesList[0].id || null
         this.fetchPods()
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -202,7 +202,7 @@ export default {
         this.podId = this.podsList[0].id || null
         this.fetchClusters()
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.podsList = []
         this.podId = ''
       }).finally(() => {
@@ -220,7 +220,7 @@ export default {
           this.handleChangeCluster()
         }
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.clustersList = []
         this.clusterId = null
       }).finally(() => {
@@ -232,7 +232,7 @@ export default {
       api('listHostTags').then(response => {
         this.hostTagsList = response.listhosttagsresponse.hosttag || []
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.hostTagsList = []
       }).finally(() => {
         this.loading = false

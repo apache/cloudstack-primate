@@ -99,7 +99,7 @@ export default {
       api('listTrafficTypes', { physicalnetworkid: this.resource.id }).then(json => {
         this.traffictypes = json.listtraffictypesresponse.traffictype
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchLoading = false
       })
@@ -113,7 +113,7 @@ export default {
       }).then(json => {
         this.publicNetwork = json.listnetworksresponse.network[0] || {}
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchLoading = false
       })

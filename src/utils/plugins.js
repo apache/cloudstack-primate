@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import _ from 'lodash'
 import { api } from '@/api'
 import { message, notification } from 'ant-design-vue'
 
@@ -78,15 +79,34 @@ export const pollJobPlugin = {
 
 }
 
-export const jobResultNotifierPlugin = {
+export const notifierPlugin = {
 
   install (Vue) {
-    Vue.prototype.$notifyApiError = function (error) {
+    Vue.prototype.$notifyError = function (error) {
+      var msg = 'Request Failed'
+      var desc = ''
+      if (error && error.response) {
+        if (error.response.status) {
+          msg = `Request Failed (${error.response.status})`
+        }
+        if (error.message) {
+          desc = error.message
+        }
+        if (error.response.headers && 'x-description' in error.response.headers) {
+          desc = error.response.headers['x-description']
+        }
+        if (desc === '' && error.response.data) {
+          const responseKey = _.findKey(error.response.data, 'errortext')
+          if (responseKey) {
+            desc = error.response.data[responseKey].errortext
+          }
+        }
+      }
       notification.error({
-        message: (error.response && error.response.status && `Error ${error.response.status}`) || 'Request Failed',
-        description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+        message: msg,
+        description: error && error.response && 'x-description' in error.response.headers ? error.response.headers['x-description'] : error.message,
+        duration: 0
       })
     }
   }
-
 }

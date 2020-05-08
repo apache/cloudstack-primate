@@ -271,7 +271,7 @@ export default {
           this.acls.sort((a, b) => a.number - b.number)
         }
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchLoading = false
       })
@@ -284,7 +284,7 @@ export default {
       }).then(response => {
         this.tags = response.listtagsresponse.tag || []
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       })
     },
     openTagsModal (acl) {
@@ -326,7 +326,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.tagsLoading = false
       })
     },
@@ -371,7 +371,7 @@ export default {
             }
           })
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
           this.tagsLoading = false
         })
       })
@@ -439,7 +439,7 @@ export default {
             }
           })
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
           this.fetchLoading = false
         })
       })
@@ -472,7 +472,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.fetchLoading = false
       })
     },
@@ -534,7 +534,7 @@ export default {
             description: 'Successfully added new rule'
           })
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.fetchLoading = false
           this.fetchData()
@@ -581,7 +581,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.fetchLoading = false
       })
     },

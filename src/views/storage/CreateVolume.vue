@@ -144,7 +144,7 @@ export default {
             catchMessage: 'Error encountered while fetching async job result'
           })
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.loading = false
           this.$emit('refresh-data')

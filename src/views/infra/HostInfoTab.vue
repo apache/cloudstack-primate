@@ -135,7 +135,7 @@ export default {
       api('listHosts', { id: this.resource.id }).then(json => {
         this.host = json.listhostsresponse.host[0]
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchLoading = false
       })

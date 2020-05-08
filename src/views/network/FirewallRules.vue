@@ -213,7 +213,7 @@ export default {
         this.firewallRules = response.listfirewallrulesresponse.firewallrule || []
         this.totalCount = response.listfirewallrulesresponse.count || 0
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -232,7 +232,7 @@ export default {
           catchMethod: () => this.fetchData()
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.fetchData()
       })
     },
@@ -259,7 +259,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.resetAllRules()
         this.fetchData()
       })
@@ -292,7 +292,7 @@ export default {
       }).then(response => {
         this.tags = response.listtagsresponse.tag
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.closeModal()
       })
     },
@@ -327,7 +327,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.closeModal()
       }).finally(() => {
         this.addTagLoading = false
@@ -363,7 +363,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.closeModal()
       })
     },

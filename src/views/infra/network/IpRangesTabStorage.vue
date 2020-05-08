@@ -190,7 +190,7 @@ export default {
       }).then(response => {
         this.items = response.liststoragenetworkiprangeresponse.storagenetworkiprange ? response.liststoragenetworkiprangeresponse.storagenetworkiprange : []
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.componentLoading = false
       })
@@ -202,7 +202,7 @@ export default {
       }).then(response => {
         this.pods = response.listpodsresponse.pod ? response.listpodsresponse.pod : []
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.componentLoading = false
       })
@@ -248,7 +248,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.componentLoading = false
         this.fetchData()
       })
@@ -292,7 +292,7 @@ export default {
             }
           })
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.componentLoading = false
           this.fetchData()

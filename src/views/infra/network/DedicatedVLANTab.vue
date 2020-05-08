@@ -220,7 +220,7 @@ export default {
         }
         this.formLoading = false
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.formLoading = false
       })
     },
@@ -244,7 +244,7 @@ export default {
         }
         this.formLoading = false
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.formLoading = false
       })
     },
@@ -267,7 +267,7 @@ export default {
         }
         this.formLoading = false
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.formLoading = false
       })
     },
@@ -325,7 +325,7 @@ export default {
           this.modal = false
           this.fetchData()
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
           this.modal = false
           this.fetchData()
         })

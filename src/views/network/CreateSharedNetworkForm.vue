@@ -652,7 +652,7 @@ export default {
           })
           this.resetForm()
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.$emit('refresh-data')
           this.actionLoading = false

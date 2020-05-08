@@ -149,7 +149,7 @@ export default {
         api('upgradeKubernetesCluster', params).then(json => {
           this.$message.success('Successfully upgraded Kubernetes cluster: ' + this.resource.name)
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.$emit('refresh-data')
           this.loading = false

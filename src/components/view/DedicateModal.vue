@@ -118,7 +118,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.dedicatedDomainModal = false
       })
     },
@@ -162,7 +162,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.dedicatedDomainModal = false
       })
     },
@@ -206,7 +206,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.dedicatedDomainModal = false
       })
     },
@@ -250,7 +250,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.dedicatedDomainModal = false
       })
     },

@@ -174,7 +174,7 @@ export default {
       }).then(response => {
         this.vmsList = response.listvirtualmachinesresponse.virtualmachine
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -193,7 +193,7 @@ export default {
       }).then(response => {
         this.vmsList = response.listvirtualmachinesresponse.virtualmachine || []
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -217,7 +217,7 @@ export default {
 
         this.selectedNic = this.nicsList[0]
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -232,7 +232,7 @@ export default {
       }).then(response => {
         this.networksList = response.listnetworksresponse.network
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -247,11 +247,7 @@ export default {
       }).then(() => {
         this.parentFetchData()
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description'],
-          duration: 0
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
         this.handleClose()

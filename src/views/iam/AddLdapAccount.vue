@@ -198,7 +198,7 @@ export default {
         this.fetchListDomains(),
         this.fetchListRoles()
       ]).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.listLoading = false
         this.timeZoneLoading = false
@@ -316,7 +316,7 @@ export default {
           this.$emit('refresh-data')
           this.handleClose()
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
           this.$emit('refresh-data')
         }).finally(() => {
           this.loading = false
@@ -359,7 +359,7 @@ export default {
         }))
       }
       Promise.all(promises).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       })
     },
     onSelectChange (selectedRowKeys) {

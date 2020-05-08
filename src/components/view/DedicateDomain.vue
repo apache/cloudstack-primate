@@ -81,7 +81,7 @@ export default {
           this.handleChangeDomain(this.domainId)
         }
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.domainsLoading = false
       })
@@ -95,7 +95,7 @@ export default {
           this.handleChangeAccount(null)
         }
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       })
     },
     handleChangeDomain (e) {

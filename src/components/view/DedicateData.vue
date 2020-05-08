@@ -121,7 +121,7 @@ export default {
           this.dedicatedAccountId = response.listdedicatedzonesresponse.dedicatedzone[0].accountid
         }
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       })
     },
     fetchDedicatedPods () {
@@ -134,7 +134,7 @@ export default {
           this.dedicatedAccountId = response.listdedicatedpodsresponse.dedicatedpod[0].accountid
         }
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       })
     },
     fetchDedicatedClusters () {
@@ -147,7 +147,7 @@ export default {
           this.dedicatedAccountId = response.listdedicatedclustersresponse.dedicatedcluster[0].accountid
         }
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       })
     },
     fetchDedicatedHosts () {
@@ -160,7 +160,7 @@ export default {
           this.dedicatedAccountId = response.listdedicatedhostsresponse.dedicatedhost[0].accountid
         }
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       })
     },
     releaseDedidcatedZone () {
@@ -190,7 +190,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       })
     },
     releaseDedidcatedPod () {
@@ -220,7 +220,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       })
     },
     releaseDedidcatedCluster () {
@@ -250,7 +250,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       })
     },
     releaseDedidcatedHost () {
@@ -280,7 +280,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       })
     },
     handleRelease () {

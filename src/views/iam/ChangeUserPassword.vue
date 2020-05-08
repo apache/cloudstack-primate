@@ -146,7 +146,7 @@ export default {
             description: 'Successfully changed password for user "' + this.resource.username + '"'
           })
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.$emit('refresh-data')
           this.loading = false

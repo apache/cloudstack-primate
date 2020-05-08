@@ -164,7 +164,7 @@ export default {
 
         this.dataSource = listSslResponse
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -200,7 +200,7 @@ export default {
         setTimeout(loading)
 
         // show error
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       })
     },
     onShowConfirm (row) {

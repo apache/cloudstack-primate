@@ -179,7 +179,7 @@ export default {
         this.dataSource = listProjectInvitations
         this.itemCount = itemCount
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -234,7 +234,7 @@ export default {
         }
       }).catch(error => {
         // show error
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         setTimeout(loading, 1000)
       })

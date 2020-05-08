@@ -102,7 +102,7 @@ export default {
       api('listPhysicalNetworks', { zoneid: this.resource.id }).then(json => {
         this.networks = json.listphysicalnetworksresponse.physicalnetwork || []
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchLoading = false
       })

@@ -80,7 +80,7 @@ export default {
           this.checkForAddAsyncJob(json, title, description)
           this.$emit('close-action')
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.$emit('refresh-data')
           this.loading = false

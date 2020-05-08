@@ -422,7 +422,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.loadingNic = false
       })
     },
@@ -452,7 +452,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.loadingNic = false
       })
     },
@@ -487,7 +487,7 @@ export default {
         })
       })
         .catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
           this.loadingNic = false
         })
     },
@@ -519,7 +519,7 @@ export default {
         })
       })
         .catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
           this.loadingNic = false
         })
     },
@@ -556,7 +556,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.loadingNic = false
       })
     },
@@ -587,7 +587,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.loadingNic = false
         this.fetchSecondaryIPs(this.selectedNicId)
       })

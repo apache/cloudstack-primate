@@ -94,7 +94,7 @@ export default {
           ? response.listremoteaccessvpnsresponse.remoteaccessvpn[0] : null
       }).catch(error => {
         console.log(error)
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       })
     },
     handleCreateVpn () {
@@ -134,7 +134,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.fetchData()
         this.parentFetchData()
         this.parentToggleLoading()
@@ -170,7 +170,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.fetchData()
         this.parentFetchData()
         this.parentToggleLoading()

@@ -173,7 +173,7 @@ export default {
         api('scaleKubernetesCluster', params).then(json => {
           this.$message.success('Successfully scaled Kubernetes cluster: ' + this.resource.name)
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.$emit('refresh-data')
           this.loading = false

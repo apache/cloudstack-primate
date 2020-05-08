@@ -124,7 +124,7 @@ export default {
           this.itemCount = count
         }
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchLoading = false
       })

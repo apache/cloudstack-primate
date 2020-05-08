@@ -101,7 +101,7 @@ export default {
         this.virtualMachineOptions.opts = json.listvirtualmachinesresponse.virtualmachine || []
         this.$forceUpdate()
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.virtualMachineOptions.loading = false
       })
@@ -159,7 +159,7 @@ export default {
             })
           }
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.actionLoading = false
         })

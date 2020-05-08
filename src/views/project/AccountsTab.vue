@@ -144,7 +144,7 @@ export default {
         this.itemCount = itemCount
         this.dataSource = listProjectAccount
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -175,7 +175,7 @@ export default {
         }
       }).catch(error => {
         // show error
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         setTimeout(loading, 1000)
       })
@@ -211,7 +211,7 @@ export default {
         }
       }).catch(error => {
         // show error
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         setTimeout(loading, 1000)
       })

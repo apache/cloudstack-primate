@@ -370,7 +370,7 @@ export default {
           })
           this.resetForm()
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.actionLoading = false
         })

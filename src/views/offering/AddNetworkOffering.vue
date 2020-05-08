@@ -838,7 +838,7 @@ export default {
         api('createNetworkOffering', params).then(json => {
           this.$message.success('Network offering created: ' + values.name)
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.loading = false
           this.$emit('refresh-data')

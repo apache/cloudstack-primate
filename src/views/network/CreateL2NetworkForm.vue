@@ -329,7 +329,7 @@ export default {
             description: 'Successfully created L2 network'
           })
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.$emit('refresh-data')
           this.actionLoading = false

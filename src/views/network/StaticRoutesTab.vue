@@ -115,7 +115,7 @@ export default {
       api('listStaticRoutes', { gatewayid: this.resource.id }).then(json => {
         this.routes = json.liststaticroutesresponse.staticroute
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.componentLoading = false
       })
@@ -153,7 +153,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.fetchData()
         this.componentLoading = false
       })
@@ -187,7 +187,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.fetchData()
         this.componentLoading = false
       })
@@ -200,7 +200,7 @@ export default {
       }).then(response => {
         this.tags = response.listtagsresponse.tag
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       })
     },
     handleDeleteTag (tag) {
@@ -231,7 +231,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.tagsLoading = false
       })
     },
@@ -271,7 +271,7 @@ export default {
             }
           })
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
           this.tagsLoading = false
         })
       })

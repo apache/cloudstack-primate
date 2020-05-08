@@ -409,7 +409,7 @@ export default {
           })
           this.$emit('refresh-data')
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.actionLoading = false
           this.closeAction()

@@ -131,7 +131,7 @@ export default {
         api('updateKubernetesSupportedVersion', params).then(json => {
           this.$message.success('Successfully updated Kubernetes supported version: ' + this.resource.name)
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.$emit('refresh-data')
           this.loading = false

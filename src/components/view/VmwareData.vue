@@ -71,7 +71,7 @@ export default {
         }
         this.$set(this.resource, 'vmwaredc', this.vmwaredc)
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       })
     }
   }

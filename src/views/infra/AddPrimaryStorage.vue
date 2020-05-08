@@ -534,7 +534,7 @@ export default {
             description: this.$t('label.add.primary.storage')
           })
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.loading = false
           this.closeModal()

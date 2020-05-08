@@ -206,7 +206,7 @@ export default {
         api('addKubernetesSupportedVersion', params).then(json => {
           this.$message.success('Successfully added Kubernetes version: ' + values.semanticversion)
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
         }).finally(() => {
           this.$emit('refresh-data')
           this.loading = false

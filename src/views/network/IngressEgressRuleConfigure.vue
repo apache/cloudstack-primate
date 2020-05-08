@@ -267,7 +267,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.parentToggleLoading()
       })
     },
@@ -299,7 +299,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.parentToggleLoading()
       })
     },
@@ -311,7 +311,7 @@ export default {
       }).then(response => {
         this.tags = response.listtagsresponse.tag
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       })
     },
     handleDeleteTag (tag) {
@@ -349,7 +349,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
         this.parentToggleLoading()
         this.tagsLoading = false
       })
@@ -397,7 +397,7 @@ export default {
             }
           })
         }).catch(error => {
-          this.$notifyApiError(error)
+          this.$notifyError(error)
           this.parentToggleLoading()
           this.tagsLoading = false
         })

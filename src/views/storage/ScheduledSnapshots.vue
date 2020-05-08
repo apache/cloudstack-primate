@@ -170,7 +170,7 @@ export default {
           this.$emit('refresh')
         }
       }).catch(error => {
-        this.$notifyApiError(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.actionLoading = false
       })
