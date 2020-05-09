@@ -16,63 +16,64 @@
 // under the License.
 
 <template>
-  <div class="row-template-zone">
-    <a-row :gutter="12">
-      <a-col :md="24" :lg="24">
-        <a-table
-          size="small"
-          style="overflow-y: auto"
-          :loading="loading || fetchLoading"
-          :columns="columns"
-          :dataSource="dataSource"
-          :pagination="false"
-          :rowKey="record => record.zoneid">
-          <div slot="isready" slot-scope="text, record">
-            <span v-if="record.isready">{{ $t('Yes') }}</span>
-            <span v-else>{{ $t('No') }}</span>
-          </div>
+  <div>
+    <a-table
+      size="small"
+      style="overflow-y: auto"
+      :loading="loading || fetchLoading"
+      :columns="columns"
+      :dataSource="dataSource"
+      :pagination="false"
+      :rowKey="record => record.zoneid">
+      <div slot="isready" slot-scope="text, record">
+        <span v-if="record.isready">{{ $t('Yes') }}</span>
+        <span v-else>{{ $t('No') }}</span>
+      </div>
+      <template slot="action" slot-scope="text, record">
+        <span style="margin-right: 5px">
+          <a-button
+            :disabled="!('copyTemplate' in $store.getters.apis)"
+            icon="copy"
+            shape="circle"
+            :loading="copyLoading"
+            @click="showCopyTemplate(record)" />
+        </span>
+        <span style="margin-right: 5px">
+          <a-popconfirm
+            v-if="'deleteTemplate' in $store.getters.apis"
+            placement="topRight"
+            title="Delete the template for this zone?"
+            :ok-text="$t('Yes')"
+            :cancel-text="$t('No')"
+            :loading="deleteLoading"
+            @confirm="deleteTemplate(record)"
+          >
+            <a-button
+              type="danger"
+              icon="delete"
+              shape="circle" />
+          </a-popconfirm>
+        </span>
+      </template>
+    </a-table>
+    <a-pagination
+      class="row-element"
+      size="small"
+      :current="page"
+      :pageSize="pageSize"
+      :total="itemCount"
+      :showTotal="total => `Total ${total} items`"
+      :pageSizeOptions="['10', '20', '40', '80', '100']"
+      @change="handleChangePage"
+      @showSizeChange="handleChangePageSize"
+      showSizeChanger/>
 
-          <template
-            slot="action"
-            slot-scope="text, record"
-            v-if="'copyTemplate' in $store.getters.apis || 'deleteTemplate' in $store.getters.apis">
-            <span style="margin-right: 5px">
-              <a-button
-                v-if="'copyTemplate' in $store.getters.apis"
-                type="copy"
-                icon="copy"
-                shape="circle"
-                @click="onShowCopyTemplate(record)" />
-            </span>
-            <span style="margin-right: 5px">
-              <a-button
-                v-if="'deleteTemplate' in $store.getters.apis"
-                type="danger"
-                icon="delete"
-                shape="circle"
-                @click="onShowConfirmDelete(record)" />
-            </span>
-          </template>
-        </a-table>
-        <a-pagination
-          class="row-element"
-          size="small"
-          :current="page"
-          :pageSize="pageSize"
-          :total="itemCount"
-          :showTotal="total => `Total ${total} items`"
-          :pageSizeOptions="['10', '20', '40', '80', '100']"
-          @change="handleChangePage"
-          @showSizeChange="handleChangePageSize"
-          showSizeChanger/>
-      </a-col>
-    </a-row>
     <a-modal
       v-if="'copyTemplate' in $store.getters.apis"
+      style="top: 20px;"
       :title="$t('label.action.copy.template')"
       :visible="showCopyActionForm"
       :closable="true"
-      style="top: 20px;"
       @ok="handleCopyTemplateSubmit"
       @cancel="onCloseCopyForm"
       :confirmLoading="copyLoading"
@@ -86,6 +87,7 @@
             <a-select
               id="zone-selection"
               mode="multiple"
+              placeholder="Select Zones"
               v-decorator="['zoneid', {
                 rules: [
                   {
@@ -99,10 +101,9 @@
               :filterOption="(input, option) => {
                 return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }"
-              :loading="zoneLoading"
-              :placeholder="apiParams.destzoneids.description">
-              <a-select-option v-for="(opt, optIndex) in this.zones" :key="optIndex">
-                {{ opt.name || opt.description }}
+              :loading="zoneLoading">
+              <a-select-option v-for="zone in zones" :key="zone.id">
+                {{ zone.name }}
               </a-select-option>
             </a-select>
           </a-form-item>
@@ -139,7 +140,8 @@ export default {
       currentRecord: {},
       zones: [],
       zoneLoading: false,
-      copyLoading: false
+      copyLoading: false,
+      deleteLoading: false
     }
   },
   beforeCreate () {
@@ -153,14 +155,12 @@ export default {
   created () {
     this.columns = [
       {
-        title: this.$t('name'),
-        dataIndex: 'zonename',
-        scopedSlots: { customRender: 'name' }
+        title: this.$t('zonename'),
+        dataIndex: 'zonename'
       },
       {
         title: this.$t('status'),
-        dataIndex: 'status',
-        scopedSlots: { customRender: 'status' }
+        dataIndex: 'status'
       },
       {
         title: this.$t('isready'),
@@ -168,7 +168,7 @@ export default {
         scopedSlots: { customRender: 'isready' }
       },
       {
-        title: this.$t('action'),
+        title: '',
         dataIndex: 'action',
         fixed: 'right',
         width: 100,
@@ -189,24 +189,18 @@ export default {
   methods: {
     fetchData () {
       const params = {}
-      params.listAll = true
       params.id = this.resource.id
-      params.templatefilter = 'self'
+      params.templatefilter = 'executable'
+      params.listall = true
       params.page = this.page
       params.pagesize = this.pageSize
 
       this.dataSource = []
       this.itemCount = 0
       this.fetchLoading = true
-
       api('listTemplates', params).then(json => {
-        const listTemplates = json.listtemplatesresponse.template
-        const count = json.listtemplatesresponse.count
-
-        if (listTemplates) {
-          this.dataSource = listTemplates
-          this.itemCount = count
-        }
+        this.dataSource = json.listtemplatesresponse.template || []
+        this.itemCount = json.listtemplatesresponse.count || 0
       }).catch(error => {
         this.$notifyError(error)
       }).finally(() => {
@@ -223,78 +217,52 @@ export default {
       this.pageSize = pageSize
       this.fetchData()
     },
-    onShowConfirmDelete (record) {
-      const self = this
-      let title = this.$t('deleteconfirm')
-      title = title.replace('{name}', 'template ' + record.name + ' for ' + record.zonename)
-      this.$confirm({
-        title: title,
-        okText: 'OK',
-        okType: 'danger',
-        cancelText: 'Cancel',
-        onOk () {
-          self.deleteTemplate(record)
-        }
-      })
-    },
-    checkForAddAsyncJob (json, title, description) {
-      let hasJobId = false
-
-      for (const obj in json) {
-        if (obj.includes('response')) {
-          for (const res in json[obj]) {
-            if (res === 'jobid') {
-              hasJobId = true
-              const jobId = json[obj][res]
-              this.$store.dispatch('AddAsyncJob', {
-                title: title,
-                jobid: jobId,
-                description: description,
-                status: 'progress'
-              })
-              break
-            }
-          }
-        }
-      }
-
-      return hasJobId
-    },
     deleteTemplate (record) {
-      const title = this.$t('label.action.delete.template')
-      const loading = this.$message.loading(title + 'in progress ' + record.name + ' for ' + record.zonename, 0)
-      const params = {}
-      params.account = record.zoneid
-      params.id = record.id
+      const params = {
+        id: record.id,
+        zoneid: record.zoneid
+      }
+      this.deleteLoading = true
       api('deleteTemplate', params).then(json => {
-        const hasJobId = this.checkForAddAsyncJob(json, title, record.id)
-        if (hasJobId) {
-          this.fetchData()
-        }
-      }).catch(error => {
-        // show error
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
+        const jobId = json.deletetemplateresponse.jobid
+        this.$store.dispatch('AddAsyncJob', {
+          title: this.$t('label.action.delete.template'),
+          jobid: jobId,
+          description: this.resource.name,
+          status: 'progress'
         })
+        const singleZone = (this.dataSource.length === 1)
+        this.$pollJob({
+          jobId,
+          successMethod: result => {
+            if (singleZone) {
+              this.$router.go(-1)
+            } else {
+              this.fetchData()
+            }
+          },
+          errorMethod: () => this.fetchData(),
+          loadingMessage: `Deleting template ${this.resource.name} in progress`,
+          catchMessage: 'Error encountered while fetching async job result'
+        })
+      }).catch(error => {
+        this.$notifyError(error)
       }).finally(() => {
-        setTimeout(loading, 1000)
+        this.deleteLoading = false
+        this.fetchData()
       })
     },
     fetchZoneData () {
       this.zones = []
-      const params = {}
-      params.listAll = true
       this.zoneLoading = true
-      api('listZones', params).then(json => {
-        var listZones = json.listzonesresponse.zone
-        listZones = listZones.filter((zone) => this.currentRecord.zoneid !== zone.id)
-        this.zones = this.zones.concat(listZones)
+      api('listZones', { listall: true }).then(json => {
+        const zones = json.listzonesresponse.zone || []
+        this.zones = [...zones.filter((zone) => this.currentRecord.zoneid !== zone.id)]
       }).finally(() => {
         this.zoneLoading = false
       })
     },
-    onShowCopyTemplate (record) {
+    showCopyTemplate (record) {
       this.currentRecord = record
       this.form.setFieldsValue({
         zoneid: []
@@ -312,29 +280,37 @@ export default {
         if (err) {
           return
         }
-        this.copyLoading = true
         const params = {
           id: this.currentRecord.id,
-          sourcezoneid: this.currentRecord.zoneid
+          sourcezoneid: this.currentRecord.zoneid,
+          destzoneids: values.zoneid.join()
         }
-        var zoneIndexes = values.zoneid
-        if (zoneIndexes && zoneIndexes.length > 0) {
-          var zoneIds = []
-          for (var j = 0; j < zoneIndexes.length; j++) {
-            zoneIds = zoneIds.concat(this.zones[zoneIndexes[j]].id)
-          }
-          params.destzoneids = zoneIds.join()
-        }
+        this.copyLoading = true
         api('copyTemplate', params).then(json => {
-          this.$message.success('Successfully copied template: ' + this.currentRecord.name)
+          const jobId = json.copytemplateresponse.jobid
+          this.$store.dispatch('AddAsyncJob', {
+            title: this.$t('label.action.copy.template'),
+            jobid: jobId,
+            description: this.resource.name,
+            status: 'progress'
+          })
+          this.$pollJob({
+            jobId,
+            successMethod: result => {
+              this.fetchData()
+            },
+            errorMethod: () => this.fetchData(),
+            loadingMessage: `Copy template ${this.resource.name} in progress`,
+            catchMessage: 'Error encountered while fetching async job result'
+          })
         }).catch(error => {
           this.$notification.error({
             message: 'Request Failed',
             description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
           })
         }).finally(() => {
-          this.$emit('refresh-data')
           this.copyLoading = false
+          this.$emit('refresh-data')
           this.onCloseCopyForm()
           this.fetchData()
         })
