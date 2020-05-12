@@ -21,7 +21,7 @@ import Status from '@/components/widgets/Status'
 describe('Widgets > Status.vue', () => {
   describe('method', () => {
     describe('getText()', () => {
-      it('should have a return value', () => {
+      it('called and the value returned is not null', () => {
         const propsData = {
           text: 'Running',
           displayText: true
@@ -37,7 +37,7 @@ describe('Widgets > Status.vue', () => {
         expect(received).toContain(expected)
       })
 
-      it('should have a return empty', () => {
+      it('called and the value returned is null', () => {
         const propsData = {
           text: 'Running',
           displayText: false
@@ -55,7 +55,7 @@ describe('Widgets > Status.vue', () => {
     })
 
     describe('getBadgeStatus()', () => {
-      it('should have a return default status', () => {
+      it('called and the value returned is default status', () => {
         const propsData = {
           text: 'Another',
           displayText: true
@@ -71,7 +71,7 @@ describe('Widgets > Status.vue', () => {
         expect(received).toContain(expected)
       })
 
-      it('should have a return success status', () => {
+      it('called and the value returned is success status', () => {
         const propsData = {
           text: 'Ready',
           displayText: true
@@ -87,7 +87,7 @@ describe('Widgets > Status.vue', () => {
         expect(received).toContain(expected)
       })
 
-      it('should have a return error status', () => {
+      it('called and the value returned is error status', () => {
         const propsData = {
           text: 'Disabled',
           displayText: true
@@ -103,7 +103,7 @@ describe('Widgets > Status.vue', () => {
         expect(received).toContain(expected)
       })
 
-      it('should have a return processing status', () => {
+      it('called and the value returned is processing status', () => {
         const propsData = {
           text: 'Migrating',
           displayText: true
@@ -119,7 +119,7 @@ describe('Widgets > Status.vue', () => {
         expect(received).toContain(expected)
       })
 
-      it('should have a return warning status', () => {
+      it('called and the value returned is warning status', () => {
         const propsData = {
           text: 'Alert',
           displayText: true
