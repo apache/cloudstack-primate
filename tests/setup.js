@@ -27,6 +27,7 @@ import { createLocalVue } from '@vue/test-utils'
 import mockI18n from './mock/mockI18n'
 import mockStore from './mock/mockStore'
 import mockRouter from './mock/mockRouter'
+import mockAxios from './mock/mockAxios'
 
 const localVue = createLocalVue()
 
@@ -57,5 +58,6 @@ module.exports = {
   mockI18n,
   mockStore,
   mockRouter,
+  mockAxios,
   decodeHtml
 }
