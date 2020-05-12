@@ -19,7 +19,7 @@
   <div>
     <a-card class="breadcrumb-card">
       <a-row>
-        <a-col :span="14" style="padding-left: 6px">
+        <a-col :span="12" style="padding-left: 6px">
           <breadcrumb :resource="resource">
             <a-tooltip placement="bottom" slot="end">
               <template slot="title">
@@ -37,7 +37,7 @@
             </a-tooltip>
           </breadcrumb>
         </a-col>
-        <a-col :span="10">
+        <a-col :span="12">
           <span style="float: right">
             <action-button
               style="margin-bottom: 5px"
@@ -47,6 +47,17 @@
               :dataView="dataView"
               :resource="resource"
               @exec-action="execAction"/>
+            <a-select
+              v-if="filters && filters.length > 0"
+              placeholder="Filter By"
+              :value="$t(selectedFilter)"
+              style="min-width: 100px; margin-left: 10px"
+              @change="changeFilter">
+              <a-icon slot="suffixIcon" type="filter" />
+              <a-select-option v-for="filter in filters" :key="filter">
+                {{ $t(filter) }}
+              </a-select-option>
+            </a-select>
             <a-input-search
               style="width: 20vw; margin-left: 10px"
               placeholder="Search"
@@ -292,6 +303,7 @@ export default {
       currentAction: {},
       showAction: false,
       dataView: false,
+      selectedFilter: '',
       actions: []
     }
   },
@@ -321,6 +333,7 @@ export default {
         this.searchQuery = ''
         this.page = 1
         this.itemCount = 0
+        this.selectedFilter = ''
         this.fetchData()
       }
     },
@@ -331,7 +344,7 @@ export default {
     }
   },
   methods: {
-    fetchData () {
+    fetchData (params = { listall: true }) {
       if (this.routeName !== this.$route.name) {
         this.routeName = this.$route.name
         this.items = []
@@ -341,9 +354,9 @@ export default {
       }
       this.apiName = ''
       this.actions = []
+      this.filters = this.$route.meta.filters || []
       this.columns = []
       this.columnKeys = []
-      var params = { listall: true }
       if (Object.keys(this.$route.query).length > 0) {
         Object.assign(params, this.$route.query)
       } else if (this.$route.meta.params) {
@@ -370,6 +383,26 @@ export default {
 
       if (this.apiName === '' || this.apiName === undefined) {
         return
+      }
+
+      if (['listTemplates', 'listIsos'].includes(this.apiName) && !this.dataView) {
+        if (['Admin'].includes(this.$store.getters.userInfo.roletype)) {
+          this.filters = ['all', ...this.filters]
+          if (this.selectedFilter === '') {
+            this.selectedFilter = 'all'
+          }
+        }
+        if (this.selectedFilter === '') {
+          this.selectedFilter = 'self'
+        }
+      }
+
+      if (this.selectedFilter && this.filters.length > 0) {
+        if (this.$route.path.startsWith('/template')) {
+          params.templatefilter = this.selectedFilter
+        } else if (this.$route.path.startsWith('/iso')) {
+          params.isofilter = this.selectedFilter
+        }
       }
 
       if (this.searchQuery !== '') {
@@ -423,12 +456,6 @@ export default {
       params.page = this.page
       params.pagesize = this.pageSize
 
-      if (['listTemplates', 'listIsos'].includes(this.apiName) && !this.dataView) {
-        if (['Admin'].includes(this.$store.getters.userInfo.roletype)) {
-          params.templatefilter = 'all'
-        }
-      }
-
       api(this.apiName, params).then(json => {
         var responseName
         var objectName
@@ -472,11 +499,7 @@ export default {
           this.resource = this.items[0]
         }
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description'],
-          duration: 0
-        })
+        this.$notifyError(error)
 
         if ([401, 405].includes(error.response.status)) {
           this.$router.push({ path: '/exception/403' })
@@ -545,7 +568,7 @@ export default {
         }
       }
       this.currentAction.loading = false
-      if (action.dataView && action.icon === 'edit') {
+      if (action.dataView && ['copy', 'edit'].includes(action.icon)) {
         this.fillEditFormFieldValues()
       }
     },
@@ -554,8 +577,9 @@ export default {
         return
       }
       var paramName = param.name
+      var extractedParamName = paramName.replace('ids', '').replace('id', '').toLowerCase()
       var params = { listall: true }
-      const possibleName = 'list' + paramName.replace('ids', '').replace('id', '').toLowerCase() + 's'
+      const possibleName = 'list' + extractedParamName + 's'
       var possibleApi
       if (this.currentAction.mapping && param.name in this.currentAction.mapping && this.currentAction.mapping[param.name].api) {
         possibleApi = this.currentAction.mapping[param.name].api
@@ -720,7 +744,7 @@ export default {
                 break
               }
             }
-            if ((this.currentAction.icon === 'delete' || ['archiveEvents'].includes(this.currentAction.api)) && this.dataView) {
+            if ((this.currentAction.icon === 'delete' || ['archiveEvents', 'archiveAlerts'].includes(this.currentAction.api)) && this.dataView) {
               this.$router.go(-1)
             } else {
               if (!hasJobId) {
@@ -729,15 +753,16 @@ export default {
             }
           }).catch(error => {
             console.log(error)
-            this.$notification.error({
-              message: 'Request Failed',
-              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-            })
+            this.$notifyError(error)
           }).finally(f => {
             this.closeAction()
           })
         }
       })
+    },
+    changeFilter (filter) {
+      this.selectedFilter = filter
+      this.fetchData()
     },
     changePage (page, pageSize) {
       this.page = page
