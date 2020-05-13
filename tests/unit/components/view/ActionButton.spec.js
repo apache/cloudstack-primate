@@ -28,29 +28,54 @@ import ActionButton from '@/components/view/ActionButton'
 
 jest.mock('axios', () => mockAxios)
 
-describe('Components > view > Status.vue', () => {
+describe('Components > View > Status.vue', () => {
+  const routes = [
+    {
+      name: 'testRouter1',
+      path: '/test-router-1',
+      meta: {
+        name: 'systemvm'
+      }
+    },
+    {
+      name: 'testRouter2',
+      path: '/test-router-2',
+      meta: {
+        name: 'test-name'
+      }
+    }
+  ]
+
+  const state = {
+    user: {
+      apis: {
+        'test-api-case-1': {},
+        'test-api-case-2': {},
+        'test-api-case-3': {},
+        'test-api-case-4': {},
+        'test-api-case-5': {},
+        'test-api-case-6': {}
+      }
+    }
+  }
+  const messages = {
+    en: { 'label.action': 'action-en' },
+    de: { 'label.action': 'action-de' }
+  }
+  const router = mockRouter.mock(routes)
+  const store = mockStore.mock(state)
+  const i18n = mockI18n.mock('en', messages)
+
   describe('Template', () => {
-    beforeAll(() => {
-      jest.resetModules()
-      jest.clearAllMocks()
-    })
+    it('Console component is visible', () => {
+      afterEach(() => {
+        jest.resetAllMocks()
+        jest.clearAllMocks()
+        jest.resetModules()
+      })
 
-    afterAll(() => {
-      jest.resetModules()
-      jest.clearAllMocks()
-    })
-
-    it('console component show', () => {
-      const routes = [
-        {
-          name: 'testRouter2',
-          path: '/test-router-2',
-          meta: {
-            name: 'systemvm'
-          }
-        }
-      ]
-      const router = mockRouter.mock(routes)
+      const expectedLink = '<a href="/client/console?cmd=access&vm=test-resource-id" target="_blank">'
+      const expectedButton = '<button disabled="disabled" type="button" class="ant-btn ant-btn-dashed ant-btn-circle" style="margin-right: 5px;">'
       const propsData = {
         dataView: true,
         resource: {
@@ -58,34 +83,35 @@ describe('Components > view > Status.vue', () => {
           state: 'Stopped'
         }
       }
-      router.push({ name: 'testRouter2' })
+
       const wrapper = mount(ActionButton, {
         localVue,
         router,
+        store,
+        i18n,
         propsData: propsData
       })
 
-      const wrapperHtml = wrapper.html()
-      const received = decodeHtml(wrapperHtml)
+      router.push({ name: 'testRouter1' })
+
+      wrapper.vm.$nextTick(() => {
+        const wrapperHtml = wrapper.html()
+        const received = decodeHtml(wrapperHtml)
+
+        expect(received).toContain(expectedLink)
+        expect(received).toContain(expectedButton)
+      })
+    })
+
+    it('Console component is invisible', () => {
+      afterEach(() => {
+        jest.resetAllMocks()
+        jest.clearAllMocks()
+        jest.resetModules()
+      })
 
       const expectedLink = '<a href="/client/console?cmd=access&vm=test-resource-id" target="_blank">'
       const expectedButton = '<button disabled="disabled" type="button" class="ant-btn ant-btn-dashed ant-btn-circle" style="margin-right: 5px;">'
-
-      expect(received).toContain(expectedLink)
-      expect(received).toContain(expectedButton)
-    })
-
-    it('console component not show', () => {
-      const routes = [
-        {
-          name: 'testRouter2',
-          path: '/test-router-2',
-          meta: {
-            name: 'test-name'
-          }
-        }
-      ]
-      const router = mockRouter.mock(routes)
       const propsData = {
         dataView: true,
         resource: {
@@ -93,38 +119,61 @@ describe('Components > view > Status.vue', () => {
           state: 'Stopped'
         }
       }
-      router.push({ name: 'testRouter2' })
       const wrapper = mount(ActionButton, {
         localVue,
         router,
+        i18n,
+        store,
         propsData: propsData
       })
 
-      const wrapperHtml = wrapper.html()
-      const received = decodeHtml(wrapperHtml)
+      router.push({ name: 'testRouter2' })
 
-      const expectedLink = '<a href="/client/console?cmd=access&vm=test-resource-id" target="_blank">'
-      const expectedButton = '<button disabled="disabled" type="button" class="ant-btn ant-btn-dashed ant-btn-circle" style="margin-right: 5px;">'
+      wrapper.vm.$nextTick(() => {
+        const wrapperHtml = wrapper.html()
+        const received = decodeHtml(wrapperHtml)
 
-      expect(received).not.toContain(expectedLink)
-      expect(received).not.toContain(expectedButton)
+        expect(received).not.toContain(expectedLink)
+        expect(received).not.toContain(expectedButton)
+      })
     })
 
-    it('do not show button', () => {
-      const wrapper = mount(ActionButton)
+    it('Show button action', () => {
+      afterEach(() => {
+        jest.resetAllMocks()
+        jest.clearAllMocks()
+        jest.resetModules()
+      })
 
-      const received = wrapper.html()
       const expected = '<i aria-label="icon: plus" class="anticon anticon-plus">'
+      const wrapper = mount(ActionButton, {
+        localVue,
+        router,
+        i18n,
+        store,
+        propsData: {}
+      })
 
-      expect(received).not.toContain(expected)
+      wrapper.vm.$nextTick(() => {
+        const received = wrapper.html()
+
+        expect(received).not.toContain(expected)
+      })
     })
 
-    it('show button not badge', () => {
+    it('Show normal button action', () => {
+      afterEach(() => {
+        jest.resetAllMocks()
+        jest.clearAllMocks()
+        jest.resetModules()
+      })
+
+      const expected = '<i aria-label="icon: plus" class="anticon anticon-plus">'
       const propsData = {
         actions: [
           {
             label: 'label.action',
-            api: 'testApiName',
+            api: 'test-api-case-1',
             showBadge: false,
             icon: 'plus',
             dataView: false,
@@ -134,36 +183,35 @@ describe('Components > view > Status.vue', () => {
         dataView: false,
         listView: true
       }
-      const messages = { en: { 'label.action': 'action-en' } }
-      const state = {
-        user: {
-          apis: {
-            testApiName: {}
-          }
-        }
-      }
-      const i18n = mockI18n.mock('en', messages)
-      const store = mockStore.mock(state)
 
       const wrapper = mount(ActionButton, {
         localVue,
+        router,
         store,
         i18n,
         propsData: propsData
       })
 
-      const received = wrapper.html()
-      const expected = '<i aria-label="icon: plus" class="anticon anticon-plus">'
+      wrapper.vm.$nextTick(() => {
+        const received = wrapper.html()
 
-      expect(received).toContain(expected)
+        expect(received).toContain(expected)
+      })
     })
 
-    it('show button badge', (done) => {
+    it('Show badge button action', (done) => {
+      afterEach(() => {
+        jest.resetAllMocks()
+        jest.clearAllMocks()
+        jest.resetModules()
+      })
+
+      const expected = '<span class="button-action-badge ant-badge">'
       const propsData = {
         actions: [
           {
             label: 'label.action',
-            api: 'testApiName',
+            api: 'test-api-case-2',
             showBadge: true,
             icon: 'plus',
             dataView: true
@@ -171,29 +219,14 @@ describe('Components > view > Status.vue', () => {
         ],
         dataView: true
       }
-      const state = {
-        user: {
-          apis: {
-            testApiName: {}
-          }
-        }
-      }
-      const messages = { en: { 'label.action': 'action-en' } }
-      const router = mockRouter.mock()
-      const store = mockStore.mock(state)
-      const i18n = mockI18n.mock('en', messages)
       const dataMock = {
         testapinameresponse: {
           count: 0,
           testapiname: []
         }
       }
-      mockAxios.mockImplementation(() => Promise.resolve(dataMock))
 
-      beforeEach(() => {
-        jest.resetModules()
-        jest.clearAllMocks()
-      })
+      mockAxios.mockImplementation(() => Promise.resolve(dataMock))
 
       const wrapper = mount(ActionButton, {
         localVue,
@@ -207,30 +240,30 @@ describe('Components > view > Status.vue', () => {
         const wrapperHtml = wrapper.html()
         const received = decodeHtml(wrapperHtml)
 
-        expect(received).toContain('<span class="button-action-badge ant-badge">')
+        expect(received).toContain(expected)
+
         done()
       })
     })
   })
 
   describe('Method', () => {
-    beforeAll(() => {
-      jest.resetModules()
-      jest.clearAllMocks()
-    })
-
-    afterAll(() => {
-      jest.resetModules()
-      jest.clearAllMocks()
-    })
-
     describe('handleShowBadge()', () => {
       it('called and the api returned is not empty', (done) => {
+        afterEach(() => {
+          jest.resetAllMocks()
+          jest.clearAllMocks()
+          jest.resetModules()
+        })
+
+        const postData = new URLSearchParams()
+        const expected = { 'test-api-case-3': { badgeNum: 2 } }
+        const dataMock = { testapinameresponse: { count: 2 } }
         const propsData = {
           actions: [
             {
               label: 'label.action',
-              api: 'testApiName',
+              api: 'test-api-case-3',
               showBadge: true,
               icon: 'plus',
               dataView: true
@@ -238,22 +271,7 @@ describe('Components > view > Status.vue', () => {
           ],
           dataView: true
         }
-        const state = {
-          user: {
-            apis: {
-              testApiName: {}
-            }
-          }
-        }
-        const messages = { en: { 'label.action': 'action-en' } }
-        const router = mockRouter.mock()
-        const store = mockStore.mock(state)
-        const i18n = mockI18n.mock('en', messages)
-        const dataMock = {
-          testapinameresponse: {
-            count: 2
-          }
-        }
+
         mockAxios.mockResolvedValue(dataMock)
 
         const wrapper = mount(ActionButton, {
@@ -265,50 +283,43 @@ describe('Components > view > Status.vue', () => {
         })
 
         setTimeout(() => {
-          const postData = new URLSearchParams()
-
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
             data: postData,
             method: 'GET',
             params: {
-              command: 'testApiName',
+              command: 'test-api-case-3',
               response: 'json'
             },
             url: '/'
           })
-          expect(wrapper.vm.actionBadge).not.toEqual({})
+          expect(wrapper.vm.actionBadge).toEqual(expected)
 
           done()
         })
       })
 
       it('called and the api returned is empty', (done) => {
+        afterEach(() => {
+          jest.resetAllMocks()
+          jest.clearAllMocks()
+          jest.resetModules()
+        })
+
+        const postData = new URLSearchParams()
+        const expected = { 'test-api-case-4': { badgeNum: 0 } }
+        const dataMock = { data: [] }
         const propsData = {
           actions: [
             {
               label: 'label.action',
-              api: 'testApiName',
+              api: 'test-api-case-4',
               showBadge: true,
               icon: 'plus',
               dataView: true
             }
           ],
           dataView: true
-        }
-        const state = {
-          user: {
-            apis: {
-              testApiName: {}
-            }
-          }
-        }
-        const messages = { en: { 'label.action': 'action-en' } }
-        const router = mockRouter.mock()
-        const store = mockStore.mock(state)
-        const i18n = mockI18n.mock('en', messages)
-        const dataMock = {
-          data: []
         }
 
         mockAxios.mockResolvedValue(dataMock)
@@ -322,25 +333,16 @@ describe('Components > view > Status.vue', () => {
         })
 
         setTimeout(() => {
-          const postData = new URLSearchParams()
-
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
             data: postData,
             method: 'GET',
             params: {
-              command: 'testApiName',
+              command: 'test-api-case-4',
               response: 'json'
             },
             url: '/'
           })
-
-          const expected = {
-            testApiName: {
-              badgeNum: 0
-            }
-          }
-
           expect(wrapper.vm.actionBadge).toEqual(expected)
 
           done()
@@ -348,11 +350,18 @@ describe('Components > view > Status.vue', () => {
       })
 
       it('called and api throws exception', (done) => {
+        afterEach(() => {
+          jest.resetAllMocks()
+          jest.clearAllMocks()
+          jest.resetModules()
+        })
+
+        const postData = new URLSearchParams()
         const propsData = {
           actions: [
             {
               label: 'label.action',
-              api: 'testApiName',
+              api: 'test-api-case-5',
               showBadge: true,
               icon: 'plus',
               dataView: true
@@ -360,18 +369,8 @@ describe('Components > view > Status.vue', () => {
           ],
           dataView: true
         }
-        const state = {
-          user: {
-            apis: {
-              testApiName: {}
-            }
-          }
-        }
-        const messages = { en: { 'label.action': 'action-en' } }
-        const router = mockRouter.mock()
-        const store = mockStore.mock(state)
-        const i18n = mockI18n.mock('en', messages)
         const errorMessage = 'errMethodMessage'
+
         mockAxios.mockImplementationOnce(() => Promise.reject(errorMessage))
 
         const wrapper = mount(ActionButton, {
@@ -383,14 +382,12 @@ describe('Components > view > Status.vue', () => {
         })
 
         setTimeout(() => {
-          const postData = new URLSearchParams()
-
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
             data: postData,
             method: 'GET',
             params: {
-              command: 'testApiName',
+              command: 'test-api-case-5',
               response: 'json'
             },
             url: '/'
@@ -404,12 +401,28 @@ describe('Components > view > Status.vue', () => {
 
     describe('execAction()', () => {
       it('called and emitted events are executed', async () => {
+        afterEach(() => {
+          jest.resetAllMocks()
+          jest.clearAllMocks()
+          jest.resetModules()
+        })
+
+        const expected = {
+          icon: 'plus',
+          label: 'label.action',
+          api: 'test-api-case-6',
+          showBadge: false,
+          dataView: true,
+          resource: {
+            id: 'test-resource-id'
+          }
+        }
         const propsData = {
           actions: [
             {
               icon: 'plus',
               label: 'label.action',
-              api: 'testApiName',
+              api: 'test-api-case-6',
               showBadge: false,
               dataView: true
             }
@@ -419,17 +432,6 @@ describe('Components > view > Status.vue', () => {
             id: 'test-resource-id'
           }
         }
-        const state = {
-          user: {
-            apis: {
-              testApiName: {}
-            }
-          }
-        }
-        const messages = { en: { 'label.action': 'action-en' } }
-        const router = mockRouter.mock()
-        const store = mockStore.mock(state)
-        const i18n = mockI18n.mock('en', messages)
 
         const wrapper = mount(ActionButton, {
           localVue,
@@ -442,89 +444,72 @@ describe('Components > view > Status.vue', () => {
         await wrapper.find('button').trigger('click')
         await wrapper.vm.$nextTick()
 
-        const expected = {
-          icon: 'plus',
-          label: 'label.action',
-          api: 'testApiName',
-          showBadge: false,
-          dataView: true,
-          resource: {
-            id: 'test-resource-id'
-          }
-        }
-
         expect(wrapper.emitted()['exec-action'][0]).toEqual([expected])
       })
     })
   })
 
   describe('Watcher', () => {
-    beforeAll(() => {
-      jest.resetModules()
-      jest.clearAllMocks()
-    })
-
-    afterAll(() => {
-      jest.resetModules()
-      jest.clearAllMocks()
-    })
-
     describe('handleShowBadge()', () => {
-      it('not called with empty resource', (done) => {
-        const props = {}
-        const handleShowBadge = jest.fn(() => {})
+      it('not called with empty resource', async () => {
+        afterEach(() => {
+          jest.resetAllMocks()
+          jest.clearAllMocks()
+          jest.resetModules()
+        })
 
         const wrapper = mount(ActionButton, {
           localVue,
-          propsData: props,
-          methods: {
-            handleShowBadge
+          router,
+          i18n,
+          store,
+          propsData: {
+            resource: null
           }
         })
-
-        wrapper.setProps({ resource: null })
-
-        wrapper.vm.$nextTick(() => {
-          expect(handleShowBadge).toHaveBeenCalledTimes(1)
-
-          done()
-        })
+        const handleShowBadge = jest.spyOn(wrapper.vm, 'handleShowBadge')
+        await wrapper.vm.$nextTick()
+        expect(handleShowBadge).not.toBeCalled()
       })
 
-      it('not called with resource containing id null', (done) => {
-        const props = {}
-        const handleShowBadge = jest.fn(() => {})
+      it('not called with resource containing id null', async () => {
+        afterEach(() => {
+          jest.resetAllMocks()
+          jest.clearAllMocks()
+          jest.resetModules()
+        })
 
         const wrapper = mount(ActionButton, {
           localVue,
-          propsData: props,
-          methods: {
-            handleShowBadge
+          router,
+          i18n,
+          store,
+          propsData: {
+            resource: { id: null }
           }
         })
-
-        wrapper.setProps({ resource: { id: null } })
-
-        wrapper.vm.$nextTick(() => {
-          expect(handleShowBadge).toHaveBeenCalledTimes(1)
-          done()
-        })
+        const handleShowBadge = jest.spyOn(wrapper.vm, 'handleShowBadge')
+        await wrapper.vm.$nextTick()
+        expect(handleShowBadge).not.toBeCalled()
       })
 
-      it('not called with changed resource data', (done) => {
-        const props = {
-          resource: {
-            id: 'test-resource-id-1'
-          }
-        }
-        const mockMethods = {
-          handleShowBadge: jest.fn()
-        }
+      it('not called with changed resource data', async () => {
+        afterEach(() => {
+          jest.resetAllMocks()
+          jest.clearAllMocks()
+          jest.resetModules()
+        })
 
         const wrapper = mount(ActionButton, {
           localVue,
-          methods: mockMethods,
-          propsData: props
+          router,
+          i18n,
+          store,
+          propsData: {
+            resource: {
+              id: 'test-resource-id-1'
+            }
+          }
         })
 
         wrapper.setProps({
@@ -532,12 +517,9 @@ describe('Components > view > Status.vue', () => {
             id: 'test-resource-id-2'
           }
         })
-
-        wrapper.vm.$nextTick(() => {
-          expect(mockMethods.handleShowBadge).toHaveBeenCalledTimes(2)
-
-          done()
-        })
+        const handleShowBadge = jest.spyOn(wrapper.vm, 'handleShowBadge')
+        await wrapper.vm.$nextTick()
+        expect(handleShowBadge).toHaveBeenCalledTimes(1)
       })
     })
   })

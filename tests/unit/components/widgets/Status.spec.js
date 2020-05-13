@@ -18,7 +18,7 @@
 import { mount } from '@vue/test-utils'
 import Status from '@/components/widgets/Status'
 
-describe('Widgets > Status.vue', () => {
+describe('Components > Widgets > Status.vue', () => {
   describe('method', () => {
     describe('getText()', () => {
       it('called and the value returned is not null', () => {
