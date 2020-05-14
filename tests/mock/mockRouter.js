@@ -32,7 +32,7 @@ const mockRouter = {
       mockRouter.routes[0].children = [...mockRouter.routes[0].children, ...routes]
     }
 
-    return new VueRouter({ routes: mockRouter.routes })
+    return new VueRouter({ routes: mockRouter.routes, mode: 'history' })
   }
 }
 

@@ -19,9 +19,13 @@ import { mount } from '@vue/test-utils'
 import {
   localVue,
   mockI18n,
-  mockRouter
+  mockRouter,
+  mockAxios,
+  mockStore
 } from './../../setup'
 import AutogenView from '@/views/AutogenView'
+
+jest.mock('axios', () => mockAxios)
 
 describe('Views > AutogenView.vue', () => {
   const routes = [
@@ -38,6 +42,12 @@ describe('Views > AutogenView.vue', () => {
       meta: {
         icon: 'test-router-2'
       }
+    },
+    {
+      path: '/test-router-3',
+      meta: {
+        icon: 'test-router-3'
+      }
     }
   ]
 
@@ -46,24 +56,40 @@ describe('Views > AutogenView.vue', () => {
     de: { 'label.name': 'test-name-de' }
   }
 
+  const state = {
+    user: {
+      apis: {
+        testApiCase3: {}
+      }
+    }
+  }
+
   const router = mockRouter.mock(routes)
   const i18n = mockI18n.mock('en', messages)
+  const store = mockStore.mock(state)
 
-  const wrapper = mount(AutogenView, {
-    localVue,
-    router,
-    i18n
+  let wrapper
+
+  beforeEach(() => {
+    if (wrapper) {
+      wrapper.destroy()
+    }
+    jest.clearAllMocks()
+    if (router.currentRoute.name !== 'home') {
+      router.replace({ name: 'home' })
+    }
   })
-
-  router.push({ name: 'testRouter1' })
 
   describe('Navigation Guard', () => {
     it('beforeRouteUpdate() is called', () => {
-      afterEach(() => {
-        jest.resetModules()
-        jest.resetAllMocks()
-        jest.clearAllMocks()
+      wrapper = mount(AutogenView, {
+        localVue,
+        router,
+        store,
+        i18n
       })
+
+      router.push({ name: 'testRouter1' })
 
       const beforeRouteUpdate = wrapper.vm.$options.beforeRouteUpdate
       const nextFun = jest.fn()
@@ -77,11 +103,14 @@ describe('Views > AutogenView.vue', () => {
     })
 
     it('beforeRouteLeave() is called', () => {
-      afterEach(() => {
-        jest.resetModules()
-        jest.resetAllMocks()
-        jest.clearAllMocks()
+      wrapper = mount(AutogenView, {
+        localVue,
+        router,
+        store,
+        i18n
       })
+
+      router.push({ name: 'testRouter1' })
 
       const beforeRouteLeave = wrapper.vm.$options.beforeRouteLeave
       const nextFun = jest.fn()
@@ -97,15 +126,15 @@ describe('Views > AutogenView.vue', () => {
 
   describe('Watchers', () => {
     describe('$route', () => {
-      it('data does not change when $route does not change', async () => {
-        const spy = jest.spyOn(wrapper.vm, 'fetchData')
-
-        afterEach(() => {
-          jest.resetModules()
-          jest.resetAllMocks()
-          jest.clearAllMocks()
-          spy.mockClear()
+      it('data does not change when $route does not change', () => {
+        wrapper = mount(AutogenView, {
+          localVue,
+          router,
+          store,
+          i18n
         })
+
+        const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
         wrapper.setData({
           searchQuery: 'test-query',
@@ -114,24 +143,24 @@ describe('Views > AutogenView.vue', () => {
           selectedFilter: 'test-filter'
         })
 
-        await wrapper.vm.$nextTick()
-
-        expect(wrapper.vm.searchQuery).toEqual('test-query')
-        expect(wrapper.vm.page).toEqual(2)
-        expect(wrapper.vm.itemCount).toEqual(10)
-        expect(wrapper.vm.selectedFilter).toEqual('test-filter')
-        expect(spy).not.toBeCalled()
+        wrapper.vm.$nextTick(() => {
+          expect(wrapper.vm.searchQuery).toEqual('test-query')
+          expect(wrapper.vm.page).toEqual(2)
+          expect(wrapper.vm.itemCount).toEqual(10)
+          expect(wrapper.vm.selectedFilter).toEqual('test-filter')
+          expect(spy).not.toBeCalled()
+        })
       })
 
-      it('data changes when $route changes', async () => {
-        const spy = jest.spyOn(wrapper.vm, 'fetchData')
-
-        afterEach(() => {
-          jest.resetModules()
-          jest.resetAllMocks()
-          jest.clearAllMocks()
-          spy.mockClear()
+      it('data changes when $route changes', () => {
+        wrapper = mount(AutogenView, {
+          localVue,
+          router,
+          store,
+          i18n
         })
+
+        const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
         wrapper.setData({
           searchQuery: 'test-query',
@@ -142,79 +171,121 @@ describe('Views > AutogenView.vue', () => {
 
         router.push({ name: 'testRouter2' })
 
-        await wrapper.vm.$nextTick()
-
-        expect(wrapper.vm.searchQuery).toEqual('')
-        expect(wrapper.vm.page).toEqual(1)
-        expect(wrapper.vm.itemCount).toEqual(0)
-        expect(wrapper.vm.selectedFilter).toEqual('')
-        expect(spy).toBeCalled()
+        wrapper.vm.$nextTick(() => {
+          expect(wrapper.vm.searchQuery).toEqual('')
+          expect(wrapper.vm.page).toEqual(1)
+          expect(wrapper.vm.itemCount).toEqual(0)
+          expect(wrapper.vm.selectedFilter).toEqual('')
+          expect(spy).toBeCalled()
+        })
       })
     })
 
     describe('$i18n.locale', () => {
-      it('fetchData() is not called when locales not changes', async () => {
-        const spy = jest.spyOn(wrapper.vm, 'fetchData')
-
-        afterEach(() => {
-          jest.resetModules()
-          jest.resetAllMocks()
-          jest.clearAllMocks()
-          spy.mockClear()
+      it('fetchData() is not called when locales not changes', () => {
+        wrapper = mount(AutogenView, {
+          localVue,
+          router,
+          store,
+          i18n
         })
 
-        await wrapper.vm.$nextTick()
+        const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
-        expect(wrapper.vm.$t('label.name')).toEqual('test-name-en')
-        expect(spy).not.toBeCalled()
+        wrapper.vm.$nextTick(() => {
+          expect(wrapper.vm.$t('label.name')).toEqual('test-name-en')
+          expect(spy).not.toBeCalled()
+        })
       })
 
       it('fetchData() is called when locales changes', async () => {
-        const spy = jest.spyOn(wrapper.vm, 'fetchData')
-
-        afterEach(() => {
-          jest.resetModules()
-          jest.resetAllMocks()
-          jest.clearAllMocks()
-          spy.mockClear()
+        wrapper = mount(AutogenView, {
+          localVue,
+          router,
+          store,
+          i18n
         })
 
         i18n.locale = 'de'
-        await wrapper.vm.$nextTick()
+        const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
-        expect(wrapper.vm.$t('label.name')).toEqual('test-name-de')
-        expect(spy).toBeCalled()
+        wrapper.vm.$nextTick(() => {
+          expect(wrapper.vm.$t('label.name')).toEqual('test-name-de')
+          expect(spy).toBeCalled()
+        })
       })
     })
   })
 
   describe('Computed', () => {
-    it('hasSelected is true when the selectedRowKeys not empty', async () => {
-      afterEach(() => {
-        jest.resetModules()
-        jest.resetAllMocks()
-        jest.clearAllMocks()
+    it('hasSelected is true when the selectedRowKeys not empty', () => {
+      wrapper = mount(AutogenView, {
+        localVue,
+        router,
+        store,
+        i18n
       })
 
       wrapper.setData({ selectedRowKeys: ['test-select-id'] })
 
-      await wrapper.vm.$nextTick()
-
-      expect(wrapper.vm.hasSelected).toBeTruthy()
+      wrapper.vm.$nextTick(() => {
+        expect(wrapper.vm.hasSelected).toBeTruthy()
+      })
     })
 
-    it('hasSelected is false when the selectedRowKeys is empty', async () => {
-      afterEach(() => {
-        jest.resetModules()
-        jest.resetAllMocks()
-        jest.clearAllMocks()
+    it('hasSelected is false when the selectedRowKeys is empty', () => {
+      wrapper = mount(AutogenView, {
+        localVue,
+        router,
+        store,
+        i18n
       })
 
       wrapper.setData({ selectedRowKeys: [] })
 
-      await wrapper.vm.$nextTick()
+      wrapper.vm.$nextTick(() => {
+        expect(wrapper.vm.hasSelected).toBeFalsy()
+      })
+    })
+  })
 
-      expect(wrapper.vm.hasSelected).toBeFalsy()
+  describe('Methods', () => {
+    describe('fetchData()', () => {
+      it('routeName is set by $route name', () => {
+        wrapper = mount(AutogenView, {
+          localVue,
+          router,
+          store,
+          i18n
+        })
+
+        router.push({ name: 'testRouter1' })
+
+        wrapper.vm.$nextTick(() => {
+          expect(wrapper.vm.routeName).toEqual('testRouter1')
+          expect(wrapper.vm.items).toEqual([])
+        })
+      })
+
+      it('routeName is not set by $route name', () => {
+        beforeEach(() => {
+          wrapper.destroy()
+          router.replace({ name: 'home' })
+        })
+
+        wrapper = mount(AutogenView, {
+          localVue,
+          router,
+          store,
+          i18n
+        })
+
+        router.replace('/test-router-3')
+
+        wrapper.vm.$nextTick(() => {
+          expect(wrapper.vm.routeName).toEqual('home')
+        })
+      })
     })
   })
 })
