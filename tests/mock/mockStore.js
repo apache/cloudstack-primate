@@ -18,18 +18,22 @@
 import Vuex from 'vuex'
 
 const mockStore = {
-  state: {
-    user: {
-      apis: {}
-    }
-  },
+  state: {},
   mock: (state) => {
+    mockStore.state = {
+      app: {},
+      user: {},
+      permission: {}
+    }
+
     if (state && Object.keys(state).length > 0) {
       mockStore.state = { ...state }
     }
+
     return new Vuex.Store({
       getters: {
-        apis: () => mockStore.state.user.apis
+        apis: () => mockStore.state.user.apis,
+        userInfo: () => mockStore.state.user.info
       }
     })
   }
