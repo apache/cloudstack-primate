@@ -11,7 +11,7 @@ Install node: (Debian/Ubuntu)
     curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
     sudo apt-get install -y nodejs
     # Or use distro provided: sudo apt-get install npm nodejs
-    
+
 Install node: (CentOS/Fedora/RHEL)
 
     curl -sL https://rpm.nodesource.com/setup_12.x | sudo bash -
@@ -104,7 +104,8 @@ server {
 ### Docker
 
 A production-ready Docker container can also be built with the provided
-Dockerfile and build script.
+Dockerfile and build script. Official builds are available here:
+https://hub.docker.com/r/apache/cloudstack-primate
 
 Make sure Docker is installed, then run:
 
