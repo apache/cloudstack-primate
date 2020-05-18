@@ -25,124 +25,10 @@ import {
 } from './../../setup'
 import AutogenView from '@/views/AutogenView'
 import user from '@/store/modules/user'
+import { notifierPlugin } from '@/utils/plugins'
 
 jest.mock('axios', () => mockAxios)
-
-const routes = [
-  {
-    name: 'testRouter1',
-    path: '/test-router-1',
-    meta: {
-      icon: 'test-router-1'
-    }
-  },
-  {
-    name: 'testRouter2',
-    path: '/test-router-2',
-    meta: {
-      icon: 'test-router-2'
-    }
-  },
-  {
-    path: '/test-router-3',
-    meta: {
-      icon: 'test-router-3'
-    }
-  },
-  {
-    name: 'testRouter4',
-    path: '/test-router-4/:id',
-    meta: {
-      icon: 'test-router-4'
-    }
-  },
-  {
-    name: 'testRouter5',
-    path: '/test-router-5',
-    meta: {
-      icon: 'test-router-5',
-      permission: ['testApiNameCase1'],
-      columns: ['column1', 'column2', 'column3'],
-      actions: [
-        {
-          name: 'label.name',
-          icon: 'plus',
-          listView: true
-        }
-      ]
-    }
-  },
-  {
-    name: 'testRouter6',
-    path: '/test-router-6',
-    meta: {
-      icon: 'test-router-6',
-      permission: ['testApiNameCase2']
-    }
-  },
-  {
-    name: 'testRouter7',
-    path: '/test-router-7',
-    meta: {
-      icon: 'test-router-7',
-      permission: ['testApiNameCase3'],
-      params: {
-        key: 'test-value'
-      }
-    }
-  },
-  {
-    name: 'testRouter8',
-    path: '/test-router-8',
-    meta: {
-      icon: 'test-router-8',
-      permission: ['listTemplates'],
-      filters: ['name', 'domainid']
-    }
-  },
-  {
-    name: 'testRouter9',
-    path: '/template',
-    meta: {
-      icon: 'test-router-9',
-      permission: ['listTemplates'],
-      filters: ['name', 'domainid']
-    }
-  },
-  {
-    name: 'testRouter10',
-    path: '/iso',
-    meta: {
-      icon: 'test-router-10',
-      permission: ['listTemplates'],
-      filters: ['name', 'domainid']
-    }
-  },
-  {
-    name: 'testRouter11',
-    path: '/test-router-11',
-    meta: {
-      icon: 'test-router-11',
-      permission: ['testApiNameCase2']
-    }
-  },
-  {
-    name: 'testRouter12',
-    path: '/test-router-12',
-    meta: {
-      icon: 'test-router-12',
-      permission: ['listRoles']
-    }
-  },
-  {
-    name: 'testRouter13',
-    path: '/test-router-13',
-    meta: {
-      icon: 'test-router-12',
-      permission: ['quotaEmailTemplateList']
-    }
-  }
-]
+localVue.use(notifierPlugin)
 
 user.state.apis = {
   testApiNameCase1: {
@@ -156,6 +42,23 @@ user.state.apis = {
   testApiNameCase3: {
     params: {},
     response: []
+  },
+  testApiNameCase4: {
+    params: {},
+    response: [
+      {
+        name: 'column2',
+        type: 'string'
+      },
+      {
+        name: 'column1',
+        type: 'string'
+      },
+      {
+        name: 'column3',
+        type: 'string'
+      }
+    ]
   },
   listTemplates: {
     params: {},
@@ -177,6 +80,8 @@ const messages = {
     column1: 'column1-en',
     column2: 'column2-en',
     column3: 'column3-en',
+    id: 'uuid-en',
+    displaytext: 'description-en',
     name: 'name-en',
     domainid: 'domain-en',
     self: 'self-en',
@@ -187,6 +92,8 @@ const messages = {
     column1: 'column1-de',
     column2: 'column2-de',
     column3: 'column3-de',
+    id: 'uuid-de',
+    displaytext: 'description-de',
     name: 'name-de',
     domainid: 'domain-de',
     self: 'self-de',
@@ -209,6 +116,23 @@ const state = {
         params: {},
         response: {}
       },
+      testApiNameCase4: {
+        params: {},
+        response: [
+          {
+            name: 'column2',
+            type: 'string'
+          },
+          {
+            name: 'column1',
+            type: 'string'
+          },
+          {
+            name: 'column3',
+            type: 'string'
+          }
+        ]
+      },
       listTemplates: {
         params: {},
         response: []
@@ -228,9 +152,25 @@ const state = {
   }
 }
 
-const router = mockRouter.mock(routes)
-const i18n = mockI18n.mock('en', messages)
+let router
 let store = mockStore.mock(state)
+const i18n = mockI18n.mock('en', messages)
+const mocks = {
+  $notifyError: jest.fn((error) => {
+    return error
+  })
+}
+
+const createRouter = (newRoute = []) => {
+  let routes = []
+  if (!newRoute || Object.keys(newRoute).length === 0) {
+    return mockRouter.mock(routes)
+  }
+
+  routes = [...newRoute]
+
+  return mockRouter.mock(routes)
+}
 
 const factory = (propData = {}, data = {}) => {
   return mount(AutogenView, {
@@ -239,6 +179,7 @@ const factory = (propData = {}, data = {}) => {
     i18n,
     store,
     propsData: propData,
+    mocks,
     data () {
       return { ...data }
     }
@@ -249,19 +190,29 @@ describe('Views > AutogenView.vue', () => {
   let wrapper
 
   beforeEach(() => {
+    jest.clearAllMocks()
     if (wrapper) {
       wrapper.destroy()
     }
-    jest.clearAllMocks()
-    if (router.currentRoute.name !== 'home') {
+    if (router && router.currentRoute.name !== 'home') {
       router.replace({ name: 'home' })
     }
     state.user.info.roletype = 'Normal'
     store = mockStore.mock(state)
+    if (i18n.locale !== 'en') {
+      i18n.locale = 'en'
+    }
   })
 
   describe('Navigation Guard', () => {
     it('beforeRouteUpdate() is called', () => {
+      router = createRouter([{
+        name: 'testRouter1',
+        path: '/test-router-1',
+        meta: {
+          icon: 'test-router-1'
+        }
+      }])
       wrapper = factory()
       router.push({ name: 'testRouter1' })
 
@@ -277,6 +228,13 @@ describe('Views > AutogenView.vue', () => {
     })
 
     it('beforeRouteLeave() is called', () => {
+      router = createRouter([{
+        name: 'testRouter1',
+        path: '/test-router-1',
+        meta: {
+          icon: 'test-router-1'
+        }
+      }])
       wrapper = factory()
       router.push({ name: 'testRouter1' })
 
@@ -295,6 +253,13 @@ describe('Views > AutogenView.vue', () => {
   describe('Watchers', () => {
     describe('$route', () => {
       it('data does not change when $route does not change', () => {
+        router = createRouter([{
+          name: 'testRouter1',
+          path: '/test-router-1',
+          meta: {
+            icon: 'test-router-1'
+          }
+        }])
         wrapper = factory()
 
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
@@ -316,6 +281,13 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('data changes when $route changes', () => {
+        router = createRouter([{
+          name: 'testRouter2',
+          path: '/test-router-2',
+          meta: {
+            icon: 'test-router-2'
+          }
+        }])
         wrapper = factory()
 
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
@@ -386,6 +358,13 @@ describe('Views > AutogenView.vue', () => {
   describe('Methods', () => {
     describe('fetchData()', () => {
       it('routeName is set by $route name', () => {
+        router = createRouter([{
+          name: 'testRouter1',
+          path: '/test-router-1',
+          meta: {
+            icon: 'test-router-1'
+          }
+        }])
         wrapper = factory()
 
         router.push({ name: 'testRouter1' })
@@ -397,6 +376,12 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('routeName is set by parent $route name', () => {
+        router = createRouter([{
+          path: '/test-router-3',
+          meta: {
+            icon: 'test-router-3'
+          }
+        }])
         wrapper = factory()
 
         router.replace('/test-router-3')
@@ -407,6 +392,13 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('resource, dataView is set when $router params has id', () => {
+        router = createRouter([{
+          name: 'testRouter4',
+          path: '/test-router-4/:id',
+          meta: {
+            icon: 'test-router-4'
+          }
+        }])
         wrapper = factory()
 
         router.push({ name: 'testRouter4', params: { id: 'test-id' } })
@@ -418,6 +410,22 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('columnKeys, actions is set when $router meta has columns, actions', () => {
+        router = createRouter([{
+          name: 'testRouter5',
+          path: '/test-router-5',
+          meta: {
+            icon: 'test-router-5',
+            permission: ['testApiNameCase1'],
+            columns: ['column1', 'column2', 'column3'],
+            actions: [
+              {
+                name: 'label.name',
+                icon: 'plus',
+                listView: true
+              }
+            ]
+          }
+        }])
         wrapper = factory()
         const mockData = {
           testapinamecase1response: {
@@ -441,7 +449,73 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
+      it('check columnKeys has assign and sort by store apis', () => {
+        router = createRouter([{
+          name: 'testRouter6',
+          path: 'test-router-6',
+          meta: {
+            icon: 'test-router-6',
+            permission: ['testApiNameCase4']
+          }
+        }])
+        wrapper = factory()
+
+        const mockData = {
+          testapinamecase4response: {
+            count: 0,
+            testapinamecase4: []
+          }
+        }
+
+        mockAxios.mockImplementation(() => Promise.resolve(mockData))
+        router.push({ name: 'testRouter6' })
+
+        wrapper.vm.$nextTick(() => {
+          expect(wrapper.vm.columnKeys.length).toEqual(3)
+          expect(wrapper.vm.columnKeys).toEqual(['column1', 'column2', 'column3'])
+        })
+      })
+
+      it('check columns is set when columnKeys has object value', () => {
+        router = createRouter([{
+          name: 'testRouter7',
+          path: 'test-router-7',
+          meta: {
+            icon: 'test-router-7',
+            permission: ['testApiNameCase1'],
+            columns: [{ name: 'string' }]
+          }
+        }])
+        wrapper = factory()
+
+        const mockData = {
+          testapinamecase1response: {
+            count: 0,
+            testapinamecase1: []
+          }
+        }
+
+        mockAxios.mockImplementation(() => Promise.resolve(mockData))
+        router.push({ name: 'testRouter7' })
+
+        wrapper.vm.$nextTick(() => {
+          expect(wrapper.vm.columns.length).toEqual(1)
+          expect(wrapper.vm.columns[0].title).toEqual('name-en')
+          expect(wrapper.vm.columns[0].dataIndex).toEqual('name')
+          expect(wrapper.vm.columns[0].scopedSlots).toEqual({ customRender: 'name' })
+          expect(typeof wrapper.vm.columns[0].sorter).toBe('function')
+        })
+      })
+
       it('api is called with $router query params', (done) => {
+        router = createRouter([{
+          name: 'testRouter8',
+          path: '/test-router-8',
+          meta: {
+            icon: 'test-router-8',
+            permission: ['testApiNameCase2']
+          }
+        }])
         wrapper = factory()
 
         const postData = new URLSearchParams()
@@ -453,7 +527,7 @@ describe('Views > AutogenView.vue', () => {
         }
 
         mockAxios.mockImplementation(() => Promise.resolve(mockData))
-        router.push({ name: 'testRouter6', query: { key: 'test-value' } })
+        router.push({ name: 'testRouter8', query: { key: 'test-value' } })
 
         wrapper.vm.$nextTick(() => {
           expect(mockAxios).toHaveBeenCalledTimes(1)
@@ -476,6 +550,17 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('api is called with $router meta params', (done) => {
+        router = createRouter([{
+          name: 'testRouter9',
+          path: '/test-router-9',
+          meta: {
+            icon: 'test-router-9',
+            permission: ['testApiNameCase3'],
+            params: {
+              key: 'test-value'
+            }
+          }
+        }])
         wrapper = factory()
 
         const postData = new URLSearchParams()
@@ -487,7 +572,7 @@ describe('Views > AutogenView.vue', () => {
         }
 
         mockAxios.mockImplementation(() => Promise.resolve(mockData))
-        router.push({ name: 'testRouter7' })
+        router.push({ name: 'testRouter9' })
 
         wrapper.vm.$nextTick(() => {
           expect(mockAxios).toHaveBeenCalledTimes(1)
@@ -510,6 +595,15 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('selectedFilter is `self` by $route meta filters and normal user', () => {
+        router = createRouter([{
+          name: 'testRouter10',
+          path: '/test-router-10',
+          meta: {
+            icon: 'test-router-10',
+            permission: ['listTemplates'],
+            filters: ['name', 'domainid']
+          }
+        }])
         wrapper = factory()
 
         const mockData = {
@@ -520,7 +614,7 @@ describe('Views > AutogenView.vue', () => {
         }
 
         mockAxios.mockImplementation(() => Promise.resolve(mockData))
-        router.push({ name: 'testRouter8' })
+        router.push({ name: 'testRouter10' })
 
         wrapper.vm.$nextTick(() => {
           expect(wrapper.vm.selectedFilter).toEqual('self')
@@ -529,6 +623,15 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('selectedFilter is `all` by $route meta filters and Admin user', () => {
+        router = createRouter([{
+          name: 'testRouter11',
+          path: '/test-router-11',
+          meta: {
+            icon: 'test-router-11',
+            permission: ['listTemplates'],
+            filters: ['name', 'domainid']
+          }
+        }])
         state.user.info.roletype = 'Admin'
         store = mockStore.mock(state)
         wrapper = factory()
@@ -541,7 +644,7 @@ describe('Views > AutogenView.vue', () => {
         }
 
         mockAxios.mockImplementation(() => Promise.resolve(mockData))
-        router.push({ name: 'testRouter8' })
+        router.push({ name: 'testRouter11' })
 
         wrapper.vm.$nextTick(() => {
           expect(wrapper.vm.selectedFilter).toEqual('all')
@@ -550,6 +653,15 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('api call with params templatefilter', (done) => {
+        router = createRouter([{
+          name: 'testRouter12',
+          path: '/template',
+          meta: {
+            icon: 'test-router-12',
+            permission: ['listTemplates'],
+            filters: ['name', 'domainid']
+          }
+        }])
         wrapper = factory()
 
         const mockData = {
@@ -560,7 +672,7 @@ describe('Views > AutogenView.vue', () => {
         }
 
         mockAxios.mockImplementation(() => Promise.resolve(mockData))
-        router.push({ name: 'testRouter9' })
+        router.push({ name: 'testRouter12' })
 
         wrapper.vm.$nextTick(() => {
           expect(mockAxios).toHaveBeenCalledTimes(1)
@@ -583,6 +695,15 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('api call with params isofilter', (done) => {
+        router = createRouter([{
+          name: 'testRouter13',
+          path: '/iso',
+          meta: {
+            icon: 'test-router-13',
+            permission: ['listTemplates'],
+            filters: ['name', 'domainid']
+          }
+        }])
         wrapper = factory()
 
         const mockData = {
@@ -593,7 +714,7 @@ describe('Views > AutogenView.vue', () => {
         }
 
         mockAxios.mockImplementation(() => Promise.resolve(mockData))
-        router.push({ name: 'testRouter10' })
+        router.push({ name: 'testRouter13' })
 
         wrapper.vm.$nextTick(() => {
           expect(mockAxios).toHaveBeenCalledTimes(1)
@@ -616,6 +737,14 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('api call with searchQuery', (done) => {
+        router = createRouter([{
+          name: 'testRouter14',
+          path: '/test-router-14',
+          meta: {
+            icon: 'test-router-14',
+            permission: ['testApiNameCase2']
+          }
+        }])
         wrapper = factory()
 
         const mockData = {
@@ -625,7 +754,7 @@ describe('Views > AutogenView.vue', () => {
           }
         }
 
-        router.push({ name: 'testRouter11' })
+        router.push({ name: 'testRouter14' })
         mockAxios.mockResolvedValue(mockData)
         wrapper.setData({ searchQuery: 'test-query' })
         wrapper.vm.fetchData()
@@ -651,6 +780,14 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('api call with searchQuery and apiName equal `listRoles`', (done) => {
+        router = createRouter([{
+          name: 'testRouter15',
+          path: '/test-router-15',
+          meta: {
+            icon: 'test-router-15',
+            permission: ['listRoles']
+          }
+        }])
         wrapper = factory()
 
         const mockData = {
@@ -660,7 +797,7 @@ describe('Views > AutogenView.vue', () => {
           }
         }
 
-        router.push({ name: 'testRouter12' })
+        router.push({ name: 'testRouter15' })
         mockAxios.mockResolvedValue(mockData)
         wrapper.setData({ searchQuery: 'test-query' })
         wrapper.vm.fetchData()
@@ -686,6 +823,14 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('api call with searchQuery and apiName equal `quotaEmailTemplateList`', (done) => {
+        router = createRouter([{
+          name: 'testRouter16',
+          path: '/test-router-16',
+          meta: {
+            icon: 'test-router-16',
+            permission: ['quotaEmailTemplateList']
+          }
+        }])
         wrapper = factory()
 
         const mockData = {
@@ -695,7 +840,7 @@ describe('Views > AutogenView.vue', () => {
           }
         }
 
-        router.push({ name: 'testRouter13' })
+        router.push({ name: 'testRouter16' })
         mockAxios.mockResolvedValue(mockData)
         wrapper.setData({ searchQuery: 'test-query' })
         wrapper.vm.fetchData()
@@ -715,6 +860,385 @@ describe('Views > AutogenView.vue', () => {
               response: 'json'
             }
           })
+
+          done()
+        })
+      })
+
+      it('api call with $router params id and `ssh` path', (done) => {
+        router = createRouter([{
+          name: 'testRouter17',
+          path: '/ssh/:id',
+          meta: {
+            icon: 'test-router-17',
+            permission: ['testApiNameCase1']
+          }
+        }])
+        wrapper = factory()
+
+        const mockData = {
+          testapinamecase1response: {
+            count: 0,
+            testapinamecase1: []
+          }
+        }
+
+        router.push({ name: 'testRouter17', params: { id: 'test-id' } })
+        mockAxios.mockResolvedValue(mockData)
+
+        wrapper.vm.$nextTick(() => {
+          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalledWith({
+            url: '/',
+            method: 'GET',
+            data: new URLSearchParams(),
+            params: {
+              command: 'testApiNameCase1',
+              listall: true,
+              id: 'test-id',
+              name: 'test-id',
+              page: 1,
+              pagesize: 10,
+              response: 'json'
+            }
+          })
+
+          done()
+        })
+      })
+
+      it('api call with $router params id and `ldapsetting` path', (done) => {
+        router = createRouter([{
+          name: 'testRouter18',
+          path: '/ldapsetting/:id',
+          meta: {
+            icon: 'test-router-18',
+            permission: ['testApiNameCase1']
+          }
+        }])
+        wrapper = factory()
+
+        const mockData = {
+          testapinamecase1response: {
+            count: 0,
+            testapinamecase1: []
+          }
+        }
+
+        router.push({ name: 'testRouter18', params: { id: 'test-id' } })
+        mockAxios.mockResolvedValue(mockData)
+
+        wrapper.vm.$nextTick(() => {
+          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalledWith({
+            url: '/',
+            method: 'GET',
+            data: new URLSearchParams(),
+            params: {
+              command: 'testApiNameCase1',
+              listall: true,
+              id: 'test-id',
+              hostname: 'test-id',
+              page: 1,
+              pagesize: 10,
+              response: 'json'
+            }
+          })
+
+          done()
+        })
+      })
+
+      it('check item result when api call with apiName equal `listTemplates` || `listIsos`', (done) => {
+        router = createRouter([{
+          name: 'testRouter19',
+          path: '/templates',
+          meta: {
+            icon: 'test-router-19',
+            permission: ['listTemplates']
+          }
+        }])
+        wrapper = factory()
+
+        const mockData = {
+          listtemplatesresponse: {
+            count: 2,
+            templates: [{
+              id: 'uuid1',
+              templateid: 'templateid-1',
+              name: 'template-test-1'
+            }, {
+              id: 'uuid2',
+              templateid: 'templateid-2',
+              name: 'template-test-2'
+            }]
+          }
+        }
+
+        router.push({ name: 'testRouter19' })
+        mockAxios.mockResolvedValue(mockData)
+
+        setTimeout(() => {
+          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenLastCalledWith({
+            url: '/',
+            method: 'GET',
+            data: new URLSearchParams(),
+            params: {
+              command: 'listTemplates',
+              listall: true,
+              page: 1,
+              pagesize: 10,
+              response: 'json'
+            }
+          })
+
+          expect(wrapper.vm.items.length).toEqual(2)
+          expect(wrapper.vm.items).toEqual([
+            {
+              id: 'uuid1',
+              templateid: 'templateid-1',
+              name: 'template-test-1',
+              key: 0
+            },
+            {
+              id: 'uuid2',
+              templateid: 'templateid-2',
+              name: 'template-test-2',
+              key: 1
+            }
+          ])
+
+          done()
+        })
+      })
+
+      it('check item result when api call with columns has column customRender is object', (done) => {
+        router = createRouter([{
+          name: 'testRouter20',
+          path: '/test-router-20',
+          meta: {
+            icon: 'test-router-20',
+            permission: ['testApiNameCase1'],
+            columns: [
+              'id',
+              'name',
+              {
+                column1: (record) => {
+                  return record.name
+                }
+              }
+            ]
+          }
+        }])
+        wrapper = factory()
+
+        const mockData = {
+          testapinamecase1response: {
+            count: 1,
+            testapinamecase1: [{
+              id: 'test-id',
+              name: 'test-name-value'
+            }]
+          }
+        }
+
+        router.push({ name: 'testRouter20' })
+        mockAxios.mockResolvedValue(mockData)
+
+        setTimeout(() => {
+          expect(wrapper.vm.items).toEqual([{
+            id: 'test-id',
+            name: 'test-name-value',
+            key: 0,
+            column1: 'test-name-value'
+          }])
+
+          done()
+        })
+      })
+
+      it('check item result when api call with $router path start with `/ssh`', (done) => {
+        router = createRouter([{
+          name: 'testRouter21',
+          path: '/ssh',
+          meta: {
+            icon: 'test-router-21',
+            permission: ['testApiNameCase1']
+          }
+        }])
+        wrapper = factory()
+
+        const mockData = {
+          testapinamecase1response: {
+            count: 1,
+            testapinamecase1: [{
+              name: 'test-name-value'
+            }]
+          }
+        }
+
+        router.push({ name: 'testRouter21' })
+        mockAxios.mockResolvedValue(mockData)
+
+        setTimeout(() => {
+          expect(wrapper.vm.items).toEqual([{
+            id: 'test-name-value',
+            name: 'test-name-value',
+            key: 0
+          }])
+
+          done()
+        })
+      })
+
+      it('check item result when api call with $router path start with `/ldapsetting`', (done) => {
+        router = createRouter([{
+          name: 'testRouter22',
+          path: '/ldapsetting',
+          meta: {
+            icon: 'test-router-22',
+            permission: ['testApiNameCase1']
+          }
+        }])
+        wrapper = factory()
+
+        const mockData = {
+          testapinamecase1response: {
+            count: 1,
+            testapinamecase1: [{
+              name: 'test-name-value',
+              hostname: 'test-hostname-value'
+            }]
+          }
+        }
+
+        router.push({ name: 'testRouter22' })
+        mockAxios.mockResolvedValue(mockData)
+
+        setTimeout(() => {
+          expect(wrapper.vm.items).toEqual([{
+            id: 'test-hostname-value',
+            name: 'test-name-value',
+            hostname: 'test-hostname-value',
+            key: 0
+          }])
+
+          done()
+        })
+      })
+
+      it('api call with error message but not status', (done) => {
+        router = createRouter([{
+          name: 'testRouter22',
+          path: '/test-router-22',
+          meta: {
+            icon: 'test-router-22',
+            permission: ['testApiNameCase1']
+          }
+        }])
+
+        wrapper = factory()
+
+        const errorMock = {
+          response: {},
+          message: 'Error: throw exception error'
+        }
+        router.push({ name: 'testRouter22' })
+        mockAxios.mockRejectedValue(errorMock)
+
+        setTimeout(() => {
+          expect(mocks.$notifyError).toHaveBeenCalledTimes(1)
+          expect(mocks.$notifyError).toHaveBeenCalledWith(errorMock)
+          done()
+        })
+      })
+
+      it('api call with error is `Forbidden`', (done) => {
+        router = createRouter([{
+          name: 'testRouter23',
+          path: '/test-router-23',
+          meta: {
+            icon: 'test-router-23',
+            permission: ['testApiNameCase1']
+          }
+        }])
+
+        wrapper = factory()
+
+        const errorMock = {
+          response: {
+            status: 401
+          },
+          message: 'Error: Unauthorized'
+        }
+        router.push({ name: 'testRouter23' })
+        mockAxios.mockRejectedValue(errorMock)
+
+        setTimeout(() => {
+          expect(mocks.$notifyError).toHaveBeenCalledTimes(1)
+          expect(mocks.$notifyError).toHaveBeenCalledWith(errorMock)
+          expect(router.currentRoute.path).toEqual('/exception/403')
+
+          done()
+        })
+      })
+
+      it('api call with error is `Not Found`', (done) => {
+        router = createRouter([{
+          name: 'testRouter23',
+          path: '/test-router-23',
+          meta: {
+            icon: 'test-router-23',
+            permission: ['testApiNameCase1']
+          }
+        }])
+
+        wrapper = factory()
+
+        const errorMock = {
+          response: {
+            status: 430
+          },
+          message: 'Error: Request Header Fields Too Large'
+        }
+        router.push({ name: 'testRouter23' })
+        mockAxios.mockRejectedValue(errorMock)
+
+        setTimeout(() => {
+          expect(mocks.$notifyError).toHaveBeenCalledTimes(1)
+          expect(mocks.$notifyError).toHaveBeenCalledWith(errorMock)
+          expect(router.currentRoute.path).toEqual('/exception/404')
+
+          done()
+        })
+      })
+
+      it('api call with error is `Internal Server Error`', (done) => {
+        router = createRouter([{
+          name: 'testRouter23',
+          path: '/test-router-23',
+          meta: {
+            icon: 'test-router-23',
+            permission: ['testApiNameCase1']
+          }
+        }])
+
+        wrapper = factory()
+
+        const errorMock = {
+          response: {
+            status: 530
+          },
+          message: 'Error: Site is frozen'
+        }
+        router.push({ name: 'testRouter23' })
+        mockAxios.mockRejectedValue(errorMock)
+
+        setTimeout(() => {
+          expect(mocks.$notifyError).toHaveBeenCalledTimes(1)
+          expect(mocks.$notifyError).toHaveBeenCalledWith(errorMock)
+          expect(router.currentRoute.path).toEqual('/exception/500')
 
           done()
         })

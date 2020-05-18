@@ -27,7 +27,32 @@ const mockRouter = {
     }
   ],
   mock: (routes = []) => {
-    mockRouter.routes[0].children = []
+    mockRouter.routes[0].children = [
+      {
+        path: '/exception',
+        name: 'exception',
+        children: [
+          {
+            path: '/exception/403',
+            name: 403,
+            hidden: true,
+            meta: { icon: 'icon-error-test' }
+          },
+          {
+            path: '/exception/404',
+            name: 404,
+            hidden: true,
+            meta: { icon: 'icon-error-test' }
+          },
+          {
+            path: '/exception/500',
+            name: 500,
+            hidden: true,
+            meta: { icon: 'icon-error-test' }
+          }
+        ]
+      }
+    ]
     if (routes && routes.length > 0) {
       mockRouter.routes[0].children = [...mockRouter.routes[0].children, ...routes]
     }
