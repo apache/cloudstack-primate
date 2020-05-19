@@ -375,6 +375,7 @@
 "label.action.delete.physical.network": "Delete physical network",
 "label.action.delete.primary.storage": "Delete Primary Storage",
 "label.action.delete.secondary.storage": "Delete Secondary Storage",
+"label.action.update.image.store": "Update Image Storage status",
 "label.action.delete.security.group": "Delete Security Group",
 "label.action.delete.service.offering": "Delete Service Offering",
 "label.action.delete.snapshot": "Delete Snapshot",

@@ -20,8 +20,8 @@ export default {
   title: 'Secondary Storages',
   icon: 'picture',
   permission: ['listImageStores'],
-  columns: ['name', 'url', 'protocol', 'scope', 'zonename'],
-  details: ['name', 'id', 'url', 'protocol', 'provider', 'scope', 'zonename'],
+  columns: ['name', 'url', 'protocol', 'scope', 'zonename', 'readonly'],
+  details: ['name', 'id', 'url', 'protocol', 'provider', 'scope', 'zonename', 'readonly'],
   tabs: [{
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
@@ -51,6 +51,22 @@ export default {
       icon: 'delete',
       label: 'label.action.delete.secondary.storage',
       dataView: true
+    },
+    {
+      api: 'updateImageStore',
+      icon: 'stop',
+      label: 'Make Image store read-only',
+      dataView: true,
+      defaultArgs: { readonly: true },
+      show: (record) => { return record.readonly === false }
+    },
+    {
+      api: 'updateImageStore',
+      icon: 'check-circle',
+      label: 'Make Image store read-write',
+      dataView: true,
+      defaultArgs: { readonly: false },
+      show: (record) => { return record.readonly === true }
     }
   ]
 }

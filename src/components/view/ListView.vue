@@ -140,7 +140,9 @@
     <a slot="zonename" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: '/zone/' + record.zoneid }">{{ text }}</router-link>
     </a>
-
+    <a slot="readonly" slot-scope="text, record">
+      <status :text="record.readonly ? 'ReadOnly' : 'ReadWrite'" />
+    </a>
     <div slot="order" slot-scope="text, record" class="shift-btns">
       <a-tooltip placement="top">
         <template slot="title">Move to top</template>
