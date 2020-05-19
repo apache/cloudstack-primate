@@ -27,7 +27,7 @@ export default {
       title: 'Instances',
       icon: 'desktop',
       docHelp: 'adminguide/virtual_machines.html',
-      permission: ['listVirtualMachinesMetrics', 'listVirtualMachines'],
+      permission: ['listVirtualMachinesMetrics'],
       resourceType: 'UserVm',
       columns: [
         'name', 'state', 'instancename', 'ipaddress', 'cpunumber', 'cpuused', 'cputotal',
@@ -76,7 +76,8 @@ export default {
           icon: 'edit',
           label: 'Update VM',
           dataView: true,
-          args: ['name', 'displayname', 'ostypeid', 'isdynamicallyscalable', 'haenable', 'group']
+          args: ['name', 'displayname', 'ostypeid', 'isdynamicallyscalable', 'haenable', 'group'],
+          show: (record) => { return ['Stopped'].includes(record.state) }
         },
         {
           api: 'startVirtualMachine',
@@ -86,7 +87,7 @@ export default {
           dataView: true,
           groupAction: true,
           show: (record) => { return ['Stopped'].includes(record.state) },
-          args: ['podid', 'clusterid', 'hostid'],
+          args: (record, store) => { return ['Admin'].includes(store.userInfo.roletype) ? ['podid', 'clusterid', 'hostid'] : [] },
           response: (result) => { return result.virtualmachine && result.virtualmachine.password ? `Password of the VM is ${result.virtualmachine.password}` : null }
         },
         {
@@ -112,6 +113,7 @@ export default {
           label: 'label.reinstall.vm',
           dataView: true,
           args: ['virtualmachineid', 'templateid'],
+          show: (record) => { return ['Running', 'Stopped'].includes(record.state) },
           mapping: {
             virtualmachineid: {
               value: (record) => { return record.id }
@@ -196,7 +198,7 @@ export default {
           label: 'label.action.attach.iso',
           dataView: true,
           args: ['id', 'virtualmachineid'],
-          show: (record) => { return !record.isoid },
+          show: (record) => { return ['Running', 'Stopped'].includes(record.state) && !record.isoid },
           mapping: {
             id: {
               api: 'listIsos'
@@ -212,7 +214,7 @@ export default {
           label: 'label.action.detach.iso',
           dataView: true,
           args: ['virtualmachineid'],
-          show: (record) => { return 'isoid' in record && record.isoid },
+          show: (record) => { return ['Running', 'Stopped'].includes(record.state) && 'isoid' in record && record.isoid },
           mapping: {
             virtualmachineid: {
               value: (record, params) => { return record.id }
@@ -248,7 +250,7 @@ export default {
           icon: 'drag',
           label: 'label.migrate.instance.to.host',
           dataView: true,
-          show: (record) => { return ['Running'].includes(record.state) },
+          show: (record, store) => { return ['Running'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) },
           component: () => import('@/views/compute/MigrateWizard'),
           popup: true,
           args: ['hostid', 'virtualmachineid'],
@@ -263,7 +265,7 @@ export default {
           icon: 'drag',
           label: 'label.migrate.instance.to.ps',
           dataView: true,
-          show: (record) => { return ['Stopped'].includes(record.state) },
+          show: (record, store) => { return ['Stopped'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) },
           args: ['storageid', 'virtualmachineid'],
           mapping: {
             storageid: {
@@ -279,7 +281,7 @@ export default {
           icon: 'key',
           label: 'Reset Instance Password',
           dataView: true,
-          show: (record) => { return ['Stopped'].includes(record.state) },
+          show: (record) => { return ['Running', 'Stopped'].includes(record.state) },
           response: (result) => { return result.virtualmachine && result.virtualmachine.password ? `Password of the VM is ${result.virtualmachine.password}` : null }
         },
         {
@@ -288,7 +290,7 @@ export default {
           label: 'Reset SSH Key',
           dataView: true,
           args: ['keypair'],
-          show: (record) => { return ['Stopped'].includes(record.state) },
+          show: (record) => { return ['Running', 'Stopped'].includes(record.state) },
           mapping: {
             keypair: {
               api: 'listSSHKeyPairs'
@@ -315,14 +317,14 @@ export default {
           icon: 'medicine-box',
           label: 'label.recover.vm',
           dataView: true,
-          show: (record) => { return ['Destroyed'].includes(record.state) }
+          show: (record, store) => { return ['Destroyed'].includes(record.state) && store.features.allowuserexpungerecovervm }
         },
         {
           api: 'expungeVirtualMachine',
           icon: 'delete',
           label: 'label.action.expunge.instance',
           dataView: true,
-          show: (record) => { return ['Destroyed'].includes(record.state) }
+          show: (record, store) => { return ['Destroyed', 'Expunging'].includes(record.state) && store.features.allowuserexpungerecovervm }
         },
         {
           api: 'destroyVirtualMachine',
@@ -330,7 +332,8 @@ export default {
           label: 'label.action.destroy.instance',
           args: ['expunge', 'volumeids'],
           dataView: true,
-          groupAction: true
+          groupAction: true,
+          show: (record) => { return ['Running', 'Stopped', 'Error'].includes(record.state) }
         }
       ]
     },
@@ -349,7 +352,7 @@ export default {
         {
           api: 'createKubernetesCluster',
           icon: 'plus',
-          label: 'Create Kubernetes Cluster',
+          label: 'label.kubernetes.cluster.create',
           listView: true,
           popup: true,
           component: () => import('@/views/compute/CreateKubernetesCluster.vue')
@@ -357,28 +360,21 @@ export default {
         {
           api: 'startKubernetesCluster',
           icon: 'caret-right',
-          label: 'Start Kubernetes Cluster',
+          label: 'label.kubernetes.cluster.start',
           dataView: true,
           show: (record) => { return ['Stopped'].includes(record.state) }
         },
         {
           api: 'stopKubernetesCluster',
           icon: 'stop',
-          label: 'Stop Kubernetes Cluster',
+          label: 'label.kubernetes.cluster.stop',
           dataView: true,
           show: (record) => { return !['Stopped'].includes(record.state) }
         },
-        // {
-        //   api: 'getKubernetesClusterConfig',
-        //   icon: 'cloud-download',
-        //   label: 'Download Cluster Config',
-        //   dataView: true,
-        //   show: (record) => { return !['Stopped'].includes(record.state) }
-        // },
         {
           api: 'scaleKubernetesCluster',
           icon: 'swap',
-          label: 'Scale Kubernetes Cluster',
+          label: 'label.kubernetes.cluster.scale',
           dataView: true,
           show: (record) => { return ['Created', 'Running'].includes(record.state) },
           popup: true,
@@ -387,7 +383,7 @@ export default {
         {
           api: 'upgradeKubernetesCluster',
           icon: 'plus-circle',
-          label: 'Upgrade Kubernetes Cluster',
+          label: 'label.kubernetes.cluster.upgrade',
           dataView: true,
           show: (record) => { return ['Created', 'Running'].includes(record.state) },
           popup: true,
@@ -396,7 +392,7 @@ export default {
         {
           api: 'deleteKubernetesCluster',
           icon: 'delete',
-          label: 'Delete Kubernetes Cluster',
+          label: 'label.kubernetes.cluster.delete',
           dataView: true,
           show: (record) => { return !['Destroyed', 'Destroying'].includes(record.state) }
         }

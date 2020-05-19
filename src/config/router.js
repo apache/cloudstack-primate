@@ -25,7 +25,10 @@ import network from '@/config/section/network'
 import image from '@/config/section/image'
 import project from '@/config/section/project'
 import event from '@/config/section/event'
-import iam from '@/config/section/iam'
+import user from '@/config/section/user'
+import account from '@/config/section/account'
+import domain from '@/config/section/domain'
+import role from '@/config/section/role'
 import infra from '@/config/section/infra'
 import offering from '@/config/section/offering'
 import config from '@/config/section/config'
@@ -58,6 +61,7 @@ export function generateRouterMap (section) {
           docHelp: child.docHelp,
           permission: child.permission,
           resourceType: child.resourceType,
+          filters: child.filters,
           params: child.params ? child.params : {},
           columns: child.columns,
           details: child.details,
@@ -113,6 +117,16 @@ export function generateRouterMap (section) {
   } else {
     map.component = section.component ? section.component : AutogenView
     map.hideChildrenInMenu = true
+
+    map.meta.name = section.name
+    map.meta.permission = section.permission
+    map.meta.resourceType = section.resourceType
+    map.meta.details = section.details
+    map.meta.actions = section.actions
+    map.meta.filters = section.filters
+    map.meta.treeView = section.treeView ? section.treeView : false
+    map.meta.tabs = section.treeView ? section.tabs : {}
+
     map.children = [{
       path: '/' + section.name + '/:id',
       actions: section.actions ? section.actions : [],
@@ -194,9 +208,12 @@ export const asyncRouterMap = [
       generateRouterMap(storage),
       generateRouterMap(network),
       generateRouterMap(image),
-      generateRouterMap(project),
       generateRouterMap(event),
-      generateRouterMap(iam),
+      generateRouterMap(project),
+      generateRouterMap(user),
+      generateRouterMap(account),
+      generateRouterMap(domain),
+      generateRouterMap(role),
       generateRouterMap(infra),
       generateRouterMap(offering),
       generateRouterMap(config),

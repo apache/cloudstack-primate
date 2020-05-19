@@ -22,7 +22,7 @@
         <a-form-item
           :label="$t('migrate.from')">
           <a-select
-            v-decorator="['from', {
+            v-decorator="['srcpool', {
               initialValue: selectedStore,
               rules: [
                 {
@@ -42,7 +42,7 @@
         <a-form-item
           :label="$t('migrate.to')">
           <a-select
-            v-decorator="['migrateto', {
+            v-decorator="['destpools', {
               rules: [
                 {
                   required: true,
@@ -122,7 +122,7 @@ export default {
           if (input === undefined) {
             continue
           }
-          if (key === 'migrateto') {
+          if (key === 'destpools') {
             params[key] = input.join(',')
           } else {
             params[key] = input
@@ -159,6 +159,7 @@ export default {
               this.$store.dispatch('AddAsyncJob', {
                 title: title,
                 jobid: jobId,
+                description: 'imagestore',
                 status: 'progress'
               })
             }
@@ -175,10 +176,10 @@ export default {
 </script>
 <style lang="scss" scoped>
 .form-layout {
-  width: 80vw;
+  width: 85vw;
 
-  @media (min-width: 700px) {
-    width: 550px;
+  @media (min-width: 1000px) {
+    width: 40vw;
   }
 }
 

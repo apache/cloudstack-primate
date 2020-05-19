@@ -47,6 +47,7 @@
                   initialValue: this.zoneSelected,
                   rules: [{ required: true, message: 'required'}]
                 }]"
+              @change="val => { zoneSelected = val }"
             >
               <a-select-option
                 :value="zone.id"
@@ -278,10 +279,7 @@ export default {
             description: this.$t('label.add.secondary.storage')
           })
         }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.loading = false
           this.closeModal()
