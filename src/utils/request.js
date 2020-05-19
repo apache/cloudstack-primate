@@ -41,7 +41,7 @@ const err = (error) => {
       if (response.config && response.config.params && ['listIdps'].includes(response.config.params.command)) {
         return
       }
-      notification.error({ message: 'Unauthorized', description: 'Authorization verification failed' })
+      notification.error({ message: 'Unauthorized', description: 'Session expired, authorization verification failed' })
       if (token) {
         store.dispatch('Logout').then(() => {
           setTimeout(() => {
@@ -54,6 +54,12 @@ const err = (error) => {
       notification.error({ message: 'Not Found', description: 'Resource not found' })
       this.$router.push({ path: '/exception/404' })
     }
+  }
+  if (error.isAxiosError && !error.response) {
+    notification.warn({
+      message: error.message || 'Network Error',
+      description: 'Unable to reach the management server or a browser extension may be blocking the network request.'
+    })
   }
   return Promise.reject(error)
 }
