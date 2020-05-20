@@ -71,7 +71,15 @@ describe('Components > View > Status.vue', () => {
   })
 
   describe('Template', () => {
-    it('Console component is visible', () => {
+    /**
+     * @name: testTemplateCase1
+     * @description: Console component is visible
+     * @condition: propData: { resource = { id: 'test-resource-id', state: 'Stopped' }, dataView = true }, testRouter1
+     * @expected: contain:
+     *  - <a href="/client/console?cmd=access&vm=test-resource-id" target="_blank">
+     *  - <button disabled="disabled" type="button" class="ant-btn ant-btn-dashed ant-btn-circle" style="margin-right: 5px;">
+     */
+    it('testTemplateCase1', () => {
       const expectedLink = '<a href="/client/console?cmd=access&vm=test-resource-id" target="_blank">'
       const expectedButton = '<button disabled="disabled" type="button" class="ant-btn ant-btn-dashed ant-btn-circle" style="margin-right: 5px;">'
       const propsData = {
@@ -101,7 +109,15 @@ describe('Components > View > Status.vue', () => {
       })
     })
 
-    it('Console component is invisible', () => {
+    /**
+     * @name: testTemplateCase2
+     * @description: Console component is invisible
+     * @condition: propData: { resource = { id: 'test-resource-id', state: 'Stopped' }, dataView = true }, testRouter2
+     * @expected: not contain:
+     *  - <a href="/client/console?cmd=access&vm=test-resource-id" target="_blank">
+     *  - <button disabled="disabled" type="button" class="ant-btn ant-btn-dashed ant-btn-circle" style="margin-right: 5px;">
+     */
+    it('testTemplateCase2', () => {
       const expectedLink = '<a href="/client/console?cmd=access&vm=test-resource-id" target="_blank">'
       const expectedButton = '<button disabled="disabled" type="button" class="ant-btn ant-btn-dashed ant-btn-circle" style="margin-right: 5px;">'
       const propsData = {
@@ -130,7 +146,13 @@ describe('Components > View > Status.vue', () => {
       })
     })
 
-    it('Show button action', () => {
+    /**
+     * @name: testTemplateCase3
+     * @description: Show button action
+     * @condition: null
+     * @expected: not contain: <i aria-label="icon: plus" class="anticon anticon-plus">
+     */
+    it('testTemplateCase3', () => {
       const expected = '<i aria-label="icon: plus" class="anticon anticon-plus">'
       const wrapper = mount(ActionButton, {
         localVue,
@@ -147,7 +169,22 @@ describe('Components > View > Status.vue', () => {
       })
     })
 
-    it('Show normal button action', () => {
+    /**
+     * @name: testTemplateCase4
+     * @description: Show normal button action
+     * @condition: actions: [
+        {
+          label: 'label.action',
+          api: 'test-api-case-1',
+          showBadge: false,
+          icon: 'plus',
+          dataView: false,
+          listView: true
+        }
+      ]
+     * @expected: contain: <i aria-label="icon: plus" class="anticon anticon-plus">
+     */
+    it('testTemplateCase4', () => {
       const expected = '<i aria-label="icon: plus" class="anticon anticon-plus">'
       const propsData = {
         actions: [
@@ -179,7 +216,21 @@ describe('Components > View > Status.vue', () => {
       })
     })
 
-    it('Show badge button action', (done) => {
+    /**
+     * @name: testTemplateCase5
+     * @description: Show badge button action
+     * @condition: actions: [
+        {
+          label: 'label.action',
+          api: 'test-api-case-2',
+          showBadge: true,
+          icon: 'plus',
+          dataView: true
+        }
+     ]
+     * @expected: contain: <span class="button-action-badge ant-badge">
+     */
+    it('testTemplateCase5', (done) => {
       const expected = '<span class="button-action-badge ant-badge">'
       const propsData = {
         actions: [
@@ -223,7 +274,24 @@ describe('Components > View > Status.vue', () => {
 
   describe('Method', () => {
     describe('handleShowBadge()', () => {
-      it('called and the api returned is not empty', (done) => {
+      /**
+       * @name: testMethodHandleShowBadgeCase1
+       * @description: handleShowBadge() is called and the api returned is not empty
+       * @condition: actions: [
+          {
+            label: 'label.action',
+            api: 'test-api-case-2',
+            showBadge: true,
+            icon: 'plus',
+            dataView: true
+          }
+       ]
+       * @expected:
+       *  1. axios api is called
+       *  2. axios api called with match url, params
+       *  3. wrapper.actionBadge = { 'test-api-case-3': { badgeNum: 2 } }
+       */
+      it('testMethodHandleShowBadgeCase1', (done) => {
         const postData = new URLSearchParams()
         const expected = { 'test-api-case-3': { badgeNum: 2 } }
         const dataMock = { testapinameresponse: { count: 2 } }
@@ -267,7 +335,24 @@ describe('Components > View > Status.vue', () => {
         })
       })
 
-      it('called and the api returned is empty', (done) => {
+      /**
+       * @name: testMethodHandleShowBadgeCase2
+       * @description: handleShowBadge() is called and the api returned is empty
+       * @condition: actions: [
+         {
+           label: 'label.action',
+           api: 'test-api-case-4',
+           showBadge: true,
+           icon: 'plus',
+           dataView: true
+         }
+       ]
+       * @expected:
+       *  1. axios api is called
+       *  2. axios api called with match url, params
+       *  3. wrapper.actionBadge = { 'test-api-case-4': { badgeNum: 0 } }
+       */
+      it('testMethodHandleShowBadgeCase2', (done) => {
         const postData = new URLSearchParams()
         const expected = { 'test-api-case-4': { badgeNum: 0 } }
         const dataMock = { data: [] }
@@ -311,7 +396,24 @@ describe('Components > View > Status.vue', () => {
         })
       })
 
-      it('called and api throws exception', (done) => {
+      /**
+       * @name: testMethodHandleShowBadgeCase3
+       * @description: handleShowBadge() is called and api throws exception
+       * @condition: actions: [
+         {
+           icon: 'plus',
+           label: 'label.action',
+           api: 'test-api-case-6',
+           showBadge: false,
+           dataView: true
+         }
+       ]
+       * @expected:
+       *  1. axios api is called
+       *  2. axios api called with match url, params
+       *  3. wrapper.actionBadge = {}
+       */
+      it('testMethodHandleShowBadgeCase3', (done) => {
         const postData = new URLSearchParams()
         const propsData = {
           actions: [
@@ -356,7 +458,30 @@ describe('Components > View > Status.vue', () => {
     })
 
     describe('execAction()', () => {
-      it('called and emitted events are executed', async () => {
+      /**
+       * @name: testMethodExecActionCase1
+       * @description: execAction() is called and emitted events are executed
+       * @condition: actions: [
+         {
+           icon: 'plus',
+           label: 'label.action',
+           api: 'test-api-case-6',
+           showBadge: false,
+           dataView: true
+         }
+       ]
+       * @expected: emitted exec-action = [{
+          icon: 'plus',
+          label: 'label.action',
+          api: 'test-api-case-6',
+          showBadge: false,
+          dataView: true,
+          resource: {
+            id: 'test-resource-id'
+          }
+        }]
+       */
+      it('testMethodHExecActionCase1', async () => {
         const expected = {
           icon: 'plus',
           label: 'label.action',
@@ -401,7 +526,19 @@ describe('Components > View > Status.vue', () => {
 
   describe('Watcher', () => {
     describe('handleShowBadge()', () => {
-      it('not called with empty resource', async () => {
+      /**
+       * @name: testWatcherResourceCase1
+       * @description: watch resource > handleShowBadge() not called
+       * @condition: actions: [{
+         icon: 'plus',
+         label: 'label.action',
+         api: 'test-api-case-6',
+         showBadge: false,
+         dataView: true
+       }]
+       * @expected: handleShowBadge() not called
+       */
+      it('testWatcherResourceCase1', async () => {
         const wrapper = mount(ActionButton, {
           localVue,
           router,
@@ -416,13 +553,13 @@ describe('Components > View > Status.vue', () => {
         expect(handleShowBadge).not.toBeCalled()
       })
 
-      it('not called with resource containing id null', async () => {
-        afterEach(() => {
-          jest.resetAllMocks()
-          jest.clearAllMocks()
-          jest.resetModules()
-        })
-
+      /**
+       * @name: testWatcherResourceCase2
+       * @description: watch resource > handleShowBadge() not called with resource containing id null
+       * @condition: resource: { id: null }
+       * @expected: handleShowBadge() not called
+       */
+      it('testWatcherResourceCase2', async () => {
         const wrapper = mount(ActionButton, {
           localVue,
           router,
@@ -432,12 +569,19 @@ describe('Components > View > Status.vue', () => {
             resource: { id: null }
           }
         })
+
         const handleShowBadge = jest.spyOn(wrapper.vm, 'handleShowBadge')
         await wrapper.vm.$nextTick()
         expect(handleShowBadge).not.toBeCalled()
       })
 
-      it('not called with changed resource data', async () => {
+      /**
+       * @name: testWatcherResourceCase3
+       * @description: watch resource > handleShowBadge() not called with changed resource data
+       * @condition: resource: { id: 'test-resource-id-2' }
+       * @expected: handleShowBadge() is called
+       */
+      it('testWatcherResourceCase3', async () => {
         const wrapper = mount(ActionButton, {
           localVue,
           router,
