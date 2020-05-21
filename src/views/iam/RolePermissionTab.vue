@@ -18,6 +18,11 @@
 <template>
   <a-icon v-if="loadingTable" type="loading" class="main-loading-spinner"></a-icon>
   <div v-else>
+    <div style="width: 100%; display: flex">
+      <a-button type="dashed" @click="exportRolePermissions" style="width: 100%" icon="download">
+        Export Rules
+      </a-button>
+    </div>
     <div v-if="updateTable" class="loading-overlay">
       <a-icon type="loading" />
     </div>
@@ -229,6 +234,47 @@ export default {
         this.resetNewFields()
         this.fetchData()
       })
+    },
+    rulesDataToCsv ({ data = null, columnDelimiter = ',', lineDelimiter = '\n' }) {
+      let result = null
+      let ctr = null
+
+      if (data === null || !data.length) {
+        return null
+      }
+
+      var keys = ['rule', 'permission', 'description']
+
+      result = ''
+      result += keys.join(columnDelimiter)
+      result += lineDelimiter
+
+      data.forEach(item => {
+        ctr = 0
+        keys.forEach(key => {
+          if (ctr > 0) {
+            result += columnDelimiter
+          }
+
+          if (item[key] === undefined) {
+            item[key] = ''
+          }
+          result += typeof item[key] === 'string' && item[key].includes(columnDelimiter) ? `"${item[key]}"` : item[key]
+          ctr++
+        })
+        result += lineDelimiter
+      })
+
+      return result
+    },
+    exportRolePermissions () {
+      const rulesCsvData = this.rulesDataToCsv({ data: this.rules })
+
+      const hiddenElement = document.createElement('a')
+      hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(rulesCsvData)
+      hiddenElement.target = '_blank'
+      hiddenElement.download = this.resource.name + '_' + this.resource.type + '.csv'
+      hiddenElement.click()
     }
   }
 }
