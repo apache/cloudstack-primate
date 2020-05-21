@@ -379,7 +379,15 @@ describe('Views > AutogenView.vue', () => {
   })
 
   describe('Navigation Guard', () => {
-    it('beforeRouteUpdate() is called', () => {
+    /**
+     * @name: testNavigationGuardCase1
+     * @description: check beforeRouteUpdate() is called
+     * @condition: testRouter1
+     * @expected:
+     *  - currentPath = `/test-router-1`
+     *  - next() is called
+     */
+    it('testNavigationGuardCase1', () => {
       router = createRouter([{
         name: 'testRouter1',
         path: '/test-router-1',
@@ -401,7 +409,15 @@ describe('Views > AutogenView.vue', () => {
       })
     })
 
-    it('beforeRouteLeave() is called', () => {
+    /**
+     * @name: testNavigationGuardCase2
+     * @description: check beforeRouteLeave() is called
+     * @condition: testRouter1
+     * @expected:
+     *  - currentPath = `/test-router-1`
+     *  - next() is called
+     */
+    it('testNavigationGuardCase2', () => {
       router = createRouter([{
         name: 'testRouter1',
         path: '/test-router-1',
@@ -426,14 +442,13 @@ describe('Views > AutogenView.vue', () => {
 
   describe('Watchers', () => {
     describe('$route', () => {
-      it('data does not change when $route does not change', () => {
-        router = createRouter([{
-          name: 'testRouter1',
-          path: '/test-router-1',
-          meta: {
-            icon: 'test-router-1'
-          }
-        }])
+      /**
+       * @name: testWatchersRouteCase1
+       * @description: if $router doesn't change then wrapper data not change
+       * @condition: null
+       * @expected: wrapper data doesn't change and still init value
+       */
+      it('testWatchersRouteCase1', () => {
         wrapper = factory()
 
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
@@ -454,7 +469,13 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('data changes when $route changes', () => {
+      /**
+       * @name: testWatchersRouteCase2
+       * @description: if $router is change then wrapper data is change
+       * @condition: testRouter2
+       * @expected: wrapper data is change with new value
+       */
+      it('testWatchersRouteCase2', () => {
         router = createRouter([{
           name: 'testRouter2',
           path: '/test-router-2',
@@ -486,7 +507,15 @@ describe('Views > AutogenView.vue', () => {
     })
 
     describe('$i18n.locale', () => {
-      it('fetchData() is not called when locales not changes', () => {
+      /**
+       * @name: testWatchersI18nCase1
+       * @description: The language doesn't change when locales don't change
+       * @condition: null
+       * @expected:
+       *  - The language doesn't change
+       *  - fetchData() not called
+       */
+      it('testWatchersI18nCase1', () => {
         wrapper = factory()
 
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
@@ -497,7 +526,15 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('fetchData() is called when locales changes', async () => {
+      /**
+       * @name: testWatchersI18nCase2
+       * @description: The language is change when locales change
+       * @condition: i18n.locale = 'de'
+       * @expected:
+       *  - The language is change by new locale
+       *  - fetchData() is called
+       */
+      it('testWatchersI18nCase2', async () => {
         wrapper = factory()
 
         i18n.locale = 'de'
@@ -512,7 +549,13 @@ describe('Views > AutogenView.vue', () => {
   })
 
   describe('Computed', () => {
-    it('hasSelected is true when the selectedRowKeys not empty', () => {
+    /**
+     * @name: testComputedSelectedRowKeysCase1
+     * @description: hasSelected = true when the selectedRowKeys doesn't empty
+     * @condition: selectedRowKeys.length > 0
+     * @expected: hasSelected = true
+     */
+    it('testComputedSelectedRowKeysCase1', () => {
       wrapper = factory({}, { selectedRowKeys: ['test-select-id'] })
 
       wrapper.vm.$nextTick(() => {
@@ -520,7 +563,13 @@ describe('Views > AutogenView.vue', () => {
       })
     })
 
-    it('hasSelected is false when the selectedRowKeys is empty', () => {
+    /**
+     * @name: testComputedSelectedRowKeysCase2
+     * @description: hasSelected = false when the selectedRowKeys is empty
+     * @condition: selectedRowKeys.length === 0
+     * @expected: hasSelected = false
+     */
+    it('testComputedSelectedRowKeysCase2', () => {
       wrapper = factory({}, { selectedRowKeys: [] })
 
       wrapper.vm.$nextTick(() => {
@@ -531,7 +580,13 @@ describe('Views > AutogenView.vue', () => {
 
   describe('Methods', () => {
     describe('fetchData()', () => {
-      it('routeName is set by $route name', () => {
+      /**
+       * @name: testMethodFetchDataCase1
+       * @description: fetchData() is called and routeName = $route.name
+       * @condition: testRouter1
+       * @expected: routeName = 'testRouter1'
+       */
+      it('testMethodFetchDataCase1', () => {
         router = createRouter([{
           name: 'testRouter1',
           path: '/test-router-1',
@@ -549,7 +604,13 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('routeName is set by parent $route name', () => {
+      /**
+       * @name: testMethodFetchDataCase2
+       * @description: fetchData() is called and routeName = $route.parent.name
+       * @condition: router path = `/test-router-3`
+       * @expected: routeName = 'home'
+       */
+      it('testMethodFetchDataCase2', () => {
         router = createRouter([{
           path: '/test-router-3',
           meta: {
@@ -565,7 +626,15 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('resource, dataView is set when $router params has id', () => {
+      /**
+       * @name: testMethodFetchDataCase3
+       * @description: fetchData () is called and resource, dataView is set to new value
+       * @condition: testRouter4, params: { id: 'test-id' }
+       * @expected:
+       *  - resource = {}
+       *  - dataView = true
+       */
+      it('testMethodFetchDataCase3', () => {
         router = createRouter([{
           name: 'testRouter4',
           path: '/test-router-4/:id',
@@ -583,7 +652,19 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('columnKeys, actions is set when $router meta has columns, actions', () => {
+      /**
+       * @name: testMethodFetchDataCase4
+       * @description: fetchData () is called and columnKeys, actions is set to new value
+       * @condition:
+       *  - router name: testRouter5
+       *  - route.meta.permission = 'testApiNameCase1'
+       *  - route.meta.actions.length > 0
+       *  - route.meta.columns.length > 0
+       * @expected:
+       *  - columnKeys.length > 0
+       *  - actions.length > 0
+       */
+      it('testMethodFetchDataCase4', () => {
         router = createRouter([{
           name: 'testRouter5',
           path: '/test-router-5',
@@ -623,7 +704,17 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('check columnKeys has assign and sort by store apis', () => {
+      /**
+       * @name: testMethodFetchDataCase5
+       * @description: fetchData () is called and columnKeys assign by store apis
+       * @condition:
+       *  - router name: testRouter6
+       *  - route.meta.permission = 'testApiNameCase4'
+       *  - store.apis.testApiNameCase4.response.length > 0
+       * @expected:
+       *  - columnKeys.length = store.apis.testApiNameCase4.response.length
+       */
+      it('testMethodFetchDataCase5', () => {
         router = createRouter([{
           name: 'testRouter6',
           path: 'test-router-6',
@@ -650,7 +741,20 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('check columns is set when columnKeys has object value', () => {
+      /**
+       * @name: testMethodFetchDataCase6
+       * @description: fetchData () is called and columns assign by new value
+       * @condition:
+       *  - router name: testRouter7
+       *  - route.meta.permission = 'testApiNameCase1'
+       *  - object exists in route.meta.columns
+       * @expected:
+       *  - columns.length = 1
+       *  - columns.length[0].title = 'name-en'
+       *  - columns.length[0].dataIndex = 'name'
+       *  - columns.length[0].scopedSlots = { customRender: 'name' }
+       */
+      it('testMethodFetchDataCase6', () => {
         router = createRouter([{
           name: 'testRouter7',
           path: 'test-router-7',
@@ -681,7 +785,18 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api is called with $router query params', (done) => {
+      /**
+       * @name: testMethodFetchDataCase7
+       * @description: fetchData () is called and api is called
+       * @condition:
+       *  - router name: testRouter8
+       *  - router query: { key: 'test-value' }
+       *  - route.meta.permission = 'testApiNameCase2'
+       * @expected:
+       *  - api is called
+       *  - api called with params has assign by route query key and value
+       */
+      it('testMethodFetchDataCase7', (done) => {
         router = createRouter([{
           name: 'testRouter8',
           path: '/test-router-8',
@@ -723,7 +838,18 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api is called with $router meta params', (done) => {
+      /**
+       * @name: testMethodFetchDataCase8
+       * @description: fetchData () is called and api is called
+       * @condition:
+       *  - router name: testRouter9
+       *  - route.meta.params = { key: 'test-value' }
+       *  - route.meta.permission = testApiNameCase3
+       * @expected:
+       *  - api is called
+       *  - api called with params has assign by route.params
+       */
+      it('testMethodFetchDataCase8', (done) => {
         router = createRouter([{
           name: 'testRouter9',
           path: '/test-router-9',
@@ -768,7 +894,19 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('selectedFilter is `self` by $route meta filters and normal user', () => {
+      /**
+       * @name: testMethodFetchDataCase9
+       * @description: fetchData () is called and check selectfilter by user role type
+       * @condition:
+       *  - router name: testRouter10
+       *  - route.meta.permission = listTemplates
+       *  - route.meta.filters = ['name', 'domainid']
+       *  - user role type = Normal
+       * @expected:
+       *  - selectedFilter = self
+       *  - filters = route.meta.filters
+       */
+      it('testMethodFetchDataCase9', () => {
         router = createRouter([{
           name: 'testRouter10',
           path: '/test-router-10',
@@ -796,7 +934,19 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('selectedFilter is `all` by $route meta filters and Admin user', () => {
+      /**
+       * @name: testMethodFetchDataCase10
+       * @description: fetchData () is called and check selectfilter by user role type
+       * @condition:
+       *  - router name: testRouter11
+       *  - route.meta.permission = listTemplates
+       *  - route.meta.filters = ['name', 'domainid']
+       *  - user role type = Admin
+       * @expected:
+       *  - selectedFilter = all
+       *  - filters = ['all', 'name', 'domainid']
+       */
+      it('testMethodFetchDataCase10', () => {
         router = createRouter([{
           name: 'testRouter11',
           path: '/test-router-11',
@@ -826,7 +976,18 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api call with params templatefilter', (done) => {
+      /**
+       * @name: testMethodFetchDataCase11
+       * @description: fetchData () is called and api is called
+       * @condition:
+       *  - router name: testRouter12
+       *  - router path: /template
+       *  - route.meta.permission = listTemplates
+       * @expected:
+       *  - api is called
+       *  - api called with params has item templatefilter: 'self'
+       */
+      it('testMethodFetchDataCase11', (done) => {
         router = createRouter([{
           name: 'testRouter12',
           path: '/template',
@@ -868,7 +1029,18 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api call with params isofilter', (done) => {
+      /**
+       * @name: testMethodFetchDataCase12
+       * @description: fetchData () is called and api is called
+       * @condition:
+       *  - router name: testRouter13
+       *  - router path: /iso
+       *  - route.meta.permission = listTemplates
+       * @expected:
+       *  - api is called
+       *  - api called with params has item isofilter: 'self'
+       */
+      it('testMethodFetchDataCase12', (done) => {
         router = createRouter([{
           name: 'testRouter13',
           path: '/iso',
@@ -910,7 +1082,18 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api call with searchQuery', (done) => {
+      /**
+       * @name: testMethodFetchDataCase13
+       * @description: fetchData () is called and api is called
+       * @condition:
+       *  - router name: testRouter14
+       *  - route.meta.permission = testApiNameCase2
+       *  - searchQuery = 'test-query'
+       * @expected:
+       *  - api is called
+       *  - api called with params has item keyword: 'test-query'
+       */
+      it('testMethodFetchDataCase13', (done) => {
         router = createRouter([{
           name: 'testRouter14',
           path: '/test-router-14',
@@ -953,7 +1136,18 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api call with searchQuery and apiName equal `listRoles`', (done) => {
+      /**
+       * @name: testMethodFetchDataCase14
+       * @description: fetchData () is called and api is called
+       * @condition:
+       *  - router name: testRouter15
+       *  - route.meta.permission = listRoles
+       *  - searchQuery = 'test-query'
+       * @expected:
+       *  - api is called
+       *  - api called with params has item name: 'test-query'
+       */
+      it('testMethodFetchDataCase14', (done) => {
         router = createRouter([{
           name: 'testRouter15',
           path: '/test-router-15',
@@ -996,7 +1190,18 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api call with searchQuery and apiName equal `quotaEmailTemplateList`', (done) => {
+      /**
+       * @name: testMethodFetchDataCase15
+       * @description: fetchData () is called and api is called
+       * @condition:
+       *  - router name: testRouter16
+       *  - route.meta.permission = quotaEmailTemplateList
+       *  - searchQuery = 'test-query'
+       * @expected:
+       *  - api is called
+       *  - api called with params has item templatetype: 'test-query'
+       */
+      it('testMethodFetchDataCase15', (done) => {
         router = createRouter([{
           name: 'testRouter16',
           path: '/test-router-16',
@@ -1039,7 +1244,18 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api call with $router params id and `ssh` path', (done) => {
+      /**
+       * @name: testMethodFetchDataCase16
+       * @description: fetchData () is called and api is called
+       * @condition:
+       *  - router name: testRouter17
+       *  - router params: { id: 'test-id' }
+       *  - route.meta.permission = testApiNameCase1
+       * @expected:
+       *  - api is called
+       *  - api called with params has item {id: 'test-id', name: 'test-id'}
+       */
+      it('testMethodFetchDataCase16', (done) => {
         router = createRouter([{
           name: 'testRouter17',
           path: '/ssh/:id',
@@ -1081,7 +1297,19 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api call with $router params id and `ldapsetting` path', (done) => {
+      /**
+       * @name: testMethodFetchDataCase17
+       * @description: fetchData () is called and api is called
+       * @condition:
+       *  - router name: testRouter18
+       *  - router path: /ldapsetting/:id
+       *  - router params: { id: 'test-id' }
+       *  - route.meta.permission = testApiNameCase1
+       * @expected:
+       *  - api is called
+       *  - api called with params has item {id: 'test-id', hostname: 'test-id'}
+       */
+      it('testMethodFetchDataCase17', (done) => {
         router = createRouter([{
           name: 'testRouter18',
           path: '/ldapsetting/:id',
@@ -1123,7 +1351,19 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('check item result when api call with apiName equal `listTemplates` || `listIsos`', (done) => {
+      /**
+       * @name: testMethodFetchDataCase18
+       * @description: fetchData () is called and api is called
+       * @condition:
+       *  - router name: testRouter19
+       *  - router path: /templates
+       *  - route.meta.permission = listTemplates
+       * @expected:
+       *  - api is called
+       *  - items.length > 0
+       *  - resource = items[0]
+       */
+      it('testMethodFetchDataCase18', (done) => {
         router = createRouter([{
           name: 'testRouter19',
           path: '/templates',
@@ -1193,7 +1433,19 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('check item result when api call with columns has column customRender is object', (done) => {
+      /**
+       * @name: testMethodFetchDataCase19
+       * @description: fetchData () is called and api is called
+       * @condition:
+       *  - router name: testRouter20
+       *  - route.meta.columns has object
+       *  - route.meta.permission = testApiNameCase1
+       * @expected:
+       *  - api is called
+       *  - items.length > 0
+       *  - resource = items[0]
+       */
+      it('testMethodFetchDataCase19', (done) => {
         router = createRouter([{
           name: 'testRouter20',
           path: '/test-router-20',
@@ -1244,7 +1496,19 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('check item result when api call with $router path start with `/ssh`', (done) => {
+      /**
+       * @name: testMethodFetchDataCase20
+       * @description: fetchData () is called and api is called
+       * @condition:
+       *  - router name: testRouter21
+       *  - router path: /ssh
+       *  - route.meta.permission = testApiNameCase1
+       * @expected:
+       *  - api is called
+       *  - items.length > 0
+       *  - resource = items[0]
+       */
+      it('testMethodFetchDataCase20', (done) => {
         router = createRouter([{
           name: 'testRouter21',
           path: '/ssh',
@@ -1283,7 +1547,19 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('check item result when api call with $router path start with `/ldapsetting`', (done) => {
+      /**
+       * @name: testMethodFetchDataCase21
+       * @description: fetchData () is called and api is called
+       * @condition:
+       *  - router name: testRouter22
+       *  - router path: /ldapsetting
+       *  - route.meta.permission = testApiNameCase1
+       * @expected:
+       *  - api is called
+       *  - items.length > 0
+       *  - resource = items[0]
+       */
+      it('testMethodFetchDataCase21', (done) => {
         router = createRouter([{
           name: 'testRouter22',
           path: '/ldapsetting',
@@ -1325,7 +1601,17 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api call with error message but not status', (done) => {
+      /**
+       * @name: testMethodFetchDataCase22
+       * @description: fetchData () is called and api is called with throw error
+       * @condition:
+       *  - router name: testRouter22
+       *  - route.meta.permission = testApiNameCase1
+       *  - error.message = 'string'
+       * @expected:
+       *  - $notifyError is called with message
+       */
+      it('testMethodFetchDataCase22', (done) => {
         router = createRouter([{
           name: 'testRouter22',
           path: '/test-router-22',
@@ -1351,7 +1637,19 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api call with error is `Forbidden`', (done) => {
+      /**
+       * @name: testMethodFetchDataCase23
+       * @description: fetchData () is called and api is called with throw error
+       * @condition:
+       *  - router name: testRouter23
+       *  - route.meta.permission = testApiNameCase1
+       *  - error.message = 'string'
+       *  - error.response.status = 401
+       * @expected:
+       *  - $notifyError is called with message
+       *  - router.currentRoute.path = /exception/403
+       */
+      it('testMethodFetchDataCase23', (done) => {
         router = createRouter([{
           name: 'testRouter23',
           path: '/test-router-23',
@@ -1381,7 +1679,19 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api call with error is `Not Found`', (done) => {
+      /**
+       * @name: testMethodFetchDataCase24
+       * @description: fetchData () is called and api is called with throw error
+       * @condition:
+       *  - router name: testRouter23
+       *  - route.meta.permission = testApiNameCase1
+       *  - error.message = 'string'
+       *  - error.response.status = 430
+       * @expected:
+       *  - $notifyError is called with message
+       *  - router.currentRoute.path = /exception/404
+       */
+      it('testMethodFetchDataCase24', (done) => {
         router = createRouter([{
           name: 'testRouter23',
           path: '/test-router-23',
@@ -1411,7 +1721,19 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api call with error is `Internal Server Error`', (done) => {
+      /**
+       * @name: testMethodFetchDataCase25
+       * @description: fetchData () is called and api is called with throw error
+       * @condition:
+       *  - router name: testRouter23
+       *  - route.meta.permission = testApiNameCase1
+       *  - error.message = 'string'
+       *  - error.response.status = 530
+       * @expected:
+       *  - $notifyError is called with message
+       *  - router.currentRoute.path = /exception/500
+       */
+      it('testMethodFetchDataCase25', (done) => {
         router = createRouter([{
           name: 'testRouter23',
           path: '/test-router-23',
@@ -1443,7 +1765,19 @@ describe('Views > AutogenView.vue', () => {
     })
 
     describe('onSearch()', () => {
-      it('fetchData() is call with searchQuery empty', (done) => {
+      /**
+       * @name: testMethodOnSearchCase1
+       * @description: onSearch() is called and check fetchData() is call
+       * @condition:
+       *  - router name: testRouter24
+       *  - route.meta.permission = testApiNameCase1
+       *  - page: 2
+       * @expected:
+       *  - page = 1
+       *  - searchQuery = ''
+       *  - fetchData is called
+       */
+      it('testMethodOnSearchCase1', (done) => {
         router = createRouter([{
           name: 'testRouter24',
           path: '/test-router-24',
@@ -1478,7 +1812,19 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('fetchData() is call with searchQuery not empty', (done) => {
+      /**
+       * @name: testMethodOnSearchCase2
+       * @description: onSearch() is called and check fetchData() is call
+       * @condition:
+       *  - router name: testRouter25
+       *  - route.meta.permission = testApiNameCase1
+       *  - page: 2
+       * @expected:
+       *  - page = 1
+       *  - searchQuery = test-query-value
+       *  - fetchData is called
+       */
+      it('testMethodOnSearchCase2', (done) => {
         router = createRouter([{
           name: 'testRouter25',
           path: '/test-router-25',
@@ -1515,7 +1861,17 @@ describe('Views > AutogenView.vue', () => {
     })
 
     describe('closeAction()', () => {
-      it('reset all data action when called', () => {
+      /**
+       * @name: testMethodCloseActionCase1
+       * @description: closeAction() is called and check data after call
+       * @condition:
+       *  - currentAction.loading = true
+       *  - showAction = true
+       * @expected:
+       *  - currentAction = {}
+       *  - showAction = false
+       */
+      it('testMethodCloseActionCase1', () => {
         wrapper = factory({}, {
           currentAction: {
             loading: true
@@ -1536,7 +1892,19 @@ describe('Views > AutogenView.vue', () => {
     })
 
     describe('execAction()', () => {
-      it('is call and redirect to action api', () => {
+      /**
+       * @name: testMethodExecActionCase1
+       * @description: execAction() is called and check new route name
+       * @condition:
+       *  - router name: testRouter26
+       *  - actionData[0].name = 'test-add-action'
+       *  - showAction = true
+       * @expected:
+       *  - actionData = []
+       *  - showAction = false
+       *  - router.currentRoute.name = testRouter26
+       */
+      it('testMethodExecActionCase1', () => {
         router = createRouter([{
           name: 'testRouter26',
           path: '/test-router-26',
@@ -1564,7 +1932,18 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('check currentAction params when execAction is call with action (`arg` not in action)', () => {
+      /**
+       * @name: testMethodExecActionCase1
+       * @description: execAction() is called and check currentAction params
+       * @condition:
+       *  - actions.api: testApiNameCase5
+       *  - `arg` not in action
+       * @expected:
+       *  - currentAction.params.length > 0
+       *  - currentAction.paramFields = []
+       *  - showAction: true
+       */
+      it('testMethodExecActionCase1', () => {
         wrapper = factory()
 
         wrapper.vm.$nextTick(() => {
@@ -1584,7 +1963,18 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('check currentAction params when execAction is call with action (`arg` exists in action)', () => {
+      /**
+       * @name: testMethodExecActionCase2
+       * @description: execAction() is called and check currentAction params
+       * @condition:
+       *  - actions.api: testApiNameCase5
+       *  - `arg` exists in action
+       * @expected:
+       *  - currentAction.params.length > 0
+       *  - currentAction.paramFields.length > 0
+       *  - showAction: true
+       */
+      it('testMethodExecActionCase2', () => {
         wrapper = factory()
 
         wrapper.vm.$nextTick(() => {
@@ -1609,7 +1999,18 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('check currentAction when execAction is call with action (`arg` is function and exists in action)', () => {
+      /**
+       * @name: testMethodExecActionCase3
+       * @description: execAction() is called and check currentAction params
+       * @condition:
+       *  - actions.api: testApiNameCase5
+       *  - `arg` is function and exists in action
+       * @expected:
+       *  - currentAction.params.length > 0
+       *  - currentAction.paramFields.length > 0
+       *  - showAction: true
+       */
+      it('testMethodExecActionCase3', () => {
         wrapper = factory()
 
         wrapper.vm.$nextTick(() => {
@@ -1636,7 +2037,17 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('listUuidOpts() is called when params has `list` type and name equals `tags`, listUuidOpts is called', () => {
+      /**
+       * @name: testMethodExecActionCase4
+       * @description: execAction() is called and check listUuidOpts() is called
+       * @condition:
+       *  - action.api: testApiNameCase5
+       *  - action.args has tags
+       *  - params in store.apis.testApiNameCase6 has list type
+       * @expected:
+       *  - listUuidOpts() is called
+       */
+      it('testMethodExecActionCase4', () => {
         wrapper = factory()
         const spy = jest.spyOn(wrapper.vm, 'listUuidOpts')
 
@@ -1667,7 +2078,17 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('fillEditFormFieldValues() is call when action has dataView and edit', () => {
+      /**
+       * @name: testMethodExecActionCase5
+       * @description: execAction() is called and check fillEditFormFieldValues() is called
+       * @condition:
+       *  - actions.api:testApiNameCase6
+       *  - action.dataView = true
+       *  - action.icon = edit
+       * @expected:
+       *  - fillEditFormFieldValues() is called
+       */
+      it('testMethodExecActionCase5', () => {
         wrapper = factory()
         const spy = jest.spyOn(wrapper.vm, 'fillEditFormFieldValues')
 
@@ -1684,7 +2105,16 @@ describe('Views > AutogenView.vue', () => {
     })
 
     describe('listUuidOpts()', () => {
-      it('api is not called when the specified condition is not met.', (done) => {
+      /**
+       * @name: testMethodListUuidOptsCase1
+       * @description: listUuidOpts() is called and check api not called
+       * @condition:
+       *  - currentAction.mapping.id = ''
+       *  - params = { name: 'id', type: 'uuid' }
+       * @expected:
+       *  - api not called
+       */
+      it('testMethodListUuidOptsCase1', (done) => {
         wrapper = factory({}, {
           currentAction: {
             mapping: {
@@ -1701,7 +2131,16 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api is not called when possibleApi is empty', (done) => {
+      /**
+       * @name: testMethodListUuidOptsCase2
+       * @description: listUuidOpts() is called and check api not called
+       * @condition:
+       *  - currentAction.mapping = {}
+       *  - params = { name: 'test-name', type: 'uuid' }
+       * @expected:
+       *  - api not called
+       */
+      it('testMethodListUuidOptsCase2', (done) => {
         wrapper = factory({}, {
           currentAction: {
             mapping: {}
@@ -1716,7 +2155,16 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api is called with possibleApi equal mapping api from action', (done) => {
+      /**
+       * @name: testMethodListUuidOptsCase3
+       * @description: listUuidOpts() is called and check api is called
+       * @condition:
+       *  - currentAction.mapping.template.api = testApiNameCase1
+       *  - param = { name: 'template', type: 'uuid' }
+       * @expected:
+       *  - api is called
+       */
+      it('testMethodListUuidOptsCase3', (done) => {
         const param = { name: 'template', type: 'uuid' }
         const mockData = {
           testapinamecase1response: {
@@ -1767,7 +2215,16 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api is called with possibleApi equal apiName when param name equal `id`', (done) => {
+      /**
+       * @name: testMethodListUuidOptsCase4
+       * @description: listUuidOpts() is called and check api is called
+       * @condition:
+       *  - apiName = testApiNameCase1
+       *  - param = { name: 'id', type: 'uuid' }
+       * @expected:
+       *  - api is called
+       */
+      it('testMethodListUuidOptsCase4', (done) => {
         const param = { name: 'id', type: 'uuid' }
         const mockData = {
           testapinamecase1response: {
@@ -1816,7 +2273,16 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api is called with possibleApi equal api from store apis', (done) => {
+      /**
+       * @name: testMethodListUuidOptsCase5
+       * @description: listUuidOpts() is called and check api is called
+       * @condition:
+       *  - store.getters.apis = testApiNameCase1
+       *  - param = { name: 'testapiname', type: 'uuid' }
+       * @expected:
+       *  - api is called with command `listTestApiNames`
+       */
+      it('testMethodListUuidOptsCase5', (done) => {
         const param = { name: 'testapiname', type: 'uuid' }
         const mockData = {
           listtestapinamesresponse: {
@@ -1859,7 +2325,17 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api is called with params assign with mapping params', (done) => {
+      /**
+       * @name: testMethodListUuidOptsCase6
+       * @description: listUuidOpts() is called and check api is called
+       * @condition:
+       *  - currentAction.mapping.template.api = 'testApiNameCase1'
+       *  - param = { name: 'template', type: 'uuid' }
+       * @expected:
+       *  - api is called
+       *  - api is called with params has item {name: 'test-name-value'}
+       */
+      it('testMethodListUuidOptsCase6', (done) => {
         const param = { name: 'template', type: 'uuid' }
         const mockData = {
           testapinamecase1response: {
@@ -1922,7 +2398,17 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api is called with params templatefilter when possibleApi equal listTemplates', (done) => {
+      /**
+       * @name: testMethodListUuidOptsCase7
+       * @description: listUuidOpts() is called and check api is called
+       * @condition:
+       *  - apiName: 'listTemplates'
+       *  - param = { name: 'id', type: 'uuid' }
+       * @expected:
+       *  - api is called
+       *  - api is called with params has item {templatefilter: 'executable'}
+       */
+      it('testMethodListUuidOptsCase7', (done) => {
         const param = { name: 'id', type: 'uuid' }
         const mockData = {
           listtemplateresponse: {
@@ -1969,7 +2455,18 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api is called with params isofilter when possibleApi equal listIsos', (done) => {
+      /**
+       * @name: testMethodListUuidOptsCase8
+       * @description: listUuidOpts() is called and check api is called
+       * @condition:
+       *  - apiName: 'listIsos'
+       *  - param = { name: 'id', type: 'uuid' }
+       * @expected:
+       *  - api is called
+       *  - api is called with params has item {isofilter: 'executable'}
+       *  - param = { name: 'id', type: 'uuid', loading: false, opts.length > 0 }
+       */
+      it('testMethodListUuidOptsCase8', (done) => {
         const param = { name: 'id', type: 'uuid' }
         const mockData = {
           listisosresponse: {
@@ -2016,7 +2513,17 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api is called with params type when possibleApi equal listHosts', (done) => {
+      /**
+       * @name: testMethodListUuidOptsCase9
+       * @description: listUuidOpts() is called and check api is called
+       * @condition:
+       *  - apiName: 'listHosts'
+       *  - param = { name: 'id', type: 'uuid' }
+       * @expected:
+       *  - api is called with command = listHosts
+       *  - param = { name: 'id', type: 'uuid', loading: false, opts.length > 0 }
+       */
+      it('testMethodListUuidOptsCase9', (done) => {
         const param = { name: 'id', type: 'uuid' }
         const mockData = {
           listhostresponse: {
@@ -2063,7 +2570,17 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('api is called with throw exception error', (done) => {
+      /**
+       * @name: testMethodListUuidOptsCase10
+       * @description: listUuidOpts() is called and check api is called
+       * @condition:
+       *  - apiName: 'testApiNameCase1'
+       *  - param = { name: 'id', type: 'uuid', loading: true }
+       * @expected:
+       *  - api is called with throw error
+       *  - param = { name: 'id', type: 'uuid', loading: false, opts: [] }
+       */
+      it('testMethodListUuidOptsCase10', (done) => {
         const param = { name: 'id', type: 'uuid', loading: true }
         const errorMock = {
           response: {},
@@ -2104,7 +2621,18 @@ describe('Views > AutogenView.vue', () => {
     })
 
     describe('pollActionCompletion()', () => {
-      it('fetchData() is call but no notification when $pollJob success response', (done) => {
+      /**
+       * @name: testMethodPollActionCompletionCase1
+       * @description: pollActionCompletion() is called with no notification
+       * @condition:
+       *  - jobId = 'test-job-id'
+       *  - $pollJob response with jobstatus: 1 and jobresult.name = 'test-name-value'
+       * @expected:
+       *  - api is called with params has item { jobId }
+       *  - fetchData() is called
+       *  - $notification.info not called
+       */
+      it('testMethodPollActionCompletionCase1', (done) => {
         const mockData = {
           queryasyncjobresultresponse: {
             jobstatus: 1,
@@ -2125,6 +2653,7 @@ describe('Views > AutogenView.vue', () => {
 
         setTimeout(() => {
           expect(spy).toHaveBeenCalled()
+          expect(mocks.$notification.info).not.toHaveBeenCalled()
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
             url: '/',
@@ -2141,7 +2670,18 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('fetchData() is call and show notification when $pollJob success response', (done) => {
+      /**
+       * @name: testMethodPollActionCompletionCase2
+       * @description: pollActionCompletion() is called with notification
+       * @condition:
+       *  - jobId = 'test-job-id'
+       *  - $pollJob response with jobstatus: 1 and jobresult.name = 'test-name-value'
+       * @expected:
+       *  - api is called with params has item { jobId }
+       *  - $notification.info is called
+       *  - fetchData() is called
+       */
+      it('testMethodPollActionCompletionCase2', (done) => {
         const mockData = {
           queryasyncjobresultresponse: {
             jobstatus: 1,
@@ -2189,6 +2729,16 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
+      /**
+       * @name: testMethodPollActionCompletionCase2
+       * @description: pollActionCompletion() is called with notification
+       * @condition:
+       *  - jobId = 'test-job-id'
+       *  - $pollJob response with jobstatus: 2 and jobresult.errortext = 'test-error-message'
+       * @expected:
+       *  - api is called with params has item { jobId }
+       *  - fetchData() is called
+       */
       it('fetchData() is call when $pollJob error response', (done) => {
         const mockData = {
           queryasyncjobresultresponse: {
@@ -2235,11 +2785,9 @@ describe('Views > AutogenView.vue', () => {
     describe('fillEditFormFieldValues()', () => {
       /**
        * @name: testMethodFillEditFormFieldValuesCase1
-       * @description: check form getFieldDecorator is called
-       * @condition: currentAction.paramFields has field type = uuid || type = list || name = account || name in mapping
-       * @expected:
-       *  1. getFieldDecorator: toHaveBeenCalled
-       *  2. getFieldDecorator: toBeCalledWith mapping data value
+       * @description: check form getFieldDecorator() is called
+       * @condition: currentAction.paramFields has field type = uuid
+       * @expected: getFieldDecorator() is called with mapping data value
        */
       it('testMethodFillEditFromFiledValuesCase1', (done) => {
         wrapper = factory({}, {
@@ -2272,11 +2820,9 @@ describe('Views > AutogenView.vue', () => {
 
       /**
        * @name: testMethodFillEditFromFiledValuesCase2
-       * @description: check form getFieldDecorator is called
+       * @description: check form getFieldDecorator() is called
        * @condition: currentAction.paramFields has field type = list
-       * @expected:
-       *  1. getFieldDecorator: toHaveBeenCalled
-       *  2. getFieldDecorator: toBeCalledWith mapping data value
+       * @expected: getFieldDecorator() is called with mapping data value
        */
       it('testMethodFillEditFromFiledValuesCase2', (done) => {
         wrapper = factory({}, {
@@ -2309,11 +2855,9 @@ describe('Views > AutogenView.vue', () => {
 
       /**
        * @name: testMethodFillEditFromFiledValuesCase3
-       * @description: check form getFieldDecorator is called
+       * @description: check form getFieldDecorator() is called
        * @condition: currentAction.paramFields has field name = account
-       * @expected:
-       *  1. getFieldDecorator: toHaveBeenCalled
-       *  2. getFieldDecorator: toBeCalledWith mapping data value
+       * @expected: getFieldDecorator() is called with mapping data value
        */
       it('testMethodFillEditFromFiledValuesCase3', (done) => {
         wrapper = factory({}, {
@@ -2346,11 +2890,9 @@ describe('Views > AutogenView.vue', () => {
 
       /**
        * @name: testMethodFillEditFromFiledValuesCase4
-       * @description: check form getFieldDecorator is called
+       * @description: check form getFieldDecorator() is called
        * @condition: currentAction.paramFields has field name in currentAction.mapping
-       * @expected:
-       *  1. getFieldDecorator: toHaveBeenCalled
-       *  2. getFieldDecorator: toBeCalledWith mapping data value
+       * @expected: getFieldDecorator() is called with mapping data value
        */
       it('testMethodFillEditFromFiledValuesCase4', (done) => {
         wrapper = factory({}, {
@@ -2383,11 +2925,9 @@ describe('Views > AutogenView.vue', () => {
 
       /**
        * @name: testMethodFillEditFromFiledValuesCase5
-       * @description: check form getFieldDecorator is called
+       * @description: check form getFieldDecorator() is called
        * @condition: currentAction.paramFields has field not pass condition (field.type in [uuid, list] || field.name = account && field.name in currentAction.mapping)
-       * @expected:
-       *  1. getFieldDecorator: toHaveBeenCalled
-       *  2. getFieldDecorator: toBeCalledWith mapping data value
+       * @expected: getFieldDecorator() is called with mapping data value
        */
       it('testMethodFillEditFromFiledValuesCase5', (done) => {
         wrapper = factory({}, {
@@ -2417,9 +2957,9 @@ describe('Views > AutogenView.vue', () => {
 
       /**
        * @name: testMethodFillEditFromFiledValuesCase6
-       * @description: check form getFieldDecorator not called
+       * @description: check form getFieldDecorator() not called
        * @condition: currentAction.paramFields has field not in resource
-       * @expected: getFieldDecorator: not called
+       * @expected: getFieldDecorator() not called
        */
       it('testMethodFillEditFromFiledValuesCase6', (done) => {
         wrapper = factory({}, {
@@ -2444,9 +2984,9 @@ describe('Views > AutogenView.vue', () => {
 
       /**
        * @name: testMethodFillEditFromFiledValuesCase7
-       * @description: check form getFieldDecorator not called
+       * @description: check form getFieldDecorator() not called
        * @condition: resource field value equal null
-       * @expected: getFieldDecorator: not called
+       * @expected: getFieldDecorator() not called
        */
       it('testMethodFillEditFromFiledValuesCase7', (done) => {
         wrapper = factory({}, {
