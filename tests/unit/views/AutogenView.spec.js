@@ -147,7 +147,7 @@ user.state.apis = {
 
 const messages = {
   en: {
-    labelname: 'test-name-en',
+    'label.name': 'test-name-en',
     column1: 'column1-en',
     column2: 'column2-en',
     column3: 'column3-en',
@@ -163,7 +163,7 @@ const messages = {
     keypair: 'keypair-en'
   },
   de: {
-    labelname: 'test-name-de',
+    'label.name': 'test-name-de',
     column1: 'column1-de',
     column2: 'column2-de',
     column3: 'column3-de',
@@ -197,14 +197,69 @@ const state = {
       },
       testApiNameCase4: {
         params: {},
-        response: []
+        response: [
+          {
+            name: 'column2',
+            type: 'string'
+          },
+          {
+            name: 'column1',
+            type: 'string'
+          },
+          {
+            name: 'column3',
+            type: 'string'
+          }
+        ]
       },
       testApiNameCase5: {
-        params: [],
+        params: [
+          {
+            name: 'column2',
+            type: 'string'
+          },
+          {
+            name: 'column1',
+            type: 'string'
+          },
+          {
+            name: 'column3',
+            type: 'string'
+          },
+          {
+            name: 'name',
+            type: 'string'
+          },
+          {
+            name: 'id',
+            type: 'string'
+          }
+        ],
         response: []
       },
       testApiNameCase6: {
-        params: [],
+        params: [
+          {
+            name: 'id',
+            type: 'uuid'
+          },
+          {
+            name: 'tags',
+            type: 'list'
+          },
+          {
+            name: 'column1',
+            type: 'list'
+          },
+          {
+            name: 'column2',
+            type: 'string'
+          },
+          {
+            name: 'account',
+            type: 'string'
+          }
+        ],
         response: []
       },
       listTemplates: {
@@ -240,15 +295,14 @@ const state = {
         response: []
       }
     },
-    info: { roletype: 'Normal' }
+    info: {
+      roletype: 'Normal'
+    }
   }
 }
 
 let router
 let store = mockStore.mock(state)
-const actions = {
-  AddAsyncJob: jest.fn((jobId) => {})
-}
 const spyConsole = {
   log: null,
   warn: null
@@ -303,7 +357,6 @@ describe('Views > AutogenView.vue', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    jest.clearAllTimers()
     if (wrapper) {
       wrapper.destroy()
     }
@@ -468,7 +521,7 @@ describe('Views > AutogenView.vue', () => {
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
         wrapper.vm.$nextTick(() => {
-          expect(wrapper.vm.$t('labelname')).toEqual('test-name-en')
+          expect(wrapper.vm.$t('label.name')).toEqual('test-name-en')
           expect(spy).not.toBeCalled()
         })
       })
@@ -488,7 +541,7 @@ describe('Views > AutogenView.vue', () => {
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
         wrapper.vm.$nextTick(() => {
-          expect(wrapper.vm.$t('labelname')).toEqual('test-name-de')
+          expect(wrapper.vm.$t('label.name')).toEqual('test-name-de')
           expect(spy).toBeCalled()
         })
       })
@@ -621,7 +674,7 @@ describe('Views > AutogenView.vue', () => {
             columns: ['column1', 'column2', 'column3'],
             actions: [
               {
-                name: 'labelname',
+                name: 'label.name',
                 icon: 'plus',
                 listView: true
               }
@@ -644,7 +697,7 @@ describe('Views > AutogenView.vue', () => {
           expect(wrapper.vm.actions.length).toEqual(1)
           expect(wrapper.vm.columnKeys).toEqual(['column1', 'column2', 'column3'])
           expect(wrapper.vm.actions).toEqual([{
-            name: 'labelname',
+            name: 'label.name',
             icon: 'plus',
             listView: true
           }])
@@ -1866,7 +1919,7 @@ describe('Views > AutogenView.vue', () => {
 
         wrapper.vm.$nextTick(() => {
           wrapper.vm.execAction({
-            label: 'labelname',
+            label: 'label.name',
             icon: 'plus',
             component: () => jest.fn(),
             api: 'testRouter26',
@@ -2642,7 +2695,7 @@ describe('Views > AutogenView.vue', () => {
 
         const jobId = 'test-job-id'
         const action = {
-          label: 'labelname',
+          label: 'label.name',
           response: (jobResult) => {
             return jobResult.name
           }
@@ -2677,7 +2730,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       /**
-       * @name: testMethodPollActionCompletionCase3
+       * @name: testMethodPollActionCompletionCase2
        * @description: pollActionCompletion() is called with notification
        * @condition:
        *  - jobId = 'test-job-id'
@@ -2686,7 +2739,7 @@ describe('Views > AutogenView.vue', () => {
        *  - api is called with params has item { jobId }
        *  - fetchData() is called
        */
-      it('testMethodPollActionCompletionCase3', (done) => {
+      it('fetchData() is call when $pollJob error response', (done) => {
         const mockData = {
           queryasyncjobresultresponse: {
             jobstatus: 2,
@@ -2700,7 +2753,7 @@ describe('Views > AutogenView.vue', () => {
 
         const jobId = 'test-job-id'
         const action = {
-          label: 'labelname',
+          label: 'label.name',
           response: (jobResult) => {
             return jobResult.name
           }
@@ -3079,7 +3132,9 @@ describe('Views > AutogenView.vue', () => {
        *    1. loading = false
        *    2. selectedRowKeys = []
        */
-      it('testMethodStartCase1', async (done) => {
+      it('testMethodStartCase1', (done) => {
+        jest.useFakeTimers()
+
         wrapper = factory({}, {
           loading: false,
           selectedRowKeys: ['test-selected']
@@ -3087,19 +3142,22 @@ describe('Views > AutogenView.vue', () => {
 
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
-        await wrapper.vm.$nextTick()
-        await wrapper.vm.start()
+        wrapper.vm.$nextTick(() => {
+          wrapper.vm.start()
 
-        expect(wrapper.vm.loading).toBeTruthy()
-        expect(wrapper.vm.selectedRowKeys).toEqual(['test-selected'])
-        expect(spy).toBeCalled()
+          expect(wrapper.vm.loading).toBeTruthy()
+          expect(wrapper.vm.selectedRowKeys).toEqual(['test-selected'])
+          expect(spy).toBeCalled()
 
-        setTimeout(() => {
-          expect(wrapper.vm.loading).toBeFalsy()
-          expect(wrapper.vm.selectedRowKeys).toEqual([])
+          setTimeout(() => {
+            expect(wrapper.vm.loading).toBeFalsy()
+            expect(wrapper.vm.selectedRowKeys).toEqual([])
 
-          done()
-        }, 1000)
+            done()
+          }, 1000)
+
+          jest.runAllTimers()
+        })
       })
     })
 
@@ -3187,7 +3245,7 @@ describe('Views > AutogenView.vue', () => {
           showAction: true,
           currentAction: {
             loading: false,
-            label: 'labelname',
+            label: 'label.name',
             params: [
               { name: 'id', type: 'uuid' }
             ],
@@ -3228,7 +3286,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'labelname',
+            label: 'label.name',
             params: [
               { name: 'id', type: 'uuid' }
             ],
@@ -3286,7 +3344,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'labelname',
+            label: 'label.name',
             params: [
               { name: 'column1', type: 'boolean' }
             ],
@@ -3341,7 +3399,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'labelname',
+            label: 'label.name',
             params: [
               { name: 'column1', type: 'list' }
             ],
@@ -3404,7 +3462,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'labelname',
+            label: 'label.name',
             params: [
               {
                 name: 'column1',
@@ -3470,7 +3528,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'labelname',
+            label: 'label.name',
             params: [
               {
                 name: 'column1',
@@ -3536,7 +3594,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'createAccount',
             loading: false,
-            label: 'labelname',
+            label: 'label.name',
             params: [
               {
                 name: 'account',
@@ -3596,7 +3654,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'addAccountToProject',
             loading: false,
-            label: 'labelname',
+            label: 'label.name',
             params: [
               {
                 name: 'keypair',
@@ -3657,7 +3715,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'labelname',
+            label: 'label.name',
             params: [
               {
                 name: 'keypair',
@@ -3720,7 +3778,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'labelname',
+            label: 'label.name',
             params: [
               {
                 name: 'column1',
@@ -3779,7 +3837,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'labelname',
+            label: 'label.name',
             params: [
               { name: 'column1', type: 'string' }
             ],
@@ -3839,7 +3897,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'labelname',
+            label: 'label.name',
             params: [
               { name: 'column1', type: 'string' }
             ],
