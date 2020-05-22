@@ -2792,7 +2792,7 @@ describe('Views > AutogenView.vue', () => {
        * @condition: currentAction.paramFields has field type = uuid
        * @expected: getFieldDecorator() is called with mapping data value
        */
-      it('testMethodFillEditFromFiledValuesCase1', (done) => {
+      it('testMethodFillEditFromFiledValuesCase1', async (done) => {
         wrapper = factory({}, {
           currentAction: {
             paramFields: [
@@ -3238,720 +3238,720 @@ describe('Views > AutogenView.vue', () => {
       })
     })
 
-    // describe('handleSubmit()', () => {
-    //   /**
-    //    * @name: testMethodHandleSubmitCase1
-    //    * @description: check error from validateFields when handleSubmit() is called
-    //    * @condition: paramFields has field is required
-    //    * @expected: api not called
-    //    */
-    //   it('testMethodHandleSubmitCase1', (done) => {
-    //     wrapper = factory({}, {
-    //       showAction: true,
-    //       currentAction: {
-    //         loading: false,
-    //         label: 'label.name',
-    //         params: [
-    //           { name: 'id', type: 'uuid' }
-    //         ],
-    //         paramFields: [
-    //           { name: 'id', type: 'uuid', description: '', required: true }
-    //         ],
-    //         mapping: {}
-    //       },
-    //       resource: {
-    //         id: 'test-id-value'
-    //       }
-    //     })
-    //
-    //     spyConsole.warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    //     spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
-    //
-    //     wrapper.vm.$nextTick(() => {
-    //       const event = document.createEvent('Event')
-    //       wrapper.vm.handleSubmit(event)
-    //
-    //       expect(mockAxios).not.toBeCalled()
-    //
-    //       done()
-    //     })
-    //   })
-    //
-    //   /**
-    //    * @name: testMethodHandleSubmitCase2
-    //    * @description: check api is called and params when handleSubmit() is called
-    //    * @condition: `id` in resource && currentAction.params has name = `id`
-    //    * @expected:
-    //    *  1. api is called
-    //    *  2. api called with params has id = 'test-id-value'
-    //    */
-    //   it('testMethodHandleSubmitCase2', (done) => {
-    //     wrapper = factory({}, {
-    //       showAction: true,
-    //       currentAction: {
-    //         api: 'testApiNameCase1',
-    //         loading: false,
-    //         label: 'label.name',
-    //         params: [
-    //           { name: 'id', type: 'uuid' }
-    //         ],
-    //         paramFields: [
-    //           { name: 'id', type: 'uuid', description: '', required: false }
-    //         ],
-    //         mapping: {}
-    //       },
-    //       resource: {
-    //         id: 'test-id-value'
-    //       }
-    //     })
-    //
-    //     const mockData = {
-    //       testapinamecase1response: {
-    //         testapinamecase1: {}
-    //       }
-    //     }
-    //     mockAxios.mockResolvedValue(mockData)
-    //     spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
-    //
-    //     wrapper.vm.$nextTick(() => {
-    //       const event = document.createEvent('Event')
-    //       wrapper.vm.handleSubmit(event)
-    //
-    //       expect(mockAxios).toHaveBeenCalledTimes(1)
-    //       expect(mockAxios).toHaveBeenCalledWith({
-    //         url: '/',
-    //         method: 'GET',
-    //         data: new URLSearchParams(),
-    //         params: {
-    //           command: 'testApiNameCase1',
-    //           id: 'test-id-value',
-    //           response: 'json'
-    //         }
-    //       })
-    //
-    //       done()
-    //     })
-    //   })
-    //
-    //   /**
-    //    * @name: testMethodHandleSubmitCase3
-    //    * @description: check api is called and params when handleSubmit() is called
-    //    * @condition: form has input key:
-    //    *  - value is undefined
-    //    *  - exist in currentAction.params and type is boolean
-    //    * @expected:
-    //    *  1. api is called
-    //    *  2. api called with params has key = false
-    //    */
-    //   it('testMethodHandleSubmitCase3', (done) => {
-    //     wrapper = factory({}, {
-    //       showAction: true,
-    //       currentAction: {
-    //         api: 'testApiNameCase1',
-    //         loading: false,
-    //         label: 'label.name',
-    //         params: [
-    //           { name: 'column1', type: 'boolean' }
-    //         ],
-    //         paramFields: [
-    //           { name: 'column1', type: 'boolean', description: '', required: false }
-    //         ],
-    //         mapping: {}
-    //       },
-    //       resource: {}
-    //     })
-    //
-    //     const mockData = {
-    //       testapinamecase1response: {
-    //         testapinamecase1: {}
-    //       }
-    //     }
-    //     mockAxios.mockResolvedValue(mockData)
-    //     spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
-    //
-    //     wrapper.vm.$nextTick(() => {
-    //       const event = document.createEvent('Event')
-    //       wrapper.vm.handleSubmit(event)
-    //
-    //       expect(mockAxios).toHaveBeenCalledTimes(1)
-    //       expect(mockAxios).toHaveBeenCalledWith({
-    //         url: '/',
-    //         method: 'GET',
-    //         data: new URLSearchParams(),
-    //         params: {
-    //           command: 'testApiNameCase1',
-    //           column1: false,
-    //           response: 'json'
-    //         }
-    //       })
-    //
-    //       done()
-    //     })
-    //   })
-    //
-    //   /**
-    //    * @name: testMethodHandleSubmitCase4
-    //    * @description: check api is called and params when handleSubmit() is called
-    //    * @condition: form has input key:
-    //    *  - exists in currentAction.mapping
-    //    * @expected:
-    //    *  1. api is called
-    //    *  2. api called with params has key is value set by currentAction.mapping[key].options
-    //    */
-    //   it('testMethodHandleSubmitCase4', (done) => {
-    //     wrapper = factory({}, {
-    //       showAction: true,
-    //       currentAction: {
-    //         api: 'testApiNameCase1',
-    //         loading: false,
-    //         label: 'label.name',
-    //         params: [
-    //           { name: 'column1', type: 'list' }
-    //         ],
-    //         paramFields: [
-    //           { name: 'column1', type: 'list', description: '', required: false }
-    //         ],
-    //         mapping: {
-    //           column1: {
-    //             options: ['column-value1', 'column-value2']
-    //           }
-    //         }
-    //       },
-    //       resource: {}
-    //     })
-    //
-    //     const mockData = {
-    //       testapinamecase1response: {
-    //         testapinamecase1: {}
-    //       }
-    //     }
-    //     mockAxios.mockResolvedValue(mockData)
-    //     spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
-    //
-    //     wrapper.vm.$nextTick(() => {
-    //       wrapper.vm.form.getFieldDecorator('column1', { initialValue: 1 })
-    //       const event = document.createEvent('Event')
-    //       wrapper.vm.handleSubmit(event)
-    //
-    //       expect(mockAxios).toHaveBeenCalledTimes(1)
-    //       expect(mockAxios).toHaveBeenCalledWith({
-    //         url: '/',
-    //         method: 'GET',
-    //         data: new URLSearchParams(),
-    //         params: {
-    //           command: 'testApiNameCase1',
-    //           column1: 'column-value2',
-    //           response: 'json'
-    //         }
-    //       })
-    //
-    //       done()
-    //     })
-    //   })
-    //
-    //   /**
-    //    * @name: testMethodHandleSubmitCase5
-    //    * @description: check api is called and params when handleSubmit() is called
-    //    * @condition: form has input key:
-    //    *  - type uuid
-    //    *  - not exists in currentAction.mapping
-    //    *  - exists in currentAction.params
-    //    *  - currentAction.params[input] has id
-    //    * @expected:
-    //    *  1. api is called
-    //    *  2. api called with params has key is value set by currentAction.params.opts[key].id
-    //    */
-    //   it('testMethodHandleSubmitCase5', (done) => {
-    //     wrapper = factory({}, {
-    //       showAction: true,
-    //       currentAction: {
-    //         api: 'testApiNameCase1',
-    //         loading: false,
-    //         label: 'label.name',
-    //         params: [
-    //           {
-    //             name: 'column1',
-    //             type: 'uuid',
-    //             opts: [
-    //               { id: 'test-id-1', value: 'test-value-1' },
-    //               { id: 'test-id-2', value: 'test-value-2' }
-    //             ]
-    //           }
-    //         ],
-    //         paramFields: [
-    //           { name: 'column1', type: 'uuid', description: '', required: false }
-    //         ],
-    //         mapping: {
-    //         }
-    //       },
-    //       resource: {}
-    //     })
-    //
-    //     const mockData = {
-    //       testapinamecase1response: {
-    //         testapinamecase1: {}
-    //       }
-    //     }
-    //     mockAxios.mockResolvedValue(mockData)
-    //     spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
-    //
-    //     wrapper.vm.$nextTick(() => {
-    //       wrapper.vm.form.getFieldDecorator('column1', { initialValue: 1 })
-    //       const event = document.createEvent('Event')
-    //       wrapper.vm.handleSubmit(event)
-    //
-    //       expect(mockAxios).toHaveBeenCalledTimes(1)
-    //       expect(mockAxios).toHaveBeenCalledWith({
-    //         url: '/',
-    //         method: 'GET',
-    //         data: new URLSearchParams(),
-    //         params: {
-    //           command: 'testApiNameCase1',
-    //           column1: 'test-id-2',
-    //           response: 'json'
-    //         }
-    //       })
-    //
-    //       done()
-    //     })
-    //   })
-    //
-    //   /**
-    //    * @name: testMethodHandleSubmitCase6
-    //    * @description: check api is called and params when handleSubmit() is called
-    //    * @condition: form has input key:
-    //    *  - type list
-    //    *  - not exists in currentAction.mapping
-    //    *  - currentAction.params[input] has id
-    //    * @expected:
-    //    *  1. api is called
-    //    *  2. api called with params has key is value set by currentAction.params[key].id
-    //    */
-    //   it('testMethodHandleSubmitCase6', (done) => {
-    //     wrapper = factory({}, {
-    //       showAction: true,
-    //       currentAction: {
-    //         api: 'testApiNameCase1',
-    //         loading: false,
-    //         label: 'label.name',
-    //         params: [
-    //           {
-    //             name: 'column1',
-    //             type: 'list',
-    //             opts: [
-    //               { id: 'test-id-1', value: 'test-value-1' },
-    //               { id: 'test-id-2', value: 'test-value-2' },
-    //               { id: 'test-id-3', value: 'test-value-3' }
-    //             ]
-    //           }
-    //         ],
-    //         paramFields: [
-    //           { name: 'column1', type: 'list', description: '', required: false }
-    //         ],
-    //         mapping: {
-    //         }
-    //       },
-    //       resource: {}
-    //     })
-    //
-    //     const mockData = {
-    //       testapinamecase1response: {
-    //         testapinamecase1: {}
-    //       }
-    //     }
-    //     mockAxios.mockResolvedValue(mockData)
-    //     spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
-    //
-    //     wrapper.vm.$nextTick(() => {
-    //       wrapper.vm.form.getFieldDecorator('column1', { initialValue: [1, 2] })
-    //       const event = document.createEvent('Event')
-    //       wrapper.vm.handleSubmit(event)
-    //
-    //       expect(mockAxios).toHaveBeenCalledTimes(1)
-    //       expect(mockAxios).toHaveBeenCalledWith({
-    //         url: '/',
-    //         method: 'GET',
-    //         data: new URLSearchParams(),
-    //         params: {
-    //           command: 'testApiNameCase1',
-    //           column1: 'test-id-2,test-id-3',
-    //           response: 'json'
-    //         }
-    //       })
-    //
-    //       done()
-    //     })
-    //   })
-    //
-    //   /**
-    //    * @name: testMethodHandleSubmitCase7
-    //    * @description: check api is called and params when handleSubmit() is called
-    //    * @condition: form has input key:
-    //    *  - name is `account`
-    //    *  - currentAction.api is`createAccount`
-    //    * @expected:
-    //    *  1. api is called
-    //    *  2. api called with params has key is value set by form key value
-    //    */
-    //   it('testMethodHandleSubmitCase7', (done) => {
-    //     wrapper = factory({}, {
-    //       showAction: true,
-    //       currentAction: {
-    //         api: 'createAccount',
-    //         loading: false,
-    //         label: 'label.name',
-    //         params: [
-    //           {
-    //             name: 'account',
-    //             type: 'string'
-    //           }
-    //         ],
-    //         paramFields: [
-    //           { name: 'account', type: 'string', description: '', required: false }
-    //         ],
-    //         mapping: {}
-    //       },
-    //       resource: {}
-    //     })
-    //
-    //     const mockData = {
-    //       testapinamecase1response: {
-    //         testapinamecase1: {}
-    //       }
-    //     }
-    //     mockAxios.mockResolvedValue(mockData)
-    //     spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
-    //
-    //     wrapper.vm.$nextTick(() => {
-    //       wrapper.vm.form.getFieldDecorator('account', { initialValue: 'test-account-value' })
-    //       const event = document.createEvent('Event')
-    //       wrapper.vm.handleSubmit(event)
-    //
-    //       expect(mockAxios).toHaveBeenCalledTimes(1)
-    //       expect(mockAxios).toHaveBeenCalledWith({
-    //         url: '/',
-    //         method: 'GET',
-    //         data: new URLSearchParams(),
-    //         params: {
-    //           command: 'createAccount',
-    //           account: 'test-account-value',
-    //           response: 'json'
-    //         }
-    //       })
-    //
-    //       done()
-    //     })
-    //   })
-    //
-    //   /**
-    //    * @name: testMethodHandleSubmitCase8
-    //    * @description: check api is called and params when handleSubmit() is called
-    //    * @condition: form has input key:
-    //    *  - name is `keypair`
-    //    *  - currentAction.api is`addAccountToProject`
-    //    * @expected:
-    //    *  1. api is called
-    //    *  2. api called with params has key is value set by form key value
-    //    */
-    //   it('testMethodHandleSubmitCase8', (done) => {
-    //     wrapper = factory({}, {
-    //       showAction: true,
-    //       currentAction: {
-    //         api: 'addAccountToProject',
-    //         loading: false,
-    //         label: 'label.name',
-    //         params: [
-    //           {
-    //             name: 'keypair',
-    //             type: 'string'
-    //           }
-    //         ],
-    //         paramFields: [
-    //           { name: 'keypair', type: 'string', description: '', required: false }
-    //         ],
-    //         mapping: {}
-    //       },
-    //       resource: {}
-    //     })
-    //
-    //     const mockData = {
-    //       testapinamecase1response: {
-    //         testapinamecase1: {}
-    //       }
-    //     }
-    //     mockAxios.mockResolvedValue(mockData)
-    //     spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
-    //
-    //     wrapper.vm.$nextTick(() => {
-    //       wrapper.vm.form.getFieldDecorator('keypair', { initialValue: 'test-keypair-value' })
-    //       const event = document.createEvent('Event')
-    //       wrapper.vm.handleSubmit(event)
-    //
-    //       expect(mockAxios).toHaveBeenCalledTimes(1)
-    //       expect(mockAxios).toHaveBeenCalledWith({
-    //         url: '/',
-    //         method: 'GET',
-    //         data: new URLSearchParams(),
-    //         params: {
-    //           command: 'addAccountToProject',
-    //           keypair: 'test-keypair-value',
-    //           response: 'json'
-    //         }
-    //       })
-    //
-    //       done()
-    //     })
-    //   })
-    //
-    //   /**
-    //    * @name: testMethodHandleSubmitCase9
-    //    * @description: check api is called and params when handleSubmit() is called
-    //    * @condition: form has input key:
-    //    *  - name is `account` | `keypair`
-    //    *  - currentAction.api not equals `addAccountToProject` && `createAccount`
-    //    *  - currentAction.params[input] has name
-    //    * @expected:
-    //    *  1. api is called
-    //    *  2. api called with params has key is value set by currentAction.params.opts[input].name
-    //    */
-    //   it('testMethodHandleSubmitCase9', (done) => {
-    //     wrapper = factory({}, {
-    //       showAction: true,
-    //       currentAction: {
-    //         api: 'testApiNameCase1',
-    //         loading: false,
-    //         label: 'label.name',
-    //         params: [
-    //           {
-    //             name: 'keypair',
-    //             type: 'string',
-    //             opts: [
-    //               { id: 'test-id-1', name: 'test-name-1' },
-    //               { id: 'test-id-2', name: 'test-name-2' }
-    //             ]
-    //           }
-    //         ],
-    //         paramFields: [
-    //           { name: 'keypair', type: 'string', description: '', required: false }
-    //         ],
-    //         mapping: {}
-    //       },
-    //       resource: {}
-    //     })
-    //
-    //     const mockData = {
-    //       testapinamecase1response: {
-    //         testapinamecase1: {}
-    //       }
-    //     }
-    //     mockAxios.mockResolvedValue(mockData)
-    //     spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
-    //
-    //     wrapper.vm.$nextTick(() => {
-    //       wrapper.vm.form.getFieldDecorator('keypair', { initialValue: 1 })
-    //       const event = document.createEvent('Event')
-    //       wrapper.vm.handleSubmit(event)
-    //
-    //       expect(mockAxios).toHaveBeenCalledTimes(1)
-    //       expect(mockAxios).toHaveBeenCalledWith({
-    //         url: '/',
-    //         method: 'GET',
-    //         data: new URLSearchParams(),
-    //         params: {
-    //           command: 'testApiNameCase1',
-    //           keypair: 'test-name-2',
-    //           response: 'json'
-    //         }
-    //       })
-    //
-    //       done()
-    //     })
-    //   })
-    //
-    //   /**
-    //    * @name: testMethodHandleSubmitCase10
-    //    * @description: check api is called and params when handleSubmit() is called
-    //    * @condition: form has input key:
-    //    *  - under the remaining conditions
-    //    * @expected:
-    //    *  1. api is called
-    //    *  2. api called with params has key is value set by form key value
-    //    */
-    //   it('testMethodHandleSubmitCase10', (done) => {
-    //     wrapper = factory({}, {
-    //       showAction: true,
-    //       currentAction: {
-    //         api: 'testApiNameCase1',
-    //         loading: false,
-    //         label: 'label.name',
-    //         params: [
-    //           {
-    //             name: 'column1',
-    //             type: 'string'
-    //           }
-    //         ],
-    //         paramFields: [
-    //           { name: 'column1', type: 'string', description: '', required: false }
-    //         ],
-    //         mapping: {}
-    //       },
-    //       resource: {}
-    //     })
-    //
-    //     const mockData = {
-    //       testapinamecase1response: {
-    //         testapinamecase1: {}
-    //       }
-    //     }
-    //     mockAxios.mockResolvedValue(mockData)
-    //     spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
-    //
-    //     wrapper.vm.$nextTick(() => {
-    //       wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column-value' })
-    //       const event = document.createEvent('Event')
-    //       wrapper.vm.handleSubmit(event)
-    //
-    //       expect(mockAxios).toHaveBeenCalledTimes(1)
-    //       expect(mockAxios).toHaveBeenCalledWith({
-    //         url: '/',
-    //         method: 'GET',
-    //         data: new URLSearchParams(),
-    //         params: {
-    //           command: 'testApiNameCase1',
-    //           column1: 'test-column-value',
-    //           response: 'json'
-    //         }
-    //       })
-    //
-    //       done()
-    //     })
-    //   })
-    //
-    //   /**
-    //    * @name: testMethodHandleSubmitCase11
-    //    * @description: check api is called and params when handleSubmit() is called
-    //    * @condition:
-    //    *  - currentAction has defaultArgs
-    //    * @expected:
-    //    *  1. api is called
-    //    *  2. api called with params has key is value set by currentAction.defaultArgs
-    //    */
-    //   it('testMethodHandleSubmitCase11', (done) => {
-    //     wrapper = factory({}, {
-    //       showAction: true,
-    //       currentAction: {
-    //         api: 'testApiNameCase1',
-    //         loading: false,
-    //         label: 'label.name',
-    //         params: [
-    //           { name: 'column1', type: 'string' }
-    //         ],
-    //         paramFields: [
-    //           { name: 'column1', type: 'string', description: '', required: false }
-    //         ],
-    //         mapping: {},
-    //         defaultArgs: {
-    //           column2: 'test-column2-value'
-    //         }
-    //       },
-    //       resource: {}
-    //     })
-    //
-    //     const mockData = {
-    //       testapinamecase1response: {
-    //         testapinamecase1: {}
-    //       }
-    //     }
-    //     mockAxios.mockResolvedValue(mockData)
-    //     spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
-    //
-    //     wrapper.vm.$nextTick(() => {
-    //       wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column1-value' })
-    //       const event = document.createEvent('Event')
-    //       wrapper.vm.handleSubmit(event)
-    //
-    //       expect(mockAxios).toHaveBeenCalledTimes(1)
-    //       expect(mockAxios).toHaveBeenCalledWith({
-    //         url: '/',
-    //         method: 'GET',
-    //         data: new URLSearchParams(),
-    //         params: {
-    //           command: 'testApiNameCase1',
-    //           column1: 'test-column1-value',
-    //           column2: 'test-column2-value',
-    //           response: 'json'
-    //         }
-    //       })
-    //
-    //       done()
-    //     })
-    //   })
-    //
-    //   /**
-    //    * @name: testMethodHandleSubmitCase12
-    //    * @description: check api is called and params when handleSubmit() is called
-    //    * @condition:
-    //    *  - currentAction.mapping has value
-    //    * @expected:
-    //    *  1. api is called
-    //    *  2. api called with params has key is value set by currentAction.mapping and resource
-    //    */
-    //   it('testMethodHandleSubmitCase12', (done) => {
-    //     wrapper = factory({}, {
-    //       showAction: true,
-    //       currentAction: {
-    //         api: 'testApiNameCase1',
-    //         loading: false,
-    //         label: 'label.name',
-    //         params: [
-    //           { name: 'column1', type: 'string' }
-    //         ],
-    //         paramFields: [
-    //           { name: 'column1', type: 'string', description: '', required: false }
-    //         ],
-    //         mapping: {
-    //           column2: {
-    //             value: (record, params) => {
-    //               return record.name
-    //             }
-    //           }
-    //         }
-    //       },
-    //       resource: {
-    //         id: 'test-id-value',
-    //         name: 'test-name-value'
-    //       }
-    //     })
-    //
-    //     const mockData = {
-    //       testapinamecase1response: {
-    //         testapinamecase1: {}
-    //       }
-    //     }
-    //     mockAxios.mockResolvedValue(mockData)
-    //     spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
-    //
-    //     wrapper.vm.$nextTick(() => {
-    //       wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column1-value' })
-    //       const event = document.createEvent('Event')
-    //       wrapper.vm.handleSubmit(event)
-    //
-    //       expect(mockAxios).toHaveBeenCalledTimes(1)
-    //       expect(mockAxios).toHaveBeenCalledWith({
-    //         url: '/',
-    //         method: 'GET',
-    //         data: new URLSearchParams(),
-    //         params: {
-    //           command: 'testApiNameCase1',
-    //           column1: 'test-column1-value',
-    //           column2: 'test-name-value',
-    //           response: 'json'
-    //         }
-    //       })
-    //
-    //       done()
-    //     })
-    //   })
-    // })
+    describe('handleSubmit()', () => {
+      /**
+       * @name: testMethodHandleSubmitCase1
+       * @description: check error from validateFields when handleSubmit() is called
+       * @condition: paramFields has field is required
+       * @expected: api not called
+       */
+      it('testMethodHandleSubmitCase1', (done) => {
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            loading: false,
+            label: 'label.name',
+            params: [
+              { name: 'id', type: 'uuid' }
+            ],
+            paramFields: [
+              { name: 'id', type: 'uuid', description: '', required: true }
+            ],
+            mapping: {}
+          },
+          resource: {
+            id: 'test-id-value'
+          }
+        })
+
+        spyConsole.warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        wrapper.vm.$nextTick(() => {
+          const event = document.createEvent('Event')
+          wrapper.vm.handleSubmit(event)
+
+          expect(mockAxios).not.toBeCalled()
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase2
+       * @description: check api is called and params when handleSubmit() is called
+       * @condition: `id` in resource && currentAction.params has name = `id`
+       * @expected:
+       *  1. api is called
+       *  2. api called with params has id = 'test-id-value'
+       */
+      it('testMethodHandleSubmitCase2', (done) => {
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            api: 'testApiNameCase1',
+            loading: false,
+            label: 'label.name',
+            params: [
+              { name: 'id', type: 'uuid' }
+            ],
+            paramFields: [
+              { name: 'id', type: 'uuid', description: '', required: false }
+            ],
+            mapping: {}
+          },
+          resource: {
+            id: 'test-id-value'
+          }
+        })
+
+        const mockData = {
+          testapinamecase1response: {
+            testapinamecase1: {}
+          }
+        }
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        wrapper.vm.$nextTick(() => {
+          const event = document.createEvent('Event')
+          wrapper.vm.handleSubmit(event)
+
+          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalledWith({
+            url: '/',
+            method: 'GET',
+            data: new URLSearchParams(),
+            params: {
+              command: 'testApiNameCase1',
+              id: 'test-id-value',
+              response: 'json'
+            }
+          })
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase3
+       * @description: check api is called and params when handleSubmit() is called
+       * @condition: form has input key:
+       *  - value is undefined
+       *  - exist in currentAction.params and type is boolean
+       * @expected:
+       *  1. api is called
+       *  2. api called with params has key = false
+       */
+      it('testMethodHandleSubmitCase3', (done) => {
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            api: 'testApiNameCase1',
+            loading: false,
+            label: 'label.name',
+            params: [
+              { name: 'column1', type: 'boolean' }
+            ],
+            paramFields: [
+              { name: 'column1', type: 'boolean', description: '', required: false }
+            ],
+            mapping: {}
+          },
+          resource: {}
+        })
+
+        const mockData = {
+          testapinamecase1response: {
+            testapinamecase1: {}
+          }
+        }
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        wrapper.vm.$nextTick(() => {
+          const event = document.createEvent('Event')
+          wrapper.vm.handleSubmit(event)
+
+          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalledWith({
+            url: '/',
+            method: 'GET',
+            data: new URLSearchParams(),
+            params: {
+              command: 'testApiNameCase1',
+              column1: false,
+              response: 'json'
+            }
+          })
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase4
+       * @description: check api is called and params when handleSubmit() is called
+       * @condition: form has input key:
+       *  - exists in currentAction.mapping
+       * @expected:
+       *  1. api is called
+       *  2. api called with params has key is value set by currentAction.mapping[key].options
+       */
+      it('testMethodHandleSubmitCase4', (done) => {
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            api: 'testApiNameCase1',
+            loading: false,
+            label: 'label.name',
+            params: [
+              { name: 'column1', type: 'list' }
+            ],
+            paramFields: [
+              { name: 'column1', type: 'list', description: '', required: false }
+            ],
+            mapping: {
+              column1: {
+                options: ['column-value1', 'column-value2']
+              }
+            }
+          },
+          resource: {}
+        })
+
+        const mockData = {
+          testapinamecase1response: {
+            testapinamecase1: {}
+          }
+        }
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        wrapper.vm.$nextTick(() => {
+          wrapper.vm.form.getFieldDecorator('column1', { initialValue: 1 })
+          const event = document.createEvent('Event')
+          wrapper.vm.handleSubmit(event)
+
+          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalledWith({
+            url: '/',
+            method: 'GET',
+            data: new URLSearchParams(),
+            params: {
+              command: 'testApiNameCase1',
+              column1: 'column-value2',
+              response: 'json'
+            }
+          })
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase5
+       * @description: check api is called and params when handleSubmit() is called
+       * @condition: form has input key:
+       *  - type uuid
+       *  - not exists in currentAction.mapping
+       *  - exists in currentAction.params
+       *  - currentAction.params[input] has id
+       * @expected:
+       *  1. api is called
+       *  2. api called with params has key is value set by currentAction.params.opts[key].id
+       */
+      it('testMethodHandleSubmitCase5', (done) => {
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            api: 'testApiNameCase1',
+            loading: false,
+            label: 'label.name',
+            params: [
+              {
+                name: 'column1',
+                type: 'uuid',
+                opts: [
+                  { id: 'test-id-1', value: 'test-value-1' },
+                  { id: 'test-id-2', value: 'test-value-2' }
+                ]
+              }
+            ],
+            paramFields: [
+              { name: 'column1', type: 'uuid', description: '', required: false }
+            ],
+            mapping: {
+            }
+          },
+          resource: {}
+        })
+
+        const mockData = {
+          testapinamecase1response: {
+            testapinamecase1: {}
+          }
+        }
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        wrapper.vm.$nextTick(() => {
+          wrapper.vm.form.getFieldDecorator('column1', { initialValue: 1 })
+          const event = document.createEvent('Event')
+          wrapper.vm.handleSubmit(event)
+
+          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalledWith({
+            url: '/',
+            method: 'GET',
+            data: new URLSearchParams(),
+            params: {
+              command: 'testApiNameCase1',
+              column1: 'test-id-2',
+              response: 'json'
+            }
+          })
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase6
+       * @description: check api is called and params when handleSubmit() is called
+       * @condition: form has input key:
+       *  - type list
+       *  - not exists in currentAction.mapping
+       *  - currentAction.params[input] has id
+       * @expected:
+       *  1. api is called
+       *  2. api called with params has key is value set by currentAction.params[key].id
+       */
+      it('testMethodHandleSubmitCase6', (done) => {
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            api: 'testApiNameCase1',
+            loading: false,
+            label: 'label.name',
+            params: [
+              {
+                name: 'column1',
+                type: 'list',
+                opts: [
+                  { id: 'test-id-1', value: 'test-value-1' },
+                  { id: 'test-id-2', value: 'test-value-2' },
+                  { id: 'test-id-3', value: 'test-value-3' }
+                ]
+              }
+            ],
+            paramFields: [
+              { name: 'column1', type: 'list', description: '', required: false }
+            ],
+            mapping: {
+            }
+          },
+          resource: {}
+        })
+
+        const mockData = {
+          testapinamecase1response: {
+            testapinamecase1: {}
+          }
+        }
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        wrapper.vm.$nextTick(() => {
+          wrapper.vm.form.getFieldDecorator('column1', { initialValue: [1, 2] })
+          const event = document.createEvent('Event')
+          wrapper.vm.handleSubmit(event)
+
+          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalledWith({
+            url: '/',
+            method: 'GET',
+            data: new URLSearchParams(),
+            params: {
+              command: 'testApiNameCase1',
+              column1: 'test-id-2,test-id-3',
+              response: 'json'
+            }
+          })
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase7
+       * @description: check api is called and params when handleSubmit() is called
+       * @condition: form has input key:
+       *  - name is `account`
+       *  - currentAction.api is`createAccount`
+       * @expected:
+       *  1. api is called
+       *  2. api called with params has key is value set by form key value
+       */
+      it('testMethodHandleSubmitCase7', (done) => {
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            api: 'createAccount',
+            loading: false,
+            label: 'label.name',
+            params: [
+              {
+                name: 'account',
+                type: 'string'
+              }
+            ],
+            paramFields: [
+              { name: 'account', type: 'string', description: '', required: false }
+            ],
+            mapping: {}
+          },
+          resource: {}
+        })
+
+        const mockData = {
+          testapinamecase1response: {
+            testapinamecase1: {}
+          }
+        }
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        wrapper.vm.$nextTick(() => {
+          wrapper.vm.form.getFieldDecorator('account', { initialValue: 'test-account-value' })
+          const event = document.createEvent('Event')
+          wrapper.vm.handleSubmit(event)
+
+          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalledWith({
+            url: '/',
+            method: 'GET',
+            data: new URLSearchParams(),
+            params: {
+              command: 'createAccount',
+              account: 'test-account-value',
+              response: 'json'
+            }
+          })
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase8
+       * @description: check api is called and params when handleSubmit() is called
+       * @condition: form has input key:
+       *  - name is `keypair`
+       *  - currentAction.api is`addAccountToProject`
+       * @expected:
+       *  1. api is called
+       *  2. api called with params has key is value set by form key value
+       */
+      it('testMethodHandleSubmitCase8', (done) => {
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            api: 'addAccountToProject',
+            loading: false,
+            label: 'label.name',
+            params: [
+              {
+                name: 'keypair',
+                type: 'string'
+              }
+            ],
+            paramFields: [
+              { name: 'keypair', type: 'string', description: '', required: false }
+            ],
+            mapping: {}
+          },
+          resource: {}
+        })
+
+        const mockData = {
+          testapinamecase1response: {
+            testapinamecase1: {}
+          }
+        }
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        wrapper.vm.$nextTick(() => {
+          wrapper.vm.form.getFieldDecorator('keypair', { initialValue: 'test-keypair-value' })
+          const event = document.createEvent('Event')
+          wrapper.vm.handleSubmit(event)
+
+          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalledWith({
+            url: '/',
+            method: 'GET',
+            data: new URLSearchParams(),
+            params: {
+              command: 'addAccountToProject',
+              keypair: 'test-keypair-value',
+              response: 'json'
+            }
+          })
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase9
+       * @description: check api is called and params when handleSubmit() is called
+       * @condition: form has input key:
+       *  - name is `account` | `keypair`
+       *  - currentAction.api not equals `addAccountToProject` && `createAccount`
+       *  - currentAction.params[input] has name
+       * @expected:
+       *  1. api is called
+       *  2. api called with params has key is value set by currentAction.params.opts[input].name
+       */
+      it('testMethodHandleSubmitCase9', (done) => {
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            api: 'testApiNameCase1',
+            loading: false,
+            label: 'label.name',
+            params: [
+              {
+                name: 'keypair',
+                type: 'string',
+                opts: [
+                  { id: 'test-id-1', name: 'test-name-1' },
+                  { id: 'test-id-2', name: 'test-name-2' }
+                ]
+              }
+            ],
+            paramFields: [
+              { name: 'keypair', type: 'string', description: '', required: false }
+            ],
+            mapping: {}
+          },
+          resource: {}
+        })
+
+        const mockData = {
+          testapinamecase1response: {
+            testapinamecase1: {}
+          }
+        }
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        wrapper.vm.$nextTick(() => {
+          wrapper.vm.form.getFieldDecorator('keypair', { initialValue: 1 })
+          const event = document.createEvent('Event')
+          wrapper.vm.handleSubmit(event)
+
+          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalledWith({
+            url: '/',
+            method: 'GET',
+            data: new URLSearchParams(),
+            params: {
+              command: 'testApiNameCase1',
+              keypair: 'test-name-2',
+              response: 'json'
+            }
+          })
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase10
+       * @description: check api is called and params when handleSubmit() is called
+       * @condition: form has input key:
+       *  - under the remaining conditions
+       * @expected:
+       *  1. api is called
+       *  2. api called with params has key is value set by form key value
+       */
+      it('testMethodHandleSubmitCase10', (done) => {
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            api: 'testApiNameCase1',
+            loading: false,
+            label: 'label.name',
+            params: [
+              {
+                name: 'column1',
+                type: 'string'
+              }
+            ],
+            paramFields: [
+              { name: 'column1', type: 'string', description: '', required: false }
+            ],
+            mapping: {}
+          },
+          resource: {}
+        })
+
+        const mockData = {
+          testapinamecase1response: {
+            testapinamecase1: {}
+          }
+        }
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        wrapper.vm.$nextTick(() => {
+          wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column-value' })
+          const event = document.createEvent('Event')
+          wrapper.vm.handleSubmit(event)
+
+          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalledWith({
+            url: '/',
+            method: 'GET',
+            data: new URLSearchParams(),
+            params: {
+              command: 'testApiNameCase1',
+              column1: 'test-column-value',
+              response: 'json'
+            }
+          })
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase11
+       * @description: check api is called and params when handleSubmit() is called
+       * @condition:
+       *  - currentAction has defaultArgs
+       * @expected:
+       *  1. api is called
+       *  2. api called with params has key is value set by currentAction.defaultArgs
+       */
+      it('testMethodHandleSubmitCase11', (done) => {
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            api: 'testApiNameCase1',
+            loading: false,
+            label: 'label.name',
+            params: [
+              { name: 'column1', type: 'string' }
+            ],
+            paramFields: [
+              { name: 'column1', type: 'string', description: '', required: false }
+            ],
+            mapping: {},
+            defaultArgs: {
+              column2: 'test-column2-value'
+            }
+          },
+          resource: {}
+        })
+
+        const mockData = {
+          testapinamecase1response: {
+            testapinamecase1: {}
+          }
+        }
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        wrapper.vm.$nextTick(() => {
+          wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column1-value' })
+          const event = document.createEvent('Event')
+          wrapper.vm.handleSubmit(event)
+
+          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalledWith({
+            url: '/',
+            method: 'GET',
+            data: new URLSearchParams(),
+            params: {
+              command: 'testApiNameCase1',
+              column1: 'test-column1-value',
+              column2: 'test-column2-value',
+              response: 'json'
+            }
+          })
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase12
+       * @description: check api is called and params when handleSubmit() is called
+       * @condition:
+       *  - currentAction.mapping has value
+       * @expected:
+       *  1. api is called
+       *  2. api called with params has key is value set by currentAction.mapping and resource
+       */
+      it('testMethodHandleSubmitCase12', (done) => {
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            api: 'testApiNameCase1',
+            loading: false,
+            label: 'label.name',
+            params: [
+              { name: 'column1', type: 'string' }
+            ],
+            paramFields: [
+              { name: 'column1', type: 'string', description: '', required: false }
+            ],
+            mapping: {
+              column2: {
+                value: (record, params) => {
+                  return record.name
+                }
+              }
+            }
+          },
+          resource: {
+            id: 'test-id-value',
+            name: 'test-name-value'
+          }
+        })
+
+        const mockData = {
+          testapinamecase1response: {
+            testapinamecase1: {}
+          }
+        }
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        wrapper.vm.$nextTick(() => {
+          wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column1-value' })
+          const event = document.createEvent('Event')
+          wrapper.vm.handleSubmit(event)
+
+          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalledWith({
+            url: '/',
+            method: 'GET',
+            data: new URLSearchParams(),
+            params: {
+              command: 'testApiNameCase1',
+              column1: 'test-column1-value',
+              column2: 'test-name-value',
+              response: 'json'
+            }
+          })
+
+          done()
+        })
+      })
+    })
   })
 })
