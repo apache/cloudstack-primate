@@ -19,7 +19,7 @@ import Vuex from 'vuex'
 
 const mockStore = {
   state: {},
-  mock: (state) => {
+  mock: (state, actions) => {
     mockStore.state = {
       app: {},
       user: {},
@@ -34,7 +34,8 @@ const mockStore = {
       getters: {
         apis: () => mockStore.state.user.apis,
         userInfo: () => mockStore.state.user.info
-      }
+      },
+      actions
     })
   }
 }

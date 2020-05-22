@@ -147,7 +147,7 @@ user.state.apis = {
 
 const messages = {
   en: {
-    'label.name': 'test-name-en',
+    labelname: 'test-name-en',
     column1: 'column1-en',
     column2: 'column2-en',
     column3: 'column3-en',
@@ -163,7 +163,7 @@ const messages = {
     keypair: 'keypair-en'
   },
   de: {
-    'label.name': 'test-name-de',
+    labelname: 'test-name-de',
     column1: 'column1-de',
     column2: 'column2-de',
     column3: 'column3-de',
@@ -197,69 +197,14 @@ const state = {
       },
       testApiNameCase4: {
         params: {},
-        response: [
-          {
-            name: 'column2',
-            type: 'string'
-          },
-          {
-            name: 'column1',
-            type: 'string'
-          },
-          {
-            name: 'column3',
-            type: 'string'
-          }
-        ]
+        response: []
       },
       testApiNameCase5: {
-        params: [
-          {
-            name: 'column2',
-            type: 'string'
-          },
-          {
-            name: 'column1',
-            type: 'string'
-          },
-          {
-            name: 'column3',
-            type: 'string'
-          },
-          {
-            name: 'name',
-            type: 'string'
-          },
-          {
-            name: 'id',
-            type: 'string'
-          }
-        ],
+        params: [],
         response: []
       },
       testApiNameCase6: {
-        params: [
-          {
-            name: 'id',
-            type: 'uuid'
-          },
-          {
-            name: 'tags',
-            type: 'list'
-          },
-          {
-            name: 'column1',
-            type: 'list'
-          },
-          {
-            name: 'column2',
-            type: 'string'
-          },
-          {
-            name: 'account',
-            type: 'string'
-          }
-        ],
+        params: [],
         response: []
       },
       listTemplates: {
@@ -295,14 +240,15 @@ const state = {
         response: []
       }
     },
-    info: {
-      roletype: 'Normal'
-    }
+    info: { roletype: 'Normal' }
   }
 }
 
 let router
 let store = mockStore.mock(state)
+const actions = {
+  AddAsyncJob: jest.fn((jobId) => {})
+}
 const spyConsole = {
   log: null,
   warn: null
@@ -357,6 +303,7 @@ describe('Views > AutogenView.vue', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    jest.clearAllTimers()
     if (wrapper) {
       wrapper.destroy()
     }
@@ -521,7 +468,7 @@ describe('Views > AutogenView.vue', () => {
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
         wrapper.vm.$nextTick(() => {
-          expect(wrapper.vm.$t('label.name')).toEqual('test-name-en')
+          expect(wrapper.vm.$t('labelname')).toEqual('test-name-en')
           expect(spy).not.toBeCalled()
         })
       })
@@ -541,7 +488,7 @@ describe('Views > AutogenView.vue', () => {
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
         wrapper.vm.$nextTick(() => {
-          expect(wrapper.vm.$t('label.name')).toEqual('test-name-de')
+          expect(wrapper.vm.$t('labelname')).toEqual('test-name-de')
           expect(spy).toBeCalled()
         })
       })
@@ -674,7 +621,7 @@ describe('Views > AutogenView.vue', () => {
             columns: ['column1', 'column2', 'column3'],
             actions: [
               {
-                name: 'label.name',
+                name: 'labelname',
                 icon: 'plus',
                 listView: true
               }
@@ -697,7 +644,7 @@ describe('Views > AutogenView.vue', () => {
           expect(wrapper.vm.actions.length).toEqual(1)
           expect(wrapper.vm.columnKeys).toEqual(['column1', 'column2', 'column3'])
           expect(wrapper.vm.actions).toEqual([{
-            name: 'label.name',
+            name: 'labelname',
             icon: 'plus',
             listView: true
           }])
@@ -1919,7 +1866,7 @@ describe('Views > AutogenView.vue', () => {
 
         wrapper.vm.$nextTick(() => {
           wrapper.vm.execAction({
-            label: 'label.name',
+            label: 'labelname',
             icon: 'plus',
             component: () => jest.fn(),
             api: 'testRouter26',
@@ -2695,7 +2642,7 @@ describe('Views > AutogenView.vue', () => {
 
         const jobId = 'test-job-id'
         const action = {
-          label: 'label.name',
+          label: 'labelname',
           response: (jobResult) => {
             return jobResult.name
           }
@@ -2753,7 +2700,7 @@ describe('Views > AutogenView.vue', () => {
 
         const jobId = 'test-job-id'
         const action = {
-          label: 'label.name',
+          label: 'labelname',
           response: (jobResult) => {
             return jobResult.name
           }
@@ -3132,9 +3079,7 @@ describe('Views > AutogenView.vue', () => {
        *    1. loading = false
        *    2. selectedRowKeys = []
        */
-      it('testMethodStartCase1', (done) => {
-        jest.useFakeTimers()
-
+      it('testMethodStartCase1', async (done) => {
         wrapper = factory({}, {
           loading: false,
           selectedRowKeys: ['test-selected']
@@ -3142,22 +3087,19 @@ describe('Views > AutogenView.vue', () => {
 
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
-        wrapper.vm.$nextTick(() => {
-          wrapper.vm.start()
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.start()
 
-          expect(wrapper.vm.loading).toBeTruthy()
-          expect(wrapper.vm.selectedRowKeys).toEqual(['test-selected'])
-          expect(spy).toBeCalled()
+        expect(wrapper.vm.loading).toBeTruthy()
+        expect(wrapper.vm.selectedRowKeys).toEqual(['test-selected'])
+        expect(spy).toBeCalled()
 
-          setTimeout(() => {
-            expect(wrapper.vm.loading).toBeFalsy()
-            expect(wrapper.vm.selectedRowKeys).toEqual([])
+        setTimeout(() => {
+          expect(wrapper.vm.loading).toBeFalsy()
+          expect(wrapper.vm.selectedRowKeys).toEqual([])
 
-            done()
-          }, 1000)
-
-          jest.runAllTimers()
-        })
+          done()
+        }, 1000)
       })
     })
 
@@ -3245,7 +3187,7 @@ describe('Views > AutogenView.vue', () => {
           showAction: true,
           currentAction: {
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               { name: 'id', type: 'uuid' }
             ],
@@ -3286,7 +3228,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               { name: 'id', type: 'uuid' }
             ],
@@ -3344,7 +3286,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               { name: 'column1', type: 'boolean' }
             ],
@@ -3399,7 +3341,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               { name: 'column1', type: 'list' }
             ],
@@ -3462,7 +3404,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               {
                 name: 'column1',
@@ -3528,7 +3470,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               {
                 name: 'column1',
@@ -3594,7 +3536,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'createAccount',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               {
                 name: 'account',
@@ -3654,7 +3596,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'addAccountToProject',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               {
                 name: 'keypair',
@@ -3715,7 +3657,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               {
                 name: 'keypair',
@@ -3778,7 +3720,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               {
                 name: 'column1',
@@ -3837,7 +3779,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               { name: 'column1', type: 'string' }
             ],
@@ -3897,7 +3839,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               { name: 'column1', type: 'string' }
             ],
@@ -3943,6 +3885,149 @@ describe('Views > AutogenView.vue', () => {
               response: 'json'
             }
           })
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase13
+       * @description: api is called and check router back
+       * @condition:
+       *  - router name: testRouter26
+       *  - currentAction.icon === 'delete'
+       *  - dataView = true
+       * @expected:
+       *  - router back to history home
+       */
+      it('testMethodHandleSubmitCase13', async (done) => {
+        router = createRouter([{
+          name: 'testRouter26',
+          path: '/test-router-26',
+          meta: {
+            icon: 'test-router-26'
+          }
+        }])
+        wrapper = factory()
+        router.push({ name: 'testRouter26' })
+
+        const mockData = {
+          testapinamecase1response: {
+            count: 1,
+            testapinamecase1: [{
+              id: 'test-id-value',
+              name: 'test-name-value'
+            }]
+          }
+        }
+
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+        await wrapper.vm.$nextTick()
+
+        expect(router.currentRoute.name).toEqual('testRouter26')
+
+        wrapper.setData({
+          currentAction: {
+            icon: 'delete',
+            api: 'testApiNameCase1',
+            loading: false,
+            label: 'labelname',
+            params: [
+              { name: 'column1', type: 'string' }
+            ],
+            paramFields: [
+              { name: 'column1', type: 'string', description: '', required: false }
+            ]
+          },
+          dataView: true
+        })
+
+        wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column1-value' })
+        const event = document.createEvent('Event')
+        await wrapper.vm.handleSubmit(event)
+
+        setTimeout(() => {
+          expect(router.currentRoute.name).toEqual('home')
+          done()
+        }, 1000)
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase14
+       * @description: api is called and response have jobId result
+       * @condition: api response have jobId result
+       * @expected:
+       *  - dispatch AddAsyncJob is called
+       *  - pollActionCompletion is called
+       *  - fetchData is called
+       */
+      it('testMethodHandleSubmitCase14', async (done) => {
+        store = mockStore.mock(state, actions)
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            api: 'testApiNameCase1',
+            loading: false,
+            label: 'labelname',
+            params: [
+              { name: 'column1', type: 'string' }
+            ],
+            paramFields: [
+              { name: 'column1', type: 'string', description: '', required: false }
+            ]
+          },
+          resource: {}
+        })
+
+        const pollActionCompletion = jest.fn()
+        const mockData = {
+          testapinamecase1response: {
+            jobid: 'test-job-id'
+          }
+        }
+
+        wrapper.setMethods({ pollActionCompletion })
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        await wrapper.vm.$nextTick()
+        wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column1-value' })
+        const event = document.createEvent('Event')
+        wrapper.vm.handleSubmit(event)
+
+        setTimeout(() => {
+          expect(actions.AddAsyncJob).toHaveBeenCalled()
+          expect(pollActionCompletion).toHaveBeenCalled()
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase15
+       * @description: api is called with throw error
+       * @condition: api throw error
+       * @expected:
+       *  - $notifyError is called
+       */
+      it('testMethodHandleSubmitCase15', async (done) => {
+        wrapper = factory()
+
+        const errorMock = {
+          response: {},
+          message: 'Error: throw exception error'
+        }
+        mockAxios.mockRejectedValue(errorMock)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        await wrapper.vm.$nextTick()
+        const event = document.createEvent('Event')
+        await wrapper.vm.handleSubmit(event)
+
+        setTimeout(() => {
+          expect(mocks.$notifyError).toHaveBeenCalledTimes(1)
+          expect(mocks.$notifyError).toHaveBeenCalledWith(errorMock)
 
           done()
         })
