@@ -30,6 +30,10 @@ const mockStore = {
       mockStore.state = { ...state }
     }
 
+    if (!actions) {
+      actions = {}
+    }
+
     return new Vuex.Store({
       getters: {
         apis: () => mockStore.state.user.apis,
