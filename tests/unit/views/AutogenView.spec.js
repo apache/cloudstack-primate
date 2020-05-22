@@ -303,6 +303,9 @@ const state = {
 
 let router
 let store = mockStore.mock(state)
+const actions = {
+  AddAsyncJob: jest.fn((jobId) => {})
+}
 const spyConsole = {
   log: null,
   warn: null
@@ -317,7 +320,13 @@ const mocks = {
       return {
         message: option.message,
         description: 'test-description',
-        duration: 0
+        duration: option.duration
+      }
+    }),
+    success: jest.fn((option) => {
+      return {
+        message: option.message,
+        description: option.description
       }
     })
   }
@@ -2707,7 +2716,7 @@ describe('Views > AutogenView.vue', () => {
 
         setTimeout(() => {
           expect(spy).toHaveBeenCalled()
-          expect(mocks.$notification.info).toHaveBeenCalledTimes(1)
+          expect(mocks.$notification.info).toHaveBeenCalled()
           expect(mocks.$notification.info).toHaveLastReturnedWith({
             message: 'test-name-en',
             description: 'test-description',
@@ -3963,6 +3972,203 @@ describe('Views > AutogenView.vue', () => {
               response: 'json'
             }
           })
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase14
+       * @description: api is called and check router back
+       * @condition:
+       *  - router name: testRouter26
+       *  - currentAction.icon === 'delete'
+       *  - dataView = true
+       * @expected:
+       *  - router back to history home
+       */
+      it('testMethodHandleSubmitCase14', async (done) => {
+        router = createRouter([{
+          name: 'testRouter26',
+          path: '/test-router-26',
+          meta: {
+            icon: 'test-router-26'
+          }
+        }])
+        wrapper = factory()
+        router.push({ name: 'testRouter26' })
+
+        const mockData = {
+          testapinamecase1response: {
+            count: 1,
+            testapinamecase1: [{
+              id: 'test-id-value',
+              name: 'test-name-value'
+            }]
+          }
+        }
+
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+        await wrapper.vm.$nextTick()
+
+        expect(router.currentRoute.name).toEqual('testRouter26')
+
+        wrapper.setData({
+          currentAction: {
+            icon: 'delete',
+            api: 'testApiNameCase1',
+            loading: false,
+            label: 'labelname',
+            params: [
+              { name: 'column1', type: 'string' }
+            ],
+            paramFields: [
+              { name: 'column1', type: 'string', description: '', required: false }
+            ]
+          },
+          dataView: true
+        })
+
+        wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column1-value' })
+        const event = document.createEvent('Event')
+        await wrapper.vm.handleSubmit(event)
+
+        setTimeout(() => {
+          expect(router.currentRoute.name).toEqual('home')
+          done()
+        }, 1000)
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase15
+       * @description: api is called and response have jobId result
+       * @condition: api response have jobId in result
+       * @expected:
+       *  - dispatch AddAsyncJob is called
+       *  - pollActionCompletion is called
+       *  - fetchData is called
+       */
+      it('testMethodHandleSubmitCase15', async (done) => {
+        store = mockStore.mock(state, actions)
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            api: 'testApiNameCase1',
+            loading: false,
+            label: 'labelname',
+            params: [
+              { name: 'column1', type: 'string' }
+            ],
+            paramFields: [
+              { name: 'column1', type: 'string', description: '', required: false }
+            ]
+          },
+          resource: {}
+        })
+
+        const pollActionCompletion = jest.fn()
+        const mockData = {
+          testapinamecase1response: {
+            jobid: 'test-job-id'
+          }
+        }
+
+        wrapper.setMethods({ pollActionCompletion })
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        await wrapper.vm.$nextTick()
+        wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column1-value' })
+        const event = document.createEvent('Event')
+        wrapper.vm.handleSubmit(event)
+
+        setTimeout(() => {
+          expect(actions.AddAsyncJob).toHaveBeenCalled()
+          expect(pollActionCompletion).toHaveBeenCalled()
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase16
+       * @description: api is called and response have jobId result
+       * @condition: api response not have jobId in result
+       * @expected:
+       *  - $notification.success is called
+       */
+      it('testMethodHandleSubmitCase16', async (done) => {
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            api: 'testApiNameCase1',
+            loading: false,
+            label: 'labelname',
+            params: [
+              { name: 'column1', type: 'string' }
+            ],
+            paramFields: [
+              { name: 'column1', type: 'string', description: '', required: false }
+            ]
+          },
+          resource: {
+            name: 'test-name-value'
+          }
+        })
+
+        const mockData = {
+          testapinamecase1response: {
+            count: 1,
+            testapinamecase1: [{
+              id: 'test-id-value'
+            }]
+          }
+        }
+
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        await wrapper.vm.$nextTick()
+        wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column1-value' })
+        const event = document.createEvent('Event')
+        wrapper.vm.handleSubmit(event)
+
+        setTimeout(() => {
+          expect(mocks.$notification.success).toHaveBeenCalled()
+          expect(mocks.$notification.success).toHaveLastReturnedWith({
+            message: 'test-name-en',
+            description: 'test-name-value'
+          })
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase17
+       * @description: api is called with throw error
+       * @condition: api throw error
+       * @expected:
+       *  - $notifyError is called
+       */
+      it('testMethodHandleSubmitCase17', async (done) => {
+        wrapper = factory()
+
+        const errorMock = {
+          response: {},
+          message: 'Error: throw exception error'
+        }
+        mockAxios.mockRejectedValue(errorMock)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        await wrapper.vm.$nextTick()
+        const event = document.createEvent('Event')
+        await wrapper.vm.handleSubmit(event)
+
+        setTimeout(() => {
+          expect(mocks.$notifyError).toHaveBeenCalledTimes(1)
+          expect(mocks.$notifyError).toHaveBeenCalledWith(errorMock)
 
           done()
         })
