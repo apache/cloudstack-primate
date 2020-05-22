@@ -45,21 +45,6 @@
                       ></a-select>
                     </a-form-item>
                     <a-form-item
-                      v-if="form.getFieldValue('isoid')"
-                      :label="this.$t('hypervisor')">
-                      <a-select
-                        v-decorator="['hypervisor', {
-                          initialValue: hypervisorSelectOptions && hypervisorSelectOptions.length > 0
-                            ? hypervisorSelectOptions[0].value
-                            : null,
-                          rules: [{ required: true, message: 'Please select option' }]
-                        }]"
-                        :options="hypervisorSelectOptions"
-                        @change="value => this.hypervisor = value"
-                      >
-                      </a-select>
-                    </a-form-item>
-                    <a-form-item
                       v-if="!isNormalAndDomainUser"
                       :label="this.$t('podId')">
                       <a-select
@@ -133,8 +118,18 @@
                           :selected="tabKey"
                           :loading="loading.isos"
                           :preFillContent="dataPreFill"
-                          @update-template-iso="updateFieldValue"
-                        ></template-iso-selection>
+                          @update-template-iso="updateFieldValue" />
+                        <a-form-item :label="this.$t('hypervisor')">
+                          <a-select
+                            v-decorator="['hypervisor', {
+                              initialValue: hypervisorSelectOptions && hypervisorSelectOptions.length > 0
+                                ? hypervisorSelectOptions[0].value
+                                : null,
+                              rules: [{ required: true, message: 'Please select option' }]
+                            }]"
+                            :options="hypervisorSelectOptions"
+                            @change="value => this.hypervisor = value" />
+                        </a-form-item>
                       </p>
                     </a-card>
                     <a-form-item class="form-item-hidden">
@@ -256,10 +251,6 @@
                       @select-default-network-item="($event) => updateDefaultNetworks($event)"
                       @handle-update-network="updateDataCreatedNetwork"
                     ></network-configuration>
-                    <networks-creation
-                      :zoneId="zoneId"
-                      @handle-update-network="updateDataCreatedNetwork">
-                    </networks-creation>
                   </div>
                 </template>
               </a-step>
@@ -330,7 +321,6 @@ import TemplateIsoSelection from '@views/compute/wizard/TemplateIsoSelection'
 import AffinityGroupSelection from '@views/compute/wizard/AffinityGroupSelection'
 import NetworkSelection from '@views/compute/wizard/NetworkSelection'
 import NetworkConfiguration from '@views/compute/wizard/NetworkConfiguration'
-import NetworksCreation from '@views/compute/wizard/NetworksCreation'
 import SshKeyPairSelection from '@views/compute/wizard/SshKeyPairSelection'
 
 export default {
@@ -345,8 +335,7 @@ export default {
     DiskOfferingSelection,
     InfoCard,
     ComputeOfferingSelection,
-    ComputeSelection,
-    NetworksCreation
+    ComputeSelection
   },
   props: {
     visible: {
@@ -870,19 +859,6 @@ export default {
         this.loading.deploy = true
 
         let networkIds = []
-        let newNetworkIds = []
-
-        try {
-          // add new network
-          newNetworkIds = await this.createNetworks(values.zoneid)
-        } catch (error) {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-          })
-          this.loading.deploy = false
-          return
-        }
 
         const deployVmData = {}
         // step 1 : select zone
@@ -929,11 +905,7 @@ export default {
         deployVmData.affinitygroupids = (values.affinitygroupids || []).join(',')
         // step 6: select network
         const arrNetwork = []
-        if (newNetworkIds && newNetworkIds.length > 0) {
-          networkIds = newNetworkIds.concat(values.networkids)
-        } else {
-          networkIds = values.networkids
-        }
+        networkIds = values.networkids
         if (networkIds.length > 0) {
           for (let i = 0; i < networkIds.length; i++) {
             if (networkIds[i] === this.defaultNetwork) {
@@ -964,38 +936,32 @@ export default {
         deployVmData.name = values.name
         deployVmData.displayname = values.name
         const title = this.$t('label.launch.vm')
-        const description = deployVmData.name ? deployVmData.name : values.zoneid
+        const description = values.name || ''
+        const password = this.$t('password')
         api('deployVirtualMachine', deployVmData).then(response => {
           const jobId = response.deployvirtualmachineresponse.jobid
           if (jobId) {
             this.$pollJob({
               jobId,
               successMethod: result => {
-                const virtualmachine = result.jobresult.virtualmachine
-                let displayName = ''
-                let successDescription = ''
-                if (virtualmachine.displayname) {
-                  displayName = result.jobresult.virtualmachine.displayname
-                } else {
-                  displayName = result.jobresult.virtualmachine.id
-                }
-                if (virtualmachine.password && virtualmachine.password !== null) {
-                  successDescription = this.$t('message.deployvm.password', {
-                    displayname: displayName,
-                    password: virtualmachine.password
+                const vm = result.jobresult.virtualmachine
+                const name = vm.displayname || vm.name || vm.id
+                if (vm.password) {
+                  this.$notification.success({
+                    message: password + ' for ' + name,
+                    description: vm.password,
+                    duration: 0
                   })
-                } else {
-                  successDescription = displayName
                 }
-                this.$store.dispatch('AddAsyncJob', {
-                  title: title,
-                  jobid: jobId,
-                  description: successDescription,
-                  status: 'progress'
-                })
               },
-              loadingMessage: `${title} in progress for ${description}`,
+              loadingMessage: `${title} in progress`,
               catchMessage: 'Error encountered while fetching async job result'
+            })
+            this.$store.dispatch('AddAsyncJob', {
+              title: title,
+              jobid: jobId,
+              description: description,
+              status: 'progress'
             })
           }
           this.$router.back()
@@ -1171,62 +1137,6 @@ export default {
         .replace(/&gt;/g, '>')
 
       return reversedValue
-    },
-    createNetworks (zoneId) {
-      return new Promise((resolve, reject) => {
-        const networksAdd = this.networks.filter(network => network.isCreate === true)
-        if (networksAdd.length === 0) {
-          resolve()
-          return
-        }
-        const networkIds = []
-        const promises = []
-        networksAdd.forEach((item) => {
-          const params = {}
-          params.zoneid = zoneId
-          params.name = item.name
-          params.displayText = item.name
-          params.networkOfferingId = item.networkOfferingId
-          params.vpcid = item.vpcid
-
-          promises.push(this.createNetwork(params, item.id))
-        })
-
-        Promise.all(promises).then(response => {
-          response.forEach(network => {
-            const configIndex = this.networkConfig.findIndex(config => config.key === network.key)
-            if (configIndex > -1) {
-              this.networkConfig[configIndex].key = network.networkid
-            }
-            if (this.defaultNetwork === network.key) {
-              this.defaultNetwork = network.networkid
-            }
-            const indexAdd = this.networks.filter(network => network.id === network.key)
-            if (indexAdd > -1) {
-              this.networks[indexAdd].id = network.networkid
-              this.networks[indexAdd].isCreate = false
-            }
-            networkIds.push(network.networkid)
-            resolve(networkIds)
-          })
-        }).catch(error => {
-          reject(error)
-        })
-      })
-    },
-    createNetwork (params, key) {
-      return new Promise((resolve, reject) => {
-        api('createNetwork', params).then(json => {
-          const networkRes = _.get(json, 'createnetworkresponse.network', [])
-          const result = {
-            networkid: networkRes.id,
-            key: key
-          }
-          resolve(result)
-        }).catch(error => {
-          reject(error)
-        })
-      })
     }
   }
 }

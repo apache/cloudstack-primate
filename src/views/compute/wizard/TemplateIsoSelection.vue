@@ -249,9 +249,9 @@ export default {
         this.filter = ''
         filtered.map(item => {
           if (this.filter.length === 0) {
-            this.filter += 'is: ' + item
+            this.filter += 'is:' + item
           } else {
-            this.filter += '; is: ' + item
+            this.filter += '; is:' + item
           }
         })
         this.filterDataSource(this.filter)
