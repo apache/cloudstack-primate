@@ -147,7 +147,7 @@ user.state.apis = {
 
 const messages = {
   en: {
-    'label.name': 'test-name-en',
+    labelname: 'test-name-en',
     column1: 'column1-en',
     column2: 'column2-en',
     column3: 'column3-en',
@@ -163,7 +163,7 @@ const messages = {
     keypair: 'keypair-en'
   },
   de: {
-    'label.name': 'test-name-de',
+    labelname: 'test-name-de',
     column1: 'column1-de',
     column2: 'column2-de',
     column3: 'column3-de',
@@ -521,7 +521,7 @@ describe('Views > AutogenView.vue', () => {
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
         wrapper.vm.$nextTick(() => {
-          expect(wrapper.vm.$t('label.name')).toEqual('test-name-en')
+          expect(wrapper.vm.$t('labelname')).toEqual('test-name-en')
           expect(spy).not.toBeCalled()
         })
       })
@@ -541,7 +541,7 @@ describe('Views > AutogenView.vue', () => {
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
         wrapper.vm.$nextTick(() => {
-          expect(wrapper.vm.$t('label.name')).toEqual('test-name-de')
+          expect(wrapper.vm.$t('labelname')).toEqual('test-name-de')
           expect(spy).toBeCalled()
         })
       })
@@ -674,7 +674,7 @@ describe('Views > AutogenView.vue', () => {
             columns: ['column1', 'column2', 'column3'],
             actions: [
               {
-                name: 'label.name',
+                name: 'labelname',
                 icon: 'plus',
                 listView: true
               }
@@ -697,7 +697,7 @@ describe('Views > AutogenView.vue', () => {
           expect(wrapper.vm.actions.length).toEqual(1)
           expect(wrapper.vm.columnKeys).toEqual(['column1', 'column2', 'column3'])
           expect(wrapper.vm.actions).toEqual([{
-            name: 'label.name',
+            name: 'labelname',
             icon: 'plus',
             listView: true
           }])
@@ -1919,7 +1919,7 @@ describe('Views > AutogenView.vue', () => {
 
         wrapper.vm.$nextTick(() => {
           wrapper.vm.execAction({
-            label: 'label.name',
+            label: 'labelname',
             icon: 'plus',
             component: () => jest.fn(),
             api: 'testRouter26',
@@ -2695,7 +2695,7 @@ describe('Views > AutogenView.vue', () => {
 
         const jobId = 'test-job-id'
         const action = {
-          label: 'label.name',
+          label: 'labelname',
           response: (jobResult) => {
             return jobResult.name
           }
@@ -2753,7 +2753,7 @@ describe('Views > AutogenView.vue', () => {
 
         const jobId = 'test-job-id'
         const action = {
-          label: 'label.name',
+          label: 'labelname',
           response: (jobResult) => {
             return jobResult.name
           }
@@ -2784,47 +2784,14 @@ describe('Views > AutogenView.vue', () => {
 
     describe('fillEditFormFieldValues()', () => {
       /**
-       * @name: testMethodFillEditFormFieldValuesCase1
-       * @description: check form getFieldDecorator() is called
-       * @condition: currentAction.paramFields has field type = uuid
-       * @expected: getFieldDecorator() is called with mapping data value
-       */
-      it('testMethodFillEditFromFiledValuesCase1', (done) => {
-        wrapper = factory({}, {
-          currentAction: {
-            paramFields: [
-              { name: 'id', type: 'uuid' }
-            ],
-            mapping: {
-              column1: () => { return 'test-column' }
-            }
-          },
-          resource: {
-            name: 'test-name-value'
-          }
-        })
-
-        const spy = jest.spyOn(wrapper.vm.form, 'getFieldDecorator')
-
-        wrapper.vm.fillEditFormFieldValues()
-
-        wrapper.vm.$nextTick(() => {
-          expect(spy).toHaveBeenCalled()
-          expect(spy).toBeCalledWith('id', {
-            initialValue: 'test-name-value'
-          })
-
-          done()
-        })
-      })
-
-      /**
-       * @name: testMethodFillEditFromFiledValuesCase2
+       * @name: testMethodFillEditFromFiledValuesCase1
        * @description: check form getFieldDecorator() is called
        * @condition: currentAction.paramFields has field type = list
-       * @expected: getFieldDecorator() is called with mapping data value
+       * @expected:
+       *  - getFieldDecorator() is called with mapping data value
+       *  - formModel not empty
        */
-      it('testMethodFillEditFromFiledValuesCase2', (done) => {
+      it('testMethodFillEditFromFiledValuesCase1', (done) => {
         wrapper = factory({}, {
           currentAction: {
             paramFields: [
@@ -2848,18 +2815,19 @@ describe('Views > AutogenView.vue', () => {
           expect(spy).toBeCalledWith('domainids', {
             initialValue: ['test-domain-value-1', 'test-domain-value-2']
           })
+          expect(wrapper.vm.formModel).toEqual({ domainids: ['test-domain-value-1', 'test-domain-value-2'] })
 
           done()
         })
       })
 
       /**
-       * @name: testMethodFillEditFromFiledValuesCase3
+       * @name: testMethodFillEditFromFiledValuesCase2
        * @description: check form getFieldDecorator() is called
        * @condition: currentAction.paramFields has field name = account
        * @expected: getFieldDecorator() is called with mapping data value
        */
-      it('testMethodFillEditFromFiledValuesCase3', (done) => {
+      it('testMethodFillEditFromFiledValuesCase2', (done) => {
         wrapper = factory({}, {
           currentAction: {
             paramFields: [
@@ -2883,18 +2851,21 @@ describe('Views > AutogenView.vue', () => {
           expect(spy).toBeCalledWith('account', {
             initialValue: 'test-account-value'
           })
+          expect(wrapper.vm.formModel).toEqual({ account: 'test-account-value' })
 
           done()
         })
       })
 
       /**
-       * @name: testMethodFillEditFromFiledValuesCase4
+       * @name: testMethodFillEditFromFiledValuesCase3
        * @description: check form getFieldDecorator() is called
        * @condition: currentAction.paramFields has field name in currentAction.mapping
-       * @expected: getFieldDecorator() is called with mapping data value
+       * @expected:
+       *  - getFieldDecorator() is called with mapping data value
+       *  - formModel not empty
        */
-      it('testMethodFillEditFromFiledValuesCase4', (done) => {
+      it('testMethodFillEditFromFiledValuesCase3', (done) => {
         wrapper = factory({}, {
           currentAction: {
             paramFields: [
@@ -2918,18 +2889,21 @@ describe('Views > AutogenView.vue', () => {
           expect(spy).toBeCalledWith('column1', {
             initialValue: 'test-column-value'
           })
+          expect(wrapper.vm.formModel).toEqual({ column1: 'test-column-value' })
 
           done()
         })
       })
 
       /**
-       * @name: testMethodFillEditFromFiledValuesCase5
+       * @name: testMethodFillEditFromFiledValuesCase4
        * @description: check form getFieldDecorator() is called
        * @condition: currentAction.paramFields has field not pass condition (field.type in [uuid, list] || field.name = account && field.name in currentAction.mapping)
-       * @expected: getFieldDecorator() is called with mapping data value
+       * @expected:
+       *  - getFieldDecorator() is called with mapping data value
+       *  - formModel not empty
        */
-      it('testMethodFillEditFromFiledValuesCase5', (done) => {
+      it('testMethodFillEditFromFiledValuesCase4', (done) => {
         wrapper = factory({}, {
           currentAction: {
             paramFields: [
@@ -2950,18 +2924,21 @@ describe('Views > AutogenView.vue', () => {
           expect(spy).toBeCalledWith('column1', {
             initialValue: 'test-column-value'
           })
+          expect(wrapper.vm.formModel).toEqual({ column1: 'test-column-value' })
 
           done()
         })
       })
 
       /**
-       * @name: testMethodFillEditFromFiledValuesCase6
+       * @name: testMethodFillEditFromFiledValuesCase5
        * @description: check form getFieldDecorator() not called
        * @condition: currentAction.paramFields has field not in resource
-       * @expected: getFieldDecorator() not called
+       * @expected:
+       *  - getFieldDecorator() not called
+       *  - formModel is empty
        */
-      it('testMethodFillEditFromFiledValuesCase6', (done) => {
+      it('testMethodFillEditFromFiledValuesCase5', (done) => {
         wrapper = factory({}, {
           currentAction: {
             paramFields: [
@@ -2977,6 +2954,7 @@ describe('Views > AutogenView.vue', () => {
           wrapper.vm.fillEditFormFieldValues()
 
           expect(spy).not.toHaveBeenCalled()
+          expect(wrapper.vm.formModel).toEqual({})
 
           done()
         })
@@ -3132,32 +3110,26 @@ describe('Views > AutogenView.vue', () => {
        *    1. loading = false
        *    2. selectedRowKeys = []
        */
-      it('testMethodStartCase1', (done) => {
-        jest.useFakeTimers()
-
+      it('testMethodStartCase1', async (done) => {
         wrapper = factory({}, {
           loading: false,
           selectedRowKeys: ['test-selected']
         })
 
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.start()
 
-        wrapper.vm.$nextTick(() => {
-          wrapper.vm.start()
+        expect(wrapper.vm.loading).toBeTruthy()
+        expect(wrapper.vm.selectedRowKeys).toEqual(['test-selected'])
+        expect(spy).toBeCalled()
 
-          expect(wrapper.vm.loading).toBeTruthy()
-          expect(wrapper.vm.selectedRowKeys).toEqual(['test-selected'])
-          expect(spy).toBeCalled()
+        setTimeout(() => {
+          expect(wrapper.vm.loading).toBeFalsy()
+          expect(wrapper.vm.selectedRowKeys).toEqual([])
 
-          setTimeout(() => {
-            expect(wrapper.vm.loading).toBeFalsy()
-            expect(wrapper.vm.selectedRowKeys).toEqual([])
-
-            done()
-          }, 1000)
-
-          jest.runAllTimers()
-        })
+          done()
+        }, 1000)
       })
     })
 
@@ -3245,7 +3217,7 @@ describe('Views > AutogenView.vue', () => {
           showAction: true,
           currentAction: {
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               { name: 'id', type: 'uuid' }
             ],
@@ -3286,7 +3258,7 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               { name: 'id', type: 'uuid' }
             ],
@@ -3332,8 +3304,7 @@ describe('Views > AutogenView.vue', () => {
        * @name: testMethodHandleSubmitCase3
        * @description: check api is called and params when handleSubmit() is called
        * @condition: form has input key:
-       *  - value is undefined
-       *  - exist in currentAction.params and type is boolean
+       *  - not exist in currentAction.params
        * @expected:
        *  1. api is called
        *  2. api called with params has key = false
@@ -3344,7 +3315,66 @@ describe('Views > AutogenView.vue', () => {
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
+            params: [
+              { name: 'id', type: 'uuid' }
+            ],
+            paramFields: [
+              { name: 'name', type: 'string', description: '', required: false },
+              { name: 'id', type: 'uuid', description: '', required: false }
+            ],
+            mapping: {}
+          },
+          resource: {
+            id: 'test-id-value'
+          }
+        })
+
+        const mockData = {
+          testapinamecase1response: {
+            testapinamecase1: {}
+          }
+        }
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        wrapper.vm.$nextTick(() => {
+          const event = document.createEvent('Event')
+          wrapper.vm.handleSubmit(event)
+
+          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalledWith({
+            url: '/',
+            method: 'GET',
+            data: new URLSearchParams(),
+            params: {
+              command: 'testApiNameCase1',
+              id: 'test-id-value',
+              response: 'json'
+            }
+          })
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase4
+       * @description: check api is called and params when handleSubmit() is called
+       * @condition: form has input key:
+       *  - value is undefined
+       *  - exist in currentAction.params and type is boolean
+       * @expected:
+       *  1. api is called
+       *  2. api called with params has key = false
+       */
+      it('testMethodHandleSubmitCase4', (done) => {
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            api: 'testApiNameCase1',
+            loading: false,
+            label: 'labelname',
             params: [
               { name: 'column1', type: 'boolean' }
             ],
@@ -3385,7 +3415,64 @@ describe('Views > AutogenView.vue', () => {
       })
 
       /**
-       * @name: testMethodHandleSubmitCase4
+       * @name: testMethodHandleSubmitCase5
+       * @description: check api is called and params when handleSubmit() is called
+       * @condition: form has input key:
+       *  - value is null
+       *  - exist in currentAction.params and type is boolean
+       * @expected:
+       *  1. api is called
+       *  2. api called with params has key = false
+       */
+      it('testMethodHandleSubmitCase5', (done) => {
+        wrapper = factory({}, {
+          showAction: true,
+          currentAction: {
+            api: 'testApiNameCase1',
+            loading: false,
+            label: 'labelname',
+            params: [
+              { name: 'column1', type: 'boolean' }
+            ],
+            paramFields: [
+              { name: 'column1', type: 'boolean', description: '', required: false }
+            ],
+            mapping: {}
+          },
+          resource: {}
+        })
+
+        const mockData = {
+          testapinamecase1response: {
+            testapinamecase1: {}
+          }
+        }
+        mockAxios.mockResolvedValue(mockData)
+        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+        wrapper.vm.$nextTick(() => {
+          wrapper.vm.form.getFieldDecorator('column1', { initialValue: null })
+          const event = document.createEvent('Event')
+          wrapper.vm.handleSubmit(event)
+
+          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalledWith({
+            url: '/',
+            method: 'GET',
+            data: new URLSearchParams(),
+            params: {
+              command: 'testApiNameCase1',
+              column1: false,
+              response: 'json'
+            }
+          })
+
+          done()
+        })
+      })
+
+      /**
+       * @name: testMethodHandleSubmitCase6
        * @description: check api is called and params when handleSubmit() is called
        * @condition: form has input key:
        *  - exists in currentAction.mapping
@@ -3393,13 +3480,13 @@ describe('Views > AutogenView.vue', () => {
        *  1. api is called
        *  2. api called with params has key is value set by currentAction.mapping[key].options
        */
-      it('testMethodHandleSubmitCase4', (done) => {
+      it('testMethodHandleSubmitCase6', (done) => {
         wrapper = factory({}, {
           showAction: true,
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               { name: 'column1', type: 'list' }
             ],
@@ -3445,74 +3532,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       /**
-       * @name: testMethodHandleSubmitCase5
-       * @description: check api is called and params when handleSubmit() is called
-       * @condition: form has input key:
-       *  - type uuid
-       *  - not exists in currentAction.mapping
-       *  - exists in currentAction.params
-       *  - currentAction.params[input] has id
-       * @expected:
-       *  1. api is called
-       *  2. api called with params has key is value set by currentAction.params.opts[key].id
-       */
-      it('testMethodHandleSubmitCase5', (done) => {
-        wrapper = factory({}, {
-          showAction: true,
-          currentAction: {
-            api: 'testApiNameCase1',
-            loading: false,
-            label: 'label.name',
-            params: [
-              {
-                name: 'column1',
-                type: 'uuid',
-                opts: [
-                  { id: 'test-id-1', value: 'test-value-1' },
-                  { id: 'test-id-2', value: 'test-value-2' }
-                ]
-              }
-            ],
-            paramFields: [
-              { name: 'column1', type: 'uuid', description: '', required: false }
-            ],
-            mapping: {
-            }
-          },
-          resource: {}
-        })
-
-        const mockData = {
-          testapinamecase1response: {
-            testapinamecase1: {}
-          }
-        }
-        mockAxios.mockResolvedValue(mockData)
-        spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
-
-        wrapper.vm.$nextTick(() => {
-          wrapper.vm.form.getFieldDecorator('column1', { initialValue: 1 })
-          const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
-
-          expect(mockAxios).toHaveBeenCalledTimes(1)
-          expect(mockAxios).toHaveBeenCalledWith({
-            url: '/',
-            method: 'GET',
-            data: new URLSearchParams(),
-            params: {
-              command: 'testApiNameCase1',
-              column1: 'test-id-2',
-              response: 'json'
-            }
-          })
-
-          done()
-        })
-      })
-
-      /**
-       * @name: testMethodHandleSubmitCase6
+       * @name: testMethodHandleSubmitCase7
        * @description: check api is called and params when handleSubmit() is called
        * @condition: form has input key:
        *  - type list
@@ -3522,13 +3542,13 @@ describe('Views > AutogenView.vue', () => {
        *  1. api is called
        *  2. api called with params has key is value set by currentAction.params[key].id
        */
-      it('testMethodHandleSubmitCase6', (done) => {
+      it('testMethodHandleSubmitCase7', (done) => {
         wrapper = factory({}, {
           showAction: true,
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               {
                 name: 'column1',
@@ -3579,7 +3599,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       /**
-       * @name: testMethodHandleSubmitCase7
+       * @name: testMethodHandleSubmitCase8
        * @description: check api is called and params when handleSubmit() is called
        * @condition: form has input key:
        *  - name is `account`
@@ -3588,13 +3608,13 @@ describe('Views > AutogenView.vue', () => {
        *  1. api is called
        *  2. api called with params has key is value set by form key value
        */
-      it('testMethodHandleSubmitCase7', (done) => {
+      it('testMethodHandleSubmitCase8', (done) => {
         wrapper = factory({}, {
           showAction: true,
           currentAction: {
             api: 'createAccount',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               {
                 name: 'account',
@@ -3639,7 +3659,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       /**
-       * @name: testMethodHandleSubmitCase8
+       * @name: testMethodHandleSubmitCase9
        * @description: check api is called and params when handleSubmit() is called
        * @condition: form has input key:
        *  - name is `keypair`
@@ -3648,13 +3668,13 @@ describe('Views > AutogenView.vue', () => {
        *  1. api is called
        *  2. api called with params has key is value set by form key value
        */
-      it('testMethodHandleSubmitCase8', (done) => {
+      it('testMethodHandleSubmitCase9', (done) => {
         wrapper = factory({}, {
           showAction: true,
           currentAction: {
             api: 'addAccountToProject',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               {
                 name: 'keypair',
@@ -3699,7 +3719,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       /**
-       * @name: testMethodHandleSubmitCase9
+       * @name: testMethodHandleSubmitCase10
        * @description: check api is called and params when handleSubmit() is called
        * @condition: form has input key:
        *  - name is `account` | `keypair`
@@ -3709,13 +3729,13 @@ describe('Views > AutogenView.vue', () => {
        *  1. api is called
        *  2. api called with params has key is value set by currentAction.params.opts[input].name
        */
-      it('testMethodHandleSubmitCase9', (done) => {
+      it('testMethodHandleSubmitCase10', (done) => {
         wrapper = factory({}, {
           showAction: true,
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               {
                 name: 'keypair',
@@ -3764,7 +3784,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       /**
-       * @name: testMethodHandleSubmitCase10
+       * @name: testMethodHandleSubmitCase11
        * @description: check api is called and params when handleSubmit() is called
        * @condition: form has input key:
        *  - under the remaining conditions
@@ -3772,13 +3792,13 @@ describe('Views > AutogenView.vue', () => {
        *  1. api is called
        *  2. api called with params has key is value set by form key value
        */
-      it('testMethodHandleSubmitCase10', (done) => {
+      it('testMethodHandleSubmitCase11', (done) => {
         wrapper = factory({}, {
           showAction: true,
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               {
                 name: 'column1',
@@ -3823,7 +3843,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       /**
-       * @name: testMethodHandleSubmitCase11
+       * @name: testMethodHandleSubmitCase12
        * @description: check api is called and params when handleSubmit() is called
        * @condition:
        *  - currentAction has defaultArgs
@@ -3831,13 +3851,13 @@ describe('Views > AutogenView.vue', () => {
        *  1. api is called
        *  2. api called with params has key is value set by currentAction.defaultArgs
        */
-      it('testMethodHandleSubmitCase11', (done) => {
+      it('testMethodHandleSubmitCase12', (done) => {
         wrapper = factory({}, {
           showAction: true,
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               { name: 'column1', type: 'string' }
             ],
@@ -3883,7 +3903,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       /**
-       * @name: testMethodHandleSubmitCase12
+       * @name: testMethodHandleSubmitCase13
        * @description: check api is called and params when handleSubmit() is called
        * @condition:
        *  - currentAction.mapping has value
@@ -3891,13 +3911,13 @@ describe('Views > AutogenView.vue', () => {
        *  1. api is called
        *  2. api called with params has key is value set by currentAction.mapping and resource
        */
-      it('testMethodHandleSubmitCase12', (done) => {
+      it('testMethodHandleSubmitCase13', (done) => {
         wrapper = factory({}, {
           showAction: true,
           currentAction: {
             api: 'testApiNameCase1',
             loading: false,
-            label: 'label.name',
+            label: 'labelname',
             params: [
               { name: 'column1', type: 'string' }
             ],
