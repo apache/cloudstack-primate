@@ -2845,8 +2845,8 @@ describe('Views > AutogenView.vue', () => {
         const spy = jest.spyOn(wrapper.vm.form, 'getFieldDecorator')
 
         await wrapper.vm.$nextTick()
-        await
-          wrapper.vm.fillEditFormFieldValues()
+        await wrapper.vm.fillEditFormFieldValues()
+
         setTimeout(() => {
           expect(spy).toHaveBeenCalled()
           expect(spy).toBeCalledWith('domainids', {
@@ -3137,9 +3137,7 @@ describe('Views > AutogenView.vue', () => {
        *    1. loading = false
        *    2. selectedRowKeys = []
        */
-      it('testMethodStartCase1', (done) => {
-        jest.useFakeTimers()
-
+      it('testMethodStartCase1', async (done) => {
         wrapper = factory({}, {
           loading: false,
           selectedRowKeys: ['test-selected']
@@ -3147,22 +3145,19 @@ describe('Views > AutogenView.vue', () => {
 
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
-        wrapper.vm.$nextTick(() => {
-          wrapper.vm.start()
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.start()
 
-          expect(wrapper.vm.loading).toBeTruthy()
-          expect(wrapper.vm.selectedRowKeys).toEqual(['test-selected'])
-          expect(spy).toBeCalled()
+        expect(wrapper.vm.loading).toBeTruthy()
+        expect(wrapper.vm.selectedRowKeys).toEqual(['test-selected'])
+        expect(spy).toBeCalled()
 
-          setTimeout(() => {
-            expect(wrapper.vm.loading).toBeFalsy()
-            expect(wrapper.vm.selectedRowKeys).toEqual([])
+        setTimeout(() => {
+          expect(wrapper.vm.loading).toBeFalsy()
+          expect(wrapper.vm.selectedRowKeys).toEqual([])
 
-            done()
-          }, 1000)
-
-          jest.runAllTimers()
-        })
+          done()
+        }, 1000)
       })
     })
 
@@ -3461,7 +3456,7 @@ describe('Views > AutogenView.vue', () => {
        *  1. api is called
        *  2. api called with params has key is value set by currentAction.params.opts[key].id
        */
-      it('testMethodHandleSubmitCase5', (done) => {
+      it('testMethodHandleSubmitCase5', async (done) => {
         wrapper = factory({}, {
           showAction: true,
           currentAction: {
@@ -3487,6 +3482,7 @@ describe('Views > AutogenView.vue', () => {
           resource: {}
         })
 
+        const event = document.createEvent('Event')
         const mockData = {
           testapinamecase1response: {
             testapinamecase1: {}
@@ -3495,11 +3491,11 @@ describe('Views > AutogenView.vue', () => {
         mockAxios.mockResolvedValue(mockData)
         spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
 
-        wrapper.vm.$nextTick(() => {
-          wrapper.vm.form.getFieldDecorator('column1', { initialValue: 1 })
-          const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.form.getFieldDecorator('column1', { initialValue: 1 })
+        await wrapper.vm.handleSubmit(event)
 
+        setTimeout(() => {
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
             url: '/',
@@ -3513,7 +3509,7 @@ describe('Views > AutogenView.vue', () => {
           })
 
           done()
-        })
+        }, 1000)
       })
 
       /**
@@ -3527,7 +3523,7 @@ describe('Views > AutogenView.vue', () => {
        *  1. api is called
        *  2. api called with params has key is value set by currentAction.params[key].id
        */
-      it('testMethodHandleSubmitCase6', (done) => {
+      it('testMethodHandleSubmitCase6', async (done) => {
         wrapper = factory({}, {
           showAction: true,
           currentAction: {
@@ -3554,6 +3550,7 @@ describe('Views > AutogenView.vue', () => {
           resource: {}
         })
 
+        const event = document.createEvent('Event')
         const mockData = {
           testapinamecase1response: {
             testapinamecase1: {}
@@ -3562,11 +3559,11 @@ describe('Views > AutogenView.vue', () => {
         mockAxios.mockResolvedValue(mockData)
         spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
 
-        wrapper.vm.$nextTick(() => {
-          wrapper.vm.form.getFieldDecorator('column1', { initialValue: [1, 2] })
-          const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.form.getFieldDecorator('column1', { initialValue: [1, 2] })
+        await wrapper.vm.handleSubmit(event)
 
+        setTimeout(() => {
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
             url: '/',
@@ -3580,7 +3577,7 @@ describe('Views > AutogenView.vue', () => {
           })
 
           done()
-        })
+        }, 1000)
       })
 
       /**
@@ -3593,7 +3590,7 @@ describe('Views > AutogenView.vue', () => {
        *  1. api is called
        *  2. api called with params has key is value set by form key value
        */
-      it('testMethodHandleSubmitCase7', (done) => {
+      it('testMethodHandleSubmitCase7', async (done) => {
         wrapper = factory({}, {
           showAction: true,
           currentAction: {
@@ -3614,6 +3611,7 @@ describe('Views > AutogenView.vue', () => {
           resource: {}
         })
 
+        const event = document.createEvent('Event')
         const mockData = {
           testapinamecase1response: {
             testapinamecase1: {}
@@ -3622,11 +3620,11 @@ describe('Views > AutogenView.vue', () => {
         mockAxios.mockResolvedValue(mockData)
         spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
 
-        wrapper.vm.$nextTick(() => {
-          wrapper.vm.form.getFieldDecorator('account', { initialValue: 'test-account-value' })
-          const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.form.getFieldDecorator('account', { initialValue: 'test-account-value' })
+        await wrapper.vm.handleSubmit(event)
 
+        setTimeout(() => {
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
             url: '/',
