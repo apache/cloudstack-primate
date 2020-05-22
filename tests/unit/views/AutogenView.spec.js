@@ -2808,10 +2808,10 @@ describe('Views > AutogenView.vue', () => {
         })
 
         const spy = jest.spyOn(wrapper.vm.form, 'getFieldDecorator')
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.fillEditFormFieldValues()
 
-        wrapper.vm.$nextTick(() => {
-          wrapper.vm.fillEditFormFieldValues()
-
+        setTimeout(() => {
           expect(spy).toHaveBeenCalled()
           expect(spy).toBeCalledWith('id', {
             initialValue: 'test-name-value'
@@ -2827,7 +2827,7 @@ describe('Views > AutogenView.vue', () => {
        * @condition: currentAction.paramFields has field type = list
        * @expected: getFieldDecorator() is called with mapping data value
        */
-      it('testMethodFillEditFromFiledValuesCase2', (done) => {
+      it('testMethodFillEditFromFiledValuesCase2', async (done) => {
         wrapper = factory({}, {
           currentAction: {
             paramFields: [
@@ -2844,9 +2844,10 @@ describe('Views > AutogenView.vue', () => {
 
         const spy = jest.spyOn(wrapper.vm.form, 'getFieldDecorator')
 
-        wrapper.vm.$nextTick(() => {
+        await wrapper.vm.$nextTick()
+        await
           wrapper.vm.fillEditFormFieldValues()
-
+        setTimeout(() => {
           expect(spy).toHaveBeenCalled()
           expect(spy).toBeCalledWith('domainids', {
             initialValue: ['test-domain-value-1', 'test-domain-value-2']
@@ -2862,7 +2863,7 @@ describe('Views > AutogenView.vue', () => {
        * @condition: currentAction.paramFields has field name = account
        * @expected: getFieldDecorator() is called with mapping data value
        */
-      it('testMethodFillEditFromFiledValuesCase3', (done) => {
+      it('testMethodFillEditFromFiledValuesCase3', async (done) => {
         wrapper = factory({}, {
           currentAction: {
             paramFields: [
@@ -2878,10 +2879,10 @@ describe('Views > AutogenView.vue', () => {
         })
 
         const spy = jest.spyOn(wrapper.vm.form, 'getFieldDecorator')
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.fillEditFormFieldValues()
 
-        wrapper.vm.$nextTick(() => {
-          wrapper.vm.fillEditFormFieldValues()
-
+        setTimeout(() => {
           expect(spy).toHaveBeenCalled()
           expect(spy).toBeCalledWith('account', {
             initialValue: 'test-account-value'
@@ -2897,7 +2898,7 @@ describe('Views > AutogenView.vue', () => {
        * @condition: currentAction.paramFields has field name in currentAction.mapping
        * @expected: getFieldDecorator() is called with mapping data value
        */
-      it('testMethodFillEditFromFiledValuesCase4', (done) => {
+      it('testMethodFillEditFromFiledValuesCase4', async (done) => {
         wrapper = factory({}, {
           currentAction: {
             paramFields: [
@@ -2913,10 +2914,10 @@ describe('Views > AutogenView.vue', () => {
         })
 
         const spy = jest.spyOn(wrapper.vm.form, 'getFieldDecorator')
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.fillEditFormFieldValues()
 
-        wrapper.vm.$nextTick(() => {
-          wrapper.vm.fillEditFormFieldValues()
-
+        setTimeout(() => {
           expect(spy).toHaveBeenCalled()
           expect(spy).toBeCalledWith('column1', {
             initialValue: 'test-column-value'
@@ -2932,7 +2933,7 @@ describe('Views > AutogenView.vue', () => {
        * @condition: currentAction.paramFields has field not pass condition (field.type in [uuid, list] || field.name = account && field.name in currentAction.mapping)
        * @expected: getFieldDecorator() is called with mapping data value
        */
-      it('testMethodFillEditFromFiledValuesCase5', (done) => {
+      it('testMethodFillEditFromFiledValuesCase5', async (done) => {
         wrapper = factory({}, {
           currentAction: {
             paramFields: [
@@ -2945,10 +2946,10 @@ describe('Views > AutogenView.vue', () => {
         })
 
         const spy = jest.spyOn(wrapper.vm.form, 'getFieldDecorator')
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.fillEditFormFieldValues()
 
-        wrapper.vm.$nextTick(() => {
-          wrapper.vm.fillEditFormFieldValues()
-
+        setTimeout(() => {
           expect(spy).toHaveBeenCalled()
           expect(spy).toBeCalledWith('column1', {
             initialValue: 'test-column-value'
@@ -2964,7 +2965,7 @@ describe('Views > AutogenView.vue', () => {
        * @condition: currentAction.paramFields has field not in resource
        * @expected: getFieldDecorator() not called
        */
-      it('testMethodFillEditFromFiledValuesCase6', (done) => {
+      it('testMethodFillEditFromFiledValuesCase6', async (done) => {
         wrapper = factory({}, {
           currentAction: {
             paramFields: [
@@ -2976,9 +2977,10 @@ describe('Views > AutogenView.vue', () => {
 
         const spy = jest.spyOn(wrapper.vm.form, 'getFieldDecorator')
 
-        wrapper.vm.$nextTick(() => {
-          wrapper.vm.fillEditFormFieldValues()
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.fillEditFormFieldValues()
 
+        setTimeout(() => {
           expect(spy).not.toHaveBeenCalled()
 
           done()
