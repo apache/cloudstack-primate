@@ -37,15 +37,6 @@
         :placeholder="$t('macaddress')"
         @change="($event) => updateNetworkData('macAddress', record.id, $event.target.value)" />
     </template>
-    <template slot="actions" slot-scope="text, record">
-      <a-popconfirm
-        v-if="record.isCreate"
-        title="Sure to delete?"
-        @confirm="removeItem(record.id)"
-      >
-        <a-button type="link">Delete</a-button>
-      </a-popconfirm>
-    </template>
   </a-table>
 </template>
 
@@ -86,11 +77,6 @@ export default {
           title: this.$t('macaddress'),
           width: '30%',
           scopedSlots: { customRender: 'macAddress' }
-        },
-        {
-          dataIndex: 'actions',
-          width: '10%',
-          scopedSlots: { customRender: 'actions' }
         }
       ],
       selectedRowKeys: [],
@@ -164,7 +150,6 @@ export default {
           this.$emit('select-default-network-item', this.dataItems[0].id)
         }
       }
-      this.$emit('handle-update-network', { id: id }, true)
     }
   }
 }

@@ -246,10 +246,8 @@
                       v-if="networks.length > 0"
                       :items="networks"
                       :preFillContent="dataPreFill"
-                      :networkCreate="networkCreate"
                       @update-network-config="($event) => updateNetworkConfig($event)"
                       @select-default-network-item="($event) => updateDefaultNetworks($event)"
-                      @handle-update-network="updateDataCreatedNetwork"
                     ></network-configuration>
                   </div>
                 </template>
@@ -419,7 +417,6 @@ export default {
       initDataConfig: {},
       defaultNetwork: '',
       networkConfig: [],
-      networkCreate: {},
       dataNetworkCreated: [],
       tabList: [
         {
@@ -817,14 +814,6 @@ export default {
     },
     updateNetworkConfig (networks) {
       this.networkConfig = networks
-    },
-    updateDataCreatedNetwork (network, isRemove) {
-      if (!isRemove) {
-        this.networkCreate = network
-        this.networks.push(network)
-      } else {
-        this.networks = this.networks.filter(item => item.id !== network.id)
-      }
     },
     updateSshKeyPairs (name) {
       if (name === this.$t('noselect')) {
