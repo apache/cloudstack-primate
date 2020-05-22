@@ -2632,7 +2632,7 @@ describe('Views > AutogenView.vue', () => {
        *  - fetchData() is called
        *  - $notification.info not called
        */
-      it('testMethodPollActionCompletionCase1', (done) => {
+      it('testMethodPollActionCompletionCase1', async (done) => {
         const mockData = {
           queryasyncjobresultresponse: {
             jobstatus: 1,
@@ -2649,7 +2649,8 @@ describe('Views > AutogenView.vue', () => {
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
         mockAxios.mockResolvedValue(mockData)
-        wrapper.vm.pollActionCompletion(jobId, action)
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.pollActionCompletion(jobId, action)
 
         setTimeout(() => {
           expect(spy).toHaveBeenCalled()
@@ -2681,7 +2682,7 @@ describe('Views > AutogenView.vue', () => {
        *  - $notification.info is called
        *  - fetchData() is called
        */
-      it('testMethodPollActionCompletionCase2', (done) => {
+      it('testMethodPollActionCompletionCase2', async (done) => {
         const mockData = {
           queryasyncjobresultresponse: {
             jobstatus: 1,
@@ -2703,7 +2704,8 @@ describe('Views > AutogenView.vue', () => {
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
         mockAxios.mockResolvedValue(mockData)
-        wrapper.vm.pollActionCompletion(jobId, action)
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.pollActionCompletion(jobId, action)
 
         setTimeout(() => {
           expect(spy).toHaveBeenCalled()
@@ -2739,7 +2741,7 @@ describe('Views > AutogenView.vue', () => {
        *  - api is called with params has item { jobId }
        *  - fetchData() is called
        */
-      it('testMethodPollActionCompletionCase3', (done) => {
+      it('testMethodPollActionCompletionCase3', async (done) => {
         const mockData = {
           queryasyncjobresultresponse: {
             jobstatus: 2,
@@ -2761,7 +2763,8 @@ describe('Views > AutogenView.vue', () => {
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
         mockAxios.mockResolvedValue(mockData)
-        wrapper.vm.pollActionCompletion(jobId, action)
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.pollActionCompletion(jobId, action)
 
         setTimeout(() => {
           expect(spy).toHaveBeenCalled()
