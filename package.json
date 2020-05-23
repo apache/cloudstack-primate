@@ -155,6 +155,9 @@
       "autoprefixer": {}
     }
   },
+  "jest": {
+    "testEnvironment": "node"
+  },
   "browserslist": [
     "> 1%",
     "last 2 versions",
