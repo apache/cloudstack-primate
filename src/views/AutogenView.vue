@@ -137,6 +137,7 @@
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: 'Please provide input' }]
                   }]"
+                  v-model="formModel[field.name]"
                   :placeholder="field.description"
                 />
               </span>
@@ -154,9 +155,8 @@
                 </a-select>
               </span>
               <span
-                v-else-if="field.type==='uuid' ||
-                  (field.name==='account' && !['addAccountToProject', 'createAccount'].includes(currentAction.api)) ||
-                  field.name==='keypair'">
+                v-else-if="field.name==='keypair' ||
+                  (field.name==='account' && !['addAccountToProject', 'createAccount'].includes(currentAction.api))">
                 <a-select
                   showSearch
                   optionFilterProp="children"
@@ -170,6 +170,25 @@
                   }"
                 >
                   <a-select-option v-for="(opt, optIndex) in field.opts" :key="optIndex">
+                    {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
+                  </a-select-option>
+                </a-select>
+              </span>
+              <span
+                v-else-if="field.type==='uuid'">
+                <a-select
+                  showSearch
+                  optionFilterProp="children"
+                  v-decorator="[field.name, {
+                    rules: [{ required: field.required, message: 'Please select option' }]
+                  }]"
+                  :loading="field.loading"
+                  :placeholder="field.description"
+                  :filterOption="(input, option) => {
+                    return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }"
+                >
+                  <a-select-option v-for="opt in field.opts" :key="opt.id">
                     {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
                 </a-select>
@@ -304,7 +323,9 @@ export default {
       showAction: false,
       dataView: false,
       selectedFilter: '',
-      actions: []
+      filters: [],
+      actions: [],
+      formModel: {}
     }
   },
   computed: {
@@ -527,6 +548,8 @@ export default {
       this.currentAction = {}
     },
     execAction (action) {
+      this.form = this.$form.createForm(this)
+      this.formModel = {}
       this.actionData = []
       if (action.component && action.api && !action.popup) {
         this.$router.push({ name: action.api })
@@ -620,6 +643,9 @@ export default {
                 continue
               }
               param.opts = json[obj][res]
+              if (['listTemplates', 'listIsos'].includes(possibleApi)) {
+                param.opts = [...new Map(param.opts.map(x => [x.id, x])).values()]
+              }
               this.$forceUpdate()
               break
             }
@@ -632,7 +658,7 @@ export default {
       }).then(function () {
       })
     },
-    pollActionCompletion (jobId, action) {
+    pollActionCompletion (jobId, action, resourceName) {
       this.$pollJob({
         jobId,
         successMethod: result => {
@@ -649,7 +675,7 @@ export default {
           }
         },
         errorMethod: () => this.fetchData(),
-        loadingMessage: `${this.$t(action.label)} in progress for ${this.resource.name}`,
+        loadingMessage: `${this.$t(action.label)} in progress for ${resourceName}`,
         catchMessage: 'Error encountered while fetching async job result',
         action
       })
@@ -659,7 +685,7 @@ export default {
       this.currentAction.paramFields.map(field => {
         let fieldValue = null
         let fieldName = null
-        if (field.type === 'uuid' || field.type === 'list' || field.name === 'account' || (this.currentAction.mapping && field.name in this.currentAction.mapping)) {
+        if (field.type === 'list' || field.name === 'account' || (this.currentAction.mapping && field.name in this.currentAction.mapping)) {
           fieldName = field.name.replace('ids', 'name').replace('id', 'name')
         } else {
           fieldName = field.name
@@ -667,6 +693,7 @@ export default {
         fieldValue = this.resource[fieldName] ? this.resource[fieldName] : null
         if (fieldValue) {
           form.getFieldDecorator(field.name, { initialValue: fieldValue })
+          this.formModel[field.name] = fieldValue
         }
       })
     },
@@ -683,30 +710,29 @@ export default {
           for (const key in values) {
             const input = values[key]
             for (const param of this.currentAction.params) {
-              if (param.name === key) {
-                if (input === undefined) {
-                  if (param.type === 'boolean') {
-                    params[key] = false
-                  }
-                  break
-                }
-                if (this.currentAction.mapping && key in this.currentAction.mapping && this.currentAction.mapping[key].options) {
-                  params[key] = this.currentAction.mapping[key].options[input]
-                } else if (param.type === 'uuid') {
-                  params[key] = param.opts[input].id
-                } else if (param.type === 'list') {
-                  params[key] = input.map(e => { return param.opts[e].id }).reduce((str, name) => { return str + ',' + name })
-                } else if (param.name === 'account' || param.name === 'keypair') {
-                  if (['addAccountToProject', 'createAccount'].includes(this.currentAction.api)) {
-                    params[key] = input
-                  } else {
-                    params[key] = param.opts[input].name
-                  }
-                } else {
-                  params[key] = input
+              if (param.name !== key) {
+                continue
+              }
+              if (input === undefined || input === null) {
+                if (param.type === 'boolean') {
+                  params[key] = false
                 }
                 break
               }
+              if (this.currentAction.mapping && key in this.currentAction.mapping && this.currentAction.mapping[key].options) {
+                params[key] = this.currentAction.mapping[key].options[input]
+              } else if (param.type === 'list') {
+                params[key] = input.map(e => { return param.opts[e].id }).reduce((str, name) => { return str + ',' + name })
+              } else if (param.name === 'account' || param.name === 'keypair') {
+                if (['addAccountToProject', 'createAccount'].includes(this.currentAction.api)) {
+                  params[key] = input
+                } else {
+                  params[key] = param.opts[input].name
+                }
+              } else {
+                params[key] = input
+              }
+              break
             }
           }
 
@@ -729,16 +755,23 @@ export default {
           console.log(this.resource)
           console.log(params)
 
+          const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username || params.ipaddress || params.virtualmachinename || this.resource.name
+
           var hasJobId = false
           api(this.currentAction.api, params).then(json => {
             for (const obj in json) {
               if (obj.includes('response')) {
                 for (const res in json[obj]) {
                   if (res === 'jobid') {
-                    this.$store.dispatch('AddAsyncJob', { title: this.$t(this.currentAction.label), jobid: json[obj][res], description: this.resource.name, status: 'progress' })
-                    this.pollActionCompletion(json[obj][res], this.currentAction)
+                    this.$store.dispatch('AddAsyncJob', { title: this.$t(this.currentAction.label), jobid: json[obj][res], description: resourceName, status: 'progress' })
+                    this.pollActionCompletion(json[obj][res], this.currentAction, resourceName)
                     hasJobId = true
                     break
+                  } else {
+                    this.$notification.success({
+                      message: this.$t(this.currentAction.label),
+                      description: resourceName
+                    })
                   }
                 }
                 break
@@ -748,7 +781,14 @@ export default {
               this.$router.go(-1)
             } else {
               if (!hasJobId) {
+                // set action data for reload tree-view
+                if (this.treeView) {
+                  this.actionData.push(json)
+                }
                 this.fetchData()
+              } else {
+                this.$set(this.resource, 'isDel', true)
+                this.actionData.push(this.resource)
               }
             }
           }).catch(error => {
