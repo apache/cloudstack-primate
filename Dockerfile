@@ -15,20 +15,27 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM node:10-buster AS build
+# Build example: docker build -t apache/cloudstack-primate:latest .
+
+FROM node:lts-buster AS build
+
+MAINTAINER "Apache CloudStack" <dev@cloudstack.apache.org>
+LABEL Description="Apache CloudStack Primate; Modern role-base progressive UI for Apache CloudStack"
+LABEL Vendor="Apache.org"
+LABEL License=ApacheV2
+LABEL Version=0.5.0
 
 WORKDIR /build
 
-RUN apt-get -y update && \
-	apt-get -y upgrade
+RUN apt-get -y update && apt-get -y upgrade
 
 COPY . /build/
-RUN	npm install
+RUN npm install
 RUN npm run build
 
 FROM nginx:alpine AS runtime
 
-LABEL org.opencontainers.image.title="CloudStack Primate" \
+LABEL org.opencontainers.image.title="Apache CloudStack Primate" \
 	org.opencontainers.image.description="A modern role-based progressive CloudStack UI" \
 	org.opencontainers.image.authors="Apache CloudStack Contributors" \
 	org.opencontainers.image.url="https://github.com/apache/cloudstack-primate" \

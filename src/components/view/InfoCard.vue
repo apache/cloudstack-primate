@@ -344,13 +344,6 @@
             <span v-if="index + 1 < resource.affinitygroup.length">, </span>
           </span>
         </div>
-        <div class="resource-detail-item" v-if="resource.serviceofferingname && resource.serviceofferingid">
-          <div class="resource-detail-item__label">{{ $t('serviceofferingname') }}</div>
-          <div class="resource-detail-item__details">
-            <a-icon type="cloud" />
-            <router-link :to="{ path: '/computeoffering/' + resource.serviceofferingid }">{{ resource.serviceofferingname || resource.serviceofferingid }} </router-link>
-          </div>
-        </div>
         <div class="resource-detail-item" v-if="resource.templateid">
           <div class="resource-detail-item__label">{{ $t('templatename') }}</div>
           <div class="resource-detail-item__details">
@@ -358,11 +351,20 @@
             <router-link :to="{ path: '/template/' + resource.templateid }">{{ resource.templatename || resource.templateid }} </router-link>
           </div>
         </div>
+        <div class="resource-detail-item" v-if="resource.serviceofferingname && resource.serviceofferingid">
+          <div class="resource-detail-item__label">{{ $t('serviceofferingname') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="cloud" />
+            <router-link v-if="$router.resolve('/computeoffering/' + resource.serviceofferingid).route.name !== '404'" :to="{ path: '/computeoffering/' + resource.serviceofferingid }">{{ resource.serviceofferingname || resource.serviceofferingid }} </router-link>
+            <span v-else>{{ resource.serviceofferingname || resource.serviceofferingid }}</span>
+          </div>
+        </div>
         <div class="resource-detail-item" v-if="resource.diskofferingname && resource.diskofferingid">
           <div class="resource-detail-item__label">{{ $t('diskoffering') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="hdd" />
-            <router-link :to="{ path: '/diskoffering/' + resource.diskofferingid }">{{ resource.diskofferingname || resource.diskofferingid }} </router-link>
+            <router-link v-if="$router.resolve('/diskoffering/' + resource.diskofferingid).route.name !== '404'" :to="{ path: '/diskoffering/' + resource.diskofferingid }">{{ resource.diskofferingname || resource.diskofferingid }} </router-link>
+            <span v-else>{{ resource.diskofferingname || resource.diskofferingid }}</span>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.backupofferingid">
