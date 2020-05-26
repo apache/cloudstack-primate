@@ -159,19 +159,19 @@ export default {
           jobId: response.migratevirtualmachineresponse.jobid,
           successMessage: `Migration completed successfully for ${this.resource.name}`,
           successMethod: () => {
-            this.$parent.$parent.close()
+            this.$emit('close-action')
           },
           errorMessage: 'Migration failed',
           errorMethod: () => {
-            this.$parent.$parent.close()
+            this.$emit('close-action')
           },
           loadingMessage: `Migration in progress for ${this.resource.name}`,
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
-            this.$parent.$parent.close()
+            this.$emit('close-action')
           }
         })
-        this.$parent.$parent.close()
+        this.$emit('close-action')
       }).catch(error => {
         console.error(error)
         this.$message.error(`Failed to migrate VM to host ${this.selectedHost.name}`)
