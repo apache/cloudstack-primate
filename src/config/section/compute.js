@@ -326,7 +326,7 @@ export default {
           args: ['id'],
           dataView: true,
           groupAction: true,
-          show: (record) => { return ['Running'].includes(record.state) && record.hypervisor === 'VMware' },
+          show: (record) => { return ['Running', 'Stopped'].includes(record.state) && record.hypervisor === 'VMware' },
           mapping: {
             id: {
               value: (record, params) => { return record.id }
