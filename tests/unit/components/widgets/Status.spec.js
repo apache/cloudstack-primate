@@ -21,13 +21,7 @@ import Status from '@/components/widgets/Status'
 describe('Components > Widgets > Status.vue', () => {
   describe('Methods', () => {
     describe('getText()', () => {
-      /**
-       * @name: testMethodGetTextCase1
-       * @description: getText() is called
-       * @condition: propData: { text = 'Running', displayText = true }
-       * @expected: <span class="ant-badge-status-text">Running</span>
-       */
-      it('testMethodGetTextCase1', () => {
+      it('getText() is called and the value returned is not null', () => {
         const propsData = {
           text: 'Running',
           displayText: true
@@ -43,13 +37,7 @@ describe('Components > Widgets > Status.vue', () => {
         expect(received).toContain(expected)
       })
 
-      /**
-       * @name: testMethodGetTextCase2
-       * @description: getText() is called
-       * @condition: propData: { text = 'Running', displayText = false }
-       * @expected: <span class="ant-badge-status-text"></span>
-       */
-      it('testMethodGetTextCase2', () => {
+      it('getText() is called and the value returned is null', () => {
         const propsData = {
           text: 'Running',
           displayText: false
@@ -67,13 +55,7 @@ describe('Components > Widgets > Status.vue', () => {
     })
 
     describe('getBadgeStatus()', () => {
-      /**
-       * @name: testMethodGetBadgeStatusCase1
-       * @description: getBadgeStatus() is called
-       * @condition: propData: { text = 'Another', displayText = true }
-       * @expected: <span class="ant-badge-status-dot ant-badge-status-default"></span>
-       */
-      it('testMethodGetBadgeStatusCase1', () => {
+      it('getBadgeStatus() is called and the value returned is default status', () => {
         const propsData = {
           text: 'Another',
           displayText: true
@@ -89,13 +71,7 @@ describe('Components > Widgets > Status.vue', () => {
         expect(received).toContain(expected)
       })
 
-      /**
-       * @name: testMethodGetBadgeStatusCase2
-       * @description: getBadgeStatus() is called
-       * @condition: propData: { text = 'Ready', displayText = true }
-       * @expected: <span class="ant-badge-status-dot ant-badge-status-success"></span>
-       */
-      it('testMethodGetBadgeStatusCase2', () => {
+      it('getBadgeStatus() is called and the value returned is success status', () => {
         const propsData = {
           text: 'Ready',
           displayText: true
@@ -111,13 +87,7 @@ describe('Components > Widgets > Status.vue', () => {
         expect(received).toContain(expected)
       })
 
-      /**
-       * @name: testMethodGetBadgeStatusCase3
-       * @description: getBadgeStatus() is called
-       * @condition: propData: { text = 'Disabled', displayText = true }
-       * @expected: <span class="ant-badge-status-dot ant-badge-status-error"></span>
-       */
-      it('testMethodGetBadgeStatusCase3', () => {
+      it('getBadgeStatus() is called and the value returned is error status', () => {
         const propsData = {
           text: 'Disabled',
           displayText: true
@@ -133,13 +103,7 @@ describe('Components > Widgets > Status.vue', () => {
         expect(received).toContain(expected)
       })
 
-      /**
-       * @name: testMethodGetBadgeStatusCase4
-       * @description: getBadgeStatus() is called
-       * @condition: propData: { text = 'Migrating', displayText = true }
-       * @expected: <span class="ant-badge-status-dot ant-badge-status-processing"></span>
-       */
-      it('testMethodGetBadgeStatusCase4', () => {
+      it('getBadgeStatus() is called and the value returned is processing status', () => {
         const propsData = {
           text: 'Migrating',
           displayText: true
@@ -155,13 +119,7 @@ describe('Components > Widgets > Status.vue', () => {
         expect(received).toContain(expected)
       })
 
-      /**
-       * @name: testMethodGetBadgeStatusCase5
-       * @description: getBadgeStatus() is called
-       * @condition: propData: { text = 'Alert', displayText = true }
-       * @expected: <span class="ant-badge-status-dot ant-badge-status-warning"></span>
-       */
-      it('testMethodGetBadgeStatusCase5', () => {
+      it('getBadgeStatus() is called and the value returned is warning status', () => {
         const propsData = {
           text: 'Alert',
           displayText: true
