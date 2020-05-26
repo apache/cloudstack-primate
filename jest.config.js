@@ -45,7 +45,8 @@ module.exports = {
   collectCoverage: true,
   collectCoverageFrom: [
     '<rootDir>/src/**/*.{js,vue}',
-    '!**/node_modules/**'
+    '!**/node_modules/**',
+    '!<rootDir>/src/locales/*.{js, json}'
   ],
   coverageReporters: ['html', 'text-summary']
 }
