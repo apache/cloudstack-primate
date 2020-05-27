@@ -80,6 +80,25 @@
                         :options="keyboardSelectOptions"
                       ></a-select>
                     </a-form-item>
+                    <a-form-item :label="this.$t('label.vm.boottype')">
+                      <a-select
+                        v-decorator="['boottype']"
+                        @change="fetchBootModes"
+                      >
+                        <a-select-option v-for="bootType in options.bootTypes" :key="bootType.id">
+                          {{ bootType.description }}
+                        </a-select-option>
+                      </a-select>
+                    </a-form-item>
+                    <a-form-item :label="this.$t('label.vm.bootmode')">
+                      <a-select
+                        v-decorator="['bootmode']"
+                      >
+                        <a-select-option v-for="bootMode in options.bootModes" :key="bootMode.id">
+                          {{ bootMode.description }}
+                        </a-select-option>
+                      </a-select>
+                    </a-form-item>
                     <a-form-item :label="this.$t('userdata')">
                       <a-textarea
                         v-decorator="['userdata']">
@@ -364,7 +383,9 @@ export default {
         clusters: [],
         hosts: [],
         groups: [],
-        keyboards: []
+        keyboards: [],
+        bootTypes: [],
+        bootModes: []
       },
       loading: {
         deploy: false,
@@ -707,8 +728,11 @@ export default {
       }
 
       this.fetchKeyboard()
+      this.fetchBootTypes()
+      this.fetchBootModes()
+
       Vue.nextTick().then(() => {
-        ['name', 'keyboard', 'userdata'].forEach(this.fillValue)
+        ['name', 'keyboard', 'boottype', 'bootmode', 'userdata'].forEach(this.fillValue)
         this.instanceConfig = this.form.getFieldsValue() // ToDo: maybe initialize with some other defaults
       })
     },
@@ -753,6 +777,43 @@ export default {
       })
 
       this.$set(this.options, 'keyboards', keyboardType)
+    },
+    fetchBootTypes () {
+      const bootTypes = []
+
+      bootTypes.push({
+        id: 'BIOS',
+        description: 'BIOS'
+      })
+      bootTypes.push({
+        id: 'UEFI',
+        description: 'UEFI'
+      })
+
+      this.options.bootTypes = bootTypes
+      this.$forceUpdate()
+    },
+    fetchBootModes (bootType) {
+      const bootModes = []
+
+      if (bootType === 'UEFI') {
+        bootModes.push({
+          id: 'LEGACY',
+          description: 'LEGACY'
+        })
+        bootModes.push({
+          id: 'SECURE',
+          description: 'SECURE'
+        })
+      } else {
+        bootModes.push({
+          id: 'LEGACY',
+          description: 'LEGACY'
+        })
+      }
+
+      this.options.bootModes = bootModes
+      this.$forceUpdate()
     },
     fetchNetwork () {
       const param = this.params.networks
@@ -857,6 +918,8 @@ export default {
         deployVmData.hostid = values.hostid
         deployVmData.group = values.group
         deployVmData.keyboard = values.keyboard
+        deployVmData.boottype = values.boottype
+        deployVmData.bootmode = values.bootmode
         if (values.userdata && values.userdata.length > 0) {
           deployVmData.userdata = encodeURIComponent(btoa(this.sanitizeReverse(values.userdata)))
         }
