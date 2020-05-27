@@ -32,7 +32,7 @@ export default {
       filters: ['self', 'shared', 'featured', 'community'],
       columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain', 'order'],
       details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'directdownload', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created'],
-      filters: ['name', 'zoneid', 'tags'],
+      searchFilters: ['name', 'zoneid', 'tags'],
       related: [{
         name: 'vm',
         title: 'Instances',
@@ -110,7 +110,7 @@ export default {
       filters: ['self', 'shared', 'featured', 'community'],
       columns: ['name', 'ostypename', 'account', 'domain'],
       details: ['name', 'id', 'displaytext', 'checksum', 'ostypename', 'size', 'bootable', 'isready', 'directdownload', 'isextractable', 'ispublic', 'isfeatured', 'crosszones', 'account', 'domain', 'created'],
-      filters: ['name', 'zoneid', 'tags'],
+      searchFilters: ['name', 'zoneid', 'tags'],
       related: [{
         name: 'vm',
         title: 'Instances',
