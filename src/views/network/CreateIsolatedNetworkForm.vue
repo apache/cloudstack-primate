@@ -54,7 +54,7 @@
               }"
               :loading="zoneLoading"
               :placeholder="this.$t('.zoneid')"
-              @change="val => { this.handleZoneChanged(this.zones[val]) }">
+              @change="val => { this.handleZoneChange(this.zones[val]) }">
               <a-select-option v-for="(opt, optIndex) in this.zones" :key="optIndex">
                 {{ opt.name || opt.description }}
               </a-select-option>
@@ -409,10 +409,7 @@ export default {
           })
           this.$emit('refresh-data')
         }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.actionLoading = false
           this.closeAction()

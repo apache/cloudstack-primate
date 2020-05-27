@@ -59,7 +59,8 @@
                 type="dashboard"
                 :status="getStatus(parseFloat(stat.percentused))"
                 :percent="parseFloat(stat.percentused)"
-                :format="percent => `${parseFloat(stat.percentused, 10).toFixed(2)}%`"
+                :format="percent => `${parseFloat(stat.percentused).toFixed(2)}%`"
+                :strokeColor="getStrokeColour(parseFloat(stat.percentused))"
                 :width="100" />
             </div>
             <template slot="footer"><center>{{ displayData(stat.name, stat.capacityused) }} / {{ displayData(stat.name, stat.capacitytotal) }}</center></template>
@@ -165,6 +166,12 @@ export default {
       }
       return 'normal'
     },
+    getStrokeColour (value) {
+      if (value >= 80) {
+        return 'red'
+      }
+      return 'primary'
+    },
     displayData (dataType, value) {
       switch (dataType) {
         case 'CPU':
@@ -175,7 +182,12 @@ export default {
         case 'STORAGE_ALLOCATED':
         case 'SECONDARY_STORAGE':
         case 'CAPACITY_TYPE_LOCAL_STORAGE':
-          value = parseFloat(value / (1024 * 1024 * 1024.0), 10).toFixed(2) + ' GB'
+          value = parseFloat(value / (1024 * 1024 * 1024.0), 10).toFixed(2)
+          if (value >= 1024.0) {
+            value = parseFloat(value / 1024.0).toFixed(2) + ' TB'
+          } else {
+            value = value + ' GB'
+          }
           break
       }
       return value

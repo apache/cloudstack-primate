@@ -49,7 +49,7 @@
             }"
             :loading="zoneLoading"
             :placeholder="apiParams.zoneid.description"
-            @change="val => { this.handleZoneChanged(this.zones[val]) }">
+            @change="val => { this.handleZoneChange(this.zones[val]) }">
             <a-select-option v-for="(opt, optIndex) in this.zones" :key="optIndex">
               {{ opt.name || opt.description }}
             </a-select-option>
@@ -403,12 +403,24 @@ export default {
           params.keypair = this.keyPairs[values.keypair].id
         }
         api('createKubernetesCluster', params).then(json => {
-          this.$message.success('Successfully created Kubernetes cluster: ' + values.name)
-        }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+          const jobId = json.createkubernetesclusterresponse.jobid
+          this.$store.dispatch('AddAsyncJob', {
+            title: this.$t('label.kubernetes.cluster.create'),
+            jobid: jobId,
+            description: values.name,
+            status: 'progress'
           })
+          this.$pollJob({
+            jobId,
+            loadingMessage: `Create Kubernetes cluster ${values.name} in progress`,
+            catchMessage: 'Error encountered while fetching async job result',
+            successMessage: `Successfully created Kubernetes cluster ${values.name}`,
+            successMethod: result => {
+              this.$emit('refresh-data')
+            }
+          })
+        }).catch(error => {
+          this.$notifyError(error)
         }).finally(() => {
           this.$emit('refresh-data')
           this.loading = false

@@ -64,6 +64,10 @@ export default {
     loading: {
       type: Boolean,
       default: false
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
@@ -93,15 +97,7 @@ export default {
     }
   },
   created () {
-    this.dataItems = []
-    this.dataItems.push({
-      id: '0',
-      name: this.$t('noselect'),
-      diskSize: undefined,
-      miniops: undefined,
-      maxiops: undefined,
-      isCustomized: undefined
-    })
+    this.initDataItem()
   },
   computed: {
     options () {
@@ -139,11 +135,34 @@ export default {
     },
     items (newData, oldData) {
       if (newData && newData.length > 0) {
+        this.initDataItem()
         this.dataItems = this.dataItems.concat(newData)
+      }
+    },
+    loading () {
+      if (!this.loading) {
+        if (this.preFillContent.diskofferingid) {
+          this.selectedRowKeys = [this.preFillContent.diskofferingid]
+          this.$emit('select-disk-offering-item', this.preFillContent.diskofferingid)
+        } else {
+          this.selectedRowKeys = ['0']
+          this.$emit('select-disk-offering-item', '0')
+        }
       }
     }
   },
   methods: {
+    initDataItem () {
+      this.dataItems = []
+      this.dataItems.push({
+        id: '0',
+        name: this.$t('noselect'),
+        diskSize: undefined,
+        miniops: undefined,
+        maxiops: undefined,
+        isCustomized: undefined
+      })
+    },
     onSelectRow (value) {
       this.selectedRowKeys = value
       this.$emit('select-disk-offering-item', value[0])
