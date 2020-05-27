@@ -79,14 +79,14 @@
           <a-row :gutter="12">
             <a-col :md="24" :lg="24">
               <a-form-item
-                :label="$t('zoneids')"
+                :label="$t('zone')"
                 :validate-status="zoneError"
                 :help="zoneErrorMessage">
                 <a-select
                   v-decorator="['zoneids', {
                     rules: [
                       {
-                        required: false,
+                        required: true,
                         message: 'Please select option',
                         type: 'array'
                       }
@@ -96,7 +96,7 @@
                   mode="multiple"
                   :placeholder="apiParams.zoneids.description"
                   @change="handlerSelectZone">
-                  <a-select-option v-for="opt in zones.opts" :key="opt.name || opt.description">
+                  <a-select-option v-for="opt in zones.opts" :key="opt.id">
                     {{ opt.name || opt.description }}
                   </a-select-option>
                 </a-select>
@@ -720,6 +720,12 @@ export default {
             description: 'VHD'
           })
           break
+        case 'Simulator':
+          format.push({
+            id: 'VHD',
+            description: 'VHD'
+          })
+          break
         case 'VMware':
           this.hyperVMWShow = true
           format.push({
@@ -751,6 +757,9 @@ export default {
       this.$set(this.format, 'opts', format)
     },
     handlerSelectZone (value) {
+      if (!Array.isArray(value)) {
+        value = [value]
+      }
       this.validZone(value)
       this.hyperVisor.opts = []
 
@@ -761,16 +770,15 @@ export default {
       this.resetSelect()
 
       const params = {}
-      const allZoneExists = value.filter(zone => zone === this.$t('label.all.zone'))
 
-      if (allZoneExists.length > 0) {
+      if (value.includes(this.$t('label.all.zone'))) {
         params.listAll = true
         this.fetchHyperVisor(params)
         return
       }
 
       for (let i = 0; i < value.length; i++) {
-        const zoneSelected = this.zones.opts.filter(zone => zone.name === value[i])
+        const zoneSelected = this.zones.opts.filter(zone => zone.id === value[i])
 
         if (zoneSelected.length > 0) {
           params.zoneid = zoneSelected[0].id
@@ -814,15 +822,7 @@ export default {
               params.zoneids = '-1'
               continue
             }
-            const zonesSelected = []
-            for (const index in input) {
-              const name = input[index]
-              const zone = this.zones.opts.filter(zone => zone.name === name)
-              if (zone && zone[0]) {
-                zonesSelected.push(zone[0].id)
-              }
-            }
-            params[key] = zonesSelected.join(',')
+            params[key] = input.join()
           } else if (key === 'zoneid') {
             params[key] = values[key]
           } else if (key === 'ostypeid') {
@@ -870,11 +870,7 @@ export default {
               description: 'Successfully registered template ' + params.name
             })
           }).catch(error => {
-            this.$notification.error({
-              message: 'Request Failed',
-              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message,
-              duration: 0
-            })
+            this.$notifyError(error)
           }).finally(() => {
             this.loading = false
             this.closeAction()
@@ -892,11 +888,7 @@ export default {
             this.uploadParams = (json.postuploadtemplateresponse && json.postuploadtemplateresponse.getuploadparams) ? json.postuploadtemplateresponse.getuploadparams : ''
             this.handleUpload()
           }).catch(error => {
-            this.$notification.error({
-              message: 'Request Failed',
-              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message,
-              duration: 0
-            })
+            this.$notifyError(error)
           }).finally(() => {
             this.loading = false
           })

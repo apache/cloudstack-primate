@@ -22,7 +22,7 @@ export default {
   permission: ['listProjects'],
   resourceType: 'Project',
   columns: ['name', 'state', 'displaytext', 'account', 'domain'],
-  filters: ['name', 'displaytext', 'domainid', 'account'],
+  searchFilters: ['name', 'displaytext', 'domainid', 'account'],
   details: ['name', 'id', 'displaytext', 'projectaccountname', 'vmtotal', 'cputotal', 'memorytotal', 'volumetotal', 'iptotal', 'vpctotal', 'templatetotal', 'primarystoragetotal', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit', 'account', 'domain'],
   tabs: [
     {

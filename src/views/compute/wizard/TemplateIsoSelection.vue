@@ -17,26 +17,75 @@
 
 <template>
   <div>
-    <a-input-search
-      class="search-input"
-      placeholder="Search"
-      v-model="filter"
-      @search="filterDataSource"/>
+    <span class="filter-group">
+      <a-input-search
+        class="search-input"
+        placeholder="Search"
+        v-model="filter"
+        @search="filterDataSource">
+        <a-popover
+          placement="bottomRight"
+          slot="addonAfter"
+          trigger="click"
+          v-model="visibleFilter">
+          <template slot="content">
+            <a-form
+              style="width: 170px"
+              :form="form"
+              layout="vertical"
+              @submit="handleSubmit">
+              <a-form-item :label="$t('filter')">
+                <a-select
+                  allowClear
+                  mode="multiple"
+                  v-decorator="['filter']">
+                  <a-select-option
+                    v-for="(opt) in filterOpts"
+                    :key="opt.id">{{ $t(opt.name) }}</a-select-option>
+                </a-select>
+              </a-form-item>
+              <div class="filter-group-button">
+                <a-button
+                  class="filter-group-button-clear"
+                  type="default"
+                  size="small"
+                  icon="stop"
+                  @click="onClear">Clear</a-button>
+                <a-button
+                  class="filter-group-button-search"
+                  type="primary"
+                  size="small"
+                  icon="search"
+                  @click="handleSubmit">Search</a-button>
+              </div>
+            </a-form>
+          </template>
+          <a-button
+            class="filter-group-button"
+            icon="filter"
+            size="small"/>
+        </a-popover>
+      </a-input-search>
+    </span>
     <a-spin :spinning="loading">
       <a-tabs
-        tabPosition="top"
         :animated="false"
-        :defaultActiveKey="Object.keys(dataSource)[0]">
+        :defaultActiveKey="Object.keys(dataSource)[0]"
+        tabPosition="top"
+        v-model="osType"
+        @change="changeOsName">
         <a-tab-pane v-for="(osList, osName) in dataSource" :key="osName">
           <span slot="tab">
             <os-logo :os-name="osName"></os-logo>
           </span>
           <TemplateIsoRadioGroup
-            :osType="osName"
+            v-if="osType===osName"
+            :osType="osType"
             :osList="dataSource[osName]"
             :input-decorator="inputDecorator"
             :selected="checkedValue"
             :itemCount="itemCount[osName]"
+            :preFillContent="preFillContent"
             @handle-filter-tag="filterDataSource"
             @emit-update-template-iso="updateTemplateIso"
           ></TemplateIsoRadioGroup>
@@ -72,6 +121,10 @@ export default {
     loading: {
       type: Boolean,
       default: false
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
@@ -80,7 +133,22 @@ export default {
       filteredItems: this.items,
       checkedValue: '',
       dataSource: {},
-      itemCount: {}
+      itemCount: {},
+      visibleFilter: false,
+      filterOpts: [{
+        id: 'featured',
+        name: 'featured'
+      }, {
+        id: 'community',
+        name: 'community'
+      }, {
+        id: 'selfexecutable',
+        name: 'selfexecutable'
+      }, {
+        id: 'sharedexecutable',
+        name: 'sharedexecutable'
+      }],
+      osType: ''
     }
   },
   watch: {
@@ -92,6 +160,7 @@ export default {
         this.checkedValue = items[0].id
       }
       this.dataSource = this.mappingDataSource()
+      this.osType = Object.keys(this.dataSource)[0]
     },
     inputDecorator (newValue, oldValue) {
       if (newValue !== oldValue) {
@@ -99,6 +168,10 @@ export default {
       }
     }
   },
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
+  },
+  inject: ['vmFetchTemplates', 'vmFetchIsos'],
   methods: {
     mappingDataSource () {
       let mappedItems = {}
@@ -124,6 +197,7 @@ export default {
       return mappedItems
     },
     updateTemplateIso (name, id) {
+      this.checkedValue = id
       this.$emit('update-template-iso', name, id)
     },
     filterDataSource (strQuery) {
@@ -164,6 +238,33 @@ export default {
       }
 
       return arrResult
+    },
+    handleSubmit (e) {
+      e.preventDefault()
+      this.form.validateFields((err, values) => {
+        if (err) {
+          return
+        }
+        const filtered = values.filter || []
+        this.filter = ''
+        filtered.map(item => {
+          if (this.filter.length === 0) {
+            this.filter += 'is:' + item
+          } else {
+            this.filter += '; is:' + item
+          }
+        })
+        this.filterDataSource(this.filter)
+      })
+    },
+    onClear () {
+      const field = { filter: undefined }
+      this.form.setFieldsValue(field)
+      this.filter = ''
+      this.filterDataSource('')
+    },
+    changeOsName (value) {
+      this.osType = value
     }
   }
 }
@@ -187,5 +288,52 @@ export default {
 
   /deep/.ant-tabs-nav-scroll {
     min-height: 45px;
+  }
+
+  .filter-group {
+    /deep/.ant-input-affix-wrapper {
+      float: right;
+      width: calc(100% - 32px);
+
+      .ant-input {
+        border-radius: 4px;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+    }
+
+    /deep/.ant-input-group-addon {
+      float: left;
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      border-right: 0;
+      border-left: 1px solid #d9d9d9;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      padding: 0 0 0 1px;
+    }
+
+    &-button {
+      background: inherit;
+      border: 0;
+      padding: 0;
+    }
+
+    &-button {
+      position: relative;
+      display: block;
+      min-height: 30px;
+
+      &-clear {
+        position: absolute;
+        left: 0;
+      }
+
+      &-search {
+        position: absolute;
+        right: 0;
+      }
+    }
   }
 </style>

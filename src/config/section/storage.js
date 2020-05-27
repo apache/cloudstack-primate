@@ -24,7 +24,7 @@ export default {
       name: 'volume',
       title: 'Volumes',
       icon: 'hdd',
-      permission: ['listVolumesMetrics', 'listVolumes'],
+      permission: ['listVolumesMetrics'],
       resourceType: 'Volume',
       columns: ['name', 'state', 'type', 'vmname', 'size', 'physicalsize', 'utilization', 'diskkbsread', 'diskkbswrite', 'diskiopstotal', 'storage', 'account', 'zonename'],
       details: ['name', 'id', 'type', 'storagetype', 'diskofferingdisplaytext', 'deviceid', 'sizegb', 'physicalsize', 'provisioningtype', 'utilization', 'diskkbsread', 'diskkbswrite', 'diskioread', 'diskiowrite', 'diskiopstotal', 'miniops', 'maxiops', 'path'],
@@ -42,7 +42,8 @@ export default {
           listView: true,
           popup: true,
           component: () => import('@/views/storage/CreateVolume.vue')
-        }, {
+        },
+        {
           api: 'getUploadParamsForVolume',
           icon: 'cloud-upload',
           label: 'Upload Local Volume',
@@ -68,14 +69,14 @@ export default {
           label: 'Attach Volume',
           args: ['virtualmachineid'],
           dataView: true,
-          show: (record) => { return !('virtualmachineid' in record) }
+          show: (record) => { return record.type !== 'ROOT' && record.state !== 'Destroy' && !('virtualmachineid' in record) }
         },
         {
           api: 'detachVolume',
           icon: 'link',
           label: 'Detach Volume',
           dataView: true,
-          show: (record) => { return 'virtualmachineid' in record && record.virtualmachineid }
+          show: (record) => { return record.type !== 'ROOT' && 'virtualmachineid' in record && record.virtualmachineid }
         },
         {
           api: 'createSnapshot',
@@ -109,6 +110,7 @@ export default {
           label: 'Resize Volume',
           dataView: true,
           popup: true,
+          show: (record) => { return record.state !== 'Destroy' },
           component: () => import('@/views/storage/ResizeVolume.vue')
         },
         {
@@ -117,7 +119,7 @@ export default {
           label: 'Migrate Volume',
           args: ['volumeid', 'storageid', 'livemigrate'],
           dataView: true,
-          show: (record) => { return record && record.state === 'Ready' },
+          show: (record, store) => { return record && record.state === 'Ready' && ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) },
           popup: true,
           component: () => import('@/views/storage/MigrateVolume.vue'),
           mapping: {
@@ -134,7 +136,7 @@ export default {
           icon: 'cloud-download',
           label: 'Download Volume',
           dataView: true,
-          show: (record) => { return record && record.state === 'Ready' },
+          show: (record) => { return record && record.state === 'Ready' && (record.vmstate === 'Stopped' || record.virtualmachineid == null) && record.state !== 'Destroy' },
           args: ['zoneid', 'mode'],
           mapping: {
             zoneid: {
@@ -151,7 +153,7 @@ export default {
           icon: 'picture',
           label: 'Create Template from Volume',
           dataView: true,
-          show: (record) => { return record.type === 'ROOT' },
+          show: (record) => { return (record.type === 'ROOT' && record.vmstate === 'Stopped') || (record.type !== 'ROOT' && !('virtualmachineid' in record) && !['Allocated', 'Uploaded', 'Destroy'].includes(record.state)) },
           args: ['volumeid', 'name', 'displaytext', 'ostypeid', 'ispublic', 'isfeatured', 'isdynamicallyscalable', 'requireshvm', 'passwordenabled', 'sshkeyenabled'],
           mapping: {
             volumeid: {
@@ -160,11 +162,36 @@ export default {
           }
         },
         {
+          api: 'recoverVolume',
+          icon: 'medicine-box',
+          label: 'Recover Volume',
+          dataView: true,
+          show: (record, store) => {
+            return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) || store.features.allowuserexpungerecovervolume) && record.state === 'Destroy'
+          }
+        },
+        {
           api: 'deleteVolume',
           icon: 'delete',
           label: 'Delete Volume',
           dataView: true,
-          groupAction: true
+          groupAction: true,
+          show: (record, store) => {
+            return ['Expunging', 'Expunged', 'UploadError'].includes(record.state) ||
+              ((['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) || store.features.allowuserexpungerecovervolume) && record.state === 'Destroy')
+          }
+        },
+        {
+          api: 'destroyVolume',
+          icon: 'delete',
+          label: 'Destroy Volume',
+          dataView: true,
+          args: (record, store) => {
+            return (!['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && !store.features.allowuserexpungerecovervolumestore) ? [] : ['expunge']
+          },
+          show: (record, store) => {
+            return (!['Creating'].includes(record.state) && record.type !== 'ROOT' && !('virtualmachineid' in record) && record.state !== 'Destroy')
+          }
         }
       ]
     },
@@ -208,7 +235,8 @@ export default {
           api: 'revertSnapshot',
           icon: 'sync',
           label: 'Revert Snapshot',
-          dataView: true
+          dataView: true,
+          show: (record) => { return record.revertable }
         },
         {
           api: 'deleteSnapshot',
@@ -274,15 +302,8 @@ export default {
           icon: 'paper-clip',
           label: 'Restore Volume and Attach',
           dataView: true,
-          args: ['backupid', 'virtualmachineid', 'volumeid'],
-          mapping: {
-            backupid: {
-              value: (record) => { return record.id }
-            },
-            volumeid: {
-              options: ['todo: handle custom volume ID']
-            }
-          }
+          popup: true,
+          component: () => import('@/views/storage/RestoreAttachBackupVolume.vue')
         },
         {
           api: 'removeVirtualMachineFromBackupOffering',

@@ -45,7 +45,7 @@
               <a-form-item
                 v-for="(field, index) in fields"
                 :key="index"
-                :label="$t(field.name)">
+                :label="field.name==='keyword' ? $t('name') : $t(field.name)">
                 <a-select
                   allowClear
                   v-if="field.type==='list'"
@@ -326,12 +326,16 @@ export default {
     },
     handleSubmit (e) {
       e.preventDefault()
+      this.paramsFilter = {}
       this.form.validateFields((err, values) => {
         if (err) {
           return
         }
         for (const key in values) {
           const input = values[key]
+          if (input === '' || input === null || input === undefined) {
+            continue
+          }
           this.paramsFilter[key] = input
         }
         if (this.filters.includes('tags')) {
