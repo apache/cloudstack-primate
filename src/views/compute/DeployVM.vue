@@ -80,7 +80,9 @@
                         :options="keyboardSelectOptions"
                       ></a-select>
                     </a-form-item>
-                    <a-form-item :label="this.$t('label.vm.boottype')">
+                    <a-form-item
+                      v-if="['KVM', 'VMware'].includes(hypervisor)"
+                      :label="this.$t('label.vm.boottype')">
                       <a-select
                         v-decorator="['boottype']"
                         @change="fetchBootModes"
@@ -90,7 +92,9 @@
                         </a-select-option>
                       </a-select>
                     </a-form-item>
-                    <a-form-item :label="this.$t('label.vm.bootmode')">
+                    <a-form-item
+                      v-if="['KVM', 'VMware'].includes(hypervisor)"
+                      :label="this.$t('label.vm.bootmode')">
                       <a-select
                         v-decorator="['bootmode']"
                       >
@@ -627,8 +631,12 @@ export default {
     instanceConfig (instanceConfig) {
       this.template = _.find(this.options.templates, (option) => option.id === instanceConfig.templateid)
       this.iso = _.find(this.options.isos, (option) => option.id === instanceConfig.isoid)
-      var hypervisorItem = _.find(this.options.hypervisors, (option) => option.name === instanceConfig.hypervisor)
-      this.hypervisor = hypervisorItem ? hypervisorItem.name : null
+
+      if (instanceConfig.hypervisor) {
+        var hypervisorItem = _.find(this.options.hypervisors, (option) => option.name === instanceConfig.hypervisor)
+        this.hypervisor = hypervisorItem ? hypervisorItem.name : null
+      }
+
       this.serviceOffering = _.find(this.options.serviceOfferings, (option) => option.id === instanceConfig.computeofferingid)
       this.diskOffering = _.find(this.options.diskOfferings, (option) => option.id === instanceConfig.diskofferingid)
       this.zone = _.find(this.options.zones, (option) => option.id === instanceConfig.zoneid)
@@ -1068,6 +1076,11 @@ export default {
             }
             param.opts = response
             this.options[name] = response
+
+            if (name === 'hypervisors') {
+              this.hypervisor = response[0] && response[0].name ? response[0].name : null
+            }
+
             this.$forceUpdate()
             if (param.field) {
               this.fillValue(param.field)
