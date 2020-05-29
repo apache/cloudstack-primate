@@ -133,7 +133,6 @@ export default {
         api('migrateSecondaryStorageData', params).then(response => {
           const hasJobId = this.checkForAddAsyncJob(response, title)
           if (hasJobId) {
-            console.log('job id: ', hasJobId)
             this.fetchImageStores()
           }
         }).catch(error => {
@@ -155,7 +154,6 @@ export default {
             if (res === 'jobid') {
               hasJobId = true
               const jobId = json[obj][res]
-              console.log('job id: ', jobId)
               this.$store.dispatch('AddAsyncJob', {
                 title: title,
                 jobid: jobId,
