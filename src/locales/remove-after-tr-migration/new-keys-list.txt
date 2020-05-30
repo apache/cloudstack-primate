@@ -1,5 +1,8 @@
-The following must be checked and fixed to use existing keys:
-(in other langs translation is missing)
+Task:
+- The following is a list of new translation keys added in Primate
+- Check if and how these keys are used by config and components
+- If possible remove usage of these keys and the keys from en.json, and replace
+  with an existing key which has translation available in other languages
 
 new key label.action.remove.vm
 new key label.add.ldap.list.users
