@@ -57,7 +57,7 @@
         </a-select>
       </a-form-item>
       <span v-if="customDiskOffering">
-        <a-form-item :label="$t('label.size.(gb)')">
+        <a-form-item :label="$t('label.sizegb')">
           <a-input
             v-decorator="['size', {
               rules: [{ required: true, message: 'Please enter custom disk size' }]}]"
