@@ -207,7 +207,7 @@ export default {
         const dayName = this.listDayOfWeek[index]
         this.dayOfWeek.push({
           id: dayName,
-          name: this.$t(dayName)
+          name: this.$t('label.' + dayName)
         })
       }
     },

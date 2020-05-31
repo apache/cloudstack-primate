@@ -18,7 +18,7 @@
 <template>
   <a-spin :spinning="fetchLoading">
     <a-button type="dashed" icon="plus" style="width: 100%; margin-bottom: 15px" @click="acquireIpAddress">
-      {{ $t("label.acquire.new.ip") }}
+      {{ $t('label.acquire.new.ip') }}
     </a-button>
     <div v-if="$route.path.startsWith('/vpc')">
       Select Tier:
