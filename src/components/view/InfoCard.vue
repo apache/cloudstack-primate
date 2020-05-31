@@ -521,7 +521,7 @@
 
       <div class="account-center-tags" v-if="resourceType && 'listTags' in $store.getters.apis">
         <a-divider/>
-        <div class="title">Tags</div>
+        <div class="title">{{ $t('label.tags') }}</div>
         <div>
           <template v-for="(tag, index) in tags">
             <a-tag :key="index" :closable="true" :afterClose="() => handleDeleteTag(tag)">

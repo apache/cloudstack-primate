@@ -39,15 +39,15 @@ export default {
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
-        name: 'Egress Rules',
+        name: 'egress.rules',
         component: () => import('@/views/network/EgressRulesTab.vue'),
         show: (record) => { return record.type === 'Isolated' && 'listEgressFirewallRules' in store.getters.apis }
       }, {
-        name: 'Public IP Addresses',
+        name: 'public.ip.addresses',
         component: () => import('@/views/network/IpAddressesTab.vue'),
         show: (record) => { return record.type === 'Isolated' && 'listPublicIpAddresses' in store.getters.apis }
       }, {
-        name: 'Virtual Routers',
+        name: 'virtual.routers',
         component: () => import('@/views/network/RoutersTab.vue'),
         show: (record) => { return (record.type === 'Isolated' || record.type === 'Shared') && 'listRouters' in store.getters.apis }
       }],
@@ -121,7 +121,7 @@ export default {
         param: 'vpcid'
       }],
       tabs: [{
-        name: 'VPC',
+        name: 'vpc',
         component: () => import('@/views/network/VpcTab.vue')
       }],
       actions: [
@@ -166,10 +166,10 @@ export default {
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
-        name: 'Ingress Rule',
+        name: 'ingress.rule',
         component: () => import('@/views/network/IngressEgressRuleConfigure.vue')
       }, {
-        name: 'Egress Rule',
+        name: 'egress.rule',
         component: () => import('@/views/network/IngressEgressRuleConfigure.vue')
       }],
       actions: [
@@ -201,19 +201,19 @@ export default {
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
-        name: 'Firewall',
+        name: 'firewall',
         component: () => import('@/views/network/FirewallRules.vue'),
         networkServiceFilter: networkService => networkService.filter(x => x.name === 'Firewall').length > 0
       }, {
-        name: 'Port Forwarding',
+        name: 'portforwarding',
         component: () => import('@/views/network/PortForwarding.vue'),
         networkServiceFilter: networkService => networkService.filter(x => x.name === 'PortForwarding').length > 0
       }, {
-        name: 'Load Balancing',
+        name: 'loadbalancing',
         component: () => import('@/views/network/LoadBalancing.vue'),
         networkServiceFilter: networkService => networkService.filter(x => x.name === 'Lb').length > 0
       }, {
-        name: 'VPN',
+        name: 'vpn',
         component: () => import('@/views/network/VpnDetails.vue'),
         show: (record) => { return record.issourcenat }
       }],
@@ -268,7 +268,7 @@ export default {
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
-        name: 'Static Routes',
+        name: 'static.routes',
         component: () => import('@/views/network/StaticRoutesTab.vue'),
         show: () => true
       }],
@@ -383,7 +383,7 @@ export default {
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
-        name: 'ACL List Rules',
+        name: 'acl.list.rules',
         component: () => import('@/views/network/AclListRulesTab.vue'),
         show: () => true
       }],
@@ -422,7 +422,7 @@ export default {
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
-        name: 'Assigned VMs',
+        name: 'loadbalancerinstance',
         component: () => import('@/views/network/InternalLBAssignedVmTab.vue'),
         show: () => true
       }],

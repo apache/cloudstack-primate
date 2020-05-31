@@ -30,7 +30,7 @@ export default {
   }],
   tabs: [
     {
-      name: 'Domain',
+      name: 'domain',
       component: () => import('@/components/view/InfoCard.vue'),
       show: (record, route) => { return route.path === '/domain' }
     },
@@ -44,7 +44,7 @@ export default {
       component: () => import('@/components/view/ResourceLimitTab.vue')
     },
     {
-      name: 'Settings',
+      name: 'settings',
       component: () => import('@/components/view/SettingsTab.vue'),
       show: (record, route, user) => { return ['Admin'].includes(user.roletype) }
     }

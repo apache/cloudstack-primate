@@ -26,7 +26,7 @@ export default {
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
   }, {
-    name: 'Rules',
+    name: 'rules',
     component: () => import('@/views/iam/RolePermissionTab.vue')
   }],
   actions: [

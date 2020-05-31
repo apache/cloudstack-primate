@@ -47,10 +47,10 @@ export default {
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
   }, {
-    name: 'Physical Networks',
+    name: 'physical.networks',
     component: () => import('@/views/infra/zone/PhysicalNetworksTab.vue')
   }, {
-    name: 'System VMs',
+    name: 'system.vms',
     component: () => import('@/views/infra/zone/SystemVmsTab.vue')
   }, {
     name: 'resources',
