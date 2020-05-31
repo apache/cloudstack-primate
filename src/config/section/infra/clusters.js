@@ -17,14 +17,14 @@
 
 export default {
   name: 'cluster',
-  title: 'Clusters',
+  title: 'label.clusters',
   icon: 'cluster',
   permission: ['listClustersMetrics'],
   columns: ['name', 'state', 'allocationstate', 'clustertype', 'hypervisortype', 'hosts', 'cpuused', 'cpumaxdeviation', 'cpuallocated', 'cputotal', 'memoryused', 'memorymaxdeviation', 'memoryallocated', 'memorytotal', 'podname', 'zonename'],
   details: ['name', 'id', 'allocationstate', 'clustertype', 'hypervisortype', 'podname', 'zonename'],
   related: [{
     name: 'host',
-    title: 'Hosts',
+    title: 'label.hosts',
     param: 'clusterid'
   }],
   tabs: [{

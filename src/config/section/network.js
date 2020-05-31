@@ -109,15 +109,15 @@ export default {
       details: ['name', 'id', 'displaytext', 'cidr', 'networkdomain', 'ispersistent', 'redundantvpcrouter', 'restartrequired', 'zonename', 'account', 'domain'],
       related: [{
         name: 'vm',
-        title: 'Instances',
+        title: 'label.instances',
         param: 'vpcid'
       }, {
         name: 'router',
-        title: 'Virtual Routers',
+        title: 'label.virtual.routers',
         param: 'vpcid'
       }, {
         name: 'ilbvm',
-        title: 'Internal LB VMs',
+        title: 'label.internal.lb.vms',
         param: 'vpcid'
       }],
       tabs: [{
@@ -156,7 +156,7 @@ export default {
     },
     {
       name: 'securitygroups',
-      title: 'Security Groups',
+      title: 'label.security.groups',
       icon: 'fire',
       permission: ['listSecurityGroups'],
       resourceType: 'SecurityGroup',
@@ -191,7 +191,7 @@ export default {
     },
     {
       name: 'publicip',
-      title: 'Public IP Addresses',
+      title: 'label.public.ip.addresses',
       icon: 'environment',
       permission: ['listPublicIpAddresses'],
       resourceType: 'PublicIpAddress',
@@ -258,7 +258,7 @@ export default {
     },
     {
       name: 'privategw',
-      title: 'Private Gateway',
+      title: 'label.private.gateway',
       icon: 'branches',
       hidden: true,
       permission: ['listPrivateGateways'],
@@ -311,7 +311,7 @@ export default {
     },
     {
       name: 's2svpn',
-      title: 'Site-to-Site VPNs',
+      title: 'label.site-to-site.vpns',
       icon: 'lock',
       hidden: true,
       permission: ['listVpnGateways'],
@@ -335,7 +335,7 @@ export default {
     },
     {
       name: 's2svpnconn',
-      title: 'Site-to-Site VPN Connections',
+      title: 'label.site-to-site.vpn.connections',
       icon: 'sync',
       hidden: true,
       permission: ['listVpnConnections'],
@@ -373,7 +373,7 @@ export default {
     },
     {
       name: 'acllist',
-      title: 'Network ACL Lists',
+      title: 'label.network.acl.lists',
       icon: 'bars',
       hidden: true,
       permission: ['listNetworkACLLists'],
@@ -412,7 +412,7 @@ export default {
     },
     {
       name: 'ilb',
-      title: 'Internal LB',
+      title: 'label.internal.lb',
       icon: 'share-alt',
       hidden: true,
       permission: ['listLoadBalancers'],
@@ -468,7 +468,7 @@ export default {
     },
     {
       name: 'vpnuser',
-      title: 'VPN Users',
+      title: 'label.vpn.users',
       icon: 'user',
       permission: ['listVpnUsers'],
       columns: ['username', 'state', 'account', 'domain'],
@@ -503,7 +503,7 @@ export default {
     },
     {
       name: 'vpncustomergateway',
-      title: 'VPN Customer Gateway',
+      title: 'label.vpncustomergatewayid',
       icon: 'lock',
       permission: ['listVpnCustomerGateways'],
       columns: ['name', 'gateway', 'cidrlist', 'ipsecpsk', 'account', 'domain'],

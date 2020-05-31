@@ -17,14 +17,14 @@
 
 export default {
   name: 'storagepool',
-  title: 'Primary Storage',
+  title: 'label.primary.storage',
   icon: 'database',
   permission: ['listStoragePoolsMetrics'],
   columns: ['name', 'state', 'ipaddress', 'type', 'path', 'scope', 'disksizeusedgb', 'disksizetotalgb', 'disksizeallocatedgb', 'disksizeunallocatedgb', 'clustername', 'zonename'],
   details: ['name', 'id', 'ipaddress', 'type', 'scope', 'tags', 'path', 'provider', 'hypervisor', 'overprovisionfactor', 'disksizetotal', 'disksizeallocated', 'disksizeused', 'clustername', 'podname', 'zonename', 'created'],
   related: [{
     name: 'volume',
-    title: 'Volumes',
+    title: 'label.volumes',
     param: 'storageid'
   }],
   tabs: [{

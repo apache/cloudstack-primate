@@ -17,7 +17,7 @@
 
 export default {
   name: 'physicalnetwork',
-  title: 'Physical Networks',
+  title: 'label.physical.networks',
   icon: 'api',
   hidden: true,
   permission: ['listPhysicalNetworks'],
@@ -38,7 +38,7 @@ export default {
   }],
   related: [{
     name: 'guestnetwork',
-    title: 'Networks',
+    title: 'label.networks',
     param: 'physicalnetworkid'
   }],
   actions: [

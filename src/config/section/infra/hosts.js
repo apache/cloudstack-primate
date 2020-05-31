@@ -17,7 +17,7 @@
 
 export default {
   name: 'host',
-  title: 'Hosts',
+  title: 'label.hosts',
   icon: 'desktop',
   permission: ['listHostsMetrics'],
   resourceType: 'Host',
@@ -33,7 +33,7 @@ export default {
   }],
   related: [{
     name: 'vm',
-    title: 'Instances',
+    title: 'label.instances',
     param: 'hostid'
   }],
   actions: [

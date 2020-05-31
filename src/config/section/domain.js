@@ -17,7 +17,7 @@
 
 export default {
   name: 'domain',
-  title: 'Domains',
+  title: 'label.domains',
   icon: 'block',
   permission: ['listDomains', 'listDomainChildren'],
   resourceType: 'Domain',
@@ -25,7 +25,7 @@ export default {
   details: ['name', 'id', 'path', 'parentdomainname', 'level', 'networkdomain', 'iptotal', 'vmtotal', 'volumetotal', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit'],
   related: [{
     name: 'account',
-    title: 'Accounts',
+    title: 'label.accounts',
     param: 'domainid'
   }],
   tabs: [

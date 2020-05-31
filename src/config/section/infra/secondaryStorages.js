@@ -17,7 +17,7 @@
 
 export default {
   name: 'imagestore',
-  title: 'Secondary Storages',
+  title: 'label.secondary.storage',
   icon: 'picture',
   permission: ['listImageStores'],
   columns: ['name', 'url', 'protocol', 'scope', 'zonename'],
