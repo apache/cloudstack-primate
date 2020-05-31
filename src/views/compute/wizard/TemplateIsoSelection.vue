@@ -34,7 +34,7 @@
               :form="form"
               layout="vertical"
               @submit="handleSubmit">
-              <a-form-item :label="$t('filter')">
+              <a-form-item :label="$t('label.filter')">
                 <a-select
                   allowClear
                   mode="multiple"
