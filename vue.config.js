@@ -18,6 +18,7 @@
 const path = require('path')
 const webpack = require('webpack')
 const fs = require('fs')
+const config = require('./public/config.json')
 
 function resolve (dir) {
   return path.join(__dirname, dir)
@@ -95,13 +96,7 @@ module.exports = {
   css: {
     loaderOptions: {
       less: {
-        modifyVars: {
-          // Refer:
-          // https://ant.design/docs/spec/colors
-          // https://vue.ant.design/docs/vue/customize-theme/
-          'primary-color': '#1890ff',
-          'link-color': '#1890ff'
-        },
+        modifyVars: config.theme,
         javascriptEnabled: true
       }
     }
