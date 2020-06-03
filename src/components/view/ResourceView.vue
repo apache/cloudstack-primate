@@ -41,7 +41,7 @@
           @change="onTabChange" >
           <a-tab-pane
             v-for="tab in tabs"
-            :tab="$t(tab.name)"
+            :tab="$t('label.' + tab.name)"
             :key="tab.name"
             v-if="showHideTab(tab)">
             <component :is="tab.component" :resource="resource" :loading="loading" :tab="activeTab" />
@@ -57,6 +57,7 @@ import DetailsTab from '@/components/view/DetailsTab'
 import InfoCard from '@/components/view/InfoCard'
 import ResourceLayout from '@/layouts/ResourceLayout'
 import { api } from '@/api'
+import { mixinDevice } from '@/utils/mixin.js'
 
 export default {
   name: 'ResourceView',
@@ -64,6 +65,7 @@ export default {
     InfoCard,
     ResourceLayout
   },
+  mixins: [mixinDevice],
   props: {
     resource: {
       type: Object,

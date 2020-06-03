@@ -31,19 +31,19 @@
       <template slot="action" slot-scope="text, record">
         <a-tooltip placement="top">
           <template slot="title">
-            <span v-if="resource.name==='BigSwitchBcf'">{{ $t('label.delete.BigSwitchBcf') }}</span>
-            <span v-else-if="resource.name==='BrocadeVcs'">{{ $t('label.delete.BrocadeVcs') }}</span>
-            <span v-else-if="resource.name==='NiciraNvp'">{{ $t('label.delete.NiciaNvp') }}</span>
-            <span v-else-if="resource.name==='F5BigIp'">{{ $t('label.delete.F5') }}</span>
-            <span v-else-if="resource.name==='JuniperSRX'">{{ $t('label.delete.SRX') }}</span>
-            <span v-else-if="resource.name==='Netscaler'">{{ $t('label.delete.Netscaler') }}</span>
-            <span v-else-if="resource.name==='Opendaylight'">{{ $t('label.delete.OpenDaylight.device') }}</span>
-            <span v-else-if="resource.name==='PaloAlto'">{{ $t('label.delete.PA') }}</span>
+            <span v-if="resource.name==='BigSwitchBcf'">{{ $t('label.delete.bigswitchbcf') }}</span>
+            <span v-else-if="resource.name==='BrocadeVcs'">{{ $t('label.delete.brocadevcs') }}</span>
+            <span v-else-if="resource.name==='NiciraNvp'">{{ $t('label.delete.niciranvp') }}</span>
+            <span v-else-if="resource.name==='F5BigIp'">{{ $t('label.delete.f5') }}</span>
+            <span v-else-if="resource.name==='JuniperSRX'">{{ $t('label.delete.srx') }}</span>
+            <span v-else-if="resource.name==='Netscaler'">{{ $t('label.delete.netscaler') }}</span>
+            <span v-else-if="resource.name==='Opendaylight'">{{ $t('label.delete.opendaylight.device') }}</span>
+            <span v-else-if="resource.name==='PaloAlto'">{{ $t('label.delete.pa') }}</span>
             <span v-else-if="resource.name==='CiscoVnmc' && title==='listCiscoVnmcResources'">
               {{ $t('label.delete.ciscovnmc.resource') }}
             </span>
             <span v-else-if="resource.name==='CiscoVnmc' && title==='listCiscoAsa1000vResources'">
-              {{ $t('label.delete.ciscoASA1000v') }}
+              {{ $t('label.delete.ciscoasa1000v') }}
             </span>
           </template>
           <a-button
@@ -156,49 +156,49 @@ export default {
       const params = {}
       switch (this.resource.name) {
         case 'BigSwitchBcf':
-          label = 'label.delete.BigSwitchBcf'
+          label = 'label.delete.bigswitchbcf'
           name = record.hostname
           apiName = 'deleteBigSwitchBcfDevice'
-          confirmation = 'message.confirm.delete.BigSwitchBcf'
+          confirmation = 'message.confirm.delete.bigswitchbcf'
           params.bcfdeviceid = record.bcfdeviceid
           break
         case 'F5BigIp':
-          label = 'label.delete.F5'
+          label = 'label.delete.f5'
           name = record.ipaddress
           apiName = 'deleteF5LoadBalancer'
-          confirmation = 'message.confirm.delete.F5'
+          confirmation = 'message.confirm.delete.f5'
           params.lbdeviceid = record.lbdeviceid
           break
         case 'NiciraNvp':
-          label = 'label.delete.NiciaNvp'
+          label = 'label.delete.niciranvp'
           name = record.hostname
           apiName = 'deleteNiciraNvpDevice'
-          confirmation = 'message.confirm.delete.NiciraNvp'
+          confirmation = 'message.confirm.delete.niciranvp'
           params.nvpdeviceid = record.nvpdeviceid
           break
         case 'BrocadeVcs':
-          label = 'label.delete.BrocadeVcs'
+          label = 'label.delete.brocadevcs'
           name = record.hostname
           apiName = 'deleteBrocadeVcsDevice'
-          confirmation = 'message.confirm.delete.BrocadeVcs'
+          confirmation = 'message.confirm.delete.brocadevcs'
           params.vcsdeviceid = record.vcsdeviceid
           break
         case 'JuniperSRX':
-          label = 'label.delete.SRX'
+          label = 'label.delete.srx'
           name = record.ipaddress
           apiName = 'deleteSrxFirewall'
-          confirmation = 'message.confirm.delete.SRX'
+          confirmation = 'message.confirm.delete.srx'
           params.fwdeviceid = record.fwdeviceid
           break
         case 'Netscaler':
-          label = 'label.delete.Netscaler'
+          label = 'label.delete.netscaler'
           name = record.ipaddress
           apiName = 'deleteNetscalerLoadBalancer'
-          confirmation = 'message.confirm.delete.NetScaler'
+          confirmation = 'message.confirm.delete.netscaler'
           params.lbdeviceid = record.lbdeviceid
           break
         case 'Opendaylight':
-          label = 'label.delete.OpenDaylight.device'
+          label = 'label.delete.opendaylight.device'
           name = record.name
           apiName = 'deleteOpenDaylightController'
           confirmation = 'message.confirm.delete.Opendaylight'
@@ -208,7 +208,7 @@ export default {
           label = 'label.delete.PA'
           name = record.ipaddress
           apiName = 'deletePaloAltoFirewall'
-          confirmation = 'message.confirm.delete.PA'
+          confirmation = 'message.confirm.delete.pa'
           params.fwdeviceid = record.fwdeviceid
           break
         case 'CiscoVnmc':
@@ -217,9 +217,9 @@ export default {
             apiName = 'deleteCiscoVnmcResource'
             confirmation = 'message.confirm.delete.ciscovnmc.resource'
           } else {
-            label = 'label.delete.ciscoASA1000v'
+            label = 'label.delete.ciscoasa1000v'
             apiName = 'deleteCiscoAsa1000vResource'
-            confirmation = 'message.confirm.delete.ciscoASA1000v'
+            confirmation = 'message.confirm.delete.ciscoasa1000v'
           }
 
           name = record.hostname

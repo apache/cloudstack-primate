@@ -19,11 +19,11 @@
   <div>
     <a-card class="breadcrumb-card">
       <a-row>
-        <a-col :span="12" style="padding-left: 6px">
+        <a-col :span="device === 'mobile' ? 24 : 12" style="padding-left: 12px">
           <breadcrumb :resource="resource">
             <a-tooltip placement="bottom" slot="end">
               <template slot="title">
-                {{ "Refresh" }}
+                {{ $t('label.refresh') }}
               </template>
               <a-button
                 style="margin-top: 4px"
@@ -32,13 +32,15 @@
                 size="small"
                 icon="reload"
                 @click="fetchData()">
-                {{ "Refresh" }}
+                {{ $t('label.refresh') }}
               </a-button>
             </a-tooltip>
           </breadcrumb>
         </a-col>
-        <a-col :span="12">
-          <span style="float: right">
+        <a-col
+          :span="device === 'mobile' ? 24 : 12"
+          :style="device !== 'mobile' ? { 'margin-bottom': '-6px' } : { 'margin-top': '12px', 'margin-bottom': '-6px' }">
+          <span :style="device !== 'mobile' ? { float: 'right' } : {}">
             <action-button
               style="margin-bottom: 5px"
               :loading="loading"
@@ -50,12 +52,12 @@
             <a-select
               v-if="filters && filters.length > 0"
               placeholder="Filter By"
-              :value="$t(selectedFilter)"
+              :value="$t('label.' + selectedFilter)"
               style="min-width: 100px; margin-left: 10px"
               @change="changeFilter">
               <a-icon slot="suffixIcon" type="filter" />
               <a-select-option v-for="filter in filters" :key="filter">
-                {{ $t(filter) }}
+                {{ $t('label.' + filter) }}
               </a-select-option>
             </a-select>
             <a-input-search
@@ -115,6 +117,10 @@
           </a>
         </span>
         <a-spin :spinning="currentAction.loading">
+          <span v-if="currentAction.message">
+            <a-alert :message="$t(currentAction.message)" type="warning" />
+            <br v-if="currentAction.paramFields.length > 0"/>
+          </span>
           <a-form
             :form="form"
             @submit="handleSubmit"
@@ -126,7 +132,7 @@
               v-if="!(currentAction.mapping && field.name in currentAction.mapping && currentAction.mapping[field.name].value)"
             >
               <span slot="label">
-                {{ $t(field.name) }}
+                {{ $t('label.' + field.name) }}
                 <a-tooltip :title="field.description">
                   <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
                 </a-tooltip>
@@ -137,6 +143,7 @@
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: 'Please provide input' }]
                   }]"
+                  v-model="formModel[field.name]"
                   :placeholder="field.description"
                 />
               </span>
@@ -154,9 +161,8 @@
                 </a-select>
               </span>
               <span
-                v-else-if="field.type==='uuid' ||
-                  (field.name==='account' && !['addAccountToProject', 'createAccount'].includes(currentAction.api)) ||
-                  field.name==='keypair'">
+                v-else-if="field.name==='keypair' ||
+                  (field.name==='account' && !['addAccountToProject', 'createAccount'].includes(currentAction.api))">
                 <a-select
                   showSearch
                   optionFilterProp="children"
@@ -170,6 +176,25 @@
                   }"
                 >
                   <a-select-option v-for="(opt, optIndex) in field.opts" :key="optIndex">
+                    {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
+                  </a-select-option>
+                </a-select>
+              </span>
+              <span
+                v-else-if="field.type==='uuid'">
+                <a-select
+                  showSearch
+                  optionFilterProp="children"
+                  v-decorator="[field.name, {
+                    rules: [{ required: field.required, message: 'Please select option' }]
+                  }]"
+                  :loading="field.loading"
+                  :placeholder="field.description"
+                  :filterOption="(input, option) => {
+                    return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }"
+                >
+                  <a-select-option v-for="opt in field.opts" :key="opt.id">
                     {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
                 </a-select>
@@ -321,7 +346,8 @@ export default {
       actions: [],
       treeData: [],
       treeSelected: {},
-      actionData: []
+      actionData: [],
+      formModel: {}
     }
   },
   computed: {
@@ -459,7 +485,7 @@ export default {
           customRender[key] = columnKey[key]
         }
         this.columns.push({
-          title: this.$t(key),
+          title: this.$t('label.' + key),
           dataIndex: key,
           scopedSlots: { customRender: key },
           sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
@@ -564,6 +590,8 @@ export default {
       this.currentAction = {}
     },
     execAction (action) {
+      this.form = this.$form.createForm(this)
+      this.formModel = {}
       this.actionData = []
       if (action.component && action.api && !action.popup) {
         this.$router.push({ name: action.api })
@@ -657,6 +685,9 @@ export default {
                 continue
               }
               param.opts = json[obj][res]
+              if (['listTemplates', 'listIsos'].includes(possibleApi)) {
+                param.opts = [...new Map(param.opts.map(x => [x.id, x])).values()]
+              }
               this.$forceUpdate()
               break
             }
@@ -669,9 +700,10 @@ export default {
       }).then(function () {
       })
     },
-    pollActionCompletion (jobId, action) {
+    pollActionCompletion (jobId, action, resourceName) {
       this.$pollJob({
         jobId,
+        name: resourceName,
         successMethod: result => {
           this.fetchData()
           if (action.response) {
@@ -686,7 +718,7 @@ export default {
           }
         },
         errorMethod: () => this.fetchData(),
-        loadingMessage: `${this.$t(action.label)} in progress for ${this.resource.name}`,
+        loadingMessage: `${this.$t(action.label)} - ${resourceName}`,
         catchMessage: 'Error encountered while fetching async job result',
         action
       })
@@ -696,7 +728,7 @@ export default {
       this.currentAction.paramFields.map(field => {
         let fieldValue = null
         let fieldName = null
-        if (field.type === 'uuid' || field.type === 'list' || field.name === 'account' || (this.currentAction.mapping && field.name in this.currentAction.mapping)) {
+        if (field.type === 'list' || field.name === 'account' || (this.currentAction.mapping && field.name in this.currentAction.mapping)) {
           fieldName = field.name.replace('ids', 'name').replace('id', 'name')
         } else {
           fieldName = field.name
@@ -704,6 +736,7 @@ export default {
         fieldValue = this.resource[fieldName] ? this.resource[fieldName] : null
         if (fieldValue) {
           form.getFieldDecorator(field.name, { initialValue: fieldValue })
+          this.formModel[field.name] = fieldValue
         }
       })
     },
@@ -720,30 +753,29 @@ export default {
           for (const key in values) {
             const input = values[key]
             for (const param of this.currentAction.params) {
-              if (param.name === key) {
-                if (input === undefined) {
-                  if (param.type === 'boolean') {
-                    params[key] = false
-                  }
-                  break
-                }
-                if (this.currentAction.mapping && key in this.currentAction.mapping && this.currentAction.mapping[key].options) {
-                  params[key] = this.currentAction.mapping[key].options[input]
-                } else if (param.type === 'uuid') {
-                  params[key] = param.opts[input].id
-                } else if (param.type === 'list') {
-                  params[key] = input.map(e => { return param.opts[e].id }).reduce((str, name) => { return str + ',' + name })
-                } else if (param.name === 'account' || param.name === 'keypair') {
-                  if (['addAccountToProject', 'createAccount'].includes(this.currentAction.api)) {
-                    params[key] = input
-                  } else {
-                    params[key] = param.opts[input].name
-                  }
-                } else {
-                  params[key] = input
+              if (param.name !== key) {
+                continue
+              }
+              if (input === undefined || input === null) {
+                if (param.type === 'boolean') {
+                  params[key] = false
                 }
                 break
               }
+              if (this.currentAction.mapping && key in this.currentAction.mapping && this.currentAction.mapping[key].options) {
+                params[key] = this.currentAction.mapping[key].options[input]
+              } else if (param.type === 'list') {
+                params[key] = input.map(e => { return param.opts[e].id }).reduce((str, name) => { return str + ',' + name })
+              } else if (param.name === 'account' || param.name === 'keypair') {
+                if (['addAccountToProject', 'createAccount'].includes(this.currentAction.api)) {
+                  params[key] = input
+                } else {
+                  params[key] = param.opts[input].name
+                }
+              } else {
+                params[key] = input
+              }
+              break
             }
           }
 
@@ -766,16 +798,20 @@ export default {
           console.log(this.resource)
           console.log(params)
 
+          const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username || params.ipaddress || params.virtualmachinename || this.resource.name
+
           var hasJobId = false
           api(this.currentAction.api, params).then(json => {
             for (const obj in json) {
               if (obj.includes('response')) {
                 for (const res in json[obj]) {
                   if (res === 'jobid') {
-                    this.$store.dispatch('AddAsyncJob', { title: this.$t(this.currentAction.label), jobid: json[obj][res], description: this.resource.name, status: 'progress' })
-                    this.pollActionCompletion(json[obj][res], this.currentAction)
+                    this.$store.dispatch('AddAsyncJob', { title: this.$t(this.currentAction.label), jobid: json[obj][res], description: resourceName, status: 'progress' })
+                    this.pollActionCompletion(json[obj][res], this.currentAction, resourceName)
                     hasJobId = true
                     break
+                  } else {
+                    this.$message.success(this.$t(this.currentAction.label) + (resourceName ? ' - ' + resourceName : ''))
                   }
                 }
                 break
@@ -862,7 +898,7 @@ export default {
 .breadcrumb-card {
   margin-left: -24px;
   margin-right: -24px;
-  margin-top: -16px;
+  margin-top: -18px;
   margin-bottom: 12px;
 }
 

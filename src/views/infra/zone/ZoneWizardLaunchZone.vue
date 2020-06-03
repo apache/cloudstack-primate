@@ -58,7 +58,7 @@
             class="step-error"
             v-if="step.status===status.FAILED"
           >
-            <div><strong>{{ $t('error.something.went.wrong.please.correct.the.following') }}:</strong></div>
+            <div><strong>{{ $t('label.error.something.went.wrong.please.correct.the.following') }}:</strong></div>
             <div>{{ messageError }}</div>
           </a-card>
         </a-step>
@@ -72,7 +72,7 @@
         icon="play-circle"
         :loading="loading"
         @click="enableZoneAction"
-      >{{ $t('label.enable.zone') }}</a-button>
+      >{{ $t('label.action.enable.zone') }}</a-button>
       <a-button
         v-if="processStatus==='error'"
         class="button-next"
