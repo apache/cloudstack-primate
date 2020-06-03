@@ -19,12 +19,12 @@ import store from '@/store'
 
 export default {
   name: 'network',
-  title: 'Network',
+  title: 'label.network',
   icon: 'wifi',
   children: [
     {
       name: 'guestnetwork',
-      title: 'Guest Networks',
+      title: 'label.guest.networks',
       icon: 'gateway',
       permission: ['listNetworks'],
       resourceType: 'Network',
@@ -33,22 +33,22 @@ export default {
       searchFilters: ['zoneid', 'domainid', 'account', 'tags'],
       related: [{
         name: 'vm',
-        title: 'Instances',
+        title: 'label.instances',
         param: 'networkid'
       }],
       tabs: [{
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
-        name: 'Egress Rules',
+        name: 'egress.rules',
         component: () => import('@/views/network/EgressRulesTab.vue'),
         show: (record) => { return record.type === 'Isolated' && 'listEgressFirewallRules' in store.getters.apis }
       }, {
-        name: 'Public IP Addresses',
+        name: 'public.ip.addresses',
         component: () => import('@/views/network/IpAddressesTab.vue'),
         show: (record) => { return record.type === 'Isolated' && 'listPublicIpAddresses' in store.getters.apis }
       }, {
-        name: 'Virtual Routers',
+        name: 'virtual.routers',
         component: () => import('@/views/network/RoutersTab.vue'),
         show: (record) => { return (record.type === 'Isolated' || record.type === 'Shared') && 'listRouters' in store.getters.apis }
       }],
@@ -102,7 +102,7 @@ export default {
     },
     {
       name: 'vpc',
-      title: 'VPC',
+      title: 'label.vpc',
       icon: 'deployment-unit',
       permission: ['listVPCs'],
       resourceType: 'Vpc',
@@ -111,19 +111,19 @@ export default {
       searchFilters: ['name', 'zoneid', 'domainid', 'account', 'tags'],
       related: [{
         name: 'vm',
-        title: 'Instances',
+        title: 'label.instances',
         param: 'vpcid'
       }, {
         name: 'router',
-        title: 'Virtual Routers',
+        title: 'label.virtual.routers',
         param: 'vpcid'
       }, {
         name: 'ilbvm',
-        title: 'Internal LB VMs',
+        title: 'label.internal.lb',
         param: 'vpcid'
       }],
       tabs: [{
-        name: 'VPC',
+        name: 'vpc',
         component: () => import('@/views/network/VpcTab.vue')
       }],
       actions: [
@@ -158,7 +158,7 @@ export default {
     },
     {
       name: 'securitygroups',
-      title: 'Security Groups',
+      title: 'label.security.groups',
       icon: 'fire',
       permission: ['listSecurityGroups'],
       resourceType: 'SecurityGroup',
@@ -168,10 +168,10 @@ export default {
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
-        name: 'Ingress Rule',
+        name: 'ingress.rule',
         component: () => import('@/views/network/IngressEgressRuleConfigure.vue')
       }, {
-        name: 'Egress Rule',
+        name: 'egress.rule',
         component: () => import('@/views/network/IngressEgressRuleConfigure.vue')
       }],
       actions: [
@@ -193,7 +193,7 @@ export default {
     },
     {
       name: 'publicip',
-      title: 'Public IP Addresses',
+      title: 'label.public.ip.addresses',
       icon: 'environment',
       permission: ['listPublicIpAddresses'],
       resourceType: 'PublicIpAddress',
@@ -203,19 +203,19 @@ export default {
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
-        name: 'Firewall',
+        name: 'firewall',
         component: () => import('@/views/network/FirewallRules.vue'),
         networkServiceFilter: networkService => networkService.filter(x => x.name === 'Firewall').length > 0
       }, {
-        name: 'Port Forwarding',
+        name: 'portforwarding',
         component: () => import('@/views/network/PortForwarding.vue'),
         networkServiceFilter: networkService => networkService.filter(x => x.name === 'PortForwarding').length > 0
       }, {
-        name: 'Load Balancing',
+        name: 'loadbalancing',
         component: () => import('@/views/network/LoadBalancing.vue'),
         networkServiceFilter: networkService => networkService.filter(x => x.name === 'Lb').length > 0
       }, {
-        name: 'VPN',
+        name: 'vpn',
         component: () => import('@/views/network/VpnDetails.vue'),
         show: (record) => { return record.issourcenat }
       }],
@@ -260,7 +260,7 @@ export default {
     },
     {
       name: 'privategw',
-      title: 'Private Gateway',
+      title: 'label.private.gateway',
       icon: 'branches',
       hidden: true,
       permission: ['listPrivateGateways'],
@@ -270,7 +270,7 @@ export default {
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
-        name: 'Static Routes',
+        name: 'static.routes',
         component: () => import('@/views/network/StaticRoutesTab.vue'),
         show: () => true
       }],
@@ -313,7 +313,7 @@ export default {
     },
     {
       name: 's2svpn',
-      title: 'Site-to-Site VPNs',
+      title: 'label.site-to-site.vpns',
       icon: 'lock',
       hidden: true,
       permission: ['listVpnGateways'],
@@ -337,7 +337,7 @@ export default {
     },
     {
       name: 's2svpnconn',
-      title: 'Site-to-Site VPN Connections',
+      title: 'label.site-to-site.vpn.connections',
       icon: 'sync',
       hidden: true,
       permission: ['listVpnConnections'],
@@ -375,7 +375,7 @@ export default {
     },
     {
       name: 'acllist',
-      title: 'Network ACL Lists',
+      title: 'label.network.acl.lists',
       icon: 'bars',
       hidden: true,
       permission: ['listNetworkACLLists'],
@@ -385,7 +385,7 @@ export default {
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
-        name: 'ACL List Rules',
+        name: 'acl.list.rules',
         component: () => import('@/views/network/AclListRulesTab.vue'),
         show: () => true
       }],
@@ -414,7 +414,7 @@ export default {
     },
     {
       name: 'ilb',
-      title: 'Internal LB',
+      title: 'label.internal.lb',
       icon: 'share-alt',
       hidden: true,
       permission: ['listLoadBalancers'],
@@ -424,7 +424,7 @@ export default {
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
       }, {
-        name: 'Assigned VMs',
+        name: 'loadbalancerinstance',
         component: () => import('@/views/network/InternalLBAssignedVmTab.vue'),
         show: () => true
       }],
@@ -470,7 +470,7 @@ export default {
     },
     {
       name: 'vpnuser',
-      title: 'VPN Users',
+      title: 'label.vpn.users',
       icon: 'user',
       permission: ['listVpnUsers'],
       columns: ['username', 'state', 'account', 'domain'],
@@ -505,7 +505,7 @@ export default {
     },
     {
       name: 'vpncustomergateway',
-      title: 'VPN Customer Gateway',
+      title: 'label.vpncustomergatewayid',
       icon: 'lock',
       permission: ['listVpnCustomerGateways'],
       columns: ['name', 'gateway', 'cidrlist', 'ipsecpsk', 'account', 'domain'],

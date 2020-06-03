@@ -19,12 +19,12 @@ import kubernetes from '@/assets/icons/kubernetes.svg?inline'
 
 export default {
   name: 'compute',
-  title: 'Compute',
+  title: 'label.compute',
   icon: 'cloud',
   children: [
     {
       name: 'vm',
-      title: 'Instances',
+      title: 'label.instances',
       icon: 'desktop',
       docHelp: 'adminguide/virtual_machines.html',
       permission: ['listVirtualMachinesMetrics'],
@@ -42,19 +42,19 @@ export default {
       searchFilters: ['name', 'zoneid', 'domainid', 'account', 'tags'],
       related: [{
         name: 'volume',
-        title: 'Volumes',
+        title: 'label.volumes',
         param: 'virtualmachineid'
       }, {
         name: 'vmsnapshot',
-        title: 'VM Snapshots',
+        title: 'label.vm.snapshots',
         param: 'virtualmachineid'
       }, {
         name: 'backup',
-        title: 'Backups',
+        title: 'label.backup',
         param: 'virtualmachineid'
       }, {
         name: 'affinitygroup',
-        title: 'Affinity Groups',
+        title: 'label.affinity.groups',
         param: 'virtualmachineid'
       }],
       tabs: [{
@@ -95,6 +95,7 @@ export default {
           api: 'stopVirtualMachine',
           icon: 'stop',
           label: 'label.action.stop.instance',
+          message: 'message.action.stop.instance',
           docHelp: 'adminguide/virtual_machines.html#stopping-and-starting-vms',
           dataView: true,
           groupAction: true,
@@ -105,6 +106,7 @@ export default {
           api: 'rebootVirtualMachine',
           icon: 'reload',
           label: 'label.action.reboot.instance',
+          message: 'message.action.reboot.instance',
           dataView: true,
           show: (record) => { return ['Running'].includes(record.state) }
         },
@@ -340,7 +342,7 @@ export default {
     },
     {
       name: 'kubernetes',
-      title: 'Kubernetes',
+      title: 'label.kubernetes',
       icon: kubernetes,
       permission: ['listKubernetesClusters'],
       columns: ['name', 'state', 'size', 'cpunumber', 'memory', 'account', 'zonename'],
@@ -401,7 +403,7 @@ export default {
     },
     {
       name: 'vmgroup',
-      title: 'Instance Groups',
+      title: 'label.instance.groups',
       icon: 'gold',
       docHelp: 'adminguide/virtual_machines.html#changing-the-vm-name-os-or-group',
       permission: ['listInstanceGroups'],
@@ -409,7 +411,7 @@ export default {
       details: ['name', 'id', 'account', 'domain', 'created'],
       related: [{
         name: 'vm',
-        title: 'Instances',
+        title: 'label.instances',
         param: 'groupid'
       }],
       actions: [
@@ -437,7 +439,7 @@ export default {
     },
     {
       name: 'ssh',
-      title: 'SSH Key Pairs',
+      title: 'label.ssh.key.pairs',
       icon: 'key',
       docHelp: 'adminguide/virtual_machines.html#using-ssh-keys-for-authentication',
       permission: ['listSSHKeyPairs'],
@@ -445,7 +447,7 @@ export default {
       details: ['name', 'fingerprint', 'account', 'domain'],
       related: [{
         name: 'vm',
-        title: 'Instances',
+        title: 'label.instances',
         param: 'keypair'
       }],
       actions: [
@@ -479,7 +481,7 @@ export default {
     },
     {
       name: 'affinitygroup',
-      title: 'Affinity Groups',
+      title: 'label.affinity.groups',
       icon: 'swap',
       docHelp: 'adminguide/virtual_machines.html#affinity-groups',
       permission: ['listAffinityGroups'],
@@ -487,7 +489,7 @@ export default {
       details: ['name', 'id', 'description', 'type', 'account', 'domain'],
       related: [{
         name: 'vm',
-        title: 'Instances',
+        title: 'label.instances',
         param: 'affinitygroupid'
       }],
       actions: [

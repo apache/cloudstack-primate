@@ -16,17 +16,41 @@
 // under the License.
 
 <template>
-  <span v-if="!dataView && !treeView">
-    <a-input-search
-      v-if="!filters || filters.length === 0"
-      class="input-search"
-      placeholder="Search"
-      v-model="searchQuery"
-      allowClear
-      @search="onSearch" />
+  <span v-if="!dataView">
+    <span v-if="!searchFilters || searchFilters.length === 0">
+      <a-select
+        v-if="filters && filters.length > 0"
+        placeholder="Filter By"
+        :value="$t('label.' + selectedFilter)"
+        style="min-width: 100px; margin-left: 10px"
+        @change="changeFilter">
+        <a-icon slot="suffixIcon" type="filter" />
+        <a-select-option v-for="filter in filters" :key="filter">
+          {{ $t('label.' + filter) }}
+        </a-select-option>
+      </a-select>
+      <a-input-search
+        class="input-search"
+        placeholder="Search"
+        v-model="searchQuery"
+        allowClear
+        @search="onSearch" />
+    </span>
+
     <span
       v-else
       class="filter-group">
+      <a-select
+        v-if="filters && filters.length > 0"
+        placeholder="Filter By"
+        :value="$t('label.' + selectedFilter)"
+        style="min-width: 100px; margin-left: 10px"
+        @change="changeFilter">
+        <a-icon slot="suffixIcon" type="filter" />
+        <a-select-option v-for="filter in filters" :key="filter">
+          {{ $t('label.' + filter) }}
+        </a-select-option>
+      </a-select>
       <a-input-search
         allowClear
         class="input-search"
@@ -137,12 +161,20 @@ export default {
       type: Array,
       default: () => []
     },
+    searchFilters: {
+      type: Array,
+      default: () => []
+    },
     apiName: {
+      type: String,
+      default: () => ''
+    },
+    selectedFilter: {
       type: String,
       default: () => ''
     }
   },
-  inject: ['parentSearch', 'parentFilter'],
+  inject: ['parentSearch', 'parentFilter', 'parentChangeFilter'],
   data () {
     return {
       searchQuery: null,
@@ -167,7 +199,7 @@ export default {
   },
   methods: {
     async initFormFieldData () {
-      this.fields = this.filters.map(item => {
+      this.fields = this.searchFilters.map(item => {
         if (['zoneid', 'domainid', 'state', 'level'].includes(item)) {
           return {
             type: 'list',
@@ -192,27 +224,27 @@ export default {
       let zoneIndex = -1
       let domainIndex = -1
 
-      if (this.filters.includes('state')) {
+      if (this.searchFilters.includes('state')) {
         const stateIndex = this.fields.findIndex(item => item.name === 'state')
         this.fields[stateIndex].loading = true
         this.fields[stateIndex].opts = this.fetchState()
         this.fields[stateIndex].loading = false
       }
 
-      if (this.filters.includes('level')) {
+      if (this.searchFilters.includes('level')) {
         const levelIndex = this.fields.findIndex(item => item.name === 'level')
         this.fields[levelIndex].loading = true
         this.fields[levelIndex].opts = this.fetchLevel()
         this.fields[levelIndex].loading = false
       }
 
-      if (this.filters.includes('zoneid')) {
+      if (this.searchFilters.includes('zoneid')) {
         zoneIndex = this.fields.findIndex(item => item.name === 'zoneid')
         this.fields[zoneIndex].loading = true
         promises.push(await this.fetchZones())
       }
 
-      if (this.filters.includes('domainid')) {
+      if (this.searchFilters.includes('domainid')) {
         domainIndex = this.fields.findIndex(item => item.name === 'domainid')
         this.fields[domainIndex].loading = true
         promises.push(await this.fetchDomains())
@@ -315,7 +347,7 @@ export default {
       this.parentSearch(this.searchQuery)
     },
     onClear () {
-      this.filters.map(item => {
+      this.searchFilters.map(item => {
         const field = {}
         field[item] = undefined
         this.paramsFilter[item] = undefined
@@ -338,7 +370,7 @@ export default {
           }
           this.paramsFilter[key] = input
         }
-        if (this.filters.includes('tags')) {
+        if (this.searchFilters.includes('tags')) {
           if (this.tags.length > 0) {
             this.paramsFilter['tags[0].key'] = this.tags[0].key
             this.paramsFilter['tags[0].value'] = this.tags[0].value
@@ -373,6 +405,9 @@ export default {
     },
     showInput () {
       this.inputVisible = true
+    },
+    changeFilter (filter) {
+      this.parentChangeFilter(filter)
     }
   }
 }

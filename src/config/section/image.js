@@ -19,12 +19,12 @@ import kubernetes from '@/assets/icons/kubernetes.svg?inline'
 
 export default {
   name: 'image',
-  title: 'Images',
+  title: 'label.images',
   icon: 'picture',
   children: [
     {
       name: 'template',
-      title: 'Templates',
+      title: 'label.templates',
       icon: 'save',
       permission: ['listTemplates'],
       params: { templatefilter: 'self' },
@@ -35,7 +35,7 @@ export default {
       searchFilters: ['name', 'zoneid', 'tags'],
       related: [{
         name: 'vm',
-        title: 'Instances',
+        title: 'label.instances',
         param: 'templateid'
       }],
       tabs: [{
@@ -102,7 +102,7 @@ export default {
     },
     {
       name: 'iso',
-      title: 'ISOs',
+      title: 'label.isos',
       icon: 'usb',
       permission: ['listIsos'],
       params: { isofilter: 'self' },
@@ -113,7 +113,7 @@ export default {
       searchFilters: ['name', 'zoneid', 'tags'],
       related: [{
         name: 'vm',
-        title: 'Instances',
+        title: 'label.instances',
         param: 'isoid'
       }],
       tabs: [{
@@ -178,7 +178,7 @@ export default {
     },
     {
       name: 'kubernetesiso',
-      title: 'Kubernetes ISOs',
+      title: 'label.kubernetes.isos',
       icon: kubernetes,
       permission: ['listKubernetesSupportedVersions'],
       columns: ['name', 'state', 'semanticversion', 'isostate', 'mincpunumber', 'minmemory', 'zonename'],
