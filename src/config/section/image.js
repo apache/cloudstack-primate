@@ -19,21 +19,22 @@ import kubernetes from '@/assets/icons/kubernetes.svg?inline'
 
 export default {
   name: 'image',
-  title: 'Images',
+  title: 'label.images',
   icon: 'picture',
   children: [
     {
       name: 'template',
-      title: 'Templates',
+      title: 'label.templates',
       icon: 'save',
       permission: ['listTemplates'],
-      params: { templatefilter: 'executable' },
+      params: { templatefilter: 'self' },
       resourceType: 'Template',
+      filters: ['self', 'shared', 'featured', 'community'],
       columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain', 'order'],
       details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'directdownload', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created'],
       related: [{
         name: 'vm',
-        title: 'Instances',
+        title: 'label.instances',
         param: 'templateid'
       }],
       tabs: [{
@@ -94,37 +95,23 @@ export default {
           dataView: true,
           popup: true,
           show: (record, store) => { return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) || record.templatetype !== 'BUILTIN') },
-          component: () => import('@/views/image/UpdateTemplatePermissions')
-        },
-        {
-          api: 'copyTemplate',
-          icon: 'copy',
-          label: 'Copy Template',
-          args: ['sourcezoneid', 'destzoneids'],
-          dataView: true
-        },
-        {
-          api: 'deleteTemplate',
-          icon: 'delete',
-          label: 'Delete Template',
-          args: ['zoneid'],
-          dataView: true,
-          groupAction: true
+          component: () => import('@/views/image/UpdateTemplateIsoPermissions')
         }
       ]
     },
     {
       name: 'iso',
-      title: 'ISOs',
+      title: 'label.isos',
       icon: 'usb',
       permission: ['listIsos'],
-      params: { isofilter: 'executable' },
+      params: { isofilter: 'self' },
       resourceType: 'ISO',
+      filters: ['self', 'shared', 'featured', 'community'],
       columns: ['name', 'ostypename', 'account', 'domain'],
       details: ['name', 'id', 'displaytext', 'checksum', 'ostypename', 'size', 'bootable', 'isready', 'directdownload', 'isextractable', 'ispublic', 'isfeatured', 'crosszones', 'account', 'domain', 'created'],
       related: [{
         name: 'vm',
-        title: 'Instances',
+        title: 'label.instances',
         param: 'isoid'
       }],
       tabs: [{
@@ -180,28 +167,16 @@ export default {
           icon: 'reconciliation',
           label: 'Update ISO Permissions',
           dataView: true,
-          args: ['op', 'accounts', 'projectids']
-        },
-        {
-          api: 'copyIso',
-          icon: 'copy',
-          label: 'Copy ISO',
-          args: ['sourcezoneid', 'destzoneids'],
-          dataView: true
-        },
-        {
-          api: 'deleteIso',
-          icon: 'delete',
-          label: 'Delete ISO',
-          args: ['zoneid'],
-          dataView: true,
-          groupAction: true
+          args: ['op', 'accounts', 'projectids'],
+          popup: true,
+          show: (record, store) => { return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) || record.templatetype !== 'BUILTIN') },
+          component: () => import('@/views/image/UpdateTemplateIsoPermissions')
         }
       ]
     },
     {
       name: 'kubernetesiso',
-      title: 'Kubernetes ISOs',
+      title: 'label.kubernetes.isos',
       icon: kubernetes,
       permission: ['listKubernetesSupportedVersions'],
       columns: ['name', 'state', 'semanticversion', 'isostate', 'mincpunumber', 'minmemory', 'zonename'],
@@ -210,7 +185,7 @@ export default {
         {
           api: 'addKubernetesSupportedVersion',
           icon: 'plus',
-          label: 'Add Kubernetes Version',
+          label: 'label.kubernetes.version.add',
           listView: true,
           popup: true,
           component: () => import('@/views/image/AddKubernetesSupportedVersion.vue')
@@ -218,7 +193,7 @@ export default {
         {
           api: 'updateKubernetesSupportedVersion',
           icon: 'edit',
-          label: 'Update Kuberntes Version',
+          label: 'label.kubernetes.version.update',
           dataView: true,
           popup: true,
           component: () => import('@/views/image/UpdateKubernetesSupportedVersion.vue')
@@ -226,7 +201,7 @@ export default {
         {
           api: 'deleteKubernetesSupportedVersion',
           icon: 'delete',
-          label: 'Delete Kubernetes Version',
+          label: 'label.kubernetes.version.update',
           dataView: true
         }
       ]

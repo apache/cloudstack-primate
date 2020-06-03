@@ -20,15 +20,15 @@
     <div>
       <div class="form">
         <div class="form__item">
-          <div class="form__label">{{ $t('sourcecidr') }}</div>
+          <div class="form__label">{{ $t('label.sourcecidr') }}</div>
           <a-input v-model="newRule.cidrlist"></a-input>
         </div>
         <div class="form__item">
-          <div class="form__label">{{ $t('destcidr') }}</div>
+          <div class="form__label">{{ $t('label.destcidr') }}</div>
           <a-input v-model="newRule.destcidrlist"></a-input>
         </div>
         <div class="form__item">
-          <div class="form__label">{{ $t('protocol') }}</div>
+          <div class="form__label">{{ $t('label.protocol') }}</div>
           <a-select v-model="newRule.protocol" style="width: 100%;" @change="resetRulePorts">
             <a-select-option value="tcp">TCP</a-select-option>
             <a-select-option value="udp">UDP</a-select-option>
@@ -37,23 +37,23 @@
           </a-select>
         </div>
         <div v-show="newRule.protocol === 'tcp' || newRule.protocol === 'udp'" class="form__item">
-          <div class="form__label">{{ $t('startport') }}</div>
+          <div class="form__label">{{ $t('label.startport') }}</div>
           <a-input v-model="newRule.startport"></a-input>
         </div>
         <div v-show="newRule.protocol === 'tcp' || newRule.protocol === 'udp'" class="form__item">
-          <div class="form__label">{{ $t('endport') }}</div>
+          <div class="form__label">{{ $t('label.endport') }}</div>
           <a-input v-model="newRule.endport"></a-input>
         </div>
         <div v-show="newRule.protocol === 'icmp'" class="form__item">
-          <div class="form__label">{{ $t('icmptype') }}</div>
+          <div class="form__label">{{ $t('label.icmptype') }}</div>
           <a-input v-model="newRule.icmptype"></a-input>
         </div>
         <div v-show="newRule.protocol === 'icmp'" class="form__item">
-          <div class="form__label">{{ $t('icmpcode') }}</div>
+          <div class="form__label">{{ $t('label.icmpcode') }}</div>
           <a-input v-model="newRule.icmpcode"></a-input>
         </div>
         <div class="form__item">
-          <a-button type="primary" icon="plus" @click="addRule">{{ $t('add') }}</a-button>
+          <a-button type="primary" icon="plus" @click="addRule">{{ $t('label.add') }}</a-button>
         </div>
       </div>
     </div>
@@ -78,7 +78,7 @@
         {{ record.icmpcode || record.endport >= 0 ? record.icmpcode || record.endport : 'All' }}
       </template>
       <template slot="actions" slot-scope="record">
-        <a-button shape="round" type="danger" icon="delete" @click="deleteRule(record)" />
+        <a-button shape="circle" type="danger" icon="delete" @click="deleteRule(record)" />
       </template>
     </a-table>
     <a-pagination
@@ -126,15 +126,15 @@ export default {
       pageSize: 10,
       columns: [
         {
-          title: this.$t('sourcecidr'),
+          title: this.$t('label.sourcecidr'),
           dataIndex: 'cidrlist'
         },
         {
-          title: this.$t('destcidr'),
+          title: this.$t('label.destcidr'),
           dataIndex: 'destcidrlist'
         },
         {
-          title: this.$t('protocol'),
+          title: this.$t('label.protocol'),
           scopedSlots: { customRender: 'protocol' }
         },
         {
@@ -146,7 +146,7 @@ export default {
           scopedSlots: { customRender: 'endport' }
         },
         {
-          title: this.$t('action'),
+          title: this.$t('label.action'),
           scopedSlots: { customRender: 'actions' }
         }
       ]
@@ -199,10 +199,7 @@ export default {
           catchMethod: () => this.fetchData()
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.fetchData()
       })
     },
@@ -229,10 +226,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.createegressfirewallruleresponse.errortext
-        })
+        this.$notifyError(error)
         this.resetAllRules()
         this.fetchData()
       })

@@ -17,7 +17,7 @@
 
 export default {
   name: 'router',
-  title: 'Virtual Routers',
+  title: 'label.virtual.routers',
   icon: 'fork',
   permission: ['listRouters'],
   params: { projectid: '-1' },
@@ -35,6 +35,7 @@ export default {
       api: 'stopRouter',
       icon: 'stop',
       label: 'label.action.stop.router',
+      message: 'message.action.stop.router',
       dataView: true,
       args: ['forced'],
       show: (record) => { return record.state === 'Running' }
@@ -89,7 +90,22 @@ export default {
         type: {
           options: ['ping', 'traceroute', 'arping']
         }
-      }
+      },
+      response: (result) => { return result && result.diagnostics ? `<strong>Output</strong>:<br/>${result.diagnostics.stdout}<br/><strong>Error</strong>: ${result.diagnostics.stderr}<br/><strong>Exit Code</strong>: ${result.diagnostics.exitcode}` : 'Invalid response' }
+    },
+    {
+      api: 'getDiagnosticsData',
+      icon: 'download',
+      label: 'label.action.get.diagnostics',
+      dataView: true,
+      show: (record) => { return record.state === 'Running' },
+      args: ['targetid', 'files'],
+      mapping: {
+        targetid: {
+          value: (record) => { return record.id }
+        }
+      },
+      response: (result) => { return result && result.diagnostics && result.diagnostics.url ? `Please click the link to download the retrieved diagnostics: <p><a href='${result.diagnostics.url}'>${result.diagnostics.url}</a></p>` : 'Invalid response' }
     },
     {
       api: 'destroyRouter',

@@ -17,21 +17,21 @@
 
 export default {
   name: 'offering',
-  title: 'Offerings',
+  title: 'label.menu.service.offerings',
   icon: 'shopping',
-  permission: ['listServiceOfferings'],
+  permission: ['listServiceOfferings', 'listDiskOfferings', 'listDomains'],
   children: [
     {
       name: 'computeoffering',
-      title: 'Compute Offerings',
+      title: 'label.compute.offerings',
       icon: 'cloud',
-      permission: ['listServiceOfferings'],
+      permission: ['listServiceOfferings', 'listDomains'],
       params: { isrecursive: 'true' },
       columns: ['name', 'displaytext', 'cpunumber', 'cpuspeed', 'memory', 'tags', 'domain', 'zone', 'order'],
       details: ['name', 'id', 'displaytext', 'offerha', 'provisioningtype', 'storagetype', 'iscustomized', 'limitcpuuse', 'cpunumber', 'cpuspeed', 'memory', 'tags', 'domain', 'zone', 'created'],
       related: [{
         name: 'vm',
-        title: 'Instances',
+        title: 'label.instances',
         param: 'serviceofferingid'
       }],
       actions: [{
@@ -63,7 +63,7 @@ export default {
     },
     {
       name: 'systemoffering',
-      title: 'System Offerings',
+      title: 'label.system.offerings',
       icon: 'setting',
       permission: ['listServiceOfferings', 'listInfrastructure'],
       params: { issystem: 'true', isrecursive: 'true' },
@@ -94,15 +94,15 @@ export default {
     },
     {
       name: 'diskoffering',
-      title: 'Disk Offerings',
+      title: 'label.disk.offerings',
       icon: 'hdd',
-      permission: ['listDiskOfferings'],
+      permission: ['listDiskOfferings', 'listDomains'],
       params: { isrecursive: 'true' },
       columns: ['name', 'displaytext', 'disksize', 'tags', 'domain', 'zone', 'order'],
       details: ['name', 'id', 'displaytext', 'disksize', 'provisioningtype', 'storagetype', 'iscustomized', 'tags', 'domain', 'zone', 'created'],
       related: [{
         name: 'volume',
-        title: 'Volumes',
+        title: 'label.volumes',
         param: 'diskofferingid'
       }],
       actions: [{
@@ -134,9 +134,9 @@ export default {
     },
     {
       name: 'backupoffering',
-      title: 'Backup Offerings',
+      title: 'label.backup.offerings',
       icon: 'cloud-upload',
-      permission: ['listBackupOfferings'],
+      permission: ['listBackupOfferings', 'listInfrastructure'],
       columns: ['name', 'description', 'zoneid'],
       details: ['name', 'id', 'description', 'externalid', 'zone', 'created'],
       actions: [{
@@ -144,7 +144,8 @@ export default {
         icon: 'plus',
         label: 'Import Offering',
         listView: true,
-        args: ['name', 'description', 'zoneid', 'externalid']
+        popup: true,
+        component: () => import('@/views/offering/ImportBackupOffering.vue')
       }, {
         api: 'deleteBackupOffering',
         icon: 'delete',
@@ -154,9 +155,9 @@ export default {
     },
     {
       name: 'networkoffering',
-      title: 'Network Offerings',
+      title: 'label.network.offerings',
       icon: 'wifi',
-      permission: ['listNetworkOfferings'],
+      permission: ['listNetworkOfferings', 'listInfrastructure'],
       params: { isrecursive: 'true' },
       columns: ['name', 'state', 'guestiptype', 'traffictype', 'networkrate', 'tags', 'domain', 'zone', 'order'],
       details: ['name', 'id', 'displaytext', 'guestiptype', 'traffictype', 'networkrate', 'ispersistent', 'egressdefaultpolicy', 'availability', 'conservemode', 'specifyvlan', 'specifyipranges', 'supportspublicaccess', 'supportsstrechedl2subnet', 'tags', 'service', 'domain', 'zone'],
@@ -218,16 +219,16 @@ export default {
     },
     {
       name: 'vpcoffering',
-      title: 'VPC Offerings',
+      title: 'label.vpc.offerings',
       icon: 'deployment-unit',
-      permission: ['listVPCOfferings'],
+      permission: ['listVPCOfferings', 'listInfrastructure'],
       params: { isrecursive: 'true' },
       resourceType: 'VpcOffering',
       columns: ['name', 'state', 'displaytext', 'domain', 'zone', 'order'],
       details: ['name', 'id', 'displaytext', 'distributedvpcrouter', 'tags', 'service', 'domain', 'zone', 'created'],
       related: [{
         name: 'vpc',
-        title: 'VPCs',
+        title: 'label.vpcs',
         param: 'vpcofferingid'
       }],
       actions: [{

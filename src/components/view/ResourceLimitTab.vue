@@ -27,7 +27,7 @@
         :key="index"
         v-if="item.resourcetypename !== 'project'"
         :v-bind="item.resourcetypename"
-        :label="$t('max' + item.resourcetypename.replace('_', ''))">
+        :label="$t('label.max' + item.resourcetypename.replace('_', ''))">
         <a-input-number
           style="width: 100%;"
           v-decorator="[item.resourcetype, {
@@ -40,7 +40,7 @@
           v-if="!($route.meta.name === 'domain' && resource.level === 0)"
           :loading="formLoading"
           type="primary"
-          @click="handleSubmit">{{ $t('submit') }}</a-button>
+          @click="handleSubmit">{{ $t('label.submit') }}</a-button>
       </div>
     </a-form>
   </a-spin>
@@ -135,10 +135,7 @@ export default {
           this.$message.success('Apply Successful')
           this.fetchData()
         }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: error.response.headers['x-description']
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.formLoading = false
         })

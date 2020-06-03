@@ -17,9 +17,9 @@
 
 export default {
   name: 'host',
-  title: 'Hosts',
+  title: 'label.hosts',
   icon: 'desktop',
-  permission: ['listHostsMetrics', 'listHosts'],
+  permission: ['listHostsMetrics'],
   resourceType: 'Host',
   params: { type: 'routing' },
   columns: ['name', 'state', 'resourcestate', 'powerstate', 'ipaddress', 'hypervisor', 'instances', 'cpunumber', 'cputotalghz', 'cpuusedghz', 'cpuallocatedghz', 'memorytotalgb', 'memoryusedgb', 'memoryallocatedgb', 'networkread', 'networkwrite', 'clustername', 'zonename'],
@@ -28,12 +28,12 @@ export default {
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
   }, {
-    name: 'Config',
+    name: 'config',
     component: () => import('@/views/infra/HostInfoTab.vue')
   }],
   related: [{
     name: 'vm',
-    title: 'Instances',
+    title: 'label.instances',
     param: 'hostid'
   }],
   actions: [

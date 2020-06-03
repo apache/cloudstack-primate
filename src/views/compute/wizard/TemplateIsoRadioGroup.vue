@@ -37,22 +37,22 @@
               :visible="os.ispublic && !os.isfeatured"
               color="blue"
               @click="onFilterTag('is: public')"
-            >{{ $t('isPublic') }}</a-tag>
+            >{{ $t('label.ispublic') }}</a-tag>
             <a-tag
               :visible="os.isfeatured"
               color="green"
               @click="onFilterTag('is: featured')"
-            >{{ $t('isFeatured') }}</a-tag>
+            >{{ $t('label.isfeatured') }}</a-tag>
             <a-tag
               :visible="isSelf(os)"
               color="orange"
               @click="onFilterTag('is: self')"
-            >{{ $t('isSelf') }}</a-tag>
+            >{{ $t('label.isself') }}</a-tag>
             <a-tag
               :visible="isShared(os)"
               color="cyan"
               @click="onFilterTag('is: shared')"
-            >{{ $t('isShared') }}</a-tag>
+            >{{ $t('label.isshared') }}</a-tag>
           </a-radio>
         </a-radio-group>
       </a-list-item>
@@ -81,6 +81,14 @@ export default {
     itemCount: {
       type: Number,
       default: 0
+    },
+    osType: {
+      type: String,
+      default: ''
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
@@ -90,16 +98,14 @@ export default {
       pageSize: 10
     }
   },
-  created () {
-    this.value = this.selected
-    this.$emit('emit-update-template-iso', this.inputDecorator, this.value)
-  },
-  watch: {
-    inputDecorator (value) {
-      if (value === 'templateid') {
-        this.value = this.selected
-      }
+  mounted () {
+    if (this.inputDecorator === 'templateid') {
+      this.value = !this.preFillContent.templateid ? this.selected : this.preFillContent.templateid
+    } else {
+      this.value = !this.preFillContent.isoid ? this.selected : this.preFillContent.isoid
     }
+
+    this.$emit('emit-update-template-iso', this.inputDecorator, this.value)
   },
   computed: {
     pagination () {

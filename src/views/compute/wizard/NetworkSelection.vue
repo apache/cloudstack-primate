@@ -18,10 +18,13 @@
 <template>
   <div>
     <a-input-search
-      style="width: 25vw;float: right;margin-bottom: 10px; z-index: 8"
+      style="width: 25vw; float: right; margin-bottom: 10px; z-index: 8"
       placeholder="Search"
       v-model="filter"
       @search="handleSearch" />
+    <a-button type="primary" @click="showCreateForm = true" style="float: right; margin-right: 5px; z-index: 8">
+      {{ $t('label.add.network') }}
+    </a-button>
     <a-table
       :loading="loading"
       :columns="columns"
@@ -48,6 +51,20 @@
         </a-list-item>
       </a-list>
     </a-table>
+    <a-modal
+      :visible="showCreateForm"
+      :title="$t('label.add.network')"
+      :closable="true"
+      :footer="null"
+      @cancel="showCreateForm = false"
+      centered
+      width="auto">
+      <create-network
+        :resource="{}"
+        @refresh-data="handleSearch"
+        @close-action="showCreateForm = false"
+      />
+    </a-modal>
   </div>
 </template>
 
@@ -55,9 +72,13 @@
 import _ from 'lodash'
 import { api } from '@/api'
 import store from '@/store'
+import CreateNetwork from '@/views/network/CreateNetwork'
 
 export default {
   name: 'NetworkSelection',
+  components: {
+    CreateNetwork
+  },
   props: {
     items: {
       type: Array,
@@ -70,6 +91,14 @@ export default {
     loading: {
       type: Boolean,
       default: false
+    },
+    zoneId: {
+      type: String,
+      default: () => ''
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
@@ -77,7 +106,12 @@ export default {
       filter: '',
       selectedRowKeys: [],
       vpcs: [],
-      filteredInfo: null
+      filteredInfo: null,
+      networkOffering: {
+        loading: false,
+        opts: []
+      },
+      showCreateForm: false
     }
   },
   computed: {
@@ -101,17 +135,17 @@ export default {
       return [
         {
           dataIndex: 'name',
-          title: this.$t('networks'),
+          title: this.$t('label.networks'),
           width: '40%'
         },
         {
           dataIndex: 'type',
-          title: this.$t('guestIpType'),
+          title: this.$t('label.guestiptype'),
           width: '30%'
         },
         {
           dataIndex: 'vpcName',
-          title: this.$t('VPC'),
+          title: this.$t('label.vpc'),
           width: '30%',
           filters: vpcFilter,
           filteredValue: _.get(this.filteredInfo, 'id'),
@@ -147,7 +181,26 @@ export default {
       if (newValue && !_.isEqual(newValue, oldValue)) {
         this.selectedRowKeys = newValue
       }
+    },
+    loading () {
+      if (!this.loading) {
+        if (this.preFillContent.networkids) {
+          this.selectedRowKeys = this.preFillContent.networkids
+          this.$emit('select-network-item', this.preFillContent.networkids)
+        } else {
+          if (this.items && this.items.length > 0) {
+            this.selectedRowKeys = [this.items[0].id]
+            this.$emit('select-network-item', this.selectedRowKeys)
+          } else {
+            this.selectedRowKeys = []
+            this.$emit('select-network-item', [])
+          }
+        }
+      }
     }
+  },
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
   },
   created () {
     api('listVPCs', {
@@ -156,15 +209,16 @@ export default {
       this.vpcs = _.get(response, 'listvpcsresponse.vpc')
     })
   },
+  inject: ['vmFetchNetworks'],
   methods: {
     getDetails (network) {
       return [
         {
-          title: this.$t('description'),
+          title: this.$t('label.description'),
           description: network.displaytext
         },
         {
-          title: this.$t('networkOfferingId'),
+          title: this.$t('label.networkofferingid'),
           description: network.networkofferingdisplaytext
         }
       ]
@@ -178,6 +232,24 @@ export default {
       this.options.page = pagination.current
       this.options.pageSize = pagination.pageSize
       this.$emit('handle-search-filter', this.options)
+    },
+    listNetworkOfferings () {
+      return new Promise((resolve, reject) => {
+        const args = {}
+        args.forvpc = false
+        args.zoneid = this.zoneId
+        args.guestiptype = 'Isolated'
+        args.supportedServices = 'SourceNat'
+        args.specifyvlan = false
+        args.state = 'Enabled'
+
+        api('listNetworkOfferings', args).then(json => {
+          const listNetworkOfferings = json.listnetworkofferingsresponse.networkoffering || []
+          resolve(listNetworkOfferings)
+        }).catch(error => {
+          resolve(error)
+        })
+      })
     }
   }
 }

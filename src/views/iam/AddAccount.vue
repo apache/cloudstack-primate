@@ -22,7 +22,7 @@
         :form="form"
         @submit="handleSubmit"
         layout="vertical">
-        <a-form-item :label="$t('roleid')">
+        <a-form-item :label="$t('label.role')">
           <a-select
             v-decorator="['roleid', {
               rules: [{ required: true, message: 'Please select option' }]
@@ -40,7 +40,7 @@
             </a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="$t('username')">
+        <a-form-item :label="$t('label.username')">
           <a-input
             v-decorator="['username', {
               rules: [{ required: true, message: 'Please enter input' }]
@@ -49,7 +49,7 @@
         </a-form-item>
         <a-row :gutter="12">
           <a-col :md="24" :lg="12">
-            <a-form-item :label="$t('password')">
+            <a-form-item :label="$t('label.password')">
               <a-input-password
                 v-decorator="['password', {
                   rules: [{ required: true, message: 'Please enter new password' }]
@@ -58,7 +58,7 @@
             </a-form-item>
           </a-col>
           <a-col :md="24" :lg="12">
-            <a-form-item :label="$t('confirmpassword')">
+            <a-form-item :label="$t('label.confirmpassword')">
               <a-input-password
                 v-decorator="['confirmpassword', {
                   rules: [
@@ -75,7 +75,7 @@
             </a-form-item>
           </a-col>
         </a-row>
-        <a-form-item :label="$t('email')">
+        <a-form-item :label="$t('label.email')">
           <a-input
             v-decorator="['email', {
               rules: [{ required: true, message: 'Please enter input' }]
@@ -84,7 +84,7 @@
         </a-form-item>
         <a-row :gutter="12">
           <a-col :md="24" :lg="12">
-            <a-form-item :label="$t('firstname')">
+            <a-form-item :label="$t('label.firstname')">
               <a-input
                 v-decorator="['firstname', {
                   rules: [{ required: true, message: 'Please enter input' }]
@@ -93,7 +93,7 @@
             </a-form-item>
           </a-col>
           <a-col :md="24" :lg="12">
-            <a-form-item :label="$t('lastname')">
+            <a-form-item :label="$t('label.lastname')">
               <a-input
                 v-decorator="['lastname', {
                   rules: [{ required: true, message: 'Please enter input' }]
@@ -102,7 +102,7 @@
             </a-form-item>
           </a-col>
         </a-row>
-        <a-form-item :label="$t('domain')" v-if="this.isAdminOrDomainAdmin()">
+        <a-form-item :label="$t('label.domain')" v-if="this.isAdminOrDomainAdmin()">
           <a-select
             v-decorator="['domainid', {
               rules: [{ required: true, message: 'Please select option' }]
@@ -120,12 +120,12 @@
             </a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="$t('accountid')">
+        <a-form-item :label="$t('label.account.id')">
           <a-input
             v-decorator="['accountid', {}]"
             :placeholder="apiParams.accountid.description" />
         </a-form-item>
-        <a-form-item :label="$t('timezone')">
+        <a-form-item :label="$t('label.timezone')">
           <a-select
             showSearch
             v-decorator="['timezone', {}]"
@@ -135,7 +135,7 @@
             </a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="$t('networkdomain')">
+        <a-form-item :label="$t('label.network.domain')">
           <a-input
             v-decorator="['networkdomain', {}]"
             :placeholder="apiParams.networkdomain.description" />

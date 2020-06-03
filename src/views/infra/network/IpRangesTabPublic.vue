@@ -42,8 +42,7 @@
             <template slot="content">{{ $t('label.add.account') }}</template>
             <a-button
               icon="user-add"
-              shape="round"
-              type="primary"
+              shape="circle"
               @click="() => handleOpenAddAccountModal(record)"></a-button>
           </a-popover>
           <a-popover
@@ -52,13 +51,13 @@
             <template slot="content">{{ $t('label.release.account') }}</template>
             <a-button
               icon="user-delete"
-              shape="round"
+              shape="circle"
               type="danger"
               @click="() => handleRemoveAccount(record.id)"></a-button>
           </a-popover>
           <a-popover placement="bottom">
             <template slot="content">{{ $t('label.remove.ip.range') }}</template>
-            <a-button icon="delete" shape="round" type="danger" @click="handleDeleteIpRange(record.id)"></a-button>
+            <a-button icon="delete" shape="circle" type="danger" @click="handleDeleteIpRange(record.id)"></a-button>
           </a-popover>
         </div>
       </template>
@@ -79,15 +78,15 @@
     <a-modal v-model="accountModal" v-if="selectedItem" @ok="accountModal = false">
       <div>
         <div style="margin-bottom: 10px;">
-          <div class="list__label">{{ $t('account') }}</div>
+          <div class="list__label">{{ $t('label.account') }}</div>
           <div>{{ selectedItem.account }}</div>
         </div>
         <div style="margin-bottom: 10px;">
-          <div class="list__label">{{ $t('domain') }}</div>
+          <div class="list__label">{{ $t('label.domain') }}</div>
           <div>{{ selectedItem.domain }}</div>
         </div>
         <div style="margin-bottom: 10px;">
-          <div class="list__label">{{ $t('System VMs') }}</div>
+          <div class="list__label">{{ $t('label.system.vms') }}</div>
           <div>{{ selectedItem.forsystemvms }}</div>
         </div>
       </div>
@@ -96,11 +95,11 @@
     <a-modal :zIndex="1001" v-model="addAccountModal" :title="$t('label.add.account')" @ok="handleAddAccount">
       <a-spin :spinning="domainsLoading">
         <div style="margin-bottom: 10px;">
-          <div class="list__label">{{ $t('account') }}:</div>
+          <div class="list__label">{{ $t('label.account') }}:</div>
           <a-input v-model="addAccount.account"></a-input>
         </div>
         <div>
-          <div class="list__label">{{ $t('domain') }}:</div>
+          <div class="list__label">{{ $t('label.domain') }}:</div>
           <a-select v-model="addAccount.domain">
             <a-select-option
               v-for="domain in domains"
@@ -119,27 +118,27 @@
         layout="vertical"
         class="form"
       >
-        <a-form-item :label="$t('gateway')" class="form__item">
+        <a-form-item :label="$t('label.gateway')" class="form__item">
           <a-input
             v-decorator="['gateway', { rules: [{ required: true, message: 'Required' }] }]">
           </a-input>
         </a-form-item>
-        <a-form-item :label="$t('netmask')" class="form__item">
+        <a-form-item :label="$t('label.netmask')" class="form__item">
           <a-input
             v-decorator="['netmask', { rules: [{ required: true, message: 'Required' }] }]">
           </a-input>
         </a-form-item>
-        <a-form-item :label="$t('vlan')" class="form__item">
+        <a-form-item :label="$t('label.vlan')" class="form__item">
           <a-input
             v-decorator="['vlan']">
           </a-input>
         </a-form-item>
-        <a-form-item :label="$t('startip')" class="form__item">
+        <a-form-item :label="$t('label.startip')" class="form__item">
           <a-input
             v-decorator="['startip', { rules: [{ required: true, message: 'Required' }] }]">
           </a-input>
         </a-form-item>
-        <a-form-item :label="$t('endip')" class="form__item">
+        <a-form-item :label="$t('label.endip')" class="form__item">
           <a-input
             v-decorator="['endip', { rules: [{ required: true, message: 'Required' }] }]">
           </a-input>
@@ -151,14 +150,14 @@
         <div v-if="showAccountFields" style="margin-top: 20px;">
           <p>(optional) Please specify an account to be associated with this IP range.</p>
           <p>System VMs: Enable dedication of public IP range for SSVM and CPVM, account field disabled. Reservation strictness defined on 'system.vm.public.ip.reservation.mode.strictness'.</p>
-          <a-form-item :label="$t('System VMs')" class="form__item">
+          <a-form-item :label="$t('label.system.vms')" class="form__item">
             <a-switch v-decorator="['forsystemvms']"></a-switch>
           </a-form-item>
           <a-spin :spinning="domainsLoading">
-            <a-form-item :label="$t('account')" class="form__item">
+            <a-form-item :label="$t('label.account')" class="form__item">
               <a-input v-decorator="['account']"></a-input>
             </a-form-item>
-            <a-form-item :label="$t('domain')" class="form__item">
+            <a-form-item :label="$t('label.domain')" class="form__item">
               <a-select v-decorator="['domain']">
                 <a-select-option
                   v-for="domain in domains"
@@ -213,31 +212,31 @@ export default {
       pageSize: 10,
       columns: [
         {
-          title: this.$t('gateway'),
+          title: this.$t('label.gateway'),
           dataIndex: 'gateway'
         },
         {
-          title: this.$t('netmask'),
+          title: this.$t('label.netmask'),
           dataIndex: 'netmask'
         },
         {
-          title: this.$t('vlan'),
+          title: this.$t('label.vlan'),
           dataIndex: 'vlan'
         },
         {
-          title: this.$t('startip'),
+          title: this.$t('label.startip'),
           dataIndex: 'startip'
         },
         {
-          title: this.$t('endip'),
+          title: this.$t('label.endip'),
           dataIndex: 'endip'
         },
         {
-          title: this.$t('account'),
+          title: this.$t('label.account'),
           scopedSlots: { customRender: 'account' }
         },
         {
-          title: this.$t('action'),
+          title: this.$t('label.action'),
           scopedSlots: { customRender: 'actions' }
         }
       ]
@@ -268,11 +267,7 @@ export default {
       }).then(response => {
         this.items = response.listvlaniprangesresponse.vlaniprange ? response.listvlaniprangesresponse.vlaniprange : []
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.listvlaniprangesresponse
-            ? error.response.data.listvlaniprangesresponse.errortext : error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.componentLoading = false
       })
@@ -289,11 +284,7 @@ export default {
           this.form.setFieldsValue({ domain: this.domains[0].id })
         }
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.listdomains
-            ? error.response.data.listdomains.errortext : error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.domainsLoading = false
       })
@@ -312,11 +303,7 @@ export default {
         domainid: this.addAccount.domain,
         account: this.addAccount.account
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.dedicatepubliciprangeresponse
-            ? error.response.data.dedicatepubliciprangeresponse.errortext : error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.addAccountModal = false
         this.domainsLoading = false
@@ -326,11 +313,7 @@ export default {
     handleRemoveAccount (id) {
       this.componentLoading = true
       api('releasePublicIpRange', { id }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.releasepubliciprangeresponse
-            ? error.response.data.releasepubliciprangeresponse.errortext : error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchData()
       })
@@ -364,11 +347,7 @@ export default {
           message: 'Removed IP Range'
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.deletevlaniprangeresponse
-            ? error.response.data.deletevlaniprangeresponse.errortext : error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.componentLoading = false
         this.fetchData()

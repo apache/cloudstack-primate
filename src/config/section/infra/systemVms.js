@@ -17,7 +17,7 @@
 
 export default {
   name: 'systemvm',
-  title: 'System VMs',
+  title: 'label.system.vms',
   icon: 'thunderbolt',
   permission: ['listSystemVms'],
   columns: ['name', 'state', 'agentstate', 'systemvmtype', 'publicip', 'privateip', 'linklocalip', 'hostname', 'zonename'],
@@ -34,6 +34,7 @@ export default {
       api: 'stopSystemVm',
       icon: 'stop',
       label: 'label.action.stop.systemvm',
+      message: 'message.action.stop.systemvm',
       dataView: true,
       show: (record) => { return record.state === 'Running' },
       args: ['forced']
@@ -80,7 +81,22 @@ export default {
         type: {
           options: ['ping', 'traceroute', 'arping']
         }
-      }
+      },
+      response: (result) => { return result && result.diagnostics ? `<strong>Output</strong>:<br/>${result.diagnostics.stdout}<br/><strong>Error</strong>: ${result.diagnostics.stderr}<br/><strong>Exit Code</strong>: ${result.diagnostics.exitcode}` : 'Invalid response' }
+    },
+    {
+      api: 'getDiagnosticsData',
+      icon: 'download',
+      label: 'label.action.get.diagnostics',
+      dataView: true,
+      show: (record) => { return record.state === 'Running' },
+      args: ['targetid', 'files'],
+      mapping: {
+        targetid: {
+          value: (record) => { return record.id }
+        }
+      },
+      response: (result) => { return result && result.diagnostics && result.diagnostics.url ? `Please click the link to download the retrieved diagnostics: <p><a href='${result.diagnostics.url}'>${result.diagnostics.url}</a></p>` : 'Invalid response' }
     },
     {
       api: 'destroySystemVm',

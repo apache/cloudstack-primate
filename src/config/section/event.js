@@ -17,14 +17,14 @@
 
 export default {
   name: 'event',
-  title: 'Events',
+  title: 'label.events',
   icon: 'schedule',
   permission: ['listEvents'],
   columns: ['username', 'description', 'state', 'level', 'type', 'account', 'domain', 'created'],
   details: ['username', 'id', 'description', 'state', 'level', 'type', 'account', 'domain', 'created'],
   related: [{
     name: 'event',
-    title: 'Event Timeline',
+    title: 'label.event.timeline',
     param: 'startid'
   }],
   actions: [
@@ -32,7 +32,7 @@ export default {
       api: 'archiveEvents',
       icon: 'book',
       label: 'Archive Event',
-      listView: true,
+      listView: false,
       dataView: true,
       args: ['ids'],
       mapping: {
@@ -45,7 +45,7 @@ export default {
       api: 'deleteEvents',
       icon: 'delete',
       label: 'Delete Event',
-      listView: true,
+      listView: false,
       dataView: true,
       args: ['ids'],
       mapping: {

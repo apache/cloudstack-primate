@@ -41,7 +41,7 @@
           <template slot="content">{{ $t('label.remove.ip.range') }}</template>
           <a-button
             icon="delete"
-            shape="round"
+            shape="circle"
             type="danger"
             @click="handleDeleteIpRange(record.id)"></a-button>
         </a-popover>
@@ -67,7 +67,7 @@
         layout="vertical"
         class="form"
       >
-        <a-form-item :label="$t('podId')" class="form__item">
+        <a-form-item :label="$t('label.podid')" class="form__item">
           <a-select
             v-decorator="['pod', {
               rules: [{ required: true, message: 'Required' }]
@@ -76,27 +76,27 @@
             <a-select-option v-for="pod in pods" :key="pod.id" :value="pod.id">{{ pod.name }}</a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="$t('gateway')" class="form__item">
+        <a-form-item :label="$t('label.gateway')" class="form__item">
           <a-input
             v-decorator="['gateway', { rules: [{ required: true, message: 'Required' }] }]">
           </a-input>
         </a-form-item>
-        <a-form-item :label="$t('netmask')" class="form__item">
+        <a-form-item :label="$t('label.netmask')" class="form__item">
           <a-input
             v-decorator="['netmask', { rules: [{ required: true, message: 'Required' }] }]">
           </a-input>
         </a-form-item>
-        <a-form-item :label="$t('vlan')" class="form__item">
+        <a-form-item :label="$t('label.vlan')" class="form__item">
           <a-input
             v-decorator="['vlan']">
           </a-input>
         </a-form-item>
-        <a-form-item :label="$t('startip')" class="form__item">
+        <a-form-item :label="$t('label.startip')" class="form__item">
           <a-input
             v-decorator="['startip', { rules: [{ required: true, message: 'Required' }] }]">
           </a-input>
         </a-form-item>
-        <a-form-item :label="$t('endip')" class="form__item">
+        <a-form-item :label="$t('label.endip')" class="form__item">
           <a-input
             v-decorator="['endip', { rules: [{ required: true, message: 'Required' }] }]">
           </a-input>
@@ -133,31 +133,31 @@ export default {
       defaultSelectedPod: null,
       columns: [
         {
-          title: this.$t('podId'),
+          title: this.$t('label.podid'),
           scopedSlots: { customRender: 'name' }
         },
         {
-          title: this.$t('gateway'),
+          title: this.$t('label.gateway'),
           dataIndex: 'gateway'
         },
         {
-          title: this.$t('netmask'),
+          title: this.$t('label.netmask'),
           dataIndex: 'netmask'
         },
         {
-          title: this.$t('vlan'),
+          title: this.$t('label.vlan'),
           dataIndex: 'vlanid'
         },
         {
-          title: this.$t('startip'),
+          title: this.$t('label.startip'),
           dataIndex: 'startip'
         },
         {
-          title: this.$t('endip'),
+          title: this.$t('label.endip'),
           dataIndex: 'endip'
         },
         {
-          title: this.$t('action'),
+          title: this.$t('label.action'),
           scopedSlots: { customRender: 'actions' }
         }
       ],
@@ -190,11 +190,7 @@ export default {
       }).then(response => {
         this.items = response.liststoragenetworkiprangeresponse.storagenetworkiprange ? response.liststoragenetworkiprangeresponse.storagenetworkiprange : []
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.liststoragenetworkiprangeresponse
-            ? error.response.data.liststoragenetworkiprangeresponse.errortext : error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.componentLoading = false
       })
@@ -206,11 +202,7 @@ export default {
       }).then(response => {
         this.pods = response.listpodsresponse.pod ? response.listpodsresponse.pod : []
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.listpodsresponse
-            ? error.response.data.listpodsresponse.errortext : error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.componentLoading = false
       })
@@ -256,11 +248,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.deletestoragenetworkiprangeresponse
-            ? error.response.data.deletestoragenetworkiprangeresponse.errortext : error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.componentLoading = false
         this.fetchData()
       })
@@ -304,11 +292,7 @@ export default {
             }
           })
         }).catch(error => {
-          this.$notification.error({
-            message: `Error ${error.response.status}`,
-            description: error.response.data.createstoragenetworkiprangeresponse
-              ? error.response.data.createstoragenetworkiprangeresponse.errortext : error.response.data.errorresponse.errortext
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.componentLoading = false
           this.fetchData()

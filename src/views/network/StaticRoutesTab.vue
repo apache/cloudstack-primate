@@ -29,8 +29,8 @@
           <div>{{ route.cidr }}</div>
         </div>
         <div class="actions">
-          <a-button shape="round" icon="tag" @click="() => openTagsModal(route)"></a-button>
-          <a-button shape="round" icon="delete" type="danger" @click="() => handleDelete(route)"></a-button>
+          <a-button shape="circle" icon="tag" @click="() => openTagsModal(route)"></a-button>
+          <a-button shape="circle" icon="delete" type="danger" @click="() => handleDelete(route)"></a-button>
         </div>
       </div>
     </div>
@@ -41,13 +41,13 @@
       <div v-else>
         <a-form :form="newTagsForm" class="add-tags" @submit="handleAddTag">
           <div class="add-tags__input">
-            <p class="add-tags__label">{{ $t('key') }}</p>
+            <p class="add-tags__label">{{ $t('label.key') }}</p>
             <a-form-item>
               <a-input v-decorator="['key', { rules: [{ required: true, message: 'Please specify a tag key'}] }]" />
             </a-form-item>
           </div>
           <div class="add-tags__input">
-            <p class="add-tags__label">{{ $t('value') }}</p>
+            <p class="add-tags__label">{{ $t('label.value') }}</p>
             <a-form-item>
               <a-input v-decorator="['value', { rules: [{ required: true, message: 'Please specify a tag value'}] }]" />
             </a-form-item>
@@ -65,7 +65,7 @@
           </div>
         </div>
 
-        <a-button class="add-tags-done" @click="tagsModalVisible = false" type="primary">{{ $t('OK') }}</a-button>
+        <a-button class="add-tags-done" @click="tagsModalVisible = false" type="primary">{{ $t('label.ok') }}</a-button>
       </div>
 
     </a-modal>
@@ -115,10 +115,7 @@ export default {
       api('listStaticRoutes', { gatewayid: this.resource.id }).then(json => {
         this.routes = json.liststaticroutesresponse.staticroute
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.componentLoading = false
       })
@@ -156,10 +153,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
         this.fetchData()
         this.componentLoading = false
       })
@@ -193,10 +187,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
         this.fetchData()
         this.componentLoading = false
       })
@@ -209,10 +200,7 @@ export default {
       }).then(response => {
         this.tags = response.listtagsresponse.tag
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     handleDeleteTag (tag) {
@@ -243,10 +231,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.deletetagsresponse.errortext
-        })
+        this.$notifyError(error)
         this.tagsLoading = false
       })
     },
@@ -286,10 +271,7 @@ export default {
             }
           })
         }).catch(error => {
-          this.$notification.error({
-            message: `Error ${error.response.status}`,
-            description: error.response.data.createtagsresponse.errortext
-          })
+          this.$notifyError(error)
           this.tagsLoading = false
         })
       })
