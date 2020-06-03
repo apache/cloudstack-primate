@@ -60,7 +60,7 @@
         </info-card>
       </div>
       -->
-  
+
       <a slot="name" slot-scope="text, record" href="javascript:;">
         <div style="min-width: 120px">
           <span v-if="$route.path.startsWith('/project')" style="margin-right: 5px">
