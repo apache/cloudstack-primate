@@ -19,11 +19,11 @@
   <div>
     <a-card class="breadcrumb-card">
       <a-row>
-        <a-col :span="12" style="padding-left: 6px">
+        <a-col :span="device === 'mobile' ? 24 : 12" style="padding-left: 12px">
           <breadcrumb :resource="resource">
             <a-tooltip placement="bottom" slot="end">
               <template slot="title">
-                {{ "Refresh" }}
+                {{ $t('label.refresh') }}
               </template>
               <a-button
                 style="margin-top: 4px"
@@ -32,13 +32,15 @@
                 size="small"
                 icon="reload"
                 @click="fetchData()">
-                {{ "Refresh" }}
+                {{ $t('label.refresh') }}
               </a-button>
             </a-tooltip>
           </breadcrumb>
         </a-col>
-        <a-col :span="12">
-          <span style="float: right">
+        <a-col
+          :span="device === 'mobile' ? 24 : 12"
+          :style="device !== 'mobile' ? { 'margin-bottom': '-6px' } : { 'margin-top': '12px', 'margin-bottom': '-6px' }">
+          <span :style="device !== 'mobile' ? { float: 'right' } : {}">
             <action-button
               style="margin-bottom: 5px"
               :loading="loading"
@@ -50,12 +52,12 @@
             <a-select
               v-if="filters && filters.length > 0"
               placeholder="Filter By"
-              :value="$t(selectedFilter)"
+              :value="$t('label.' + selectedFilter)"
               style="min-width: 100px; margin-left: 10px"
               @change="changeFilter">
               <a-icon slot="suffixIcon" type="filter" />
               <a-select-option v-for="filter in filters" :key="filter">
-                {{ $t(filter) }}
+                {{ $t('label.' + filter) }}
               </a-select-option>
             </a-select>
             <a-input-search
@@ -115,6 +117,10 @@
           </a>
         </span>
         <a-spin :spinning="currentAction.loading">
+          <span v-if="currentAction.message">
+            <a-alert :message="$t(currentAction.message)" type="warning" />
+            <br v-if="currentAction.paramFields.length > 0"/>
+          </span>
           <a-form
             :form="form"
             @submit="handleSubmit"
@@ -126,7 +132,7 @@
               v-if="!(currentAction.mapping && field.name in currentAction.mapping && currentAction.mapping[field.name].value)"
             >
               <span slot="label">
-                {{ $t(field.name) }}
+                {{ $t('label.' + field.name) }}
                 <a-tooltip :title="field.description">
                   <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
                 </a-tooltip>
@@ -457,7 +463,7 @@ export default {
           customRender[key] = columnKey[key]
         }
         this.columns.push({
-          title: this.$t(key),
+          title: this.$t('label.' + key),
           dataIndex: key,
           scopedSlots: { customRender: key },
           sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
@@ -661,6 +667,7 @@ export default {
     pollActionCompletion (jobId, action, resourceName) {
       this.$pollJob({
         jobId,
+        name: resourceName,
         successMethod: result => {
           this.fetchData()
           if (action.response) {
@@ -675,7 +682,7 @@ export default {
           }
         },
         errorMethod: () => this.fetchData(),
-        loadingMessage: `${this.$t(action.label)} in progress for ${resourceName}`,
+        loadingMessage: `${this.$t(action.label)} - ${resourceName}`,
         catchMessage: 'Error encountered while fetching async job result',
         action
       })
@@ -768,10 +775,7 @@ export default {
                     hasJobId = true
                     break
                   } else {
-                    this.$notification.success({
-                      message: this.$t(this.currentAction.label),
-                      description: resourceName
-                    })
+                    this.$message.success(this.$t(this.currentAction.label) + (resourceName ? ' - ' + resourceName : ''))
                   }
                 }
                 break
@@ -840,7 +844,7 @@ export default {
 .breadcrumb-card {
   margin-left: -24px;
   margin-right: -24px;
-  margin-top: -16px;
+  margin-top: -18px;
   margin-bottom: 12px;
 }
 

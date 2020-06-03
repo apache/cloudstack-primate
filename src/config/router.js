@@ -178,11 +178,11 @@ export function asyncRouterMap () {
         path: '/dashboard',
         name: 'dashboard',
         meta: {
-          title: 'Dashboard',
+          title: 'label.dashboard',
           icon: 'dashboard',
           tabs: [
             {
-              name: 'Dashboard',
+              name: 'dashboard',
               component: () => import('@/views/dashboard/UsageDashboardChart')
             },
             {
