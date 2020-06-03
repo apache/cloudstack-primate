@@ -68,19 +68,19 @@
             <div>
               <a-divider class="divider-small" />
               <div class="attribute">
-                <div class="label">{{ $t('size') }}</div>
+                <div class="label">{{ $t('label.size') }}</div>
                 <div>{{ (item.size / (1024 * 1024 * 1024.0)).toFixed(2) }} GB</div>
               </div>
               <div class="attribute" v-if="item.physicalsize">
-                <div class="label">{{ $t('physicalsize') }}</div>
+                <div class="label">{{ $t('label.physicalsize') }}</div>
                 <div>{{ (item.physicalsize / (1024 * 1024 * 1024.0)).toFixed(4) }} GB</div>
               </div>
               <div class="attribute">
-                <div class="label">{{ $t('storagePool') }}</div>
+                <div class="label">{{ $t('label.storagepool') }}</div>
                 <div>{{ item.storage }} ({{ item.storagetype }})</div>
               </div>
               <div class="attribute">
-                <div class="label">{{ $t('id') }}</div>
+                <div class="label">{{ $t('label.id') }}</div>
                 <div><a-icon type="barcode"/> {{ item.id }}</div>
               </div>
             </div>
@@ -90,7 +90,7 @@
 
       <a-collapse-panel :header="'Network Adapter(s): ' + (vm && vm.nic ? vm.nic.length : 0)" key="3" >
         <a-button type="primary" @click="showAddModal" :loading="loadingNic">
-          <a-icon type="plus"></a-icon> {{ $t('label.network.addVM') }}
+          <a-icon type="plus"></a-icon> {{ $t('label.network.addvm') }}
         </a-button>
         <a-divider class="divider-small" />
         <a-list
@@ -141,7 +141,7 @@
                         @click="fetchSecondaryIPs(item.id)" />
                     </a-tooltip>
                     <a-popconfirm
-                      :title="$t('message.network.removeNIC')"
+                      :title="$t('message.network.removenic')"
                       @confirm="removeNIC(item)"
                       okText="Yes"
                       cancelText="No"
@@ -155,7 +155,7 @@
                   </div>
                   <div class="tags">
                     <a-tag v-if="item.isdefault">
-                      {{ $t('default') }}
+                      {{ $t('label.default') }}
                     </a-tag>
                     <a-tag v-if="item.type">
                       {{ item.type }}
@@ -173,27 +173,27 @@
             <div>
               <a-divider class="divider-small" />
               <div class="attribute">
-                <div class="label">{{ $t('macaddress') }}</div>
+                <div class="label">{{ $t('label.macaddress') }}</div>
                 <div>{{ item.macaddress }}</div>
               </div>
               <div class="attribute" v-if="item.ipaddress">
-                <div class="label">{{ $t('IP Address') }}</div>
+                <div class="label">{{ $t('label.ip.address') }}</div>
                 <div>{{ item.ipaddress }}</div>
               </div>
               <div class="attribute" v-if="item.secondaryip && item.secondaryip.length > 0 && item.type !== 'L2'">
-                <div class="label">{{ $t('Secondary IPs') }}</div>
+                <div class="label">{{ $t('label.secondary.ips') }}</div>
                 <div>{{ item.secondaryip.map(x => x.ipaddress).join(', ') }}</div>
               </div>
               <div class="attribute" v-if="item.netmask">
-                <div class="label">{{ $t('netmask') }}</div>
+                <div class="label">{{ $t('label.netmask') }}</div>
                 <div>{{ item.netmask }}</div>
               </div>
               <div class="attribute" v-if="item.gateway">
-                <div class="label">{{ $t('gateway') }}</div>
+                <div class="label">{{ $t('label.gateway') }}</div>
                 <div>{{ item.gateway }}</div>
               </div>
               <div class="attribute">
-                <div class="label">{{ $t('id') }}</div>
+                <div class="label">{{ $t('label.id') }}</div>
                 <div><a-icon type="barcode"/> {{ item.id }}</div>
               </div>
             </div>
@@ -204,13 +204,13 @@
 
     <a-modal
       :visible="showAddNetworkModal"
-      :title="$t('label.network.addVM')"
+      :title="$t('label.network.addvm')"
       @cancel="closeModals"
       @ok="submitAddNetwork">
-      {{ $t('message.network.addVM.desc') }}
+      {{ $t('message.network.addvm.desc') }}
 
       <div class="modal-form">
-        <p class="modal-form__label">{{ $t('Network') }}:</p>
+        <p class="modal-form__label">{{ $t('label.network') }}:</p>
         <a-select :defaultValue="addNetworkData.network" @change="e => addNetworkData.network === e">
           <a-select-option
             v-for="network in addNetworkData.allNetworks"
@@ -219,7 +219,7 @@
             {{ network.name }}
           </a-select-option>
         </a-select>
-        <p class="modal-form__label">{{ $t('publicip') }}:</p>
+        <p class="modal-form__label">{{ $t('label.publicip') }}:</p>
         <a-input v-model="addNetworkData.ip"></a-input>
       </div>
 
@@ -231,10 +231,10 @@
       @cancel="closeModals"
       @ok="submitUpdateIP"
     >
-      {{ $t('message.network.updateIp') }}
+      {{ $t('message.network.updateip') }}
 
       <div class="modal-form">
-        <p class="modal-form__label">{{ $t('publicip') }}:</p>
+        <p class="modal-form__label">{{ $t('label.publicip') }}:</p>
         <a-input v-model="editIpAddressValue"></a-input>
       </div>
 
@@ -248,7 +248,7 @@
       class="wide-modal"
     >
       <p>
-        {{ $t('message.network.secondaryIP') }}
+        {{ $t('message.network.secondaryip') }}
       </p>
       <a-divider />
       <a-input placeholder="Enter new secondary IP address" v-model="newSecondaryIp"></a-input>
