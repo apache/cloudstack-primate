@@ -15,6 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import store from '@/store'
+
 export default {
   name: 'project',
   title: 'label.projects',
@@ -23,6 +25,11 @@ export default {
   resourceType: 'Project',
   columns: ['name', 'state', 'displaytext', 'account', 'domain'],
   details: ['name', 'id', 'displaytext', 'projectaccountname', 'vmtotal', 'cputotal', 'memorytotal', 'volumetotal', 'iptotal', 'vpctotal', 'templatetotal', 'primarystoragetotal', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit', 'account', 'domain'],
+  related: [{
+    name: 'projectrolepermissions',
+    title: 'label.project.role.premissions',
+    param: 'projectid'
+  }],
   tabs: [
     {
       name: 'details',
@@ -32,6 +39,11 @@ export default {
       name: 'accounts',
       show: (record, route, user) => { return record.account === user.account || ['Admin', 'DomainAdmin'].includes(user.roletype) },
       component: () => import('@/views/project/AccountsTab.vue')
+    },
+    {
+      name: 'project.roles',
+      show: () => { return 'listProjectRoles' in store.getters.apis },
+      component: () => import('@/views/project/iam/ProjectRoleTab.vue')
     },
     {
       name: 'limits',
@@ -91,11 +103,36 @@ export default {
     },
     {
       api: 'addAccountToProject',
-      icon: 'user-add',
+      icon: 'usergroup-add',
       label: 'Add Account to Project',
       dataView: true,
-      args: ['projectid', 'account', 'email'],
+      args: ['projectid', 'account', 'email', 'projectroleid', 'roletype'],
       show: (record, store) => { return record.account === store.userInfo.account || ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) },
+      mapping: {
+        projectid: {
+          value: (record) => { return record.id }
+        }
+      }
+    },
+    {
+      api: 'addUserToProject',
+      icon: 'user-add',
+      label: 'Add User to Project',
+      dataView: true,
+      args: ['projectid', 'userid', 'projectroleid', 'roletype', 'email'],
+      show: (record, store) => { return record.account === store.userInfo.account || ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) },
+      mapping: {
+        projectid: {
+          value: (record) => { return record.id }
+        }
+      }
+    },
+    {
+      api: 'createProjectRole',
+      icon: 'idcard',
+      label: 'label.add.project.role',
+      dataView: true,
+      args: ['projectid', 'name', 'description'],
       mapping: {
         projectid: {
           value: (record) => { return record.id }

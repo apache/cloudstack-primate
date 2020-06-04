@@ -170,7 +170,7 @@
                     rules: [{ required: field.required, message: 'Please select option' }]
                   }]"
                   :loading="field.loading"
-                  :placeholder="field.description"
+                  :placeholder="field.descriptions"
                   :filterOption="(input, option) => {
                     return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }"
@@ -178,6 +178,16 @@
                   <a-select-option v-for="(opt, optIndex) in field.opts" :key="optIndex">
                     {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
+                </a-select>
+              </span>
+              <span v-else-if="field.name === 'roletype'">
+                <a-select
+                  showSearch
+                  optionFilterProp="children"
+                  v-decorator="[field.name]"
+                  :placeholder="$t('label.roletype')">
+                  <a-select-option value="Admin">Admin</a-select-option>
+                  <a-select-option value="Regular">Regular</a-select-option>
                 </a-select>
               </span>
               <span
@@ -675,6 +685,8 @@ export default {
         params.isofilter = 'executable'
       } else if (possibleApi === 'listHosts') {
         params.type = 'routing'
+      } else if (possibleApi === 'listProjectRoles') {
+        params.projectid = this.resource.id
       }
       api(possibleApi, params).then(json => {
         param.loading = false

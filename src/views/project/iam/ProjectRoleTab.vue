@@ -1,0 +1,289 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+<template>
+  <div>
+    <a-row :gutter="12">
+      <a-col :md="24" :lg="24">
+        <a-table
+          size="small"
+          :loading="loading"
+          :columns="columns"
+          :dataSource="dataSource"
+          :rowKey="record => record.projectid"
+          pagination="false">
+          <template slot="expandedRowRender" slot-scope="record">
+            <ProjectRolePermissionTab class="table" style="margin-top:30px; margin-left: -40px; margin-right: 10px" :resource="resource" :role="record"/>
+          </template>
+          <template slot="name" slot-scope="record"> {{ record }} </template>
+          <template slot="description" slot-scope="record">
+            {{ record }}
+          </template>
+          <span slot="action" slot-scope="text, record" class="account-button-action">
+            <a-tooltip placement="top">
+              <template slot="title">
+                {{ $t('label.update.project.role') }}
+              </template>
+              <a-button
+                type="default"
+                shape="circle"
+                icon="edit"
+                size="small"
+                style="margin:10px"
+                @click="openUpdateModal(record)" />
+            </a-tooltip>
+            <a-tooltip placement="top">
+              <template slot="title">
+                {{ $t('label.remove.project.role') }}
+              </template>
+              <a-button
+                type="danger"
+                shape="circle"
+                icon="delete"
+                size="small"
+                @click="deleteProjectRole(record)"/>
+            </a-tooltip>
+          </span>
+        </a-table>
+
+        <a-modal title="Edit Project Role" v-model="editModalVisible" :footer="null" :afterClose="closeAction">
+          <a-form
+            :form="form"
+            @submit="updateProjectRole"
+            layout="vertical">
+            <a-form-item :label="$t('label.name')">
+              <a-input v-decorator="[ 'name' ]"></a-input>
+            </a-form-item>
+            <a-form-item :label="$t('label.description')">
+              <a-input v-decorator="[ 'description' ]"></a-input>
+            </a-form-item>
+            <div :span="24" class="action-button">
+              <a-button @click="closeAction">{{ this.$t('label.cancel') }}</a-button>
+              <a-button type="primary" @click="updateProjectRole" :loading="loading">{{ $t('label.ok') }}</a-button>
+            </div>
+            <span slot="action" slot-scope="text, record" class="account-button-action">
+              <a-tooltip placement="top">
+                <template slot="title">
+                  {{ $t('label.update.project.role') }}
+                </template>
+                <a-button
+                  type="default"
+                  shape="circle"
+                  icon="edit"
+                  size="small"
+                  style="margin:10px"
+                  @click="openUpdateModal(record)" />
+              </a-tooltip>
+              <a-tooltip placement="top">
+                <template slot="title">
+                  {{ $t('label.remove.project.role') }}
+                </template>
+                <a-button
+                  type="danger"
+                  shape="circle"
+                  icon="delete"
+                  size="small"
+                  @click="deleteProjectRole(record)"/>
+              </a-tooltip>
+            </span>
+          </a-form>
+        </a-modal>
+      </a-col>
+    </a-row>
+  </div>
+</template>
+<script>
+import { api } from '@/api'
+import ProjectRolePermissionTab from '@/views/project/iam/ProjectRolePermissionTab'
+export default {
+  name: 'ProjectRoleTab',
+  props: {
+    resource: {
+      type: Object,
+      required: true
+    }
+  },
+  components: {
+    ProjectRolePermissionTab
+  },
+  data () {
+    return {
+      columns: [],
+      dataSource: [],
+      loading: false,
+      editModalVisible: false,
+      selectedRole: null,
+      projectPermisssions: [],
+      customStyle: 'margin-bottom: -10px; border-bottom-style: none'
+    }
+  },
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
+  },
+  created () {
+    this.columns = [
+      {
+        title: this.$t('label.name'),
+        dataIndex: 'name',
+        width: '35%',
+        scopedSlots: { customRender: 'name' }
+      },
+      {
+        title: this.$t('label.description'),
+        dataIndex: 'description'
+      },
+      {
+        title: this.$t('label.action'),
+        dataIndex: 'action',
+        fixed: 'right',
+        width: 100,
+        scopedSlots: { customRender: 'action' }
+      }
+    ]
+  },
+  mounted () {
+    this.fetchData()
+  },
+  watch: {
+    resource (newItem, oldItem) {
+      if (!newItem || !newItem.id) {
+        return
+      }
+      this.resource = newItem
+      this.fetchData()
+    }
+  },
+  methods: {
+    fetchData () {
+      const params = {}
+      params.projectid = this.resource.id
+      this.loading = true
+      api('listProjectRoles', params).then(json => {
+        const projectRoles = json.listprojectrolesresponse.projectrole
+        if (!projectRoles || projectRoles.length === 0) {
+          this.dataSource = []
+          return
+        }
+        this.dataSource = projectRoles
+      }).catch(error => {
+        this.$notifyError(error)
+      }).finally(() => {
+        this.loading = false
+      })
+    },
+    openUpdateModal (role) {
+      this.selectedRole = role
+      this.editModalVisible = true
+    },
+    updateProjectRole (e) {
+      e.preventDefault()
+      this.form.validateFields((err, values) => {
+        if (err) {
+          return
+        }
+        var params = {}
+        params.projectid = this.resource.id
+        params.id = this.selectedRole.id
+        for (const key in values) {
+          const input = values[key]
+          if (input === undefined) {
+            continue
+          }
+          params[key] = input
+        }
+        api('updateProjectRole', params).then(response => {
+          this.$notification.success({
+            message: this.$t('label.update.project.role'),
+            description: this.$t('label.update.project.role')
+          })
+        }).catch(error => {
+          this.$notifyError(error)
+        }).finally(() => {
+          this.loading = false
+          this.fetchData()
+          this.closeAction()
+        })
+      })
+    },
+    closeAction () {
+      this.editModalVisible = false
+    },
+    deleteProjectRole (role) {
+      api('deleteProjectRole', {
+        projectid: this.resource.id,
+        id: role.id
+      }).then(response => {
+        this.$notification.success({
+          message: this.$t('label.delete.project.role'),
+          description: this.$t('label.delete.project.role')
+        })
+      }).catch(error => {
+        this.$notifyError(error)
+      }).finally(() => {
+        this.loading = false
+        this.fetchData()
+        this.closeAction()
+      })
+    }
+  }
+}
+</script>
+<style lang="scss" scoped>
+.action-button {
+    text-align: right;
+
+    button {
+      margin-right: 5px;
+    }
+  }
+.list {
+
+  &__label {
+    font-weight: bold;
+  }
+
+  &__col {
+    flex: 1;
+
+    @media (min-width: 480px) {
+      &:not(:last-child) {
+        margin-right: 20px;
+      }
+    }
+  }
+
+  &__item {
+    margin-right: -8px;
+    align-items: flex-start;
+
+    &-outer-container {
+      width: 100%;
+    }
+
+    &-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+
+      @media (min-width: 480px) {
+        flex-direction: row;
+        margin-bottom: 10px;
+      }
+    }
+  }
+}
+</style>

@@ -27,12 +27,30 @@
           :pagination="false"
           :rowKey="record => record.accountid || record.account"
         >
-          <span slot="action" v-if="record.role!==owner" slot-scope="text, record" class="account-button-action">
+          <span slot="action" v-if="record.role!==owner || (record.role === owner && record.account !== resource.account)" slot-scope="text, record" class="account-button-action">
             <a-tooltip placement="top">
               <template slot="title">
                 {{ $t('label.make.project.owner') }}
               </template>
-              <a-button type="default" shape="circle" icon="user" size="small" @click="onMakeProjectOwner(record)" />
+              <a-button
+                v-if="record.role!==owner"
+                type="default"
+                shape="circle"
+                icon="arrow-up"
+                size="small"
+                @click="onMakeProjectOwner(record)" />
+            </a-tooltip>
+            <a-tooltip placement="top">
+              <template slot="title">
+                {{ $t('label.demote.project.owner') }}
+              </template>
+              <a-button
+                v-if="record.role===owner"
+                type="default"
+                shape="circle"
+                icon="arrow-down"
+                size="small"
+                @click="demoteAccount(record)" />
             </a-tooltip>
             <a-tooltip placement="top">
               <template slot="title">
@@ -90,8 +108,14 @@ export default {
       {
         title: this.$t('label.account'),
         dataIndex: 'account',
-        width: '35%',
+        width: '30%',
         scopedSlots: { customRender: 'account' }
+      },
+      {
+        title: this.$t('label.user'),
+        dataIndex: 'user_id',
+        width: '30%',
+        scopedSlots: { customRender: 'user' }
       },
       {
         title: this.$t('label.role'),
@@ -164,17 +188,27 @@ export default {
       const loading = this.$message.loading(title + 'in progress for ' + record.account, 0)
       const params = {}
 
-      params.id = this.resource.id
+      params.projectid = this.resource.id
       params.account = record.account
-
+      params.roletype = this.owner
+      this.updateProject(record, params, title, loading)
+    },
+    demoteAccount (record) {
+      const title = this.$t('label.demote.project.owner')
+      const loading = this.$message.loading(title + 'in progress for ' + record.account, 0)
+      const params = {}
+      params.projectid = this.resource.id
+      params.account = record.account
+      params.roletype = 'Regular'
+      this.updateProject(record, params, title, loading)
+    },
+    updateProject (record, params, title, loading) {
       api('updateProject', params).then(json => {
         const hasJobId = this.checkForAddAsyncJob(json, title, record.account)
-
         if (hasJobId) {
           this.fetchData()
         }
       }).catch(error => {
-        // show error
         this.$notifyError(error)
       }).finally(() => {
         setTimeout(loading, 1000)

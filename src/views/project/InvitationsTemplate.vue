@@ -112,6 +112,11 @@ export default {
         scopedSlots: { customRender: 'project' }
       },
       {
+        title: this.$t('label.user'),
+        dataIndex: 'userid',
+        scopedSlots: { customRender: 'user' }
+      },
+      {
         title: this.$t('label.domain'),
         dataIndex: 'domain',
         scopedSlots: { customRender: 'domain' }
@@ -221,7 +226,11 @@ export default {
       const params = {}
 
       params.projectid = record.projectid
-      params.account = record.account
+      if (record.userid !== null) {
+        params.userid = record.userid
+      } else {
+        params.account = record.account
+      }
       params.domainid = record.domainid
       params.accept = state
 
