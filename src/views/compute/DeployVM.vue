@@ -80,29 +80,6 @@
                         :options="keyboardSelectOptions"
                       ></a-select>
                     </a-form-item>
-                    <a-form-item
-                      v-if="['KVM', 'VMware'].includes(hypervisor)"
-                      :label="this.$t('label.vm.boottype')">
-                      <a-select
-                        v-decorator="['boottype']"
-                        @change="fetchBootModes"
-                      >
-                        <a-select-option v-for="bootType in options.bootTypes" :key="bootType.id">
-                          {{ bootType.description }}
-                        </a-select-option>
-                      </a-select>
-                    </a-form-item>
-                    <a-form-item
-                      v-if="['KVM', 'VMware'].includes(hypervisor)"
-                      :label="this.$t('label.vm.bootmode')">
-                      <a-select
-                        v-decorator="['bootmode']"
-                      >
-                        <a-select-option v-for="bootMode in options.bootModes" :key="bootMode.id">
-                          {{ bootMode.description }}
-                        </a-select-option>
-                      </a-select>
-                    </a-form-item>
                     <a-form-item :label="this.$t('label.userdata')">
                       <a-textarea
                         v-decorator="['userdata']">
@@ -154,6 +131,36 @@
                             @change="value => this.hypervisor = value" />
                         </a-form-item>
                       </p>
+                    </a-card>
+
+                    <a-card
+                      style="margin-top: 15px"
+                      v-if="vm.templateid && ['KVM', 'VMware'].includes(hypervisor)">
+                      <a-row :gutter="12">
+                        <a-col :md="24" :lg="12">
+                          <a-form-item :label="this.$t('label.vm.boottype')">
+                            <a-select
+                              v-decorator="['boottype']"
+                              @change="fetchBootModes"
+                            >
+                              <a-select-option v-for="bootType in options.bootTypes" :key="bootType.id">
+                                {{ bootType.description }}
+                              </a-select-option>
+                            </a-select>
+                          </a-form-item>
+                        </a-col>
+                        <a-col :md="24" :lg="12">
+                          <a-form-item :label="this.$t('label.vm.bootmode')">
+                            <a-select
+                              v-decorator="['bootmode']"
+                            >
+                              <a-select-option v-for="bootMode in options.bootModes" :key="bootMode.id">
+                                {{ bootMode.description }}
+                              </a-select-option>
+                            </a-select>
+                          </a-form-item>
+                        </a-col>
+                      </a-row>
                     </a-card>
                     <a-form-item class="form-item-hidden">
                       <a-input v-decorator="['templateid']"/>
