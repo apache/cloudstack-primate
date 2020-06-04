@@ -18,6 +18,21 @@
 <template>
   <div>
     <div>
+      <div class="filter" v-if="'vpcid' in resource">
+        <div class="form">
+          <div class="form__item" ref="newRuleTier">
+            <div class="form__label">{{ $t('label.tiername') }}</div>
+            <a-select v-model="newRule.tier">
+              <a-select-option
+                v-for="tier in tiers.data"
+                :loading="tiers.loading"
+                :key="tier.id">
+                {{ tier.displaytext }}
+              </a-select-option>
+            </a-select>
+          </div>
+        </div>
+      </div>
       <div class="form">
         <div class="form__item" ref="newRuleName">
           <div class="form__label"><span class="form__required">*</span>{{ $t('label.name') }}</div>
@@ -61,7 +76,7 @@
 
     <a-table
       size="small"
-      style="overflow-y: auto"
+      class="list-view"
       :loading="loading"
       :columns="columns"
       :dataSource="lbRules"
@@ -276,47 +291,52 @@
         {disabled: newRule.virtualmachineid === [] } }"
       @cancel="closeModal"
     >
-
-      <a-icon v-if="addVmModalLoading" type="loading"></a-icon>
-
-      <div v-else>
-        <div class="vm-modal__header">
-          <span style="min-width: 200px;">{{ $t('label.name') }}</span>
-          <span>{{ $t('label.instancename') }}</span>
-          <span>{{ $t('label.displayname') }}</span>
-          <span>{{ $t('label.ip') }}</span>
-          <span>{{ $t('label.account') }}</span>
-          <span>{{ $t('label.zonenamelabel') }}</span>
-          <span>{{ $t('label.state') }}</span>
-          <span>{{ $t('label.select') }}</span>
-        </div>
-
-        <a-checkbox-group style="width: 100%;">
-          <div v-for="(vm, index) in vms" :key="index" class="vm-modal__item">
-            <span style="min-width: 200px;">
-              <span>
-                {{ vm.name }}
-              </span>
-              <a-icon v-if="addVmModalNicLoading" type="loading"></a-icon>
-              <a-select
-                v-else-if="!addVmModalNicLoading && newRule.virtualmachineid[index] === vm.id"
-                mode="multiple"
-                v-model="newRule.vmguestip[index]"
-              >
-                <a-select-option v-for="(nic, nicIndex) in nics[index]" :key="nic" :value="nic">
-                  {{ nic }}{{ nicIndex === 0 ? ' (Primary)' : null }}
-                </a-select-option>
-              </a-select>
+      <div>
+        <a-table
+          size="small"
+          class="list-view"
+          :loading="addVmModalLoading"
+          :columns="vmColumns"
+          :dataSource="vms"
+          :pagination="false"
+          :rowKey="record => record.id"
+          :scroll="{ y: 300 }">
+          <div slot="name" slot-scope="text, record, index">
+            <span>
+              {{ text }}
             </span>
-            <span>{{ vm.instancename }}</span>
-            <span>{{ vm.displayname }}</span>
-            <span></span>
-            <span>{{ vm.account }}</span>
-            <span>{{ vm.zonename }}</span>
-            <span>{{ vm.state }}</span>
-            <a-checkbox :value="vm.id" @change="e => fetchNics(e, index)" />
+            <a-icon v-if="addVmModalNicLoading" type="loading"></a-icon>
+            <a-select
+              style="display: block"
+              v-else-if="!addVmModalNicLoading && newRule.virtualmachineid[index] === record.id"
+              mode="multiple"
+              v-model="newRule.vmguestip[index]"
+            >
+              <a-select-option v-for="(nic, nicIndex) in nics[index]" :key="nic" :value="nic">
+                {{ nic }}{{ nicIndex === 0 ? ' (Primary)' : null }}
+              </a-select-option>
+            </a-select>
           </div>
-        </a-checkbox-group>
+
+          <div slot="state" slot-scope="text">
+            <status :text="text ? text : ''" displayText></status>
+          </div>
+
+          <div slot="action" slot-scope="text, record, index" style="text-align: center">
+            <a-checkbox :value="record.id" @change="e => fetchNics(e, index)" />
+          </div>
+        </a-table>
+        <a-pagination
+          class="pagination"
+          size="small"
+          :current="vmPage"
+          :pageSize="vmPageSize"
+          :total="vmCount"
+          :showTotal="total => `Total ${total} items`"
+          :pageSizeOptions="['10', '20', '40', '80', '100']"
+          @change="handleChangePage"
+          @showSizeChange="handleChangePageSize"
+          showSizeChanger/>
       </div>
 
     </a-modal>
@@ -421,7 +441,49 @@ export default {
           title: this.$t('label.action'),
           scopedSlots: { customRender: 'actions' }
         }
-      ]
+      ],
+      tiers: {
+        loading: false,
+        data: []
+      },
+      vmColumns: [
+        {
+          title: this.$t('label.name'),
+          dataIndex: 'name',
+          scopedSlots: { customRender: 'name' },
+          width: 220
+        },
+        {
+          title: this.$t('label.instancename'),
+          dataIndex: 'instancename'
+        },
+        {
+          title: this.$t('label.displayname'),
+          dataIndex: 'displayname'
+        },
+        {
+          title: this.$t('label.account'),
+          dataIndex: 'account'
+        },
+        {
+          title: this.$t('label.zonename'),
+          dataIndex: 'zonename'
+        },
+        {
+          title: this.$t('label.state'),
+          dataIndex: 'state',
+          scopedSlots: { customRender: 'state' }
+        },
+        {
+          title: this.$t('label.select'),
+          dataIndex: 'action',
+          scopedSlots: { customRender: 'action' },
+          width: 80
+        }
+      ],
+      vmPage: 1,
+      vmPageSize: 10,
+      vmCount: 0
     }
   },
   mounted () {
@@ -444,9 +506,30 @@ export default {
   },
   methods: {
     fetchData () {
+      this.fetchListTiers()
+      this.fetchLBRules()
+    },
+    fetchListTiers () {
+      this.tiers.loading = true
+
+      api('listNetworks', {
+        account: this.resource.account,
+        domainid: this.resource.domainid,
+        supportedservices: 'Lb',
+        vpcid: this.resource.vpcid
+      }).then(json => {
+        this.tiers.data = json.listnetworksresponse.network || []
+        this.newRule.tier = this.tiers.data && this.tiers.data[0].id ? this.tiers.data[0].id : null
+        this.$forceUpdate()
+      }).catch(error => {
+        this.$notifyError(error)
+      }).finally(() => { this.tiers.loading = false })
+    },
+    fetchLBRules () {
       this.loading = true
       this.lbRules = []
       this.stickinessPolicies = []
+
       api('listLoadBalancerRules', {
         listAll: true,
         publicipid: this.resource.id,
@@ -881,14 +964,16 @@ export default {
       }
       this.addVmModalVisible = true
       this.addVmModalLoading = true
+      const networkId = 'vpcid' in this.resource ? this.newRule.tier : this.resource.associatednetworkid
       api('listVirtualMachines', {
         listAll: true,
-        page: 1,
-        pagesize: 500,
-        networkid: this.resource.associatednetworkid,
+        page: this.vmPage,
+        pagesize: this.vmPageSize,
+        networkid: networkId,
         account: this.resource.account,
         domainid: this.resource.domainid
       }).then(response => {
+        this.vmCount = response.listvirtualmachinesresponse.count || 0
         this.vms = response.listvirtualmachinesresponse.virtualmachine
         this.vms.forEach((vm, index) => {
           this.newRule.virtualmachineid[index] = null
@@ -1370,6 +1455,7 @@ export default {
 
   .pagination {
     margin-top: 20px;
+    text-align: right;
   }
 
   .actions {
@@ -1378,5 +1464,17 @@ export default {
         margin-right: 10px;
       }
     }
+  }
+
+  .list-view {
+    overflow-y: auto;
+    display: block;
+    width: 100%;
+  }
+
+  .filter {
+    display: block;
+    width: 240px;
+    margin-bottom: 10px;
   }
 </style>
