@@ -169,6 +169,12 @@
       @cancel="closeModal"
     >
       <div>
+        <a-input-search
+          class="input-search"
+          placeholder="Search"
+          v-model="searchQuery"
+          allowClear
+          @search="onSearch" />
         <a-table
           size="small"
           class="list-view"
@@ -198,8 +204,8 @@
             <status :text="text ? text : ''" displayText></status>
           </div>
 
-          <div slot="action" slot-scope="text, record, index" style="text-align: center">
-            <a-radio :value="record.id" @change="e => fetchNics(e, index)" />
+          <div slot="action" slot-scope="text, record" style="text-align: center">
+            <a-radio :value="record.id" @change="e => fetchNics(e)" />
           </div>
         </a-table>
         <a-pagination
@@ -335,7 +341,8 @@ export default {
       ],
       vmPage: 1,
       vmPageSize: 10,
-      vmCount: 0
+      vmCount: 0,
+      searchQuery: null
     }
   },
   mounted () {
@@ -559,26 +566,11 @@ export default {
     },
     openAddVMModal () {
       this.addVmModalVisible = true
-      this.addVmModalLoading = true
-      const networkId = 'vpcid' in this.resource ? this.newRule.tier : this.resource.associatednetworkid
-      api('listVirtualMachines', {
-        listAll: true,
-        page: this.vmPage,
-        pagesize: this.vmPageSize,
-        networkid: networkId,
-        account: this.resource.account,
-        domainid: this.resource.domainid
-      }).then(response => {
-        this.vmCount = response.listvirtualmachinesresponse.count || 0
-        this.vms = response.listvirtualmachinesresponse.virtualmachine
-        this.addVmModalLoading = false
-      }).catch(error => {
-        this.$notifyError(error)
-        this.closeModal()
-      })
+      this.fetchVirtualMachines()
     },
     fetchNics (e) {
       this.addVmModalNicLoading = true
+      this.newRule.virtualmachineid = e.target.value
       api('listNics', {
         virtualmachineid: e.target.value,
         networkid: this.resource.associatednetworkid
@@ -597,6 +589,27 @@ export default {
         this.closeModal()
       })
     },
+    fetchVirtualMachines () {
+      this.vmCount = 0
+      this.vms = []
+      this.addVmModalLoading = true
+      const networkId = 'vpcid' in this.resource ? this.newRule.tier : this.resource.associatednetworkid
+      api('listVirtualMachines', {
+        listAll: true,
+        keyword: this.searchQuery,
+        page: this.vmPage,
+        pagesize: this.vmPageSize,
+        networkid: networkId,
+        account: this.resource.account,
+        domainid: this.resource.domainid
+      }).then(response => {
+        this.vmCount = response.listvirtualmachinesresponse.count || 0
+        this.vms = response.listvirtualmachinesresponse.virtualmachine
+        this.addVmModalLoading = false
+      }).catch(error => {
+        this.$notifyError(error)
+      })
+    },
     handleChangePage (page, pageSize) {
       this.page = page
       this.pageSize = pageSize
@@ -606,6 +619,10 @@ export default {
       this.page = currentPage
       this.pageSize = pageSize
       this.fetchData()
+    },
+    onSearch (value) {
+      this.searchQuery = value
+      this.fetchVirtualMachines()
     }
   }
 }

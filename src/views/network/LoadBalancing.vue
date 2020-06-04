@@ -292,6 +292,12 @@
       @cancel="closeModal"
     >
       <div>
+        <a-input-search
+          class="input-search"
+          placeholder="Search"
+          v-model="searchQuery"
+          allowClear
+          @search="onSearch" />
         <a-table
           size="small"
           class="list-view"
@@ -483,7 +489,8 @@ export default {
       ],
       vmPage: 1,
       vmPageSize: 10,
-      vmCount: 0
+      vmCount: 0,
+      searchQuery: null
     }
   },
   mounted () {
@@ -963,28 +970,7 @@ export default {
         if (!this.newRule.name || !this.newRule.publicport || !this.newRule.privateport) return
       }
       this.addVmModalVisible = true
-      this.addVmModalLoading = true
-      const networkId = 'vpcid' in this.resource ? this.newRule.tier : this.resource.associatednetworkid
-      api('listVirtualMachines', {
-        listAll: true,
-        page: this.vmPage,
-        pagesize: this.vmPageSize,
-        networkid: networkId,
-        account: this.resource.account,
-        domainid: this.resource.domainid
-      }).then(response => {
-        this.vmCount = response.listvirtualmachinesresponse.count || 0
-        this.vms = response.listvirtualmachinesresponse.virtualmachine
-        this.vms.forEach((vm, index) => {
-          this.newRule.virtualmachineid[index] = null
-          this.nics[index] = null
-          this.newRule.vmguestip[index] = null
-        })
-        this.addVmModalLoading = false
-      }).catch(error => {
-        this.$notifyError(error)
-        this.closeModal()
-      })
+      this.fetchVirtualMachines()
     },
     fetchNics (e, index) {
       if (!e.target.checked) {
@@ -1012,6 +998,33 @@ export default {
       }).catch(error => {
         this.$notifyError(error)
         this.closeModal()
+      })
+    },
+    fetchVirtualMachines () {
+      this.vmCount = 0
+      this.vms = []
+      this.addVmModalLoading = true
+      const networkId = 'vpcid' in this.resource ? this.newRule.tier : this.resource.associatednetworkid
+      api('listVirtualMachines', {
+        listAll: true,
+        keyword: this.searchQuery,
+        page: this.vmPage,
+        pagesize: this.vmPageSize,
+        networkid: networkId,
+        account: this.resource.account,
+        domainid: this.resource.domainid
+      }).then(response => {
+        this.vmCount = response.listvirtualmachinesresponse.count || 0
+        this.vms = response.listvirtualmachinesresponse.virtualmachine || []
+        this.vms.forEach((vm, index) => {
+          this.newRule.virtualmachineid[index] = null
+          this.nics[index] = null
+          this.newRule.vmguestip[index] = null
+        })
+      }).catch(error => {
+        this.$notifyError(error)
+      }).finally(() => {
+        this.addVmModalLoading = false
       })
     },
     handleAssignToLBRule (data) {
@@ -1123,6 +1136,10 @@ export default {
       this.page = currentPage
       this.pageSize = pageSize
       this.fetchData()
+    },
+    onSearch (value) {
+      this.searchQuery = value
+      this.fetchVirtualMachines()
     }
   }
 }
@@ -1476,5 +1493,11 @@ export default {
     display: block;
     width: 240px;
     margin-bottom: 10px;
+  }
+
+  .input-search {
+    margin-bottom: 10px;
+    width: 220px;
+    float: right;
   }
 </style>
