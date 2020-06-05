@@ -29,7 +29,7 @@
 
       <a-tooltip placement="bottom" slot="suffixIcon">
         <template slot="title">
-          <span>{{ $t('projects') }}</span>
+          <span>{{ $t('label.projects') }}</span>
         </template>
         <a-icon style="font-size: 20px; color: #999; margin-top: -5px" type="project" />
       </a-tooltip>
@@ -97,7 +97,7 @@ export default {
 <style lang="less" scoped>
 .project {
   &-select {
-    width: 30vw;
+    width: 40vw;
   }
 
   &-icon {
