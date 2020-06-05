@@ -87,7 +87,7 @@
                         v-decorator="['userdata']">
                       </a-textarea>
                     </a-form-item>
-                    <a-form-item :label="this.$t('bootintosetup')" v-if="zoneSelected && ((tabKey === 'isoid' && hypervisor === 'VMware') || (tabKey === 'templateid' && template && template.hypervisor === 'VMware'))" >
+                    <a-form-item :label="this.$t('label.bootintosetup')" v-if="zoneSelected && ((tabKey === 'isoid' && hypervisor === 'VMware') || (tabKey === 'templateid' && template && template.hypervisor === 'VMware'))" >
                       <a-switch
                         v-decorator="['bootintosetup']">
                       </a-switch>
