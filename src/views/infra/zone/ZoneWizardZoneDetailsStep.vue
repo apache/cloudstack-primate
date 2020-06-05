@@ -121,7 +121,7 @@
         />
       </a-form-item>
       <a-form-item
-        :label="$t('ip6cidr')"
+        :label="$t('label.ip6cidr')"
         v-bind="formItemLayout"
         v-if="isAdvancedZone && securityGroupsEnabled"
         has-feedback>
@@ -137,7 +137,7 @@
         />
       </a-form-item>
             <a-form-item
-              :label="$t('ip6gateway')"
+              :label="$t('label.ip6gateway')"
               v-bind="formItemLayout"
               v-if="isAdvancedZone && securityGroupsEnabled"
               has-feedback>
