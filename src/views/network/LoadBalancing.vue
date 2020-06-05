@@ -1087,9 +1087,11 @@ export default {
         return
       }
 
+      const networkId = 'vpcid' in this.resource ? this.newRule.tier : this.resource.associatednetworkid
+
       api('createLoadBalancerRule', {
         openfirewall: false,
-        networkid: this.resource.associatednetworkid,
+        networkid: networkId,
         publicipid: this.resource.id,
         algorithm: this.newRule.algorithm,
         name: this.newRule.name,

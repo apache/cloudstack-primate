@@ -421,10 +421,11 @@ export default {
     addRule () {
       this.loading = true
       this.addVmModalVisible = false
+      const networkId = 'vpcid' in this.resource ? this.newRule.tier : this.resource.associatednetworkid
       api('createPortForwardingRule', {
         ...this.newRule,
         ipaddressid: this.resource.id,
-        networkid: this.resource.associatednetworkid
+        networkid: networkId
       }).then(response => {
         this.$pollJob({
           jobId: response.createportforwardingruleresponse.jobid,
@@ -822,5 +823,9 @@ export default {
     display: block;
     width: 240px;
     margin-bottom: 10px;
+
+    .form__item {
+      width: 100%;
+    }
   }
 </style>
