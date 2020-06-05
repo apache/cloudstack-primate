@@ -21,13 +21,15 @@ const mockStore = {
   state: {},
   mock: (state, actions) => {
     mockStore.state = {
-      app: {},
+      app: {
+        device: 'desktop'
+      },
       user: {},
       permission: {}
     }
 
     if (state && Object.keys(state).length > 0) {
-      mockStore.state = { ...state }
+      mockStore.state = { ...mockStore.state, ...state }
     }
 
     if (!actions) {
@@ -35,6 +37,7 @@ const mockStore = {
     }
 
     return new Vuex.Store({
+      state: mockStore.state,
       getters: {
         apis: () => mockStore.state.user.apis,
         userInfo: () => mockStore.state.user.info

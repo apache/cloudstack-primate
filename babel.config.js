@@ -15,10 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-module.exports = {
+const babelConfig = {
   presets: [
     '@vue/app'
-  ]
+  ],
+  plugins: []
   // if your use import on Demand, Use this code
   // ,
   // plugins: [
@@ -29,3 +30,9 @@ module.exports = {
   //   } ]
   // ]
 }
+
+if (process.env.ENV_NODE === 'test') {
+  babelConfig.plugins.push('require-context-hook')
+}
+
+module.exports = babelConfig

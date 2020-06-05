@@ -148,35 +148,37 @@ user.state.apis = {
 const messages = {
   en: {
     labelname: 'test-name-en',
-    column1: 'column1-en',
-    column2: 'column2-en',
-    column3: 'column3-en',
-    id: 'uuid-en',
     displaytext: 'description-en',
-    name: 'name-en',
-    domainid: 'domain-en',
-    self: 'self-en',
-    all: 'all-en',
-    tags: 'tags-en',
-    account: 'account-en',
-    domainids: 'domainids-en',
-    keypair: 'keypair-en'
+    'label.column1': 'column1-en',
+    'label.column2': 'column2-en',
+    'label.column3': 'column3-en',
+    'label.id': 'uuid-en',
+    'label.name': 'name-en',
+    'label.domainid': 'domain-en',
+    'label.self': 'self-en',
+    'label.all': 'all-en',
+    'label.tags': 'tags-en',
+    'label.account': 'account-en',
+    'label.domainids': 'domainids-en',
+    'label.keypair': 'keypair-en',
+    'label.refresh': 'refresh'
   },
   de: {
     labelname: 'test-name-de',
-    column1: 'column1-de',
-    column2: 'column2-de',
-    column3: 'column3-de',
-    id: 'uuid-de',
     displaytext: 'description-de',
-    name: 'name-de',
-    domainid: 'domain-de',
-    self: 'self-de',
-    all: 'all-de',
-    tags: 'tags-de',
-    account: 'account-de',
-    domainids: 'domainids-de',
-    keypair: 'keypair-de'
+    'label.column1': 'column1-de',
+    'label.column2': 'column2-de',
+    'label.column3': 'column3-de',
+    'label.id': 'uuid-de',
+    'label.name': 'name-de',
+    'label.domainid': 'domain-de',
+    'label.self': 'self-de',
+    'label.all': 'all-de',
+    'label.tags': 'tags-de',
+    'label.account': 'account-de',
+    'label.domainids': 'domainids-de',
+    'label.keypair': 'keypair-de',
+    'label.refresh': 'refresh'
   }
 }
 
@@ -328,6 +330,11 @@ const mocks = {
         message: option.message,
         description: option.description
       }
+    })
+  },
+  $message: {
+    success: jest.fn((message) => {
+      return message
     })
   }
 }
@@ -2565,7 +2572,6 @@ describe('Views > AutogenView.vue', () => {
           wrapper.vm.handleSubmit(event)
 
           expect(mockAxios).not.toBeCalled()
-
           done()
         })
       })
@@ -3250,14 +3256,13 @@ describe('Views > AutogenView.vue', () => {
           resource: {}
         })
 
-        const pollActionCompletion = jest.fn()
+        const spyPollAction = jest.spyOn(wrapper.vm, 'pollActionCompletion').mockImplementation(() => {})
         const mockData = {
           testapinamecase1response: {
             jobid: 'test-job-id'
           }
         }
 
-        wrapper.setMethods({ pollActionCompletion })
         mockAxios.mockResolvedValue(mockData)
         spyConsole.log = jest.spyOn(console, 'log').mockImplementation(() => {})
 
@@ -3268,7 +3273,7 @@ describe('Views > AutogenView.vue', () => {
 
         setTimeout(() => {
           expect(actions.AddAsyncJob).toHaveBeenCalled()
-          expect(pollActionCompletion).toHaveBeenCalled()
+          expect(spyPollAction).toHaveBeenCalled()
 
           done()
         })
@@ -3311,11 +3316,8 @@ describe('Views > AutogenView.vue', () => {
         wrapper.vm.handleSubmit(event)
 
         setTimeout(() => {
-          expect(mocks.$notification.success).toHaveBeenCalled()
-          expect(mocks.$notification.success).toHaveLastReturnedWith({
-            message: 'test-name-en',
-            description: 'test-name-value'
-          })
+          expect(mocks.$message.success).toHaveBeenCalled()
+          expect(mocks.$message.success).toHaveLastReturnedWith('test-name-en - test-name-value')
 
           done()
         })

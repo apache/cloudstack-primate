@@ -73,7 +73,7 @@ describe('Components > View > Status.vue', () => {
   describe('Template', () => {
     it('Console component is visible', () => {
       const expectedLink = '<a href="/client/console?cmd=access&vm=test-resource-id" target="_blank">'
-      const expectedButton = '<button disabled="disabled" type="button" class="ant-btn ant-btn-dashed ant-btn-circle" style="margin-right: 5px;">'
+      const expectedButton = '<button disabled="disabled" type="button" class="ant-btn ant-btn-dashed ant-btn-circle" style="margin-left: 5px;">'
       const propsData = {
         dataView: true,
         resource: {
@@ -103,7 +103,7 @@ describe('Components > View > Status.vue', () => {
 
     it('Console component is invisible', () => {
       const expectedLink = '<a href="/client/console?cmd=access&vm=test-resource-id" target="_blank">'
-      const expectedButton = '<button disabled="disabled" type="button" class="ant-btn ant-btn-dashed ant-btn-circle" style="margin-right: 5px;">'
+      const expectedButton = '<button disabled="disabled" type="button" class="ant-btn ant-btn-dashed ant-btn-circle" style="margin-left: 5px;">'
       const propsData = {
         dataView: true,
         resource: {

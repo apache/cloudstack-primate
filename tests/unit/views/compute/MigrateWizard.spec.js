@@ -89,6 +89,8 @@ const factory = (component, propData = {}, data = {}, methods = {}) => {
 }
 
 describe('Views > compute > MigrateWizard.vue', () => {
+  jest.spyOn(console, 'warn').mockImplementation(() => {})
+
   beforeEach(() => {
     jest.clearAllMocks()
 
@@ -99,25 +101,6 @@ describe('Views > compute > MigrateWizard.vue', () => {
     if (i18n.locale !== 'en') {
       i18n.locale = 'en'
     }
-  })
-
-  describe('Mounted', () => {
-    it('check fetchData() is called when component loaded', () => {
-      const mockData = {
-        findhostsformigrationresponse: {
-          count: 0,
-          host: []
-        }
-      }
-
-      mockAxios.mockResolvedValue(mockData)
-      const fetchData = jest.fn()
-      wrapper = factory(MigrateWizard, { resource: {} }, {}, { fetchData })
-
-      wrapper.vm.$nextTick(() => {
-        expect(fetchData).toHaveBeenCalled()
-      })
-    })
   })
 
   describe('Methods', () => {
@@ -350,7 +333,6 @@ describe('Views > compute > MigrateWizard.vue', () => {
 
     describe('submitForm()', () => {
       it('check api is called when selectedHost.requiresStorageMotion is true', async (done) => {
-        const fetchData = jest.fn()
         const mockData = {
           migratevirtualmachineresponse: {
             jobid: 'test-job-id'
@@ -375,11 +357,9 @@ describe('Views > compute > MigrateWizard.vue', () => {
             id: 'test-host-id',
             name: 'test-host-name'
           }
-        },
-        { fetchData })
-
+        })
+        jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
         mockAxios.mockResolvedValue(mockData)
-
         await wrapper.vm.$nextTick()
         await wrapper.vm.submitForm()
 
@@ -402,7 +382,6 @@ describe('Views > compute > MigrateWizard.vue', () => {
       })
 
       it('check api is called when selectedHost.requiresStorageMotion is false', async (done) => {
-        const fetchData = jest.fn()
         const mockData = {
           migratevirtualmachineresponse: {
             jobid: 'test-job-id'
@@ -427,8 +406,8 @@ describe('Views > compute > MigrateWizard.vue', () => {
             id: 'test-host-id',
             name: 'test-host-name'
           }
-        },
-        { fetchData })
+        })
+        jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
 
         mockAxios.mockResolvedValue(mockData)
 
@@ -454,7 +433,6 @@ describe('Views > compute > MigrateWizard.vue', () => {
       })
 
       it('check store dispatch `AddAsyncJob` and $pollJob have successMethod() is called', async (done) => {
-        const fetchData = jest.fn()
         const mockData = {
           migratevirtualmachineresponse: {
             jobid: 'test-job-id-case-1'
@@ -479,8 +457,8 @@ describe('Views > compute > MigrateWizard.vue', () => {
             id: 'test-host-id',
             name: 'test-host-name'
           }
-        },
-        { fetchData })
+        })
+        jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
 
         mockAxios.mockResolvedValue(mockData)
 
@@ -497,7 +475,6 @@ describe('Views > compute > MigrateWizard.vue', () => {
       })
 
       it('check store dispatch `AddAsyncJob` and $pollJob have errorMethod() is called', async (done) => {
-        const fetchData = jest.fn()
         const mockData = {
           migratevirtualmachineresponse: {
             jobid: 'test-job-id-case-2'
@@ -522,8 +499,8 @@ describe('Views > compute > MigrateWizard.vue', () => {
             id: 'test-host-id',
             name: 'test-host-name'
           }
-        },
-        { fetchData })
+        })
+        jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
 
         mockAxios.mockResolvedValue(mockData)
 
@@ -540,7 +517,6 @@ describe('Views > compute > MigrateWizard.vue', () => {
       })
 
       it('check store dispatch `AddAsyncJob` and $pollJob have catchMethod() is called', async (done) => {
-        const fetchData = jest.fn()
         const mockData = {
           migratevirtualmachineresponse: {
             jobid: 'test-job-id-case-3'
@@ -559,8 +535,8 @@ describe('Views > compute > MigrateWizard.vue', () => {
             id: 'test-host-id',
             name: 'test-host-name'
           }
-        },
-        { fetchData })
+        })
+        jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
 
         mockAxios.mockResolvedValue(mockData)
 
@@ -577,7 +553,6 @@ describe('Views > compute > MigrateWizard.vue', () => {
       })
 
       it('check $message.error is called when api is called with throw error', async (done) => {
-        const fetchData = jest.fn()
         const mockError = 'Error: throw error message'
 
         wrapper = factory(MigrateWizard, {
@@ -589,8 +564,8 @@ describe('Views > compute > MigrateWizard.vue', () => {
             id: 'test-host-id',
             name: 'test-host-name'
           }
-        },
-        { fetchData })
+        })
+        jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
 
         mockAxios.mockRejectedValue(mockError)
 
@@ -608,46 +583,40 @@ describe('Views > compute > MigrateWizard.vue', () => {
 
     describe('handleChangePage()', () => {
       it('check page, pageSize and fetchData() when handleChangePage() is called', () => {
-        const fetchData = jest.fn()
-
         wrapper = factory(MigrateWizard, {
           resource: {}
         }, {
           page: 1,
           pageSize: 10
-        }, {
-          fetchData
         })
+        const spyFetchData = jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
 
         wrapper.vm.$nextTick(() => {
           wrapper.vm.handleChangePage(2, 20)
 
           expect(wrapper.vm.page).toEqual(2)
           expect(wrapper.vm.pageSize).toEqual(20)
-          expect(fetchData).toBeCalled()
+          expect(spyFetchData).toBeCalled()
         })
       })
     })
 
     describe('handleChangePageSize()', () => {
       it('check page, pageSize and fetchData() when handleChangePageSize() is called', () => {
-        const fetchData = jest.fn()
-
         wrapper = factory(MigrateWizard, {
           resource: {}
         }, {
           page: 1,
           pageSize: 10
-        }, {
-          fetchData
         })
+        const spyFetchData = jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
 
         wrapper.vm.$nextTick(() => {
           wrapper.vm.handleChangePageSize(2, 20)
 
           expect(wrapper.vm.page).toEqual(2)
           expect(wrapper.vm.pageSize).toEqual(20)
-          expect(fetchData).toBeCalled()
+          expect(spyFetchData).toBeCalled()
         })
       })
     })

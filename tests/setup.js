@@ -23,6 +23,7 @@ import VueI18n from 'vue-i18n'
 import VueStorage from 'vue-ls'
 import config from '@/config/settings'
 import { createLocalVue } from '@vue/test-utils'
+import registerRequireContextHook from 'babel-plugin-require-context-hook/register'
 
 import mockI18n from './mock/mockI18n'
 import mockStore from './mock/mockStore'
@@ -37,6 +38,8 @@ Vue.use(VueStorage, config.storageOptions)
 localVue.use(VueRouter)
 localVue.use(VueI18n)
 localVue.use(Vuex)
+
+registerRequireContextHook()
 
 window.matchMedia = window.matchMedia || function () {
   return {
