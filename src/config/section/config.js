@@ -50,6 +50,7 @@ export default {
           api: 'deleteLdapConfiguration',
           icon: 'delete',
           label: 'label.remove.ldap',
+          message: 'message.remove.ldap',
           dataView: true,
           args: ['hostname'],
           mapping: {

@@ -122,6 +122,7 @@ export default {
       api: 'deletePhysicalNetwork',
       icon: 'delete',
       label: 'label.action.delete.physical.network',
+      message: 'message.action.delete.physical.network',
       dataView: true
     }
   ]
