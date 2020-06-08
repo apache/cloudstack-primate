@@ -53,8 +53,11 @@
                 @click="demoteAccount(record)" />
             </a-tooltip>
             <a-tooltip placement="top">
-              <template slot="title">
+              <template v-if="record.userid === null" slot="title">
                 {{ $t('label.remove.project.account') }}
+              </template>
+              <template v-else slot="title">
+                {{ $t('label.remove.project.user') }}
               </template>
               <a-button
                 type="danger"
@@ -113,7 +116,7 @@ export default {
       },
       {
         title: this.$t('label.user'),
-        dataIndex: 'user_id',
+        dataIndex: 'userid',
         width: '30%',
         scopedSlots: { customRender: 'user' }
       },
@@ -159,7 +162,6 @@ export default {
       api('listProjectAccounts', params).then(json => {
         const listProjectAccount = json.listprojectaccountsresponse.projectaccount
         const itemCount = json.listprojectaccountsresponse.count
-
         if (!listProjectAccount || listProjectAccount.length === 0) {
           this.dataSource = []
           return
@@ -184,21 +186,31 @@ export default {
       this.fetchData()
     },
     onMakeProjectOwner (record) {
-      const title = this.$t('label.make.project.owner')
+      var title = this.$t('label.make.project.owner')
       const loading = this.$message.loading(title + 'in progress for ' + record.account, 0)
       const params = {}
 
       params.projectid = this.resource.id
-      params.account = record.account
+      if (params.userid != null) {
+        params.userid = record.userid
+        title = this.$t('label.make.user.project.owner')
+      } else {
+        params.account = record.account
+      }
       params.roletype = this.owner
       this.updateProject(record, params, title, loading)
     },
     demoteAccount (record) {
-      const title = this.$t('label.demote.project.owner')
+      var title = this.$t('label.demote.project.owner')
       const loading = this.$message.loading(title + 'in progress for ' + record.account, 0)
       const params = {}
+      if (params.userid !== null) {
+        params.userid = record.userid
+        title = this.$t('label.demote.project.owner.user')
+      } else {
+        params.account = record.account
+      }
       params.projectid = this.resource.id
-      params.account = record.account
       params.roletype = 'Regular'
       this.updateProject(record, params, title, loading)
     },
