@@ -27,8 +27,9 @@
       :columns="columns"
       :dataSource="items"
       :rowKey="record => record.id"
-      :pagination="{showSizeChanger: true}"
+      :pagination="{showSizeChanger: true, total: rowCount}"
       :rowSelection="rowSelection"
+      @change="handleTableChange"
       size="middle"
       :scroll="{ y: 225 }"
     >
@@ -46,6 +47,10 @@ export default {
       type: Array,
       default: () => []
     },
+    rowCount: {
+      type: Number,
+      default: () => 0
+    },
     value: {
       type: Array,
       default: () => []
@@ -57,6 +62,10 @@ export default {
     preFillContent: {
       type: Object,
       default: () => {}
+    },
+    zoneId: {
+      type: String,
+      default: () => ''
     }
   },
   data () {
@@ -74,7 +83,8 @@ export default {
           width: '60%'
         }
       ],
-      selectedRowKeys: []
+      selectedRowKeys: [],
+      oldZoneId: null
     }
   },
   computed: {
@@ -107,6 +117,10 @@ export default {
           this.selectedRowKeys = this.preFillContent.affinitygroupids
           this.$emit('select-affinity-group-item', this.preFillContent.affinitygroupids)
         } else {
+          if (this.oldZoneId === this.zoneId) {
+            return
+          }
+          this.oldZoneId = this.zoneId
           this.selectedRowKeys = []
           this.$emit('select-affinity-group-item', null)
         }

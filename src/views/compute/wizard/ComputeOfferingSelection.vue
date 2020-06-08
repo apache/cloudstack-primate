@@ -25,7 +25,7 @@
     <a-table
       :columns="columns"
       :dataSource="tableSource"
-      :pagination="{showSizeChanger: true}"
+      :pagination="{ showSizeChanger: true, total: rowCount }"
       :rowSelection="rowSelection"
       :loading="loading"
       size="middle"
@@ -46,6 +46,10 @@ export default {
       type: Array,
       default: () => []
     },
+    rowCount: {
+      type: Number,
+      default: () => 0
+    },
     value: {
       type: String,
       default: ''
@@ -57,6 +61,10 @@ export default {
     preFillContent: {
       type: Object,
       default: () => {}
+    },
+    zoneId: {
+      type: String,
+      default: () => ''
     }
   },
   data () {
@@ -79,7 +87,8 @@ export default {
           width: '30%'
         }
       ],
-      selectedRowKeys: []
+      selectedRowKeys: [],
+      oldZoneId: null
     }
   },
   computed: {
@@ -137,6 +146,10 @@ export default {
           this.selectedRowKeys = [this.preFillContent.computeofferingid]
           this.$emit('select-compute-item', this.preFillContent.computeofferingid)
         } else {
+          if (this.oldZoneId === this.zoneId) {
+            return
+          }
+          this.oldZoneId = this.zoneId
           if (this.computeItems && this.computeItems.length > 0) {
             this.selectedRowKeys = [this.computeItems[0].id]
             this.$emit('select-compute-item', this.computeItems[0].id)

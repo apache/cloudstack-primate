@@ -30,7 +30,7 @@
       :columns="columns"
       :dataSource="networkItems"
       :rowKey="record => record.id"
-      :pagination="{showSizeChanger: true, size: 'small'}"
+      :pagination="{showSizeChanger: true, size: 'small', total: rowCount}"
       :rowSelection="rowSelection"
       @change="handleTableChange"
       :scroll="{ y: 225 }"
@@ -84,6 +84,10 @@ export default {
       type: Array,
       default: () => []
     },
+    rowCount: {
+      type: Number,
+      default: () => 0
+    },
     value: {
       type: Array,
       default: () => []
@@ -111,7 +115,8 @@ export default {
         loading: false,
         opts: []
       },
-      showCreateForm: false
+      showCreateForm: false,
+      oldZoneId: null
     }
   },
   computed: {
@@ -189,6 +194,10 @@ export default {
           this.$emit('select-network-item', this.preFillContent.networkids)
         } else {
           if (this.items && this.items.length > 0) {
+            if (this.oldZoneId === this.zoneId) {
+              return
+            }
+            this.oldZoneId = this.zoneId
             this.selectedRowKeys = [this.items[0].id]
             this.$emit('select-network-item', this.selectedRowKeys)
           } else {

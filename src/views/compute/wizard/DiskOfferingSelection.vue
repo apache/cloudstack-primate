@@ -26,7 +26,7 @@
       :loading="loading"
       :columns="columns"
       :dataSource="tableSource"
-      :pagination="{showSizeChanger: true}"
+      :pagination="{showSizeChanger: true, total: rowCount}"
       :rowSelection="rowSelection"
       size="middle"
       @change="handleTableChange"
@@ -57,6 +57,10 @@ export default {
       type: Array,
       default: () => []
     },
+    rowCount: {
+      type: Number,
+      default: () => 0
+    },
     value: {
       type: String,
       default: ''
@@ -68,6 +72,10 @@ export default {
     preFillContent: {
       type: Object,
       default: () => {}
+    },
+    zoneId: {
+      type: String,
+      default: () => ''
     }
   },
   data () {
@@ -93,7 +101,8 @@ export default {
         }
       ],
       selectedRowKeys: ['0'],
-      dataItems: []
+      dataItems: [],
+      oldZoneId: null
     }
   },
   created () {
@@ -145,6 +154,10 @@ export default {
           this.selectedRowKeys = [this.preFillContent.diskofferingid]
           this.$emit('select-disk-offering-item', this.preFillContent.diskofferingid)
         } else {
+          if (this.oldZoneId === this.zoneId) {
+            return
+          }
+          this.oldZoneId = this.zoneId
           this.selectedRowKeys = ['0']
           this.$emit('select-disk-offering-item', '0')
         }

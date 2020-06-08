@@ -26,7 +26,7 @@
       :loading="loading"
       :columns="columns"
       :dataSource="tableSource"
-      :pagination="{showSizeChanger: true}"
+      :pagination="{ showSizeChanger: true, total: rowCount }"
       :rowSelection="rowSelection"
       size="middle"
       @change="handleTableChange"
@@ -46,6 +46,10 @@ export default {
       type: Array,
       default: () => []
     },
+    rowCount: {
+      type: Number,
+      default: () => 0
+    },
     value: {
       type: String,
       default: ''
@@ -57,6 +61,10 @@ export default {
     preFillContent: {
       type: Object,
       default: () => {}
+    },
+    zoneId: {
+      type: String,
+      default: () => ''
     }
   },
   data () {
@@ -80,7 +88,8 @@ export default {
         }
       ],
       selectedRowKeys: [this.$t('label.noselect')],
-      dataItems: []
+      dataItems: [],
+      oldZoneId: null
     }
   },
   created () {
@@ -130,8 +139,12 @@ export default {
           this.selectedRowKeys = [this.preFillContent.keypair]
           this.$emit('select-ssh-key-pair-item', this.preFillContent.keypair)
         } else {
-          this.selectedRowKeys = [this.$t('label.noselect')]
-          this.$emit('select-ssh-key-pair-item', this.$t('label.noselect'))
+          if (this.oldZoneId === this.zoneId) {
+            return
+          }
+          this.oldZoneId = this.zoneId
+          this.selectedRowKeys = [this.dataItems[0].name]
+          this.$emit('select-ssh-key-pair-item', this.dataItems[0].name)
         }
       }
     }
@@ -139,11 +152,13 @@ export default {
   methods: {
     initDataItem () {
       this.dataItems = []
-      this.dataItems.push({
-        name: this.$t('label.noselect'),
-        account: '-',
-        domain: '-'
-      })
+      if (this.options.page === 1) {
+        this.dataItems.push({
+          name: this.$t('label.noselect'),
+          account: '-',
+          domain: '-'
+        })
+      }
     },
     onSelectRow (value) {
       this.selectedRowKeys = value
