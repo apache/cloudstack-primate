@@ -24,7 +24,7 @@
             initialValue: selectedDiskOfferingId,
             rules: [{ required: true, message: 'Please select an option' }]}]"
           :loading="loading"
-          :placeholder="$t('label.diskoffering.type')"
+          :placeholder="$t('label.diskoffering')"
           @change="id => (customDiskOffering = offerings.filter(x => x.id === id)[0].iscustomized || false)"
         >
           <a-select-option

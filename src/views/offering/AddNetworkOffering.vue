@@ -273,7 +273,7 @@
         <a-form-item :label="$t('label.tags')">
           <a-input
             v-decorator="['tags', {}]"
-            :placeholder="this.$t('label.network.tags')"/>
+            :placeholder="this.$t('label.tags')"/>
         </a-form-item>
         <a-form-item :label="$t('label.availability')" v-if="this.requiredNetworkOfferingExists && this.guestType === 'isolated' && this.sourceNatServiceChecked">
           <a-radio-group
