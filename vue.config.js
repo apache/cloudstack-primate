@@ -19,13 +19,14 @@ const path = require('path')
 const webpack = require('webpack')
 const fs = require('fs')
 const config = require('./public/config.json')
+const createThemeColorReplacerPlugin = require('./config/theme.config')
 
 function resolve (dir) {
   return path.join(__dirname, dir)
 }
 
 // vue.config.js
-module.exports = {
+const vueConfig = {
   publicPath: './',
   /*
     Vue-cli3:
@@ -137,3 +138,7 @@ module.exports = {
     }
   }
 }
+
+vueConfig.configureWebpack.plugins.push(createThemeColorReplacerPlugin())
+
+module.exports = vueConfig
