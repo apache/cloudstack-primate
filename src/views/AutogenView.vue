@@ -51,7 +51,7 @@
               @exec-action="execAction"/>
             <a-select
               v-if="filters && filters.length > 0"
-              placeholder="Filter By"
+              :placeholder="$t('label.filterby')"
               :value="$t('label.' + selectedFilter)"
               style="min-width: 100px; margin-left: 10px"
               @change="changeFilter">
@@ -62,7 +62,7 @@
             </a-select>
             <a-input-search
               style="width: 20vw; margin-left: 10px"
-              placeholder="Search"
+              :placeholder="$t('label.search')"
               v-model="searchQuery"
               v-if="!dataView && !treeView"
               allowClear
@@ -141,7 +141,7 @@
               <span v-if="field.type==='boolean'">
                 <a-switch
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please provide input' }]
+                    rules: [{ required: field.required, message: `${this.$t('message.error.required.input')}` }]
                   }]"
                   v-model="formModel[field.name]"
                   :placeholder="field.description"
@@ -151,7 +151,7 @@
                 <a-select
                   :loading="field.loading"
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please select option' }]
+                    rules: [{ required: field.required, message: `${this.$t('message.error.select')}` }]
                   }]"
                   :placeholder="field.description"
                 >
@@ -167,7 +167,7 @@
                   showSearch
                   optionFilterProp="children"
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please select option' }]
+                    rules: [{ required: field.required, message: `${this.$t('message.error.select')}` }]
                   }]"
                   :loading="field.loading"
                   :placeholder="field.description"
@@ -186,7 +186,7 @@
                   showSearch
                   optionFilterProp="children"
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please select option' }]
+                    rules: [{ required: field.required, message: `${this.$t('message.error.select')}` }]
                   }]"
                   :loading="field.loading"
                   :placeholder="field.description"
@@ -204,7 +204,7 @@
                   :loading="field.loading"
                   mode="multiple"
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please select option' }]
+                    rules: [{ required: field.required, message: `${this.$t('message.error.select')}` }]
                   }]"
                   :placeholder="field.description"
                 >
@@ -216,7 +216,7 @@
               <span v-else-if="field.type==='long'">
                 <a-input-number
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please enter a number' }]
+                    rules: [{ required: field.required, message: `${this.$t('message.validate.number')}` }]
                   }]"
                   :placeholder="field.description"
                 />
@@ -224,7 +224,7 @@
               <span v-else-if="field.name==='password' || field.name==='currentpassword'">
                 <a-input-password
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please enter input' }]
+                    rules: [{ required: field.required, message: `${this.$t('message.error.required.input')}` }]
                   }]"
                   :placeholder="field.description"
                 />
@@ -233,7 +233,7 @@
                 <a-textarea
                   rows="2"
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please enter input' }]
+                    rules: [{ required: field.required, message: `${this.$t('message.error.required.input')}` }]
                   }]"
                   :placeholder="field.description"
                 />
@@ -241,7 +241,7 @@
               <span v-else>
                 <a-input
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please enter input' }]
+                    rules: [{ required: field.required, message: `${this.$t('message.error.required.input')}` }]
                   }]"
                   :placeholder="field.description" />
               </span>

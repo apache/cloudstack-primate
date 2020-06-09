@@ -91,7 +91,7 @@
       </draggable>
     </div>
 
-    <a-modal title="Edit Tags" v-model="tagsModalVisible" :footer="null">
+    <a-modal :title="$t('label.edit.tags')" v-model="tagsModalVisible" :footer="null">
       <a-spin v-if="tagsLoading"></a-spin>
 
       <div v-else>
@@ -218,7 +218,7 @@ export default {
       ruleForm: this.$form.createForm(this),
       tagsLoading: false,
       ruleModalVisible: false,
-      ruleModalTitle: 'Edit rule',
+      ruleModalTitle: this.$t('label.edit.rule'),
       ruleFormMode: 'edit'
     }
   },
@@ -415,7 +415,7 @@ export default {
           partialupgrade: false
         }).then(response => {
           this.$store.dispatch('AddAsyncJob', {
-            title: `Edit ACL rule`,
+            title: this.$t('label.edit.acl.rule'),
             jobid: response.createnetworkaclresponse.jobid,
             status: 'progress'
           })

@@ -22,7 +22,7 @@
         <a-card :bordered="false">
           <a-input-search
             style="margin-bottom: 10px"
-            placeholder="Search"
+            :placeholder="$t('label.search')"
             v-model="searchQuery"
             @search="handleSearch" />
           <a-table

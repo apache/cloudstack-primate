@@ -213,11 +213,11 @@ export default {
       }).then(response => {
         this.$pollJob({
           jobId: response.dedicatepodresponse.jobid,
-          successMessage: `Successfully dedicated pod`,
+          successMessage: this.$t('message.pod.dedicated'),
           successMethod: () => {
             this.loading = false
             this.$store.dispatch('AddAsyncJob', {
-              title: 'Successfully dedicated pod',
+              title: this.$t('message.pod.dedicated'),
               jobid: response.dedicatepodresponse.jobid,
               description: `Domain ID: ${this.dedicatedDomainId}`,
               status: 'progress'
@@ -227,7 +227,7 @@ export default {
           errorMethod: () => {
             this.loading = false
           },
-          loadingMessage: `Dedicating pod...`,
+          loadingMessage: this.$t('message.dedicate.pod'),
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
             this.loading = false

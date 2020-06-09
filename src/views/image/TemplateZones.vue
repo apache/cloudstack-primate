@@ -42,7 +42,7 @@
           <a-popconfirm
             v-if="'deleteTemplate' in $store.getters.apis"
             placement="topRight"
-            title="Delete the template for this zone?"
+            :title="$t('message.action.delete.template')"
             :ok-text="$t('label.yes')"
             :cancel-text="$t('label.no')"
             :loading="deleteLoading"
@@ -87,7 +87,7 @@
             <a-select
               id="zone-selection"
               mode="multiple"
-              placeholder="Select Zones"
+              :placeholder="$t('label.select.zones')"
               v-decorator="['zoneid', {
                 rules: [
                   {

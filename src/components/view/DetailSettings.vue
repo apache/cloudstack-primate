@@ -20,7 +20,7 @@
     <a-alert
       v-if="disableSettings"
       banner
-      message="Please stop the virtual machine to access settings" />
+      :message="$t('message.action.settings.warning.vm.running')" />
     <div v-else>
       <div v-show="!showAddDetail">
         <a-button type="dashed" style="width: 100%" icon="plus" @click="showAddDetail = true">{{ $t('label.add.setting') }}</a-button>

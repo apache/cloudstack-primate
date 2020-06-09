@@ -286,8 +286,8 @@ export default {
           !json.updateconfigurationresponse.configuration.isdynamic &&
           ['Admin'].includes(this.$store.getters.userInfo.roletype)) {
           this.$notification.warning({
-            message: 'Status',
-            description: 'Please restart your management server(s) for your new settings to take effect.'
+            message: this.$t('label.status'),
+            description: this.$t('message.restart.mgmt.server')
           })
         }
       }).catch(error => {

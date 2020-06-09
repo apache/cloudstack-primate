@@ -42,7 +42,7 @@
           <a-popconfirm
             v-if="'deleteIso' in $store.getters.apis"
             placement="topRight"
-            title="Delete the ISO for this zone?"
+            :title="$t('message.action.delete.iso')"
             :ok-text="$t('label.yes')"
             :cancel-text="$t('label.no')"
             :loading="deleteLoading"
@@ -87,7 +87,7 @@
             <a-select
               id="zone-selection"
               mode="multiple"
-              placeholder="Select Zones"
+              :placeholder="$t('label.select.zones')"
               v-decorator="['zoneid', {
                 rules: [
                   {
