@@ -164,7 +164,6 @@ export default {
       this.newRuleSelectError = false
     },
     fetchData (callback = null) {
-      console.log('res = ', this.resource)
       if (!this.resource.id) return
       api('listProjectRolePermissions', {
         projectid: this.resource.id,

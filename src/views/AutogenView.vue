@@ -181,32 +181,6 @@
                 </a-select>
               </span>
               <span
-                v-else-if="field.name==='userid'">
-                <a-select
-                  showSearch
-                  optionFilterProp="children"
-                  v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please select option' }]
-                  }]"
-                  :loading="field.loading"
-                  :placeholder="$t('label.user')"
-                >
-                  <a-select-option v-for="opt in field.opts" :key="opt.id">
-                    {{ opt.username }} ( {{ opt.id }} )
-                  </a-select-option>
-                </a-select>
-              </span>
-              <span v-else-if="field.name === 'roletype'">
-                <a-select
-                  showSearch
-                  optionFilterProp="children"
-                  v-decorator="[field.name]"
-                  :placeholder="$t('label.roletype')">
-                  <a-select-option value="Admin">Admin</a-select-option>
-                  <a-select-option value="Regular">Regular</a-select-option>
-                </a-select>
-              </span>
-              <span
                 v-else-if="field.type==='uuid'">
                 <a-select
                   showSearch
@@ -537,9 +511,6 @@ export default {
         delete params.treeView
       }
 
-      if (this.dataView && this.apiName === 'listProjects') {
-        params.projectid = this.$route.params.id
-      }
       api(this.apiName, params).then(json => {
         var responseName
         var objectName
@@ -704,11 +675,8 @@ export default {
         params.isofilter = 'executable'
       } else if (possibleApi === 'listHosts') {
         params.type = 'routing'
-      } else if (possibleApi === 'listProjectRoles') {
-        params.projectid = this.resource.id
-      } else if (possibleApi === 'listUsers') {
-        params.account = this.resource.account
       }
+
       api(possibleApi, params).then(json => {
         param.loading = false
         for (const obj in json) {

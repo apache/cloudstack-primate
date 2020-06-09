@@ -190,7 +190,7 @@ export default {
       const loading = this.$message.loading(title + 'in progress for ' + record.account, 0)
       const params = {}
 
-      params.projectid = this.resource.id
+      params.id = this.resource.id
       if (params.userid != null) {
         params.userid = record.userid
         title = this.$t('label.make.user.project.owner')
@@ -210,7 +210,8 @@ export default {
       } else {
         params.account = record.account
       }
-      params.projectid = this.resource.id
+
+      params.id = this.resource.id
       params.roletype = 'Regular'
       this.updateProject(record, params, title, loading)
     },

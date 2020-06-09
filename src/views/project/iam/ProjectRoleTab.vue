@@ -17,6 +17,9 @@
 
 <template>
   <div>
+    <a-button type="dashed" icon="plus" style="width: 100%; margin-bottom: 15px" @click="openCreateModal">
+      {{ $t('label.create.project.role') }}
+    </a-button>
     <a-row :gutter="12">
       <a-col :md="24" :lg="24">
         <a-table
@@ -25,7 +28,7 @@
           :columns="columns"
           :dataSource="dataSource"
           :rowKey="record => record.projectid"
-          pagination="false">
+          :pagination="false">
           <template slot="expandedRowRender" slot-scope="record">
             <ProjectRolePermissionTab class="table" style="margin-top:30px; margin-left: -40px; margin-right: 10px" :resource="resource" :role="record"/>
           </template>
@@ -102,6 +105,25 @@
             </span>
           </a-form>
         </a-modal>
+
+        <a-modal title="Create Project Role" v-model="createModalVisible" :footer="null" :afterClose="closeAction">
+          <a-form
+            :form="form"
+            @submit="createProjectRole"
+            layout="vertical">
+            <a-form-item :label="$t('label.name')">
+              <a-input v-decorator="[ 'name', { rules: [{ required: true, message: 'Please provide input' }] }]"></a-input>
+            </a-form-item>
+            <a-form-item :label="$t('label.description')">
+              <a-input v-decorator="[ 'description' ]"></a-input>
+            </a-form-item>
+            <div :span="24" class="action-button">
+              <a-button @click="closeAction">{{ this.$t('label.cancel') }}</a-button>
+              <a-button type="primary" @click="createProjectRole" :loading="loading">{{ $t('label.ok') }}</a-button>
+            </div>
+          </a-form>
+        </a-modal>
+
       </a-col>
     </a-row>
   </div>
@@ -125,6 +147,7 @@ export default {
       columns: [],
       dataSource: [],
       loading: false,
+      createModalVisible: false,
       editModalVisible: false,
       selectedRole: null,
       projectPermisssions: [],
@@ -189,6 +212,9 @@ export default {
       this.selectedRole = role
       this.editModalVisible = true
     },
+    openCreateModal () {
+      this.createModalVisible = true
+    },
     updateProjectRole (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
@@ -220,7 +246,42 @@ export default {
       })
     },
     closeAction () {
-      this.editModalVisible = false
+      if (this.editModalVisible) {
+        this.editModalVisible = false
+      }
+      if (this.createModalVisible) {
+        this.createModalVisible = false
+      }
+    },
+    createProjectRole (e) {
+      e.preventDefault()
+      this.form.validateFields((err, values) => {
+        if (err) {
+          return
+        }
+        var params = {}
+        params.projectid = this.resource.id
+        for (const key in values) {
+          const input = values[key]
+          if (input === undefined) {
+            continue
+          }
+          params[key] = input
+        }
+        console.log('params', params)
+        api('createProjectRole', params).then(response => {
+          this.$notification.success({
+            message: this.$t('label.create.project.role'),
+            description: this.$t('label.create.project.role')
+          })
+        }).catch(error => {
+          this.$notifyError(error)
+        }).finally(() => {
+          this.loading = false
+          this.fetchData()
+          this.closeAction()
+        })
+      })
     },
     deleteProjectRole (role) {
       api('deleteProjectRole', {

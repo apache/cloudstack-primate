@@ -106,41 +106,11 @@ export default {
     },
     {
       api: 'addAccountToProject',
-      icon: 'usergroup-add',
-      label: 'Add Account to Project',
-      dataView: true,
-      args: ['projectid', 'account', 'email', 'projectroleid', 'roletype'],
-      show: (record, store) => { return record.account === store.userInfo.account || ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) },
-      mapping: {
-        projectid: {
-          value: (record) => { return record.id }
-        }
-      }
-    },
-    {
-      api: 'addUserToProject',
       icon: 'user-add',
-      label: 'Add User to Project',
+      label: 'Add Account or User to Project',
       dataView: true,
-      args: ['projectid', 'userid', 'email', 'projectroleid', 'roletype'],
-      show: (record, store) => { return record.account === store.userInfo.account || ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) },
-      mapping: {
-        projectid: {
-          value: (record) => { return record.id }
-        }
-      }
-    },
-    {
-      api: 'createProjectRole',
-      icon: 'idcard',
-      label: 'label.add.project.role',
-      dataView: true,
-      args: ['projectid', 'name', 'description'],
-      mapping: {
-        projectid: {
-          value: (record) => { return record.id }
-        }
-      }
+      popup: true,
+      component: () => import('@/views/project/AddAccountOrUserToProject.vue')
     },
     {
       api: 'deleteProject',
