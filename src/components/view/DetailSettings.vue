@@ -31,14 +31,14 @@
           :filterOption="filterOption"
           :value="newKey"
           :dataSource="Object.keys(detailOptions)"
-          placeholder="Name"
+          :placeholder="$t('label.name')"
           @change="e => onAddInputChange(e, 'newKey')" />
         <a-auto-complete
           style="width: 100%"
           :filterOption="filterOption"
           :value="newValue"
           :dataSource="detailOptions[newKey]"
-          placeholder="Value"
+          :placeholder="$t('label.value')"
           @change="e => onAddInputChange(e, 'newValue')" />
         <a-button type="primary" style="width: 25%" icon="plus" @click="addDetail">{{ $t('label.add.setting') }}</a-button>
         <a-button type="dashed" style="width: 25%" icon="close" @click="showAddDetail = false">{{ $t('label.cancel') }}</a-button>

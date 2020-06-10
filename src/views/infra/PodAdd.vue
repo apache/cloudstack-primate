@@ -23,7 +23,7 @@
         <a-select
           v-decorator="['zoneid', {
             initialValue: this.zoneId,
-            rules: [{ required: true, message: 'required' }] }
+            rules: [{ required: true, message: `${this.$t('label.required')}` }] }
           ]">
           <a-select-option
             v-for="zone in zonesList"
@@ -40,7 +40,7 @@
           v-decorator="[
             'name',
             {
-              rules: [{ required: true, message: 'required' }]
+              rules: [{ required: true, message: `${this.$t('label.required')}` }]
             }]"
         />
       </a-form-item>
@@ -51,7 +51,7 @@
           v-decorator="[
             'gateway',
             {
-              rules: [{ required: true, message: 'required' }]
+              rules: [{ required: true, message: `${this.$t('label.required')}` }]
             }]"
         />
       </a-form-item>
@@ -62,7 +62,7 @@
           v-decorator="[
             'netmask',
             {
-              rules: [{ required: true, message: 'required' }]
+              rules: [{ required: true, message: `${this.$t('label.required')}` }]
             }]"
         />
       </a-form-item>
@@ -73,7 +73,7 @@
           v-decorator="[
             'startip',
             {
-              rules: [{ required: true, message: 'required' }]
+              rules: [{ required: true, message: `${this.$t('label.required')}` }]
             }]"
         />
       </a-form-item>

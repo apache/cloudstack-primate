@@ -99,7 +99,7 @@ export const pollJobPlugin = {
       }).catch(e => {
         console.error(`${catchMessage} - ${e}`)
         notification.error({
-          message: 'Error',
+          message: this.$t('label.error'),
           description: catchMessage,
           duration: 0
         })

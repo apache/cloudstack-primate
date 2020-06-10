@@ -131,7 +131,7 @@
       @showSizeChange="handleChangePageSize"
       showSizeChanger/>
 
-    <a-modal title="Edit Tags" v-model="tagsModalVisible" :footer="null" :afterClose="closeModal" class="tags-modal">
+    <a-modal :title="$t('label.edit.tags')" v-model="tagsModalVisible" :footer="null" :afterClose="closeModal" class="tags-modal">
       <span v-show="tagsModalLoading" class="modal-loading">
         <a-icon type="loading"></a-icon>
       </span>
@@ -166,7 +166,7 @@
     </a-modal>
 
     <a-modal
-      title="Configure Sticky Policy"
+      :title="$t('label.configure.sticky.policy')"
       v-model="stickinessModalVisible"
       :footer="null"
       :afterClose="closeModal"

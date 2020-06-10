@@ -27,7 +27,7 @@
       <a-spin :spinning="loading">
         <a-list style="min-width: 200px; max-width: 300px">
           <a-list-item>
-            <a-list-item-meta title="Notifications">
+            <a-list-item-meta :title="$t('label.notifications')">
               <a-avatar :style="{backgroundColor: '#6887d0', verticalAlign: 'middle'}" icon="notification" slot="avatar"/>
               <a-button size="small" slot="description" @click="clearJobs">Clear All</a-button>
             </a-list-item-meta>

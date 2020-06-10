@@ -150,15 +150,15 @@
         </a-form-item>
 
         <a-form-item v-if="ruleForm.getFieldValue('protocol') === 'protocolnumber'" :label="$t('label.protocolnumber')">
-          <a-input v-decorator="['protocolnumber' , { rules: [{ required: true, message: 'required' }]}]" />
+          <a-input v-decorator="['protocolnumber' , { rules: [{ required: true, message: `${this.$t('label.required')}` }]}]" />
         </a-form-item>
 
         <div v-if="ruleForm.getFieldValue('protocol') === 'icmp' || ruleForm.getFieldValue('protocol') === 'protocolnumber'">
           <a-form-item :label="$t('label.icmptype')">
-            <a-input v-decorator="['icmptype']" placeholder="Please specify -1 if you want to allow all ICMP types." />
+            <a-input v-decorator="['icmptype']" :placeholder="$t('icmp.type.desc')" />
           </a-form-item>
           <a-form-item :label="$t('label.icmpcode')">
-            <a-input v-decorator="['icmpcode']" placeholder="Please specify -1 if you want to allow all ICMP types." />
+            <a-input v-decorator="['icmpcode']" :placeholder="$t('icmp.code.desc')" />
           </a-form-item>
         </div>
 
@@ -181,7 +181,7 @@
           <a-textarea
             v-decorator="['reason']"
             :autosize="{ minRows: 2 }"
-            placeholder="Enter the reason behind an ACL rule" />
+            :placeholder="$t('label.acl.reason.description')" />
         </a-form-item>
       </a-form>
     </a-modal>

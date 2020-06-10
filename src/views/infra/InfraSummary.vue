@@ -57,7 +57,7 @@
                   name="rootCert"
                   v-decorator="[
                     'root',
-                    {rules: [{ required: true, message: 'Required' }], validateTrigger:'change'}
+                    {rules: [{ required: true, message: `${this.$t('label.required')}` }], validateTrigger:'change'}
                   ]"
                 ></a-textarea>
               </a-form-item>
@@ -96,7 +96,7 @@
                   name="serverCert"
                   v-decorator="[
                     'server',
-                    {rules: [{ required: true, message: 'Required' }], validateTrigger:'change'}
+                    {rules: [{ required: true, message: `${this.$t('label.required')}` }], validateTrigger:'change'}
                   ]"
                 ></a-textarea>
               </a-form-item>
@@ -109,7 +109,7 @@
                   name="pkcsKey"
                   v-decorator="[
                     'pkcs',
-                    {rules: [{ required: true, message: 'Required' }], validateTrigger:'change'}
+                    {rules: [{ required: true, message: `${this.$t('label.required')}` }], validateTrigger:'change'}
                   ]"
                 ></a-textarea>
               </a-form-item>
@@ -121,7 +121,7 @@
                   name="dnsSuffix"
                   v-decorator="[
                     'dns',
-                    {rules: [{ required: true, message: 'Required' }], validateTrigger:'change'}
+                    {rules: [{ required: true, message: `${this.$t('label.required')}` }], validateTrigger:'change'}
                   ]"
                 ></a-input>
               </a-form-item>

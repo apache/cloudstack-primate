@@ -141,7 +141,7 @@
               <span v-if="field.type==='boolean'">
                 <a-switch
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: `${this.$t('message.error.required.input')}` }]
+                    rules: [{ required: field.required, message: `${$t('message.error.required.input')}` }]
                   }]"
                   v-model="formModel[field.name]"
                   :placeholder="field.description"
@@ -151,7 +151,7 @@
                 <a-select
                   :loading="field.loading"
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: `${this.$t('message.error.select')}` }]
+                    rules: [{ required: field.required, message: `${$t('message.error.select')}` }]
                   }]"
                   :placeholder="field.description"
                 >
@@ -167,7 +167,7 @@
                   showSearch
                   optionFilterProp="children"
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: `${this.$t('message.error.select')}` }]
+                    rules: [{ required: field.required, message: `${$t('message.error.select')}` }]
                   }]"
                   :loading="field.loading"
                   :placeholder="field.description"
@@ -186,7 +186,7 @@
                   showSearch
                   optionFilterProp="children"
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: `${this.$t('message.error.select')}` }]
+                    rules: [{ required: field.required, message: `${$t('message.error.select')}` }]
                   }]"
                   :loading="field.loading"
                   :placeholder="field.description"
@@ -204,7 +204,7 @@
                   :loading="field.loading"
                   mode="multiple"
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: `${this.$t('message.error.select')}` }]
+                    rules: [{ required: field.required, message: `${$t('message.error.select')}` }]
                   }]"
                   :placeholder="field.description"
                 >
@@ -216,7 +216,7 @@
               <span v-else-if="field.type==='long'">
                 <a-input-number
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: `${this.$t('message.validate.number')}` }]
+                    rules: [{ required: field.required, message: `${$t('message.validate.number')}` }]
                   }]"
                   :placeholder="field.description"
                 />
@@ -224,7 +224,7 @@
               <span v-else-if="field.name==='password' || field.name==='currentpassword'">
                 <a-input-password
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: `${this.$t('message.error.required.input')}` }]
+                    rules: [{ required: field.required, message: `${$t('message.error.required.input')}` }]
                   }]"
                   :placeholder="field.description"
                 />
@@ -233,7 +233,7 @@
                 <a-textarea
                   rows="2"
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: `${this.$t('message.error.required.input')}` }]
+                    rules: [{ required: field.required, message: `${$t('message.error.required.input')}` }]
                   }]"
                   :placeholder="field.description"
                 />
@@ -241,7 +241,7 @@
               <span v-else>
                 <a-input
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: `${this.$t('message.error.required.input')}` }]
+                    rules: [{ required: field.required, message: `${$t('message.error.required.input')}` }]
                   }]"
                   :placeholder="field.description" />
               </span>
