@@ -15,23 +15,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
-const getters = {
-  device: state => state.app.device,
-  theme: state => state.app.theme,
-  configs: state => state.app.configs,
-  color: state => state.app.color,
-  token: state => state.user.token,
-  project: state => state.user.project,
-  avatar: state => state.user.avatar,
-  nickname: state => state.user.name,
-  apis: state => state.user.apis,
-  features: state => state.user.features,
-  userInfo: state => state.user.info,
-  addRouters: state => state.permission.addRouters,
-  multiTab: state => state.app.multiTab,
-  asyncJobIds: state => state.user.asyncJobIds,
-  isLdapEnabled: state => state.user.isLdapEnabled,
-  cloudian: state => state.user.cloudian
+const configUtils = {
+  changeTheme: (theme) => {
+    return window.less.modifyVars(theme)
+  },
+  fetchConfig: () => {
+    return new Promise((resolve, reject) => {
+      fetch('/config.json')
+        .then(r => r.json())
+        .then(data => {
+          resolve(data)
+        })
+        .catch(reject)
+    })
+  }
 }
 
-export default getters
+export default configUtils

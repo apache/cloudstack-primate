@@ -26,16 +26,33 @@
 <script>
 import enUS from 'ant-design-vue/lib/locale-provider/en_US'
 import { AppDeviceEnquire } from '@/utils/mixin'
+import configUtils from '@/utils/configUtil'
 
 export default {
   mixins: [AppDeviceEnquire],
   data () {
     return {
-      locale: enUS
+      locale: enUS,
+      configs: {}
     }
   },
   mounted () {
-
+    this.fetchConfig()
+  },
+  methods: {
+    async fetchConfig () {
+      const loading = this.$message.loading('Fetching configuration...', 0)
+      const config = await configUtils.fetchConfig()
+      const storeConfig = this.$store.getters.configs
+      this.configs = Object.assign({}, config, storeConfig)
+      setTimeout(loading)
+      await this.$store.dispatch('ToggleConfig', this.configs)
+      await this.applyTheme()
+    },
+    async applyTheme () {
+      await configUtils.changeTheme(this.configs.theme)
+      this.$message.success('Apply the theme successfully!')
+    }
   }
 }
 </script>
