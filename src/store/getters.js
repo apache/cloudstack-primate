@@ -30,7 +30,8 @@ const getters = {
   multiTab: state => state.app.multiTab,
   asyncJobIds: state => state.user.asyncJobIds,
   isLdapEnabled: state => state.user.isLdapEnabled,
-  cloudian: state => state.user.cloudian
+  cloudian: state => state.user.cloudian,
+  loggedInUser: state => state.user.loggedInUser
 }
 
 export default getters

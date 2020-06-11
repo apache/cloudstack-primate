@@ -112,6 +112,11 @@ export default {
         scopedSlots: { customRender: 'project' }
       },
       {
+        title: this.$t('label.account'),
+        dataIndex: 'account',
+        scopedSlots: { customRender: 'account' }
+      },
+      {
         title: this.$t('label.user'),
         dataIndex: 'userid',
         scopedSlots: { customRender: 'user' }
@@ -226,7 +231,7 @@ export default {
       const params = {}
 
       params.projectid = record.projectid
-      if (record.userid !== null) {
+      if (record.userid && record.userid !== null) {
         params.userid = record.userid
       } else {
         params.account = record.account

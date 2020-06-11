@@ -152,7 +152,7 @@ export default {
     },
     fetchUsers () {
       this.loading = true
-      api('listUsers').then(response => {
+      api('listUsers', { listall: true }).then(response => {
         this.users = response.listusersresponse.user ? response.listusersresponse.user : []
       }).catch(error => {
         this.$notifyError(error)

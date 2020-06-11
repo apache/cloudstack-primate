@@ -37,15 +37,12 @@ export default {
     },
     {
       name: 'accounts',
-      // TODO: revert
-      show: () => { return true },
-      // show: (record, route, user) => { return record.account === user.account },
-      // || ['Admin', 'DomainAdmin'].includes(user.roletype) },
+      show: () => { return store.getters.userInfo.roletype !== 'User' },
       component: () => import('@/views/project/AccountsTab.vue')
     },
     {
       name: 'project.roles',
-      show: () => { return 'listProjectRoles' in store.getters.apis },
+      show: () => { return store.getters.userInfo.roletype !== 'User' },
       component: () => import('@/views/project/iam/ProjectRoleTab.vue')
     },
     {
