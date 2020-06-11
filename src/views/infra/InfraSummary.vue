@@ -28,7 +28,7 @@
             size="small"
             shape="round"
             @click="fetchData()" >
-            {{ $t('refresh') }}
+            {{ $t('label.refresh') }}
           </a-button>
           <a-button
             style="margin-left: 12px; margin-top: 4px"
@@ -36,10 +36,10 @@
             size="small"
             shape="round"
             @click="sslFormVisible = true">
-            {{ $t('Setup SSL Certificate') }}
+            {{ $t('label.sslcertificates') }}
           </a-button>
           <a-modal
-            :title="$t('SSL Certificate')"
+            :title="$t('label.sslcertificates')"
             :visible="sslFormVisible"
             :footer="null"
             @cancel="sslModalClose">
@@ -127,11 +127,11 @@
               </a-form-item>
 
               <a-form-item class="controls">
-                <a-button @click="this.sslModalClose" type="danger" class="close-button">
-                  Cancel
+                <a-button @click="this.sslModalClose" class="close-button">
+                  {{ $t('label.cancel' ) }}
                 </a-button>
                 <a-button type="primary" htmlType="submit" :loading="sslFormSubmitting">
-                  Submit
+                  {{ $t('label.submit' ) }}
                 </a-button>
               </a-form-item>
             </a-form>
@@ -149,7 +149,7 @@
         <div class="chart-card-inner">
           <router-link :to="{ name: section.substring(0, section.length - 1) }">
             <h2>{{ $t(routes[section].title) }}</h2>
-            <h1><a-icon :type="routes[section].icon" /> {{ stats[section] }}</h1>
+            <h2><a-icon :type="routes[section].icon" /> {{ stats[section] }}</h2>
           </router-link>
         </div>
       </chart-card>

@@ -18,17 +18,13 @@
 <template>
   <div>
     <a-input-search
-      style="width: 25vw;float: right;margin-bottom: 10px; z-index: 8"
+      style="width: 25vw; float: right; margin-bottom: 10px; z-index: 8"
       placeholder="Search"
       v-model="filter"
       @search="handleSearch" />
-    <a-tooltip
-      arrowPointAtCenter
-      placement="bottomRight">
-      <template slot="title">
-        {{ $t('addNewNetworks') }}
-      </template>
-    </a-tooltip>
+    <a-button type="primary" @click="showCreateForm = true" style="float: right; margin-right: 5px; z-index: 8">
+      {{ $t('label.add.network') }}
+    </a-button>
     <a-table
       :loading="loading"
       :columns="columns"
@@ -55,6 +51,20 @@
         </a-list-item>
       </a-list>
     </a-table>
+    <a-modal
+      :visible="showCreateForm"
+      :title="$t('label.add.network')"
+      :closable="true"
+      :footer="null"
+      @cancel="showCreateForm = false"
+      centered
+      width="auto">
+      <create-network
+        :resource="{}"
+        @refresh-data="handleSearch"
+        @close-action="showCreateForm = false"
+      />
+    </a-modal>
   </div>
 </template>
 
@@ -62,9 +72,13 @@
 import _ from 'lodash'
 import { api } from '@/api'
 import store from '@/store'
+import CreateNetwork from '@/views/network/CreateNetwork'
 
 export default {
   name: 'NetworkSelection',
+  components: {
+    CreateNetwork
+  },
   props: {
     items: {
       type: Array,
@@ -96,7 +110,8 @@ export default {
       networkOffering: {
         loading: false,
         opts: []
-      }
+      },
+      showCreateForm: false
     }
   },
   computed: {
@@ -120,17 +135,17 @@ export default {
       return [
         {
           dataIndex: 'name',
-          title: this.$t('networks'),
+          title: this.$t('label.networks'),
           width: '40%'
         },
         {
           dataIndex: 'type',
-          title: this.$t('guestIpType'),
+          title: this.$t('label.guestiptype'),
           width: '30%'
         },
         {
           dataIndex: 'vpcName',
-          title: this.$t('VPC'),
+          title: this.$t('label.vpc'),
           width: '30%',
           filters: vpcFilter,
           filteredValue: _.get(this.filteredInfo, 'id'),
@@ -173,8 +188,13 @@ export default {
           this.selectedRowKeys = this.preFillContent.networkids
           this.$emit('select-network-item', this.preFillContent.networkids)
         } else {
-          this.selectedRowKeys = []
-          this.$emit('select-network-item', null)
+          if (this.items && this.items.length > 0) {
+            this.selectedRowKeys = [this.items[0].id]
+            this.$emit('select-network-item', this.selectedRowKeys)
+          } else {
+            this.selectedRowKeys = []
+            this.$emit('select-network-item', [])
+          }
         }
       }
     }
@@ -194,11 +214,11 @@ export default {
     getDetails (network) {
       return [
         {
-          title: this.$t('description'),
+          title: this.$t('label.description'),
           description: network.displaytext
         },
         {
-          title: this.$t('networkOfferingId'),
+          title: this.$t('label.networkofferingid'),
           description: network.networkofferingdisplaytext
         }
       ]

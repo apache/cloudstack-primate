@@ -44,9 +44,8 @@
             <a-button
               :disabled="!('deleteManagementNetworkIpRange' in $store.getters.apis)"
               icon="delete"
-              shape="round"
+              shape="circle"
               type="danger"
-              size="small"
               @click="handleDeleteIpRange(record)"></a-button>
           </a-popover>
         </div>
@@ -72,7 +71,7 @@
         layout="vertical"
         class="form"
       >
-        <a-form-item :label="$t('podId')" class="form__item">
+        <a-form-item :label="$t('label.podid')" class="form__item">
           <a-select
             v-decorator="['pod', {
               rules: [{ required: true, message: 'Required' }]
@@ -81,32 +80,32 @@
             <a-select-option v-for="item in items" :key="item.id" :value="item.id">{{ item.name }}</a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="$t('gateway')" class="form__item">
+        <a-form-item :label="$t('label.gateway')" class="form__item">
           <a-input
             v-decorator="['gateway', { rules: [{ required: true, message: 'Required' }] }]">
           </a-input>
         </a-form-item>
-        <a-form-item :label="$t('netmask')" class="form__item">
+        <a-form-item :label="$t('label.netmask')" class="form__item">
           <a-input
             v-decorator="['netmask', { rules: [{ required: true, message: 'Required' }] }]">
           </a-input>
         </a-form-item>
-        <a-form-item :label="$t('vlan')" class="form__item">
+        <a-form-item :label="$t('label.vlan')" class="form__item">
           <a-input
             v-decorator="['vlan']">
           </a-input>
         </a-form-item>
-        <a-form-item :label="$t('startip')" class="form__item">
+        <a-form-item :label="$t('label.startip')" class="form__item">
           <a-input
             v-decorator="['startip', { rules: [{ required: true, message: 'Required' }] }]">
           </a-input>
         </a-form-item>
-        <a-form-item :label="$t('endip')" class="form__item">
+        <a-form-item :label="$t('label.endip')" class="form__item">
           <a-input
             v-decorator="['endip', { rules: [{ required: true, message: 'Required' }] }]">
           </a-input>
         </a-form-item>
-        <a-form-item :label="$t('System VMs')" class="form__item">
+        <a-form-item :label="$t('label.system.vms')" class="form__item">
           <a-checkbox v-decorator="['vms']"></a-checkbox>
         </a-form-item>
       </a-form>
@@ -142,39 +141,39 @@ export default {
       pageSize: 10,
       columns: [
         {
-          title: this.$t('podid'),
+          title: this.$t('label.podid'),
           dataIndex: 'name'
         },
         {
-          title: this.$t('gateway'),
+          title: this.$t('label.gateway'),
           dataIndex: 'gateway'
         },
         {
-          title: this.$t('netmask'),
+          title: this.$t('label.netmask'),
           dataIndex: 'netmask'
         },
         {
-          title: this.$t('vlan'),
+          title: this.$t('label.vlan'),
           dataIndex: 'vlanid',
           scopedSlots: { customRender: 'vlan' }
         },
         {
-          title: this.$t('startip'),
+          title: this.$t('label.startip'),
           dataIndex: 'startip',
           scopedSlots: { customRender: 'startip' }
         },
         {
-          title: this.$t('endip'),
+          title: this.$t('label.endip'),
           dataIndex: 'endip',
           scopedSlots: { customRender: 'endip' }
         },
         {
-          title: this.$t('System VMs'),
+          title: this.$t('label.system.vms'),
           dataIndex: 'forsystemvms',
           scopedSlots: { customRender: 'forsystemvms' }
         },
         {
-          title: this.$t('action'),
+          title: this.$t('label.action'),
           scopedSlots: { customRender: 'actions' }
         }
       ]
@@ -222,11 +221,7 @@ export default {
         }
       }).catch(error => {
         console.log(error)
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.listpodsresponse
-            ? error.response.data.listpodsresponse.errortext : error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.componentLoading = false
       })
@@ -273,11 +268,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.deletemanagementnetworkiprangeresponse
-            ? error.response.data.deletemanagementnetworkiprangeresponse.errortext : error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.componentLoading = false
         this.fetchData()
       })
@@ -321,11 +312,7 @@ export default {
             }
           })
         }).catch(error => {
-          this.$notification.error({
-            message: `Error ${error.response.status}`,
-            description: error.response.data.createmanagementnetworkiprangeresponse
-              ? error.response.data.createmanagementnetworkiprangeresponse.errortext : error.response.data.errorresponse.errortext
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.componentLoading = false
           this.fetchData()

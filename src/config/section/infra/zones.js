@@ -17,40 +17,40 @@
 
 export default {
   name: 'zone',
-  title: 'Zones',
+  title: 'label.zones',
   icon: 'global',
-  permission: ['listZonesMetrics', 'listZones'],
+  permission: ['listZonesMetrics'],
   columns: ['name', 'state', 'allocationstate', 'networktype', 'clusters', 'cpuused', 'cpumaxdeviation', 'cpuallocated', 'cputotal', 'memoryused', 'memorymaxdeviation', 'memoryallocated', 'memorytotal', 'order'],
   details: ['name', 'id', 'allocationstate', 'networktype', 'guestcidraddress', 'localstorageenabled', 'securitygroupsenabled', 'dns1', 'dns2', 'internaldns1', 'internaldns2'],
   related: [{
     name: 'pod',
-    title: 'Pods',
+    title: 'label.pods',
     param: 'zoneid'
   }, {
     name: 'cluster',
-    title: 'Clusters',
+    title: 'label.clusters',
     param: 'zoneid'
   }, {
     name: 'host',
-    title: 'Hosts',
+    title: 'label.hosts',
     param: 'zoneid'
   }, {
     name: 'storagepool',
-    title: 'Primate Storage',
+    title: 'label.primary.storage',
     param: 'zoneid'
   }, {
     name: 'imagestore',
-    title: 'Secondary Storage',
+    title: 'label.secondary.storage',
     param: 'zoneid'
   }],
   tabs: [{
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
   }, {
-    name: 'Physical Networks',
+    name: 'physical.network',
     component: () => import('@/views/infra/zone/PhysicalNetworksTab.vue')
   }, {
-    name: 'System VMs',
+    name: 'system.vms',
     component: () => import('@/views/infra/zone/SystemVmsTab.vue')
   }, {
     name: 'resources',
@@ -63,7 +63,7 @@ export default {
     {
       api: 'createZone',
       icon: 'plus',
-      label: 'Add Zone',
+      label: 'label.add.zone',
       listView: true,
       popup: true,
       component: () => import('@/views/infra/zone/ZoneWizard.vue')
@@ -71,7 +71,7 @@ export default {
     {
       api: 'updateZone',
       icon: 'edit',
-      label: 'Edit Zone',
+      label: 'label.action.edit.zone',
       dataView: true,
       args: ['name', 'dns1', 'dns2', 'ip6dns1', 'ip6dns2', 'internaldns1', 'internaldns2', 'guestcidraddress', 'domain', 'localstorageenabled'],
       show: (record) => { return record.networktype === 'Advanced' }
@@ -79,7 +79,7 @@ export default {
     {
       api: 'updateZone',
       icon: 'edit',
-      label: 'Edit Zone',
+      label: 'label.action.edit.zone',
       dataView: true,
       args: ['name', 'dns1', 'dns2', 'ip6dns1', 'ip6dns2', 'internaldns1', 'internaldns2', 'domain', 'localstorageenabled'],
       show: (record) => { return record.networktype === 'Basic' }

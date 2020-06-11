@@ -19,15 +19,15 @@
   <a-list-item v-if="vmwaredc">
     <div>
       <div style="margin-bottom: 10px;">
-        <div><strong>{{ $t('vmwaredcName') }}</strong></div>
+        <div><strong>{{ $t('label.vmwaredcname') }}</strong></div>
         <div>{{ vmwaredc.name }}</div>
       </div>
       <div style="margin-bottom: 10px;">
-        <div><strong>{{ $t('vmwaredcVcenter') }}</strong></div>
+        <div><strong>{{ $t('label.vmwaredcvcenter') }}</strong></div>
         <div>{{ vmwaredc.vcenter }}</div>
       </div>
       <div style="margin-bottom: 10px;">
-        <div><strong>{{ $t('vmwaredcId') }}</strong></div>
+        <div><strong>{{ $t('label.vmwaredcid') }}</strong></div>
         <div>{{ vmwaredc.id }}</div>
       </div>
     </div>
@@ -71,10 +71,7 @@ export default {
         }
         this.$set(this.resource, 'vmwaredc', this.vmwaredc)
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     }
   }

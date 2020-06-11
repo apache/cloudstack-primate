@@ -17,21 +17,21 @@
 
 export default {
   name: 'cluster',
-  title: 'Clusters',
+  title: 'label.clusters',
   icon: 'cluster',
-  permission: ['listClustersMetrics', 'listClusters'],
+  permission: ['listClustersMetrics'],
   columns: ['name', 'state', 'allocationstate', 'clustertype', 'hypervisortype', 'hosts', 'cpuused', 'cpumaxdeviation', 'cpuallocated', 'cputotal', 'memoryused', 'memorymaxdeviation', 'memoryallocated', 'memorytotal', 'podname', 'zonename'],
   details: ['name', 'id', 'allocationstate', 'clustertype', 'hypervisortype', 'podname', 'zonename'],
   related: [{
     name: 'host',
-    title: 'Hosts',
+    title: 'label.hosts',
     param: 'clusterid'
   }],
   tabs: [{
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
   }, {
-    name: 'Settings',
+    name: 'settings',
     component: () => import('@/components/view/SettingsTab.vue')
   }],
   actions: [
@@ -62,7 +62,7 @@ export default {
     {
       api: 'updateCluster',
       icon: 'plus-square',
-      label: 'Manage Cluster',
+      label: 'label.action.manage.cluster',
       dataView: true,
       defaultArgs: { managedstate: 'Managed' },
       show: (record) => { return record.clustertype === 'CloudManaged' && ['PrepareUnmanaged', 'Unmanaged'].includes(record.state) }
@@ -70,7 +70,7 @@ export default {
     {
       api: 'updateCluster',
       icon: 'minus-square',
-      label: 'Unmanage Cluster',
+      label: 'label.action.unmanage.cluster',
       dataView: true,
       defaultArgs: { managedstate: 'Unmanaged' },
       show: (record) => { return record.clustertype === 'CloudManaged' && record.state === 'Enabled' }

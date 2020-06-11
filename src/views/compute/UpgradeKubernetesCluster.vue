@@ -22,7 +22,7 @@
         :form="form"
         @submit="handleSubmit"
         layout="vertical">
-        <a-form-item :label="$t('kubernetesversionid')">
+        <a-form-item :label="$t('label.kubernetesversionid')">
           <a-select
             id="version-selection"
             v-decorator="['kubernetesversionid', {
@@ -42,8 +42,8 @@
         </a-form-item>
 
         <div :span="24" class="action-button">
-          <a-button @click="closeAction">{{ this.$t('Cancel') }}</a-button>
-          <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('OK') }}</a-button>
+          <a-button @click="closeAction">{{ this.$t('label.cancel') }}</a-button>
+          <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('label.ok') }}</a-button>
         </div>
       </a-form>
     </a-spin>
@@ -147,12 +147,26 @@ export default {
           params.kubernetesversionid = this.kubernetesVersions[values.kubernetesversionid].id
         }
         api('upgradeKubernetesCluster', params).then(json => {
-          this.$message.success('Successfully upgraded Kubernetes cluster: ' + this.resource.name)
-        }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
+          this.$emit('refresh-data')
+          const jobId = json.upgradekubernetesclusterresponse.jobid
+          this.$store.dispatch('AddAsyncJob', {
+            title: this.$t('label.kubernetes.cluster.upgrade'),
+            jobid: jobId,
+            description: this.resource.name,
+            status: 'progress'
           })
+          this.$pollJob({
+            jobId,
+            loadingMessage: `Upgrade Kubernetes cluster ${this.resource.name} in progress`,
+            catchMessage: 'Error encountered while fetching async job result',
+            successMessage: `Successfully upgraded Kubernetes cluster ${this.resource.name}`,
+            successMethod: result => {
+              this.$emit('refresh-data')
+              console.log('hello!')
+            }
+          })
+        }).catch(error => {
+          this.$notifyError(error)
         }).finally(() => {
           this.$emit('refresh-data')
           this.loading = false

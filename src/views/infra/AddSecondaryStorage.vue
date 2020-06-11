@@ -19,10 +19,10 @@
   <div class="form-layout">
     <a-spin :spinning="loading">
       <a-form :form="form" layout="vertical">
-        <a-form-item :label="$t('name')">
+        <a-form-item :label="$t('label.name')">
           <a-input v-decorator="['name']" />
         </a-form-item>
-        <a-form-item :label="$t('providername')">
+        <a-form-item :label="$t('label.providername')">
           <a-select
             v-decorator="[
               'provider',
@@ -39,7 +39,7 @@
           </a-select>
         </a-form-item>
         <div v-if="provider !== 'Swift'">
-          <a-form-item :label="$t('zone')">
+          <a-form-item :label="$t('label.zone')">
             <a-select
               v-decorator="[
                 'zone',
@@ -47,6 +47,7 @@
                   initialValue: this.zoneSelected,
                   rules: [{ required: true, message: 'required'}]
                 }]"
+              @change="val => { zoneSelected = val }"
             >
               <a-select-option
                 :value="zone.id"
@@ -55,7 +56,7 @@
               >{{ zone.name }}</a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('server')">
+          <a-form-item :label="$t('label.server')">
             <a-input
               v-decorator="[
                 'server',
@@ -64,7 +65,7 @@
                 }]"
             />
           </a-form-item>
-          <a-form-item :label="$t('path')">
+          <a-form-item :label="$t('label.path')">
             <a-input
               v-decorator="[
                 'path',
@@ -75,7 +76,7 @@
           </a-form-item>
         </div>
         <div v-if="provider === 'SMB/CIFS'">
-          <a-form-item :label="$t('smbUsername')">
+          <a-form-item :label="$t('label.smbusername')">
             <a-input
               v-decorator="[
                 'smbUsername',
@@ -84,7 +85,7 @@
                 }]"
             />
           </a-form-item>
-          <a-form-item :label="$t('smbPassword')">
+          <a-form-item :label="$t('label.smbpassword')">
             <a-input-password
               v-decorator="[
                 'smbPassword',
@@ -93,7 +94,7 @@
                 }]"
             />
           </a-form-item>
-          <a-form-item :label="$t('smbDomain')">
+          <a-form-item :label="$t('label.smbdomain')">
             <a-input
               v-decorator="[
                 'smbDomain',
@@ -104,7 +105,7 @@
           </a-form-item>
         </div>
         <div v-if="provider === 'Swift'">
-          <a-form-item :label="$t('url')">
+          <a-form-item :label="$t('label.url')">
             <a-input
               v-decorator="[
                 'url',
@@ -113,7 +114,7 @@
                 }]"
             />
           </a-form-item>
-          <a-form-item :label="$t('account')">
+          <a-form-item :label="$t('label.account')">
             <a-input
               v-decorator="[
                 'account',
@@ -122,7 +123,7 @@
                 }]"
             />
           </a-form-item>
-          <a-form-item :label="$t('username')">
+          <a-form-item :label="$t('label.username')">
             <a-input
               v-decorator="[
                 'username',
@@ -131,7 +132,7 @@
                 }]"
             />
           </a-form-item>
-          <a-form-item :label="$t('key')">
+          <a-form-item :label="$t('label.key')">
             <a-input
               v-decorator="[
                 'key',
@@ -140,7 +141,7 @@
                 }]"
             />
           </a-form-item>
-          <a-form-item :label="$t('storagepolicy')">
+          <a-form-item :label="$t('label.storagepolicy')">
             <a-input
               v-decorator="[
                 'storagepolicy'
@@ -149,8 +150,8 @@
           </a-form-item>
         </div>
         <div class="actions">
-          <a-button @click="closeModal">{{ $t('Cancel') }}</a-button>
-          <a-button type="primary" @click="handleSubmit">{{ $t('OK') }}</a-button>
+          <a-button @click="closeModal">{{ $t('label.cancel') }}</a-button>
+          <a-button type="primary" @click="handleSubmit">{{ $t('label.ok') }}</a-button>
         </div>
       </a-form>
     </a-spin>
@@ -195,7 +196,7 @@ export default {
         if (json && json.listzonesresponse && json.listzonesresponse.zone) {
           this.zones = json.listzonesresponse.zone
           if (this.zones.length > 0) {
-            this.zoneSelected = this.zones[0].name
+            this.zoneSelected = this.zones[0].id || ''
           }
         }
       })
@@ -278,10 +279,7 @@ export default {
             description: this.$t('label.add.secondary.storage')
           })
         }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.loading = false
           this.closeModal()

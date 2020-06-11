@@ -17,7 +17,7 @@
 
 export default {
   name: 'systemvm',
-  title: 'System VMs',
+  title: 'label.system.vms',
   icon: 'thunderbolt',
   permission: ['listSystemVms'],
   columns: ['name', 'state', 'agentstate', 'systemvmtype', 'publicip', 'privateip', 'linklocalip', 'hostname', 'zonename'],
@@ -34,6 +34,7 @@ export default {
       api: 'stopSystemVm',
       icon: 'stop',
       label: 'label.action.stop.systemvm',
+      message: 'message.action.stop.systemvm',
       dataView: true,
       show: (record) => { return record.state === 'Running' },
       args: ['forced']
