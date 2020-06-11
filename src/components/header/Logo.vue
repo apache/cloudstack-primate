@@ -17,7 +17,7 @@
 
 <template>
   <div class="logo">
-    <img class="logo-image" src="~@/assets/logo.svg"/>
+    <img class="logo-image" :src="logo"/>
   </div>
 </template>
 
@@ -37,6 +37,11 @@ export default {
       type: Boolean,
       default: true,
       required: false
+    }
+  },
+  computed: {
+    logo () {
+      return this.$store.getters.configs.logo || null
     }
   }
 }
