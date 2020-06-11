@@ -334,6 +334,12 @@ export default {
           icon: 'delete',
           label: 'label.action.destroy.instance',
           args: ['expunge', 'volumeids'],
+          mapping: {
+            volumeids: {
+              api: 'listVolumes',
+              params: (record) => { return { virtualmachineid: record.id } }
+            }
+          },
           dataView: true,
           groupAction: true,
           show: (record) => { return ['Running', 'Stopped', 'Error'].includes(record.state) }
