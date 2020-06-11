@@ -1,4 +1,4 @@
-# UI customisation
+# UI customization
 Use a `public/config.json` (or `dist/config.json` after build) file for customizing theme, logos,...
 
 ## Logo
@@ -34,10 +34,10 @@ Customize themes like colors, border color, etc.
 - `@warning-color` change warning state color.
 - `@error-color` change error state color.
 - `@heading-color` change table header color.
-- `@text-color` change major text color.
-- `@text-color-secondary` change secondary text color (breadcrumb icon).
+- `@text-color` change in major text color.
+- `@text-color-secondary` change of secondary text color (breadcrumb icon).
 - `@disabled-color` change disable state color (disabled button, switch, etc).
-- `@border-color-base` change major border color.
+- `@border-color-base` change in major border color.
 
-In addition, to add other properties, we can add `config/theme.config.js` based on the Ant Design Vue Less variable. 
+Also, to add other properties, we can add new properties into `config/theme.config.js` based on the Ant Design Vue Less variable. 
 Refer: https://www.antdv.com/docs/vue/customize-theme/#Ant-Design-Vue-Less-variables
