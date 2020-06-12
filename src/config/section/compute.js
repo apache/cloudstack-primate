@@ -337,7 +337,7 @@ export default {
           mapping: {
             volumeids: {
               api: 'listVolumes',
-              params: (record) => { return { virtualmachineid: record.id } }
+              params: (record) => { return { virtualmachineid: record.id, type: 'DATADISK' } }
             }
           },
           dataView: true,
