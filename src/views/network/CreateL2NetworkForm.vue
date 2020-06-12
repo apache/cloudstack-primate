@@ -115,7 +115,7 @@
                 initialValue: this.isolatePvlanType
               }]"
               buttonStyle="solid"
-              @change="selected => { this.handleIsolatedPvlanTypeChange(selected.target.value) }">
+              @change="selected => { this.isolatePvlanType = selected.target.value }">
               <a-radio-button value="none">
                 {{ $t('label.none') }}
               </a-radio-button>
@@ -254,9 +254,6 @@ export default {
     handleZoneChange (zone) {
       this.selectedZone = zone
       this.updateVPCCheckAndFetchNetworkOfferingData()
-    },
-    handleIsolatedPvlanTypeChange (pvlan) {
-      this.isolatePvlanType = pvlan
     },
     fetchDomainData () {
       const params = {}
