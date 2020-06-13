@@ -29,6 +29,7 @@ export default {
       docHelp: 'adminguide/virtual_machines.html',
       permission: ['listVirtualMachinesMetrics'],
       resourceType: 'UserVm',
+      filters: ['self', 'running', 'stopped'],
       columns: [
         'name', 'state', 'instancename', 'ipaddress', 'cpunumber', 'cpuused', 'cputotal',
         {
@@ -83,6 +84,7 @@ export default {
           api: 'startVirtualMachine',
           icon: 'caret-right',
           label: 'label.action.start.instance',
+          message: 'message.action.start.instance',
           docHelp: 'adminguide/virtual_machines.html#stopping-and-starting-vms',
           dataView: true,
           groupAction: true,
@@ -113,6 +115,7 @@ export default {
           api: 'restoreVirtualMachine',
           icon: 'sync',
           label: 'label.reinstall.vm',
+          message: 'message.reinstall.vm',
           dataView: true,
           args: ['virtualmachineid', 'templateid'],
           show: (record) => { return ['Running', 'Stopped'].includes(record.state) },
@@ -142,6 +145,7 @@ export default {
           api: 'assignVirtualMachineToBackupOffering',
           icon: 'folder-add',
           label: 'label.backup.offering.assign',
+          message: 'label.backup.offering.assign',
           dataView: true,
           args: ['virtualmachineid', 'backupofferingid'],
           show: (record) => { return !record.backupofferingid },
@@ -185,6 +189,7 @@ export default {
           api: 'removeVirtualMachineFromBackupOffering',
           icon: 'scissor',
           label: 'label.backup.offering.remove',
+          message: 'label.backup.offering.remove',
           dataView: true,
           args: ['virtualmachineid', 'forced'],
           show: (record) => { return record.backupofferingid },
@@ -203,7 +208,8 @@ export default {
           show: (record) => { return ['Running', 'Stopped'].includes(record.state) && !record.isoid },
           mapping: {
             id: {
-              api: 'listIsos'
+              api: 'listIsos',
+              params: (record) => { return { zoneid: record.zoneid } }
             },
             virtualmachineid: {
               value: (record, params) => { return record.id }
@@ -214,6 +220,7 @@ export default {
           api: 'detachIso',
           icon: 'link',
           label: 'label.action.detach.iso',
+          message: 'message.detach.iso.confirm',
           dataView: true,
           args: ['virtualmachineid'],
           show: (record) => { return ['Running', 'Stopped'].includes(record.state) && 'isoid' in record && record.isoid },
@@ -267,12 +274,14 @@ export default {
           api: 'migrateVirtualMachine',
           icon: 'drag',
           label: 'label.migrate.instance.to.ps',
+          message: 'message.migrate.instance.to.ps',
           dataView: true,
           show: (record, store) => { return ['Stopped'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) },
           args: ['storageid', 'virtualmachineid'],
           mapping: {
             storageid: {
-              api: 'listStoragePools'
+              api: 'listStoragePools',
+              params: (record) => { return { zoneid: record.zoneid } }
             },
             virtualmachineid: {
               value: (record) => { return record.id }
@@ -283,6 +292,7 @@ export default {
           api: 'resetPasswordForVirtualMachine',
           icon: 'key',
           label: 'label.action.reset.password',
+          message: 'message.action.instance.reset.password',
           dataView: true,
           show: (record) => { return ['Running', 'Stopped'].includes(record.state) },
           response: (result) => { return result.virtualmachine && result.virtualmachine.password ? `Password of the VM is ${result.virtualmachine.password}` : null }
@@ -291,12 +301,20 @@ export default {
           api: 'resetSSHKeyForVirtualMachine',
           icon: 'lock',
           label: 'label.reset.ssh.key.pair',
+          message: 'message.desc.reset.ssh.key.pair',
           dataView: true,
-          args: ['keypair'],
+          args: ['keypair', 'account', 'domainid'],
           show: (record) => { return ['Running', 'Stopped'].includes(record.state) },
           mapping: {
             keypair: {
-              api: 'listSSHKeyPairs'
+              api: 'listSSHKeyPairs',
+              params: (record) => { return { account: record.account, domainid: record.domainid } }
+            },
+            account: {
+              value: (record) => { return record.account }
+            },
+            domainid: {
+              value: (record) => { return record.domainid }
             }
           }
         },
@@ -307,25 +325,29 @@ export default {
           dataView: true,
           component: () => import('@/views/compute/AssignInstance'),
           popup: true,
-          show: (record) => { return ['Stopped'].includes(record.state) },
-          args: ['virtualmachineid', 'account', 'domainid'],
-          mapping: {
-            virtualmachineid: {
-              value: (record, params) => { return record.id }
-            }
-          }
+          show: (record) => { return ['Stopped'].includes(record.state) }
         },
         {
           api: 'recoverVirtualMachine',
           icon: 'medicine-box',
           label: 'label.recover.vm',
+          message: 'message.recover.vm',
           dataView: true,
           show: (record, store) => { return ['Destroyed'].includes(record.state) && store.features.allowuserexpungerecovervm }
+        },
+        {
+          api: 'unmanageVirtualMachine',
+          icon: 'disconnect',
+          label: 'label.action.unmanage.virtualmachine',
+          dataView: true,
+          groupAction: true,
+          show: (record) => { return ['Running', 'Stopped'].includes(record.state) && record.hypervisor === 'VMware' }
         },
         {
           api: 'expungeVirtualMachine',
           icon: 'delete',
           label: 'label.action.expunge.instance',
+          message: 'message.action.expunge.instance',
           dataView: true,
           show: (record, store) => { return ['Destroyed', 'Expunging'].includes(record.state) && store.features.allowuserexpungerecovervm }
         },
@@ -333,7 +355,14 @@ export default {
           api: 'destroyVirtualMachine',
           icon: 'delete',
           label: 'label.action.destroy.instance',
+          message: 'message.action.destroy.instance',
           args: ['expunge', 'volumeids'],
+          mapping: {
+            volumeids: {
+              api: 'listVolumes',
+              params: (record) => { return { virtualmachineid: record.id, type: 'DATADISK' } }
+            }
+          },
           dataView: true,
           groupAction: true,
           show: (record) => { return ['Running', 'Stopped', 'Error'].includes(record.state) }
@@ -509,6 +538,7 @@ export default {
           api: 'deleteAffinityGroup',
           icon: 'delete',
           label: 'label.delete.affinity.group',
+          message: 'message.delete.affinity.group',
           dataView: true
         }
       ]
