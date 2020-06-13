@@ -149,7 +149,7 @@
             <a-input v-decorator="['value', { rules: [{ required: true, message: 'Please specify a tag value'}] }]" />
           </a-form-item>
         </div>
-        <a-button :disabled="'createTags' in $store.getters.apis" type="primary" html-type="submit">{{ $t('label.add') }}</a-button>
+        <a-button :disabled="!('createTags' in $store.getters.apis)" type="primary" html-type="submit">{{ $t('label.add') }}</a-button>
       </a-form>
 
       <a-divider></a-divider>

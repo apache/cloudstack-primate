@@ -19,7 +19,7 @@
   <a-spin :spinning="componentLoading">
     <div class="new-route">
       <a-input v-model="newRoute" icon="plus" :placeholder="$t('label.cidr.destination.network')"></a-input>
-      <a-button type="primary" :disabled="'createStaticRoute' in $store.getters.apis" @click="handleAdd">{{ $t('label.add.route') }}</a-button>
+      <a-button type="primary" :disabled="!('createStaticRoute' in $store.getters.apis)" @click="handleAdd">{{ $t('label.add.route') }}</a-button>
     </div>
 
     <div class="list">
@@ -30,7 +30,7 @@
         </div>
         <div class="actions">
           <a-button shape="circle" icon="tag" @click="() => openTagsModal(route)"></a-button>
-          <a-button :disabled="'deleteStaticRoute' in $store.getters.apis" shape="circle" icon="delete" type="danger" @click="() => handleDelete(route)"></a-button>
+          <a-button :disabled="!('deleteStaticRoute' in $store.getters.apis)" shape="circle" icon="delete" type="danger" @click="() => handleDelete(route)"></a-button>
         </div>
       </div>
     </div>
@@ -52,7 +52,7 @@
               <a-input v-decorator="['value', { rules: [{ required: true, message: 'Please specify a tag value'}] }]" />
             </a-form-item>
           </div>
-          <a-button type="primary" :disabled="'createTags' in $store.getters.apis" html-type="submit">{{ $t('label.add') }}</a-button>
+          <a-button type="primary" :disabled="!('createTags' in $store.getters.apis)" html-type="submit">{{ $t('label.add') }}</a-button>
         </a-form>
 
         <a-divider style="margin-top: 0;"></a-divider>

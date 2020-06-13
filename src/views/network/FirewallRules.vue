@@ -107,7 +107,7 @@
           <p class="add-tags__label">{{ $t('label.value') }}</p>
           <a-input v-model="newTag.value"></a-input>
         </div>
-        <a-button type="primary" :disabled="'createTag' in $store.getters.apis" @click="() => handleAddTag()" :loading="addTagLoading">{{ $t('label.add') }}</a-button>
+        <a-button type="primary" :disabled="!('createTag' in $store.getters.apis)" @click="() => handleAddTag()" :loading="addTagLoading">{{ $t('label.add') }}</a-button>
       </div>
 
       <a-divider></a-divider>
