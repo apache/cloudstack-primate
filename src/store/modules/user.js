@@ -18,8 +18,11 @@
 import Cookies from 'js-cookie'
 import Vue from 'vue'
 import md5 from 'md5'
+import message from 'ant-design-vue/es/message'
+import router from '@/router'
+import store from '@/store'
 import { login, logout, api } from '@/api'
-import { ACCESS_TOKEN, CURRENT_PROJECT, DEFAULT_THEME, ASYNC_JOB_IDS } from '@/store/mutation-types'
+import { ACCESS_TOKEN, CURRENT_PROJECT, DEFAULT_THEME, APIS, ASYNC_JOB_IDS } from '@/store/mutation-types'
 
 const user = {
   state: {
@@ -39,7 +42,7 @@ const user = {
     SET_TOKEN: (state, token) => {
       state.token = token
     },
-    SET_PROJECT: (state, project) => {
+    SET_PROJECT: (state, project = {}) => {
       Vue.ls.set(CURRENT_PROJECT, project)
       state.project = project
     },
@@ -54,6 +57,7 @@ const user = {
     },
     SET_APIS: (state, apis) => {
       state.apis = apis
+      Vue.ls.set(APIS, apis)
     },
     SET_FEATURES: (state, features) => {
       state.features = features
@@ -114,22 +118,47 @@ const user = {
 
     GetInfo ({ commit }) {
       return new Promise((resolve, reject) => {
-        api('listApis').then(response => {
+        const cachedApis = Vue.ls.get(APIS, {})
+        const hasAuth = Object.keys(cachedApis).length > 0
+        if (hasAuth) {
+          console.log('Login detected, using cached APIs')
+          commit('SET_APIS', cachedApis)
+          resolve(cachedApis)
+        } else {
+          // This will show the dashboard and some common navigation sections
+          // to most users/roles, while we complete API autodiscovery
           const apis = {}
-          const apiList = response.listapisresponse.api
-          for (var idx = 0; idx < apiList.length; idx++) {
-            const api = apiList[idx]
-            const apiName = api.name
-            apis[apiName] = {
-              params: api.params,
-              response: api.response
-            }
-          }
+          apis.listVirtualMachinesMetrics = {}
+          apis.listVolumesMetrics = {}
+          apis.listNetworks = {}
+          apis.listTemplates = {}
+          apis.listUsers = {}
+          apis.listAccounts = {}
           commit('SET_APIS', apis)
           resolve(apis)
-        }).catch(error => {
-          reject(error)
-        })
+
+          const hide = message.loading('Discovering features...', 0)
+          api('listApis').then(response => {
+            const apis = {}
+            const apiList = response.listapisresponse.api
+            for (var idx = 0; idx < apiList.length; idx++) {
+              const api = apiList[idx]
+              const apiName = api.name
+              apis[apiName] = {
+                params: api.params,
+                response: api.response
+              }
+            }
+            commit('SET_APIS', apis)
+            store.dispatch('GenerateRoutes', { apis }).then(() => {
+              router.addRoutes(store.getters.addRouters)
+            })
+            hide()
+            message.success('Discovered all available features!')
+          }).catch(error => {
+            reject(error)
+          })
+        }
 
         api('listUsers').then(response => {
           const result = response.listusersresponse.user[0]

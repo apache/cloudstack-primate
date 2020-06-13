@@ -17,7 +17,7 @@
 
 export default {
   name: 'role',
-  title: 'Roles',
+  title: 'label.roles',
   icon: 'idcard',
   permission: ['listRoles', 'listRolePermissions'],
   columns: ['name', 'type', 'description'],
@@ -26,14 +26,14 @@ export default {
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
   }, {
-    name: 'Rules',
+    name: 'rules',
     component: () => import('@/views/iam/RolePermissionTab.vue')
   }],
   actions: [
     {
       api: 'createRole',
       icon: 'plus',
-      label: 'Create Role',
+      label: 'label.add.role',
       listView: true,
       args: ['name', 'description', 'type'],
       mapping: {
@@ -45,7 +45,7 @@ export default {
     {
       api: 'updateRole',
       icon: 'edit',
-      label: 'Edit Role',
+      label: 'label.edit.role',
       dataView: true,
       args: ['name', 'description', 'type'],
       mapping: {

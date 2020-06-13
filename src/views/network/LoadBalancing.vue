@@ -20,22 +20,22 @@
     <div>
       <div class="form">
         <div class="form__item" ref="newRuleName">
-          <div class="form__label"><span class="form__required">*</span>{{ $t('name') }}</div>
+          <div class="form__label"><span class="form__required">*</span>{{ $t('label.name') }}</div>
           <a-input v-model="newRule.name"></a-input>
           <span class="error-text">Required</span>
         </div>
         <div class="form__item" ref="newRulePublicPort">
-          <div class="form__label"><span class="form__required">*</span>{{ $t('publicport') }}</div>
+          <div class="form__label"><span class="form__required">*</span>{{ $t('label.publicport') }}</div>
           <a-input v-model="newRule.publicport"></a-input>
           <span class="error-text">Required</span>
         </div>
         <div class="form__item" ref="newRulePrivatePort">
-          <div class="form__label"><span class="form__required">*</span>{{ $t('privateport') }}</div>
+          <div class="form__label"><span class="form__required">*</span>{{ $t('label.privateport') }}</div>
           <a-input v-model="newRule.privateport"></a-input>
           <span class="error-text">Required</span>
         </div>
         <div class="form__item">
-          <div class="form__label">{{ $t('algorithm') }}</div>
+          <div class="form__label">{{ $t('label.algorithm') }}</div>
           <a-select v-model="newRule.algorithm">
             <a-select-option value="roundrobin">Round-robin</a-select-option>
             <a-select-option value="leastconn">Least connections</a-select-option>
@@ -43,7 +43,7 @@
           </a-select>
         </div>
         <div class="form__item">
-          <div class="form__label">{{ $t('protocol') }}</div>
+          <div class="form__label">{{ $t('label.protocol') }}</div>
           <a-select v-model="newRule.protocol" style="min-width: 100px">
             <a-select-option value="tcp-proxy">TCP Proxy</a-select-option>
             <a-select-option value="tcp">TCP</a-select-option>
@@ -51,7 +51,7 @@
           </a-select>
         </div>
         <div class="form__item">
-          <div class="form__label" style="white-space: nowrap;">{{ $t('label.add.VMs') }}</div>
+          <div class="form__label" style="white-space: nowrap;">{{ $t('label.add.vms') }}</div>
           <a-button type="primary" @click="handleOpenAddVMModal">Add</a-button>
         </div>
       </div>
@@ -80,7 +80,7 @@
       </template>
       <template slot="add" slot-scope="record">
         <a-button type="primary" icon="plus" @click="() => { selectedRule = record; handleOpenAddVMModal() }">
-          {{ $t('add') }}
+          {{ $t('label.add') }}
         </a-button>
       </template>
       <template slot="expandedRowRender" slot-scope="record">
@@ -88,16 +88,15 @@
           <div v-for="instance in record.ruleInstances" :key="instance.loadbalancerruleinstance.id">
             <div v-for="ip in instance.lbvmipaddresses" :key="ip" class="rule-instance-list__item">
               <div>
+                <status :text="instance.loadbalancerruleinstance.state" />
                 <a-icon type="desktop" />
                 <router-link :to="{ path: '/vm/' + record.virtualmachineid }">
                   {{ instance.loadbalancerruleinstance.displayname }}
                 </router-link>
               </div>
               <div>{{ ip }}</div>
-              <div><status :text="instance.loadbalancerruleinstance.state" displayText /></div>
               <a-button
-                size="small"
-                shape="round"
+                shape="circle"
                 type="danger"
                 icon="delete"
                 @click="() => handleDeleteInstanceFromRule(instance, record, ip)" />
@@ -107,15 +106,15 @@
       </template>
       <template slot="actions" slot-scope="record">
         <div class="actions">
-          <a-button size="small" shape="circle" icon="edit" @click="() => openEditRuleModal(record)"></a-button>
-          <a-button size="small" shape="circle" icon="tag" @click="() => openTagsModal(record.id)" />
+          <a-button shape="circle" icon="edit" @click="() => openEditRuleModal(record)"></a-button>
+          <a-button shape="circle" icon="tag" @click="() => openTagsModal(record.id)" />
           <a-popconfirm
             :title="$t('label.delete') + '?'"
             @confirm="handleDeleteRule(record)"
             okText="Yes"
             cancelText="No"
           >
-            <a-button size="small" shape="circle" type="danger" icon="delete" />
+            <a-button shape="circle" type="danger" icon="delete" />
           </a-popconfirm>
         </div>
       </template>
@@ -139,13 +138,13 @@
 
       <a-form :form="newTagsForm" class="add-tags" @submit="handleAddTag">
         <div class="add-tags__input">
-          <p class="add-tags__label">{{ $t('key') }}</p>
+          <p class="add-tags__label">{{ $t('label.key') }}</p>
           <a-form-item>
             <a-input v-decorator="['key', { rules: [{ required: true, message: 'Please specify a tag key'}] }]" />
           </a-form-item>
         </div>
         <div class="add-tags__input">
-          <p class="add-tags__label">{{ $t('value') }}</p>
+          <p class="add-tags__label">{{ $t('label.value') }}</p>
           <a-form-item>
             <a-input v-decorator="['value', { rules: [{ required: true, message: 'Please specify a tag value'}] }]" />
           </a-form-item>
@@ -163,7 +162,7 @@
         </div>
       </div>
 
-      <a-button class="add-tags-done" @click="tagsModalVisible = false" type="primary">{{ $t('done') }}</a-button>
+      <a-button class="add-tags-done" @click="tagsModalVisible = false" type="primary">{{ $t('label.done') }}</a-button>
     </a-modal>
 
     <a-modal
@@ -245,11 +244,11 @@
 
       <div class="edit-rule" v-if="selectedRule">
         <div class="edit-rule__item">
-          <p class="edit-rule__label">{{ $t('name') }}</p>
+          <p class="edit-rule__label">{{ $t('label.name') }}</p>
           <a-input v-model="editRuleDetails.name" />
         </div>
         <div class="edit-rule__item">
-          <p class="edit-rule__label">{{ $t('algorithm') }}</p>
+          <p class="edit-rule__label">{{ $t('label.algorithm') }}</p>
           <a-select v-model="editRuleDetails.algorithm">
             <a-select-option value="roundrobin">Round-robin</a-select-option>
             <a-select-option value="leastconn">Least connections</a-select-option>
@@ -257,7 +256,7 @@
           </a-select>
         </div>
         <div class="edit-rule__item">
-          <p class="edit-rule__label">{{ $t('protocol') }}</p>
+          <p class="edit-rule__label">{{ $t('label.protocol') }}</p>
           <a-select v-model="editRuleDetails.protocol">
             <a-select-option value="tcp-proxy">TCP proxy</a-select-option>
             <a-select-option value="tcp">TCP</a-select-option>
@@ -282,14 +281,14 @@
 
       <div v-else>
         <div class="vm-modal__header">
-          <span style="min-width: 200px;">{{ $t('name') }}</span>
-          <span>{{ $t('instancename') }}</span>
-          <span>{{ $t('displayname') }}</span>
-          <span>{{ $t('ip') }}</span>
-          <span>{{ $t('account') }}</span>
-          <span>{{ $t('zonenamelabel') }}</span>
-          <span>{{ $t('state') }}</span>
-          <span>{{ $t('select') }}</span>
+          <span style="min-width: 200px;">{{ $t('label.name') }}</span>
+          <span>{{ $t('label.instancename') }}</span>
+          <span>{{ $t('label.displayname') }}</span>
+          <span>{{ $t('label.ip') }}</span>
+          <span>{{ $t('label.account') }}</span>
+          <span>{{ $t('label.zonenamelabel') }}</span>
+          <span>{{ $t('label.state') }}</span>
+          <span>{{ $t('label.select') }}</span>
         </div>
 
         <a-checkbox-group style="width: 100%;">
@@ -387,27 +386,27 @@ export default {
       pageSize: 10,
       columns: [
         {
-          title: this.$t('name'),
+          title: this.$t('label.name'),
           dataIndex: 'name'
         },
         {
-          title: this.$t('publicport'),
+          title: this.$t('label.publicport'),
           dataIndex: 'publicport'
         },
         {
-          title: this.$t('privateport'),
+          title: this.$t('label.privateport'),
           dataIndex: 'privateport'
         },
         {
-          title: this.$t('algorithm'),
+          title: this.$t('label.algorithm'),
           scopedSlots: { customRender: 'algorithm' }
         },
         {
-          title: this.$t('protocol'),
+          title: this.$t('label.protocol'),
           scopedSlots: { customRender: 'protocol' }
         },
         {
-          title: this.$t('state'),
+          title: this.$t('label.state'),
           dataIndex: 'state'
         },
         {
@@ -415,11 +414,11 @@ export default {
           scopedSlots: { customRender: 'stickiness' }
         },
         {
-          title: this.$t('label.add.VMs'),
+          title: this.$t('label.add.vms'),
           scopedSlots: { customRender: 'add' }
         },
         {
-          title: this.$t('action'),
+          title: this.$t('label.action'),
           scopedSlots: { customRender: 'actions' }
         }
       ]
@@ -466,10 +465,7 @@ export default {
         }
         this.loading = false
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.loading = false
       })
     },
@@ -483,10 +479,7 @@ export default {
         }).then(response => {
           this.$set(rule, 'ruleInstances', response.listloadbalancerruleinstancesresponse.lbrulevmidip)
         }).catch(error => {
-          this.$notification.error({
-            message: `Error ${error.response.status}`,
-            description: error.response.data.errorresponse.errortext
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.loading = false
         })
@@ -501,10 +494,7 @@ export default {
         }).then(response => {
           this.stickinessPolicies.push(...response.listlbstickinesspoliciesresponse.stickinesspolicies)
         }).catch(error => {
-          this.$notification.error({
-            message: `Error ${error.response.status}`,
-            description: error.response.data.errorresponse.errortext
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.loading = false
         })
@@ -543,10 +533,7 @@ export default {
         this.tags = response.listtagsresponse.tag
         this.tagsModalLoading = false
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.closeModal()
       })
     },
@@ -589,10 +576,7 @@ export default {
             }
           })
         }).catch(error => {
-          this.$notification.error({
-            message: `Error ${error.response.status}`,
-            description: error.response.data.createtagsresponse.errortext
-          })
+          this.$notifyError(error)
           this.closeModal()
         })
       })
@@ -628,10 +612,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.deletetagsresponse.errortext
-        })
+        this.$notifyError(error)
         this.closeModal()
       })
     },
@@ -692,10 +673,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.createLBStickinessPolicy.errortext
-        })
+        this.$notifyError(error)
         this.closeModal()
       })
     },
@@ -728,10 +706,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.closeModal()
       })
     },
@@ -800,10 +775,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.fetchData()
       })
     },
@@ -847,10 +819,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.loading = false
         this.closeModal()
       })
@@ -886,10 +855,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.loading = false
         this.closeModal()
       })
@@ -931,10 +897,7 @@ export default {
         })
         this.addVmModalLoading = false
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.closeModal()
       })
     },
@@ -962,10 +925,7 @@ export default {
         this.newRule.vmguestip[index] = this.nics[index][0]
         this.addVmModalNicLoading = false
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.closeModal()
       })
     },
@@ -1042,10 +1002,7 @@ export default {
         this.addVmModalVisible = false
         this.handleAssignToLBRule(response.createloadbalancerruleresponse.id)
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.createloadbalancerruleresponse.errortext
-        })
+        this.$notifyError(error)
         this.loading = false
       })
 

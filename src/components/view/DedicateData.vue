@@ -19,15 +19,15 @@
   <a-list-item v-if="dedicatedDomainId">
     <div>
       <div style="margin-bottom: 10px;">
-        <strong>{{ $t('dedicated') }}</strong>
+        <strong>{{ $t('label.dedicated') }}</strong>
         <div>Yes</div>
       </div>
       <p>
-        <strong>{{ $t('domainid') }}</strong><br/>
+        <strong>{{ $t('label.domainid') }}</strong><br/>
         <router-link :to="{ path: '/domain/' + dedicatedDomainId }">{{ dedicatedDomainId }}</router-link>
       </p>
       <p v-if="dedicatedAccountId">
-        <strong>{{ $t('account') }}</strong><br/>
+        <strong>{{ $t('label.account') }}</strong><br/>
         <router-link :to="{ path: '/account/' + dedicatedAccountId }">{{ dedicatedAccountId }}</router-link>
       </p>
       <a-button style="margin-top: 10px; margin-bottom: 10px;" type="danger" @click="handleRelease">
@@ -37,7 +37,7 @@
   </a-list-item>
   <a-list-item v-else>
     <div>
-      <strong>{{ $t('dedicated') }}</strong>
+      <strong>{{ $t('label.dedicated') }}</strong>
       <div>No</div>
       <a-button type="primary" style="margin-top: 10px; margin-bottom: 10px;" @click="modalActive = true">
         {{ dedicatedButtonLabel }}
@@ -121,10 +121,7 @@ export default {
           this.dedicatedAccountId = response.listdedicatedzonesresponse.dedicatedzone[0].accountid
         }
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     fetchDedicatedPods () {
@@ -137,10 +134,7 @@ export default {
           this.dedicatedAccountId = response.listdedicatedpodsresponse.dedicatedpod[0].accountid
         }
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     fetchDedicatedClusters () {
@@ -153,10 +147,7 @@ export default {
           this.dedicatedAccountId = response.listdedicatedclustersresponse.dedicatedcluster[0].accountid
         }
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     fetchDedicatedHosts () {
@@ -169,10 +160,7 @@ export default {
           this.dedicatedAccountId = response.listdedicatedhostsresponse.dedicatedhost[0].accountid
         }
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     releaseDedidcatedZone () {
@@ -202,10 +190,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     releaseDedidcatedPod () {
@@ -235,10 +220,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     releaseDedidcatedCluster () {
@@ -268,10 +250,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     releaseDedidcatedHost () {
@@ -301,10 +280,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     handleRelease () {

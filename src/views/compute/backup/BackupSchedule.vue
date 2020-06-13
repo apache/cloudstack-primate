@@ -112,7 +112,7 @@ export default {
           scopedSlots: { customRender: 'icon' }
         },
         {
-          title: this.$t('time'),
+          title: this.$t('label.time'),
           dataIndex: 'schedule',
           scopedSlots: { customRender: 'time' }
         },
@@ -122,12 +122,12 @@ export default {
           scopedSlots: { customRender: 'interval' }
         },
         {
-          title: this.$t('timezone'),
+          title: this.$t('label.timezone'),
           dataIndex: 'timezone',
           scopedSlots: { customRender: 'timezone' }
         },
         {
-          title: this.$t('action'),
+          title: this.$t('label.action'),
           dataIndex: 'action',
           width: 50,
           scopedSlots: { customRender: 'action' }
@@ -164,10 +164,7 @@ export default {
         }
         this.refreshSchedule()
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.actionLoading = false
       })

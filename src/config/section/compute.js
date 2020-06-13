@@ -19,12 +19,12 @@ import kubernetes from '@/assets/icons/kubernetes.svg?inline'
 
 export default {
   name: 'compute',
-  title: 'Compute',
+  title: 'label.compute',
   icon: 'cloud',
   children: [
     {
       name: 'vm',
-      title: 'Instances',
+      title: 'label.instances',
       icon: 'desktop',
       docHelp: 'adminguide/virtual_machines.html',
       permission: ['listVirtualMachinesMetrics'],
@@ -41,19 +41,19 @@ export default {
       ],
       related: [{
         name: 'volume',
-        title: 'Volumes',
+        title: 'label.volumes',
         param: 'virtualmachineid'
       }, {
         name: 'vmsnapshot',
-        title: 'VM Snapshots',
+        title: 'label.vm.snapshots',
         param: 'virtualmachineid'
       }, {
         name: 'backup',
-        title: 'Backups',
+        title: 'label.backup',
         param: 'virtualmachineid'
       }, {
         name: 'affinitygroup',
-        title: 'Affinity Groups',
+        title: 'label.affinity.groups',
         param: 'virtualmachineid'
       }],
       tabs: [{
@@ -74,7 +74,7 @@ export default {
         {
           api: 'updateVirtualMachine',
           icon: 'edit',
-          label: 'Update VM',
+          label: 'label.action.edit.instance',
           dataView: true,
           args: ['name', 'displayname', 'ostypeid', 'isdynamicallyscalable', 'haenable', 'group'],
           show: (record) => { return ['Stopped'].includes(record.state) }
@@ -82,7 +82,7 @@ export default {
         {
           api: 'startVirtualMachine',
           icon: 'caret-right',
-          label: 'Start VM',
+          label: 'label.action.start.instance',
           docHelp: 'adminguide/virtual_machines.html#stopping-and-starting-vms',
           dataView: true,
           groupAction: true,
@@ -94,6 +94,7 @@ export default {
           api: 'stopVirtualMachine',
           icon: 'stop',
           label: 'label.action.stop.instance',
+          message: 'message.action.stop.instance',
           docHelp: 'adminguide/virtual_machines.html#stopping-and-starting-vms',
           dataView: true,
           groupAction: true,
@@ -104,6 +105,7 @@ export default {
           api: 'rebootVirtualMachine',
           icon: 'reload',
           label: 'label.action.reboot.instance',
+          message: 'message.action.reboot.instance',
           dataView: true,
           show: (record) => { return ['Running'].includes(record.state) }
         },
@@ -123,7 +125,7 @@ export default {
         {
           api: 'createVMSnapshot',
           icon: 'camera',
-          label: 'Create VM Snapshot',
+          label: 'label.action.vmsnapshot.create',
           dataView: true,
           args: ['virtualmachineid', 'name', 'description', 'snapshotmemory', 'quiescevm'],
           show: (record) => {
@@ -139,7 +141,7 @@ export default {
         {
           api: 'assignVirtualMachineToBackupOffering',
           icon: 'folder-add',
-          label: 'Assign VM to Backup Offering',
+          label: 'label.backup.offering.assign',
           dataView: true,
           args: ['virtualmachineid', 'backupofferingid'],
           show: (record) => { return !record.backupofferingid },
@@ -152,7 +154,7 @@ export default {
         {
           api: 'createBackup',
           icon: 'cloud-upload',
-          label: 'Create Backup',
+          label: 'label.create.backup',
           dataView: true,
           args: ['virtualmachineid'],
           show: (record) => { return record.backupofferingid },
@@ -182,7 +184,7 @@ export default {
         {
           api: 'removeVirtualMachineFromBackupOffering',
           icon: 'scissor',
-          label: 'Remove VM from Backup Offering',
+          label: 'label.backup.offering.remove',
           dataView: true,
           args: ['virtualmachineid', 'forced'],
           show: (record) => { return record.backupofferingid },
@@ -232,6 +234,7 @@ export default {
         {
           api: 'scaleVirtualMachine',
           icon: 'arrows-alt',
+          // label: label.change.service.offering
           label: 'Scale VM',
           dataView: true,
           args: ['serviceofferingid', 'details'],
@@ -240,7 +243,7 @@ export default {
         {
           api: 'changeServiceForVirtualMachine',
           icon: 'sliders',
-          label: 'Change Service Offering',
+          label: 'label.change.service.offering',
           dataView: true,
           args: ['serviceofferingid'],
           show: (record) => { return ['Stopped'].includes(record.state) || (['Running'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC') }
@@ -279,7 +282,7 @@ export default {
         {
           api: 'resetPasswordForVirtualMachine',
           icon: 'key',
-          label: 'Reset Instance Password',
+          label: 'label.action.reset.password',
           dataView: true,
           show: (record) => { return ['Running', 'Stopped'].includes(record.state) },
           response: (result) => { return result.virtualmachine && result.virtualmachine.password ? `Password of the VM is ${result.virtualmachine.password}` : null }
@@ -287,7 +290,7 @@ export default {
         {
           api: 'resetSSHKeyForVirtualMachine',
           icon: 'lock',
-          label: 'Reset SSH Key',
+          label: 'label.reset.ssh.key.pair',
           dataView: true,
           args: ['keypair'],
           show: (record) => { return ['Running', 'Stopped'].includes(record.state) },
@@ -300,7 +303,7 @@ export default {
         {
           api: 'assignVirtualMachine',
           icon: 'user-add',
-          label: 'Assign Instance to Another Account',
+          label: 'label.assign.instance.another',
           dataView: true,
           component: () => import('@/views/compute/AssignInstance'),
           popup: true,
@@ -347,7 +350,7 @@ export default {
     },
     {
       name: 'kubernetes',
-      title: 'Kubernetes',
+      title: 'label.kubernetes',
       icon: kubernetes,
       permission: ['listKubernetesClusters'],
       columns: ['name', 'state', 'size', 'cpunumber', 'memory', 'account', 'zonename'],
@@ -360,7 +363,7 @@ export default {
         {
           api: 'createKubernetesCluster',
           icon: 'plus',
-          label: 'Create Kubernetes Cluster',
+          label: 'label.kubernetes.cluster.create',
           listView: true,
           popup: true,
           component: () => import('@/views/compute/CreateKubernetesCluster.vue')
@@ -368,28 +371,21 @@ export default {
         {
           api: 'startKubernetesCluster',
           icon: 'caret-right',
-          label: 'Start Kubernetes Cluster',
+          label: 'label.kubernetes.cluster.start',
           dataView: true,
           show: (record) => { return ['Stopped'].includes(record.state) }
         },
         {
           api: 'stopKubernetesCluster',
           icon: 'stop',
-          label: 'Stop Kubernetes Cluster',
+          label: 'label.kubernetes.cluster.stop',
           dataView: true,
           show: (record) => { return !['Stopped'].includes(record.state) }
         },
-        // {
-        //   api: 'getKubernetesClusterConfig',
-        //   icon: 'cloud-download',
-        //   label: 'Download Cluster Config',
-        //   dataView: true,
-        //   show: (record) => { return !['Stopped'].includes(record.state) }
-        // },
         {
           api: 'scaleKubernetesCluster',
           icon: 'swap',
-          label: 'Scale Kubernetes Cluster',
+          label: 'label.kubernetes.cluster.scale',
           dataView: true,
           show: (record) => { return ['Created', 'Running'].includes(record.state) },
           popup: true,
@@ -398,7 +394,7 @@ export default {
         {
           api: 'upgradeKubernetesCluster',
           icon: 'plus-circle',
-          label: 'Upgrade Kubernetes Cluster',
+          label: 'label.kubernetes.cluster.upgrade',
           dataView: true,
           show: (record) => { return ['Created', 'Running'].includes(record.state) },
           popup: true,
@@ -407,7 +403,7 @@ export default {
         {
           api: 'deleteKubernetesCluster',
           icon: 'delete',
-          label: 'Delete Kubernetes Cluster',
+          label: 'label.kubernetes.cluster.delete',
           dataView: true,
           show: (record) => { return !['Destroyed', 'Destroying'].includes(record.state) }
         }
@@ -415,7 +411,7 @@ export default {
     },
     {
       name: 'vmgroup',
-      title: 'Instance Groups',
+      title: 'label.instance.groups',
       icon: 'gold',
       docHelp: 'adminguide/virtual_machines.html#changing-the-vm-name-os-or-group',
       permission: ['listInstanceGroups'],
@@ -423,7 +419,7 @@ export default {
       details: ['name', 'id', 'account', 'domain', 'created'],
       related: [{
         name: 'vm',
-        title: 'Instances',
+        title: 'label.instances',
         param: 'groupid'
       }],
       actions: [
@@ -451,7 +447,7 @@ export default {
     },
     {
       name: 'ssh',
-      title: 'SSH Key Pairs',
+      title: 'label.ssh.key.pairs',
       icon: 'key',
       docHelp: 'adminguide/virtual_machines.html#using-ssh-keys-for-authentication',
       permission: ['listSSHKeyPairs'],
@@ -459,14 +455,14 @@ export default {
       details: ['name', 'fingerprint', 'account', 'domain'],
       related: [{
         name: 'vm',
-        title: 'Instances',
+        title: 'label.instances',
         param: 'keypair'
       }],
       actions: [
         {
           api: 'createSSHKeyPair',
           icon: 'plus',
-          label: 'Create SSH Key Pair',
+          label: 'label.create.ssh.key.pair',
           listView: true,
           popup: true,
           component: () => import('@/views/compute/CreateSSHKeyPair.vue')
@@ -474,7 +470,7 @@ export default {
         {
           api: 'deleteSSHKeyPair',
           icon: 'delete',
-          label: 'Delete SSH key pair',
+          label: 'label.remove.ssh.key.pair',
           dataView: true,
           args: ['name', 'account', 'domainid'],
           mapping: {
@@ -493,7 +489,7 @@ export default {
     },
     {
       name: 'affinitygroup',
-      title: 'Affinity Groups',
+      title: 'label.affinity.groups',
       icon: 'swap',
       docHelp: 'adminguide/virtual_machines.html#affinity-groups',
       permission: ['listAffinityGroups'],
@@ -501,14 +497,14 @@ export default {
       details: ['name', 'id', 'description', 'type', 'account', 'domain'],
       related: [{
         name: 'vm',
-        title: 'Instances',
+        title: 'label.instances',
         param: 'affinitygroupid'
       }],
       actions: [
         {
           api: 'createAffinityGroup',
           icon: 'plus',
-          label: 'New Affinity Group',
+          label: 'label.add.affinity.group',
           listView: true,
           args: ['name', 'description', 'type'],
           mapping: {
@@ -520,7 +516,7 @@ export default {
         {
           api: 'deleteAffinityGroup',
           icon: 'delete',
-          label: 'Delete Affinity Group',
+          label: 'label.delete.affinity.group',
           dataView: true
         }
       ]

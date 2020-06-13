@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# Build example: docker build -t cloudstack/primate:latest .
+# Build example: docker build -t apache/cloudstack-primate:latest .
 
 FROM node:lts-buster AS build
 
@@ -23,7 +23,7 @@ MAINTAINER "Apache CloudStack" <dev@cloudstack.apache.org>
 LABEL Description="Apache CloudStack Primate; Modern role-base progressive UI for Apache CloudStack"
 LABEL Vendor="Apache.org"
 LABEL License=ApacheV2
-LABEL Version=0.4.0
+LABEL Version=0.5.0
 
 WORKDIR /build
 

@@ -17,7 +17,7 @@
 
 export default {
   name: 'accountuser',
-  title: 'Users',
+  title: 'label.users',
   icon: 'user',
   hidden: true,
   permission: ['listUsers'],
@@ -29,7 +29,7 @@ export default {
       icon: 'plus',
       label: 'label.add.user',
       listView: true,
-      args: ['username', 'password', 'password', 'email', 'firstname', 'lastname', 'timezone', 'account', 'domainid']
+      args: ['username', 'password', 'email', 'firstname', 'lastname', 'timezone', 'account', 'domainid']
     },
     {
       api: 'updateUser',

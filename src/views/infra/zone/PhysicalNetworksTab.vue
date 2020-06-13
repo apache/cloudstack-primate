@@ -23,19 +23,19 @@
           <div class="list__item-container">
             <div class="list__col">
               <div class="list__label">
-                {{ $t('name') }}
+                {{ $t('label.name') }}
               </div>
               <div>
                 <router-link :to="{ path: '/physicalnetwork/' + network.id }">{{ network.name }}</router-link>
               </div>
             </div>
             <div class="list__col">
-              <div class="list__label">{{ $t('state') }}</div>
+              <div class="list__label">{{ $t('label.state') }}</div>
               <div><status :text="network.state" displayText></status></div>
             </div>
             <div class="list__col">
               <div class="list__label">
-                {{ $t('isolationmethods') }}
+                {{ $t('label.isolationmethods') }}
               </div>
               <div>
                 {{ network.isolationmethods }}
@@ -43,13 +43,13 @@
             </div>
             <div class="list__col">
               <div class="list__label">
-                {{ $t('vlan') }}
+                {{ $t('label.vlan') }}
               </div>
               <div>{{ network.vlan }}</div>
             </div>
             <div class="list__col">
               <div class="list__label">
-                {{ $t('broadcastdomainrange') }}
+                {{ $t('label.broadcastdomainrange') }}
               </div>
               <div>{{ network.broadcastdomainrange }}</div>
             </div>
@@ -102,10 +102,7 @@ export default {
       api('listPhysicalNetworks', { zoneid: this.resource.id }).then(json => {
         this.networks = json.listphysicalnetworksresponse.physicalnetwork || []
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchLoading = false
       })

@@ -17,7 +17,7 @@
 
 <template>
   <div class="page-header-index-wide">
-    <div v-if="showCapacityDashboard && !project">
+    <div v-if="$store.getters.userInfo.roletype === 'Admin' && !project">
       <capacity-dashboard/>
     </div>
     <div v-else>
@@ -45,14 +45,17 @@ export default {
   },
   mounted () {
     this.showCapacityDashboard = Object.prototype.hasOwnProperty.call(store.getters.apis, 'listCapacity')
-    this.project = store.getters.project !== undefined && store.getters.project.id !== undefined
+    this.project = false
+    if (store.getters.project && store.getters.project.id) {
+      this.project = true
+    }
     this.$store.watch(
       (state, getters) => getters.project,
       (newValue, oldValue) => {
-        if (newValue === undefined || newValue.id === undefined) {
-          this.project = false
-        } else {
+        if (newValue && newValue.id) {
           this.project = true
+        } else {
+          this.project = false
         }
       }
     )

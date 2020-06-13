@@ -35,7 +35,7 @@ import config from '@/config/section/config'
 import quota from '@/config/section/plugin/quota'
 import cloudian from '@/config/section/plugin/cloudian'
 
-export function generateRouterMap (section) {
+function generateRouterMap (section) {
   var map = {
     name: section.name,
     path: '/' + section.name,
@@ -61,6 +61,7 @@ export function generateRouterMap (section) {
           docHelp: child.docHelp,
           permission: child.permission,
           resourceType: child.resourceType,
+          filters: child.filters,
           params: child.params ? child.params : {},
           columns: child.columns,
           details: child.details,
@@ -122,6 +123,7 @@ export function generateRouterMap (section) {
     map.meta.resourceType = section.resourceType
     map.meta.details = section.details
     map.meta.actions = section.actions
+    map.meta.filters = section.filters
     map.meta.treeView = section.treeView ? section.treeView : false
     map.meta.tabs = section.treeView ? section.tabs : {}
 
@@ -165,8 +167,8 @@ export function generateRouterMap (section) {
   return map
 }
 
-export const asyncRouterMap = [
-  {
+export function asyncRouterMap () {
+  return [{
     path: '/',
     name: 'index',
     component: BasicLayout,
@@ -177,11 +179,11 @@ export const asyncRouterMap = [
         path: '/dashboard',
         name: 'dashboard',
         meta: {
-          title: 'Dashboard',
+          title: 'label.dashboard',
           icon: 'dashboard',
           tabs: [
             {
-              name: 'Dashboard',
+              name: 'dashboard',
               component: () => import('@/views/dashboard/UsageDashboardChart')
             },
             {
@@ -253,8 +255,8 @@ export const asyncRouterMap = [
   },
   {
     path: '*', redirect: '/exception/404', hidden: true
-  }
-]
+  }]
+}
 
 export const constantRouterMap = [
   {
