@@ -323,15 +323,9 @@ export default {
           api: 'unmanageVirtualMachine',
           icon: 'disconnect',
           label: 'label.action.unmanage.virtualmachine',
-          args: ['id'],
           dataView: true,
           groupAction: true,
-          show: (record) => { return ['Running', 'Stopped'].includes(record.state) && record.hypervisor === 'VMware' },
-          mapping: {
-            id: {
-              value: (record, params) => { return record.id }
-            }
-          }
+          show: (record) => { return ['Running', 'Stopped'].includes(record.state) && record.hypervisor === 'VMware' }
         },
         {
           api: 'expungeVirtualMachine',
