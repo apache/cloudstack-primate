@@ -55,6 +55,7 @@ export default {
       name: 'cpusocket',
       title: 'label.cpu.sockets',
       icon: 'inbox',
+      permission: ['listHosts'],
       component: () => import('@/views/infra/CpuSockets.vue')
     },
     {

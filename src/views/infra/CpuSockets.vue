@@ -19,7 +19,7 @@
   <div>
     <a-card class="breadcrumb-card">
       <a-row>
-        <a-col :span="device === 'mobile' ? 24 : 12" style="padding-left: 12px">
+        <a-col :span="24" style="padding-left: 12px">
           <breadcrumb>
             <a-tooltip placement="bottom" slot="end">
               <template slot="title">{{ $t('label.refresh') }}</template>
@@ -50,7 +50,6 @@
 <script>
 import { api } from '@/api'
 import { genericCompare } from '@/utils/sort.js'
-import { mixinDevice } from '@/utils/mixin.js'
 import Breadcrumb from '@/components/widgets/Breadcrumb'
 import ListView from '@/components/view/ListView.vue'
 
@@ -60,30 +59,40 @@ export default {
     ListView,
     Breadcrumb
   },
-  mixins: [mixinDevice],
-  provide: function () {
+  data () {
     return {
-      parentFetchData: this.fetchData,
-      parentToggleLoading: this.loading
+      loading: false,
+      items: [],
+      data: {},
+      columns: []
     }
   },
   mounted () {
     this.fetchData()
   },
+  watch: {
+    '$i18n.locale' (to, from) {
+      if (to !== from) {
+        this.fetchData()
+      }
+    }
+  },
   methods: {
     pushData (hypervisor) {
-      if (!(hypervisor in this.supportSocketHypervisors)) {
+      if (['BareMetal', 'LXC'].includes(hypervisor)) {
         this.data[hypervisor].cpusockets = 'N/A'
       }
       if (hypervisor === 'Hyperv') {
-        this.data[hypervisor].id = 'Hyper-V'
+        this.data[hypervisor].name = 'Hyper-V'
       }
       this.items.push(this.data[hypervisor])
     },
     callListHostsWithPage (hypervisor, currentPage) {
-      const pageSize = 1
+      this.loading = true
+      const pageSize = 100
       api('listHosts', {
         type: 'routing',
+        details: 'min',
         hypervisor: hypervisor,
         page: currentPage,
         pagesize: pageSize
@@ -107,113 +116,41 @@ export default {
         } else {
           this.pushData(hypervisor)
         }
-      })
-    },
-    callListHostsWithPageXen (hypervisor, currentPage) {
-      const pageSize = 100
-      api('listHosts', {
-        type: 'routing',
-        hypervisor: hypervisor,
-        page: currentPage,
-        pagesize: pageSize
-      }).then(json => {
-        if (json.listhostsresponse.count === undefined) {
-          this.data[this.XenServerHypervisors['']].cpusockets = 'N/A'
-          for (const key in this.XenServerHypervisors) {
-            this.items.push(this.data[this.XenServerHypervisors[key]])
-          }
-          return
-        }
-
-        this.data[hypervisor].hosts = json.listhostsresponse.count
-        this.data[hypervisor].currentHosts += json.listhostsresponse.host.length
-
-        for (const host in json.listhostsresponse.host) {
-          if (host.hypervisorversion in this.XenServerHypervisors) {
-            this.data[this.XenServerHypervisors[host.hypervisorversion]].hosts++
-            if (host.cpusockets !== undefined && isNaN(host.cpusockets) === false) {
-              this.data[this.XenServerHypervisors[host.hypervisorversion]].cpusockets += host.cpusockets
-            }
-          } else {
-            this.data[this.XenServerHypervisors['']].hosts++
-          }
-        }
-
-        if (this.data[hypervisor].currentHosts < this.data[hypervisor].hosts) {
-          this.callListHostsWithPage(hypervisor, currentPage + 1)
-        } else {
-          this.data[this.XenServerHypervisors['']].cpusockets = 'N/A'
-          for (const key in this.XenServerHypervisors) {
-            this.items.push(this.data[this.XenServerHypervisors[key]])
-          }
-        }
+      }).finally(() => {
+        this.loading = false
       })
     },
     fetchData () {
-      this.loading = true
+      this.columns = []
+      this.columns.push({
+        dataIndex: 'name',
+        title: this.$t('label.hypervisor'),
+        sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
+      })
+
+      this.columns.push({
+        dataIndex: 'hosts',
+        title: this.$t('label.hosts'),
+        sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
+      })
+      this.columns.push({
+        dataIndex: 'cpusockets',
+        title: this.$t('label.cpu.sockets'),
+        sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
+      })
+
       this.items = []
       this.data = {}
-      var hypervisors = ['Hyperv', 'KVM', 'VMware', 'BareMetal', 'LXC', 'Ovm3', 'Simulator']
-
+      const hypervisors = ['BareMetal', 'Hyperv', 'KVM', 'LXC', 'Ovm3', 'Simulator', 'VMware', 'XenServer']
       for (const hypervisor of hypervisors) {
         this.data[hypervisor] = {
-          id: hypervisor,
+          name: hypervisor,
           hosts: 0,
           cpusockets: 0,
           currentHosts: 0
         }
-        this.callListHostsWithPage(hypervisor, 0)
+        this.callListHostsWithPage(hypervisor, 1)
       }
-
-      for (const key in this.XenServerHypervisors) {
-        this.data[this.XenServerHypervisors[key]] = {
-          id: this.XenServerHypervisors[key],
-          hosts: 0,
-          cpusockets: 0,
-          currentHosts: 0
-        }
-      }
-      // Adding this since all versions of Xenserver come under the same hypervisor
-      this.data.Xenserver = {
-        id: 'Xenserver',
-        hosts: 0,
-        cpusockets: 0,
-        currentHosts: 0
-      }
-
-      this.callListHostsWithPageXen('Xenserver', 0)
-      this.loading = false
-    }
-  },
-  data () {
-    return {
-      loading: false,
-      items: [],
-      data: {},
-      columns: [
-        {
-          dataIndex: 'id',
-          title: this.$t('label.hypervisor'),
-          sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
-        },
-        {
-          dataIndex: 'hosts',
-          title: this.$t('label.hosts'),
-          sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
-        },
-        {
-          dataIndex: 'cpusockets',
-          title: this.$t('label.cpusockets'),
-          sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
-        }
-      ],
-      XenServerHypervisors: {
-        '7.0.0': 'XenServer 7.0.0',
-        '6.5.0': 'XenServer 6.5.0',
-        '6.2.0': 'XenServer 6.2.0',
-        '': 'XenServer 6.1.0 and before'
-      },
-      supportSocketHypervisors: { Hyperv: 1, KVM: 1, VMware: 1, Ovm3: 1 }
     }
   }
 }
