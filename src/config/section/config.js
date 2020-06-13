@@ -26,8 +26,7 @@ export default {
       title: 'label.global.settings',
       icon: 'setting',
       permission: ['listConfigurations'],
-      columns: ['name', 'description', 'category', 'value', 'actions'],
-      details: ['name', 'category', 'description', 'value']
+      columns: ['name', 'description', 'category', 'value', 'actions']
     },
     {
       name: 'ldapsetting',
@@ -66,16 +65,15 @@ export default {
       title: 'label.hypervisor.capabilities',
       icon: 'database',
       permission: ['listHypervisorCapabilities'],
-      columns: ['hypervisor', 'hypervisorversion', 'maxguestslimit', 'maxdatavolumeslimit', 'maxhostspercluster'],
+      columns: ['hypervisor', 'hypervisorversion', 'maxguestslimit', 'maxhostspercluster'],
+      details: ['hypervisor', 'hypervisorversion', 'maxguestslimit', 'maxdatavolumeslimit', 'maxhostspercluster', 'securitygroupenabled', 'storagemotionenabled'],
       actions: [
         {
           api: 'updateHypervisorCapabilities',
           icon: 'edit',
           label: 'label.edit',
           dataView: true,
-          args: [
-            'id', 'maxguestslimit'
-          ]
+          args: ['maxguestslimit']
         }
       ]
     }

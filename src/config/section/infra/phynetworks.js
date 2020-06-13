@@ -17,7 +17,7 @@
 
 export default {
   name: 'physicalnetwork',
-  title: 'label.physical.networks',
+  title: 'label.physical.network',
   icon: 'api',
   hidden: true,
   permission: ['listPhysicalNetworks'],

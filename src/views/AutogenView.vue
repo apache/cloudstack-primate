@@ -118,7 +118,9 @@
         </span>
         <a-spin :spinning="currentAction.loading">
           <span v-if="currentAction.message">
-            <a-alert :message="$t(currentAction.message)" type="warning" />
+            <a-alert type="warning">
+              <span slot="message" v-html="$t(currentAction.message)" />
+            </a-alert>
             <br v-if="currentAction.paramFields.length > 0"/>
           </span>
           <a-form
@@ -487,7 +489,7 @@ export default {
           customRender[key] = columnKey[key]
         }
         this.columns.push({
-          title: this.$t('label.' + key),
+          title: this.$t('label.' + String(key).toLowerCase()),
           dataIndex: key,
           scopedSlots: { customRender: key },
           sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }

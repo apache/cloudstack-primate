@@ -300,7 +300,7 @@ export default {
           required: true
         },
         {
-          title: 'label.start.reserved.system.IP',
+          title: 'label.start.reserved.system.ip',
           key: 'podReservedStartIp',
           placeHolder: 'message.installwizard.tooltip.addpod.reservedsystemstartip',
           required: true,
@@ -308,7 +308,7 @@ export default {
           message: 'Please enter a valid IP v4 address.'
         },
         {
-          title: 'label.end.reserved.system.IP',
+          title: 'label.end.reserved.system.ip',
           key: 'podReservedStopIp',
           placeHolder: 'message.installwizard.tooltip.addpod.reservedsystemendip',
           required: false,

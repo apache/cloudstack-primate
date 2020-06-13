@@ -320,7 +320,7 @@ export default {
     },
     {
       name: 's2svpn',
-      title: 'label.site-to-site.vpns',
+      title: 'label.site.to.site.vpn',
       icon: 'lock',
       hidden: true,
       permission: ['listVpnGateways'],
@@ -345,7 +345,7 @@ export default {
     },
     {
       name: 's2svpnconn',
-      title: 'label.site-to-site.vpn.connections',
+      title: 'label.site.to.site.vpn.connections',
       icon: 'sync',
       hidden: true,
       permission: ['listVpnConnections'],

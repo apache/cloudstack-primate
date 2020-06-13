@@ -28,10 +28,10 @@
       <a-tab-pane :tab="$t('label.networks')" key="tier">
         <VpcTiersTab :resource="resource" :loading="loading" />
       </a-tab-pane>
-      <a-tab-pane tab="Public IP Addresses" key="ip" v-if="'listPublicIpAddresses' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.public.ips')" key="ip" v-if="'listPublicIpAddresses' in $store.getters.apis">
         <IpAddressesTab :resource="resource" :loading="loading" />
       </a-tab-pane>
-      <a-tab-pane tab="Network ACL Lists" key="acl" v-if="'listNetworkACLLists' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.network.acl.lists')" key="acl" v-if="'listNetworkACLLists' in $store.getters.apis">
         <a-button
           type="dashed"
           icon="plus"
@@ -78,7 +78,7 @@
           </a-form>
         </a-modal>
       </a-tab-pane>
-      <a-tab-pane tab="Private Gateways" key="pgw" v-if="'listPrivateGateways' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.private.gateway')" key="pgw" v-if="'listPrivateGateways' in $store.getters.apis">
         <a-button
           type="dashed"
           icon="plus"
@@ -160,7 +160,7 @@
           </a-spin>
         </a-modal>
       </a-tab-pane>
-      <a-tab-pane tab="VPN Gateway" key="vpngw" v-if="'listVpnGateways' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.vpn.gateway')" key="vpngw" v-if="'listVpnGateways' in $store.getters.apis">
         <a-button
           v-if="vpnGateways.length === 0"
           type="dashed"
@@ -184,7 +184,7 @@
           </a-list-item>
         </a-list>
       </a-tab-pane>
-      <a-tab-pane tab="VPN Connections" key="vpnc" v-if="'listVpnConnections' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.vpn.connection')" key="vpnc" v-if="'listVpnConnections' in $store.getters.apis">
         <a-button
           type="dashed"
           icon="plus"
@@ -236,7 +236,7 @@
           </a-spin>
         </a-modal>
       </a-tab-pane>
-      <a-tab-pane tab="Virtual Routers" key="vr" v-if="'listRouters' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.virtual.routers')" key="vr" v-if="'listRouters' in $store.getters.apis">
         <RoutersTab :resource="resource" :loading="loading" />
       </a-tab-pane>
     </a-tabs>

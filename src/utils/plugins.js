@@ -114,6 +114,7 @@ export const notifierPlugin = {
 
   install (Vue) {
     Vue.prototype.$notifyError = function (error) {
+      console.log(error)
       var msg = 'Request Failed'
       var desc = ''
       if (error && error.response) {
