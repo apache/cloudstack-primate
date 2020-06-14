@@ -34,6 +34,8 @@
           <a-input v-model="newRule.privateport"></a-input>
           <span class="error-text">Required</span>
         </div>
+      </div>
+      <div class="form">
         <div class="form__item">
           <div class="form__label">{{ $t('label.algorithm') }}</div>
           <a-select v-model="newRule.algorithm">

@@ -18,7 +18,12 @@
 <template>
   <a-spin :spinning="fetchLoading">
     <div style="width: 100%; display: flex">
-      <a-button type="dashed" icon="plus" style="width: 100%; margin-right: 10px" @click="openAddRuleModal">
+      <a-button
+        type="dashed"
+        icon="plus"
+        style="width: 100%; margin-right: 10px"
+        :disabled="!('createNetworkACL' in $store.getters.apis)"
+        @click="openAddRuleModal">
         {{ $t('label.add') }} {{ $t('label.aclid') }}
       </a-button>
 

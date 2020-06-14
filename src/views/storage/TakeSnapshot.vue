@@ -49,7 +49,7 @@
         <div class="tagsTitle">{{ $t('label.tags') }}</div>
         <div>
           <template v-for="(tag, index) in tags">
-            <a-tag :key="index" :closable="'deleteTags' in $store.getters.apis">
+            <a-tag :key="index" :closable="true">
               {{ tag.key }} = {{ tag.value }}
             </a-tag>
           </template>
