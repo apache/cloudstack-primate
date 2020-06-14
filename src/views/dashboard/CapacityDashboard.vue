@@ -54,7 +54,7 @@
           :key="stat.type">
           <chart-card :loading="loading">
             <div class="capacity-dashboard-chart-card-inner">
-              <h4>{{ $t(ts[stat.name]) }}</h4>
+              <h3>{{ $t(ts[stat.name]) }}</h3>
               <a-progress
                 type="dashboard"
                 :status="getStatus(parseFloat(stat.percentused))"
@@ -142,6 +142,7 @@ export default {
       ts: {
         CPU: 'label.cpu',
         CPU_CORE: 'label.cpunumber',
+        DIRECT_ATTACHED_PUBLIC_IP: 'label.direct.ips',
         GPU: 'label.gpu',
         LOCAL_STORAGE: 'label.local.storage',
         MEMORY: 'label.memory',

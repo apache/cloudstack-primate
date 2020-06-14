@@ -22,7 +22,7 @@
         <a-input-search
           class="input-search-invitation"
           style="width: unset"
-          placeholder="Search"
+          :placeholder="$t('label.search')"
           v-model="searchQuery"
           @search="onSearch" />
       </a-col>
@@ -123,15 +123,15 @@ export default {
         scopedSlots: { customRender: 'state' },
         filters: [
           {
-            text: this.$t('label.pending'),
+            text: this.$t('state.pending'),
             value: 'Pending'
           },
           {
-            text: this.$t('label.completed'),
+            text: this.$t('state.completed'),
             value: 'Completed'
           },
           {
-            text: this.$t('label.declined'),
+            text: this.$t('state.declined'),
             value: 'Declined'
           }
         ],

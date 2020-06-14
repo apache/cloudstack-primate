@@ -78,12 +78,12 @@
             <a-select
               id="zone-selection"
               mode="multiple"
-              placeholder="Select Zones"
+              :placeholder="$t('label.select.zones')"
               v-decorator="['zoneid', {
                 rules: [
                   {
                     required: true,
-                    message: 'Please select option'
+                    message: `${this.$t('message.error.select')}`
                   }
                 ]
               }]"
