@@ -40,6 +40,7 @@
         </span>
         <span style="margin-right: 5px">
           <a-button
+            :disabled="!('deleteTemplate' in $store.getters.apis)"
             type="danger"
             icon="delete"
             shape="circle"
@@ -103,8 +104,6 @@
     </a-modal>
 
     <a-modal
-      v-if="'deleteTemplate' in $store.getters.apis"
-      style="top: 20px;"
       :title="$t('label.action.delete.template')"
       :visible="showDeleteTemplate"
       :closable="true"
@@ -113,7 +112,7 @@
       :confirmLoading="deleteLoading"
       centered>
       <a-spin :spinning="deleteLoading">
-        <label>{{ $t('message.action.delete.template') }}</label>
+        <a-alert :message="$t('message.action.delete.template')" type="warning" />
         <a-form-item :label="$t('label.isforced')" style="margin-bottom: 0;">
           <a-switch v-model="forcedDelete"></a-switch>
         </a-form-item>
@@ -261,6 +260,7 @@ export default {
         this.$notifyError(error)
       }).finally(() => {
         this.deleteLoading = false
+        this.onCloseModal()
         this.fetchData()
       })
     },
