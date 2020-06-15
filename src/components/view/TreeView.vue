@@ -21,7 +21,7 @@
       <a-card :bordered="false">
         <a-input-search
           size="default"
-          placeholder="Search"
+          :placeholder="$t('label.search')"
           v-model="searchQuery"
           @search="onSearch"
         >
@@ -59,7 +59,7 @@
           @change="onTabChange" >
           <a-tab-pane
             v-for="tab in tabs"
-            :tab="$t(tab.name)"
+            :tab="$t('label.' + tab.name)"
             :key="tab.name"
             v-if="checkShowTabDetail(tab)">
             <component

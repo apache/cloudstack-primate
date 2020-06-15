@@ -17,7 +17,12 @@
 
 <template>
   <a-spin :spinning="fetchLoading">
-    <a-button type="dashed" icon="plus" style="width: 100%" @click="handleOpenModal">{{ $t('label.dedicate.vlan.vni.range') }}</a-button>
+    <a-button
+      :disabled="!('dedicateGuestVlanRange' in $store.getters.apis)"
+      type="dashed"
+      icon="plus"
+      style="width: 100%"
+      @click="handleOpenModal">{{ $t('label.dedicate.vlan.vni.range') }}</a-button>
     <a-table
       size="small"
       style="overflow-y: auto; margin-top: 20px;"
@@ -34,7 +39,7 @@
           cancelText="No"
           placement="top"
         >
-          <a-button icon="delete" type="danger" shape="round"></a-button>
+          <a-button :disabled="!('releaseDedicatedGuestVlanRange' in $store.getters.apis)" icon="delete" type="danger" shape="circle"></a-button>
         </a-popconfirm>
       </template>
     </a-table>
@@ -56,36 +61,36 @@
           :form="form"
           @submit="handleSubmit"
           layout="vertical" >
-          <a-form-item :label="$t('vlanRange')">
+          <a-form-item :label="$t('label.vlanrange')">
             <a-input
               v-decorator="['range', {
-                rules: [{ required: true, message: 'Required' }]
+                rules: [{ required: true, message: `${this.$t('label.required')}` }]
               }]"
             ></a-input>
           </a-form-item>
 
-          <a-form-item :label="$t('scope')">
+          <a-form-item :label="$t('label.scope')">
             <a-select defaultValue="account" v-model="selectedScope" @change="handleScopeChange">
-              <a-select-option value="account">{{ $t('account') }}</a-select-option>
-              <a-select-option value="project">{{ $t('project') }}</a-select-option>
+              <a-select-option value="account">{{ $t('label.account') }}</a-select-option>
+              <a-select-option value="project">{{ $t('label.project') }}</a-select-option>
             </a-select>
           </a-form-item>
 
-          <a-form-item :label="$t('domain')">
+          <a-form-item :label="$t('label.domain')">
             <a-select
               @change="handleDomainChange"
               v-decorator="['domain', {
-                rules: [{ required: true, message: 'Required' }]
+                rules: [{ required: true, message: `${this.$t('label.required')}` }]
               }]"
             >
               <a-select-option v-for="domain in domains" :key="domain.id" :value="domain.id">{{ domain.name }}</a-select-option>
             </a-select>
           </a-form-item>
 
-          <a-form-item :label="$t('account')" v-if="selectedScope === 'account'">
+          <a-form-item :label="$t('label.account')" v-if="selectedScope === 'account'">
             <a-select
               v-decorator="['account', {
-                rules: [{ required: true, message: 'Required' }]
+                rules: [{ required: true, message: `${this.$t('label.required')}` }]
               }]"
             >
               <a-select-option
@@ -97,10 +102,10 @@
             </a-select>
           </a-form-item>
 
-          <a-form-item :label="$t('project')" v-if="selectedScope === 'project'">
+          <a-form-item :label="$t('label.project')" v-if="selectedScope === 'project'">
             <a-select
               v-decorator="['project', {
-                rules: [{ required: true, message: 'Required' }]
+                rules: [{ required: true, message: `${this.$t('label.required')}` }]
               }]"
             >
               <a-select-option
@@ -149,19 +154,19 @@ export default {
       pageSize: 10,
       columns: [
         {
-          title: this.$t('vlanrange'),
+          title: this.$t('label.vlanrange'),
           dataIndex: 'guestvlanrange'
         },
         {
-          title: this.$t('domain'),
+          title: this.$t('label.domain'),
           dataIndex: 'domain'
         },
         {
-          title: this.$t('account'),
+          title: this.$t('label.account'),
           dataIndex: 'account'
         },
         {
-          title: this.$t('action'),
+          title: this.$t('label.action'),
           scopedSlots: { customRender: 'actions' }
         }
       ]
@@ -220,10 +225,7 @@ export default {
         }
         this.formLoading = false
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.formLoading = false
       })
     },
@@ -247,10 +249,7 @@ export default {
         }
         this.formLoading = false
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.formLoading = false
       })
     },
@@ -273,10 +272,7 @@ export default {
         }
         this.formLoading = false
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.formLoading = false
       })
     },
@@ -334,10 +330,7 @@ export default {
           this.modal = false
           this.fetchData()
         }).catch(error => {
-          this.$notification.error({
-            message: `Error ${error.response.status}`,
-            description: error.response.data.dedicateguestvlanrangeresponse.errortext
-          })
+          this.$notifyError(error)
           this.modal = false
           this.fetchData()
         })

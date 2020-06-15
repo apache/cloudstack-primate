@@ -28,7 +28,7 @@
 
       <div class="list__header__col list__header__col--full">
         <a-input-search
-          placeholder="Search"
+          :placeholder="$t('label.search')"
           v-model="searchQuery"
           @search="fetchData" />
       </div>
@@ -81,8 +81,8 @@
       showSizeChanger/>
 
     <div class="list__footer">
-      <a-button @click="handleClose">{{ $t('cancel') }}</a-button>
-      <a-button @click="handleSubmit" type="primary" :disabled="!selectedVm || !selectedNic">{{ $t('OK') }}</a-button>
+      <a-button @click="handleClose">{{ $t('label.cancel') }}</a-button>
+      <a-button @click="handleSubmit" type="primary" :disabled="!selectedVm || !selectedNic">{{ $t('label.ok') }}</a-button>
     </div>
 
   </div>
@@ -113,27 +113,27 @@ export default {
       selectedNic: null,
       columns: [
         {
-          title: this.$t('name'),
+          title: this.$t('label.name'),
           scopedSlots: { customRender: 'name' }
         },
         {
-          title: this.$t('instancename'),
+          title: this.$t('label.instancename'),
           dataIndex: 'instancename'
         },
         {
-          title: this.$t('displayname'),
+          title: this.$t('label.displayname'),
           dataIndex: 'displayname'
         },
         {
-          title: this.$t('account'),
+          title: this.$t('label.account'),
           dataIndex: 'account'
         },
         {
-          title: this.$t('zonenamelabel'),
+          title: this.$t('label.zonenamelabel'),
           dataIndex: 'zonename'
         },
         {
-          title: this.$t('state'),
+          title: this.$t('label.state'),
           dataIndex: 'state',
           scopedSlots: { customRender: 'state' }
         },
@@ -174,10 +174,7 @@ export default {
       }).then(response => {
         this.vmsList = response.listvirtualmachinesresponse.virtualmachine
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -196,10 +193,7 @@ export default {
       }).then(response => {
         this.vmsList = response.listvirtualmachinesresponse.virtualmachine || []
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -223,10 +217,7 @@ export default {
 
         this.selectedNic = this.nicsList[0]
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -241,10 +232,7 @@ export default {
       }).then(response => {
         this.networksList = response.listnetworksresponse.network
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -259,11 +247,7 @@ export default {
       }).then(() => {
         this.parentFetchData()
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description'],
-          duration: 0
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
         this.handleClose()

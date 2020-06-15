@@ -19,25 +19,25 @@
   <div>
     <a-row :gutter="12">
       <a-col :md="24" :lg="17">
-        <a-card :bordered="true" :title="this.$t('newInstance')">
+        <a-card :bordered="true" :title="this.$t('label.newinstance')">
           <a-form
             :form="form"
             @submit="handleSubmit"
             layout="vertical"
           >
             <a-steps direction="vertical" size="small">
-              <a-step :title="this.$t('details')" status="process">
+              <a-step :title="this.$t('label.details')" status="process">
                 <template slot="description">
                   <div style="margin-top: 15px">
-                    <a-form-item :label="this.$t('name')">
+                    <a-form-item :label="this.$t('label.name')">
                       <a-input
                         v-decorator="['name']"
                       />
                     </a-form-item>
-                    <a-form-item :label="this.$t('zoneid')">
+                    <a-form-item :label="this.$t('label.zoneid')">
                       <a-select
                         v-decorator="['zoneid', {
-                          rules: [{ required: true, message: 'Please select option' }]
+                          rules: [{ required: true, message: `${this.$t('message.error.select')}` }]
                         }]"
                         :options="zoneSelectOptions"
                         @change="onSelectZoneId"
@@ -46,45 +46,43 @@
                     </a-form-item>
                     <a-form-item
                       v-if="!isNormalAndDomainUser"
-                      :label="this.$t('podId')">
+                      :label="this.$t('label.podid')">
                       <a-select
                         v-decorator="['podid']"
                         :options="podSelectOptions"
                         :loading="loading.pods"
+                        @change="onSelectPodId"
                       ></a-select>
                     </a-form-item>
                     <a-form-item
                       v-if="!isNormalAndDomainUser"
-                      :label="this.$t('clusterid')">
+                      :label="this.$t('label.clusterid')">
                       <a-select
                         v-decorator="['clusterid']"
                         :options="clusterSelectOptions"
                         :loading="loading.clusters"
+                        @change="onSelectClusterId"
                       ></a-select>
                     </a-form-item>
                     <a-form-item
                       v-if="!isNormalAndDomainUser"
-                      :label="this.$t('hostId')">
+                      :label="this.$t('label.hostid')">
                       <a-select
                         v-decorator="['hostid']"
                         :options="hostSelectOptions"
                         :loading="loading.hosts"
                       ></a-select>
                     </a-form-item>
-                    <a-form-item :label="this.$t('group')">
-                      <a-select
-                        v-decorator="['group']"
-                        :options="groupsSelectOptions"
-                        :loading="loading.groups"
-                      ></a-select>
+                    <a-form-item :label="this.$t('label.group')">
+                      <a-input v-decorator="['group']" />
                     </a-form-item>
-                    <a-form-item :label="this.$t('keyboard')">
+                    <a-form-item :label="this.$t('label.keyboard')">
                       <a-select
                         v-decorator="['keyboard']"
                         :options="keyboardSelectOptions"
                       ></a-select>
                     </a-form-item>
-                    <a-form-item :label="this.$t('userdata')">
+                    <a-form-item :label="this.$t('label.userdata')">
                       <a-textarea
                         v-decorator="['userdata']">
                       </a-textarea>
@@ -93,7 +91,7 @@
                 </template>
               </a-step>
               <a-step
-                :title="this.$t('templateIso')"
+                :title="this.$t('label.templateiso')"
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
                   <div v-if="zoneSelected" style="margin-top: 15px">
@@ -122,20 +120,17 @@
                           :selected="tabKey"
                           :loading="loading.isos"
                           :preFillContent="dataPreFill"
-                          @update-template-iso="updateFieldValue"
-                        ></template-iso-selection>
-                        <a-form-item :label="this.$t('hypervisor')">
+                          @update-template-iso="updateFieldValue" />
+                        <a-form-item :label="this.$t('label.hypervisor')">
                           <a-select
                             v-decorator="['hypervisor', {
                               initialValue: hypervisorSelectOptions && hypervisorSelectOptions.length > 0
                                 ? hypervisorSelectOptions[0].value
                                 : null,
-                              rules: [{ required: true, message: 'Please select option' }]
+                              rules: [{ required: true, message: `${this.$t('message.error.select')}` }]
                             }]"
                             :options="hypervisorSelectOptions"
-                            @change="value => this.hypervisor = value"
-                          >
-                          </a-select>
+                            @change="value => this.hypervisor = value" />
                         </a-form-item>
                       </p>
                     </a-card>
@@ -152,7 +147,7 @@
                 </template>
               </a-step>
               <a-step
-                :title="this.$t('serviceOfferingId')"
+                :title="this.$t('label.serviceofferingid')"
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
                   <div v-if="zoneSelected">
@@ -196,7 +191,7 @@
                 </template>
               </a-step>
               <a-step
-                :title="this.$t('diskofferingid')"
+                :title="this.$t('label.diskofferingid')"
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
                   <div v-if="zoneSelected">
@@ -220,7 +215,7 @@
                 </template>
               </a-step>
               <a-step
-                :title="this.$t('Affinity Groups')"
+                :title="this.$t('label.affinity.groups')"
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
                   <div v-if="zoneSelected">
@@ -236,7 +231,7 @@
                 </template>
               </a-step>
               <a-step
-                :title="this.$t('networks')"
+                :title="this.$t('label.networks')"
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
                   <div v-if="zoneSelected">
@@ -260,7 +255,7 @@
                 </template>
               </a-step>
               <a-step
-                :title="this.$t('sshKeyPairs')"
+                :title="this.$t('label.sshkeypairs')"
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
                   <div v-if="zoneSelected">
@@ -279,11 +274,11 @@
             <div class="card-footer">
               <!-- ToDo extract as component -->
               <a-button @click="() => this.$router.back()" :loading="loading.deploy">
-                {{ this.$t('cancel') }}
+                {{ this.$t('label.cancel') }}
               </a-button>
               <a-button type="primary" @click="handleSubmit" :loading="loading.deploy">
                 <a-icon type="rocket" />
-                {{ this.$t('Launch VM') }}
+                {{ this.$t('label.launch.vm') }}
               </a-button>
             </div>
           </a-form>
@@ -291,7 +286,7 @@
       </a-col>
       <a-col :md="24" :lg="7" v-if="!isMobile()">
         <a-affix :offsetTop="75">
-          <info-card class="vm-info-card" :resource="vm" :title="this.$t('yourInstance')">
+          <info-card class="vm-info-card" :resource="vm" :title="this.$t('label.yourinstance')">
             <!-- ToDo: Refactor this, maybe move everything to the info-card component -->
             <div slot="details" v-if="diskSize" style="margin-bottom: 12px;">
               <a-icon type="hdd"></a-icon>
@@ -318,8 +313,8 @@ import { mixin, mixinDevice } from '@/utils/mixin.js'
 import store from '@/store'
 
 import InfoCard from '@/components/view/InfoCard'
-import ComputeOfferingSelection from './wizard/ComputeOfferingSelection'
-import ComputeSelection from './wizard/ComputeSelection'
+import ComputeOfferingSelection from '@views/compute/wizard/ComputeOfferingSelection'
+import ComputeSelection from '@views/compute/wizard/ComputeSelection'
 import DiskOfferingSelection from '@views/compute/wizard/DiskOfferingSelection'
 import DiskSizeSelection from '@views/compute/wizard/DiskSizeSelection'
 import TemplateIsoSelection from '@views/compute/wizard/TemplateIsoSelection'
@@ -355,6 +350,8 @@ export default {
   data () {
     return {
       zoneId: '',
+      podId: null,
+      clusterId: null,
       zoneSelected: false,
       vm: {},
       options: {
@@ -424,14 +421,15 @@ export default {
       initDataConfig: {},
       defaultNetwork: '',
       networkConfig: [],
+      dataNetworkCreated: [],
       tabList: [
         {
           key: 'templateid',
-          tab: this.$t('Templates')
+          tab: this.$t('label.templates')
         },
         {
           key: 'isoid',
-          tab: this.$t('ISOs')
+          tab: this.$t('label.isos')
         }
       ],
       tabKey: 'templateid',
@@ -535,7 +533,8 @@ export default {
           list: 'listClusters',
           isLoad: !this.isNormalAndDomainUser,
           options: {
-            zoneid: _.get(this.zone, 'id')
+            zoneid: _.get(this.zone, 'id'),
+            podid: this.podId
           },
           field: 'clusterid'
         },
@@ -544,18 +543,12 @@ export default {
           isLoad: !this.isNormalAndDomainUser,
           options: {
             zoneid: _.get(this.zone, 'id'),
+            podid: this.podId,
+            clusterid: this.clusterId,
             state: 'Up',
             type: 'Routing'
           },
           field: 'hostid'
-        },
-        groups: {
-          list: 'listInstanceGroups',
-          options: {
-            listall: false
-          },
-          isLoad: true,
-          field: 'group'
         }
       }
     },
@@ -579,42 +572,49 @@ export default {
       })
     },
     podSelectOptions () {
-      return this.options.pods.map((pod) => {
+      const options = this.options.pods.map((pod) => {
         return {
           label: pod.name,
           value: pod.id
         }
       })
+      options.unshift({
+        label: this.$t('label.default'),
+        value: undefined
+      })
+      return options
     },
     clusterSelectOptions () {
-      return this.options.clusters.map((cluster) => {
+      const options = this.options.clusters.map((cluster) => {
         return {
           label: cluster.name,
           value: cluster.id
         }
       })
+      options.unshift({
+        label: this.$t('label.default'),
+        value: undefined
+      })
+      return options
     },
     hostSelectOptions () {
-      return this.options.hosts.map((host) => {
+      const options = this.options.hosts.map((host) => {
         return {
           label: host.name,
           value: host.id
         }
       })
+      options.unshift({
+        label: this.$t('label.default'),
+        value: undefined
+      })
+      return options
     },
     keyboardSelectOptions () {
       return this.options.keyboards.map((keyboard) => {
         return {
           label: this.$t(keyboard.description),
           value: keyboard.id
-        }
-      })
-    },
-    groupsSelectOptions () {
-      return this.options.groups.map((group) => {
-        return {
-          label: group.name,
-          value: group.id
         }
       })
     }
@@ -838,7 +838,7 @@ export default {
       this.networkConfig = networks
     },
     updateSshKeyPairs (name) {
-      if (name === this.$t('noselect')) {
+      if (name === this.$t('label.noselect')) {
         this.form.setFieldsValue({
           keypair: undefined
         })
@@ -854,10 +854,23 @@ export default {
     handleSubmit (e) {
       console.log('wizard submit')
       e.preventDefault()
-      this.form.validateFields((err, values) => {
+      this.form.validateFields(async (err, values) => {
         if (err) {
           return
         }
+
+        if (!values.templateid && !values.isoid) {
+          this.$notification.error({
+            message: 'Request Failed',
+            description: this.$t('message.template.iso')
+          })
+          return
+        }
+
+        this.loading.deploy = true
+
+        let networkIds = []
+
         const deployVmData = {}
         // step 1 : select zone
         deployVmData.zoneid = values.zoneid
@@ -902,15 +915,30 @@ export default {
         // step 5: select an affinity group
         deployVmData.affinitygroupids = (values.affinitygroupids || []).join(',')
         // step 6: select network
-        if (values.networkids && values.networkids.length > 0) {
-          for (let i = 0; i < values.networkids.length; i++) {
-            deployVmData['iptonetworklist[' + i + '].networkid'] = values.networkids[i]
-            if (this.networkConfig.length > 0) {
-              const networkConfig = this.networkConfig.filter((item) => item.key === values.networkids[i])
-              if (networkConfig && networkConfig.length > 0) {
-                deployVmData['iptonetworklist[' + i + '].ip'] = networkConfig[0].ipAddress ? networkConfig[0].ipAddress : undefined
-                deployVmData['iptonetworklist[' + i + '].mac'] = networkConfig[0].macAddress ? networkConfig[0].macAddress : undefined
+        const arrNetwork = []
+        networkIds = values.networkids
+        if (networkIds.length > 0) {
+          for (let i = 0; i < networkIds.length; i++) {
+            if (networkIds[i] === this.defaultNetwork) {
+              const ipToNetwork = {
+                networkid: this.defaultNetwork
               }
+              arrNetwork.unshift(ipToNetwork)
+            } else {
+              const ipToNetwork = {
+                networkid: networkIds[i]
+              }
+              arrNetwork.push(ipToNetwork)
+            }
+          }
+        }
+        for (let j = 0; j < arrNetwork.length; j++) {
+          deployVmData['iptonetworklist[' + j + '].networkid'] = arrNetwork[j].networkid
+          if (this.networkConfig.length > 0) {
+            const networkConfig = this.networkConfig.filter((item) => item.key === arrNetwork[j].networkid)
+            if (networkConfig && networkConfig.length > 0) {
+              deployVmData['iptonetworklist[' + j + '].ip'] = networkConfig[0].ipAddress ? networkConfig[0].ipAddress : undefined
+              deployVmData['iptonetworklist[' + j + '].mac'] = networkConfig[0].macAddress ? networkConfig[0].macAddress : undefined
             }
           }
         }
@@ -918,38 +946,38 @@ export default {
         deployVmData.keypair = values.keypair
         deployVmData.name = values.name
         deployVmData.displayname = values.name
-        const title = this.$t('Launch Virtual Machine')
-        const description = deployVmData.name ? deployVmData.name : values.zoneid
-        this.loading.deploy = true
+        const title = this.$t('label.launch.vm')
+        const description = values.name || ''
+        const password = this.$t('label.password')
         api('deployVirtualMachine', deployVmData).then(response => {
           const jobId = response.deployvirtualmachineresponse.jobid
           if (jobId) {
             this.$pollJob({
               jobId,
               successMethod: result => {
-                let successDescription = ''
-                if (result.jobresult.virtualmachine.name) {
-                  successDescription = result.jobresult.virtualmachine.name
-                } else {
-                  successDescription = result.jobresult.virtualmachine.id
+                const vm = result.jobresult.virtualmachine
+                const name = vm.displayname || vm.name || vm.id
+                if (vm.password) {
+                  this.$notification.success({
+                    message: password + ' for ' + name,
+                    description: vm.password,
+                    duration: 0
+                  })
                 }
-                this.$store.dispatch('AddAsyncJob', {
-                  title: title,
-                  jobid: jobId,
-                  description: successDescription,
-                  status: 'progress'
-                })
               },
-              loadingMessage: `${title} in progress for ${description}`,
+              loadingMessage: `${title} in progress`,
               catchMessage: 'Error encountered while fetching async job result'
+            })
+            this.$store.dispatch('AddAsyncJob', {
+              title: title,
+              jobid: jobId,
+              description: description,
+              status: 'progress'
             })
           }
           this.$router.back()
         }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.loading.deploy = false
         })
@@ -1039,12 +1067,12 @@ export default {
         })
       })
     },
-    fetchAllTemplates (filterKey) {
+    fetchAllTemplates (filterKeys) {
       const promises = []
       this.options.templates = []
       this.loading.templates = true
       this.templateFilter.forEach((filter) => {
-        if (filterKey && filterKey !== filter) {
+        if (filterKeys && !filterKeys.includes(filter)) {
           return true
         }
         promises.push(this.fetchTemplates(filter))
@@ -1086,6 +1114,8 @@ export default {
     onSelectZoneId (value) {
       this.dataPreFill = {}
       this.zoneId = value
+      this.podId = null
+      this.clusterId = null
       this.zone = _.find(this.options.zones, (option) => option.id === value)
       this.zoneSelected = true
       this.form.setFieldsValue({
@@ -1098,10 +1128,21 @@ export default {
       this.tabKey = 'templateid'
       _.each(this.params, (param, name) => {
         if (!('isLoad' in param) || param.isLoad) {
-          this.fetchOptions(param, name, ['zones', 'groups'])
+          this.fetchOptions(param, name, ['zones'])
         }
       })
       this.fetchAllTemplates()
+    },
+    onSelectPodId (value) {
+      this.podId = value
+
+      this.fetchOptions(this.params.clusters, 'clusters')
+      this.fetchOptions(this.params.hosts, 'hosts')
+    },
+    onSelectClusterId (value) {
+      this.clusterId = value
+
+      this.fetchOptions(this.params.hosts, 'hosts')
     },
     handleSearchFilter (name, options) {
       this.params[name].options = { ...this.params[name].options, ...options }
@@ -1161,6 +1202,13 @@ export default {
   }
 
   .vm-info-card {
+    .ant-card-body {
+      min-height: 250px;
+      max-height: calc(100vh - 150px);
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
     .resource-detail-item__label {
       font-weight: normal;
     }

@@ -22,7 +22,7 @@
         <a-input-search
           class="input-search-invitation"
           style="width: unset"
-          placeholder="Search"
+          :placeholder="$t('label.search')"
           v-model="searchQuery"
           @search="onSearch" />
       </a-col>
@@ -107,38 +107,38 @@ export default {
   created () {
     this.columns = [
       {
-        title: this.$t('project'),
+        title: this.$t('label.project'),
         dataIndex: 'project',
         scopedSlots: { customRender: 'project' }
       },
       {
-        title: this.$t('domain'),
+        title: this.$t('label.domain'),
         dataIndex: 'domain',
         scopedSlots: { customRender: 'domain' }
       },
       {
-        title: this.$t('state'),
+        title: this.$t('label.state'),
         dataIndex: 'state',
         width: 130,
         scopedSlots: { customRender: 'state' },
         filters: [
           {
-            text: this.$t('Pending'),
+            text: this.$t('state.pending'),
             value: 'Pending'
           },
           {
-            text: this.$t('Completed'),
+            text: this.$t('state.completed'),
             value: 'Completed'
           },
           {
-            text: this.$t('Declined'),
+            text: this.$t('state.declined'),
             value: 'Declined'
           }
         ],
         filterMultiple: false
       },
       {
-        title: this.$t('action'),
+        title: this.$t('label.action'),
         dataIndex: 'action',
         width: 80,
         scopedSlots: { customRender: 'action' }
@@ -179,10 +179,7 @@ export default {
         this.dataSource = listProjectInvitations
         this.itemCount = itemCount
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -199,7 +196,7 @@ export default {
     },
     onShowConfirmAcceptInvitation (record) {
       const self = this
-      const title = this.$t('confirmacceptinvitation')
+      const title = this.$t('label.confirmacceptinvitation')
 
       this.$confirm({
         title: title,
@@ -237,17 +234,14 @@ export default {
         }
       }).catch(error => {
         // show error
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         setTimeout(loading, 1000)
       })
     },
     onShowConfirmRevokeInvitation (record) {
       const self = this
-      const title = this.$t('confirmdeclineinvitation')
+      const title = this.$t('label.confirmdeclineinvitation')
 
       this.$confirm({
         title: title,

@@ -17,6 +17,7 @@
 
 import Cookies from 'js-cookie'
 import Vue from 'vue'
+import i18n from './locales'
 import router from './router'
 import store from './store'
 
@@ -25,7 +26,7 @@ import 'nprogress/nprogress.css' // progress bar style
 import message from 'ant-design-vue/es/message'
 import notification from 'ant-design-vue/es/notification'
 import { setDocumentTitle, domTitle } from '@/utils/domUtil'
-import { ACCESS_TOKEN } from '@/store/mutation-types'
+import { ACCESS_TOKEN, APIS } from '@/store/mutation-types'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
@@ -34,7 +35,10 @@ const whiteList = ['login'] // no redirect whitelist
 router.beforeEach((to, from, next) => {
   // start progress bar
   NProgress.start()
-  to.meta && (typeof to.meta.title !== 'undefined' && setDocumentTitle(`${to.meta.title} - ${domTitle}`))
+  if (to.meta && typeof to.meta.title !== 'undefined') {
+    const title = i18n.t(to.meta.title) + ' - ' + domTitle
+    setDocumentTitle(title)
+  }
   const validLogin = Vue.ls.get(ACCESS_TOKEN) || Cookies.get('userid') || Cookies.get('userid', { path: '/client' })
   if (validLogin) {
     if (to.path === '/user/login') {
@@ -42,7 +46,10 @@ router.beforeEach((to, from, next) => {
       NProgress.done()
     } else {
       if (Object.keys(store.getters.apis).length === 0) {
-        message.loading('Discovering features...', 5)
+        const cachedApis = Vue.ls.get(APIS, {})
+        if (Object.keys(cachedApis).length > 0) {
+          message.loading('Loading...', 1.5)
+        }
         store
           .dispatch('GetInfo')
           .then(apis => {

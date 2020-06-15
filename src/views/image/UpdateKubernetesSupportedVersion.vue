@@ -22,7 +22,7 @@
         :form="form"
         @submit="handleSubmit"
         layout="vertical">
-        <a-form-item :label="$t('state')">
+        <a-form-item :label="$t('label.state')">
           <a-select
             id="state-selection"
             v-decorator="['state', {
@@ -42,8 +42,8 @@
         </a-form-item>
 
         <div :span="24" class="action-button">
-          <a-button @click="closeAction">{{ this.$t('Cancel') }}</a-button>
-          <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('OK') }}</a-button>
+          <a-button @click="closeAction">{{ this.$t('label.cancel') }}</a-button>
+          <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('label.ok') }}</a-button>
         </div>
       </a-form>
     </a-spin>
@@ -80,11 +80,11 @@ export default {
     this.states = [
       {
         id: 'Enabled',
-        name: this.$t('enabled')
+        name: this.$t('state.enabled')
       },
       {
         id: 'Disabled',
-        name: this.$t('disabled')
+        name: this.$t('state.disabled')
       }
     ]
   },
@@ -131,10 +131,7 @@ export default {
         api('updateKubernetesSupportedVersion', params).then(json => {
           this.$message.success('Successfully updated Kubernetes supported version: ' + this.resource.name)
         }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.$emit('refresh-data')
           this.loading = false

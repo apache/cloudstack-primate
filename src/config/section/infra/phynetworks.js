@@ -17,7 +17,7 @@
 
 export default {
   name: 'physicalnetwork',
-  title: 'Physical Networks',
+  title: 'label.physical.network',
   icon: 'api',
   hidden: true,
   permission: ['listPhysicalNetworks'],
@@ -27,25 +27,25 @@ export default {
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
   }, {
-    name: 'Traffic Types',
+    name: 'traffic.types',
     component: () => import('@/views/infra/network/TrafficTypesTab.vue')
   }, {
-    name: 'Service Providers',
+    name: 'network.service.providers',
     component: () => import('@/views/infra/network/ServiceProvidersTab.vue')
   }, {
-    name: 'Dedicated VLAN/VNI Ranges',
+    name: 'dedicated.vlan.vni.ranges',
     component: () => import('@/views/infra/network/DedicatedVLANTab.vue')
   }],
   related: [{
     name: 'guestnetwork',
-    title: 'Networks',
+    title: 'label.guest.networks',
     param: 'physicalnetworkid'
   }],
   actions: [
     {
       api: 'createPhysicalNetwork',
       icon: 'plus',
-      label: 'Create Physical Network',
+      label: 'label.add.physical.network',
       listView: true,
       args: ['name', 'zoneid', 'isolationmethods', 'vlan', 'tags', 'networkspeed', 'broadcastdomainrange'],
       mapping: {
@@ -57,7 +57,7 @@ export default {
     {
       api: 'updatePhysicalNetwork',
       icon: 'play-circle',
-      label: 'Enable Physical Network',
+      label: 'label.action.enable.physical.network',
       dataView: true,
       args: ['state'],
       show: (record) => { return record.state === 'Disabled' },
@@ -70,7 +70,7 @@ export default {
     {
       api: 'updatePhysicalNetwork',
       icon: 'stop',
-      label: 'Disable Physical Network',
+      label: 'label.action.disable.physical.network',
       dataView: true,
       args: ['state'],
       show: (record) => { return record.state === 'Enabled' },
@@ -121,7 +121,8 @@ export default {
     {
       api: 'deletePhysicalNetwork',
       icon: 'delete',
-      label: 'Delete Physical Network',
+      label: 'label.action.delete.physical.network',
+      message: 'message.action.delete.physical.network',
       dataView: true
     }
   ]

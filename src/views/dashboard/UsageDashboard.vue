@@ -26,7 +26,7 @@
             @change="onTabChange">
             <a-tab-pane
               v-for="tab in $route.meta.tabs"
-              :tab="$t(tab.name)"
+              :tab="$t('label.' + tab.name)"
               :key="tab.name"
               v-if="'show' in tab ? tab.show(project, $route, $store.getters.userInfo) : true">
               <component
@@ -122,6 +122,14 @@ export default {
   mounted () {
     this.project = store.getters.project
     this.fetchData()
+    this.$store.watch(
+      (state, getters) => getters.project,
+      (newValue, oldValue) => {
+        if (newValue && newValue.id) {
+          this.fetchData()
+        }
+      }
+    )
   },
   watch: {
     '$route' (to, from) {

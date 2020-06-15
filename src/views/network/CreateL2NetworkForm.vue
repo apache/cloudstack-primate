@@ -23,27 +23,27 @@
           :form="form"
           layout="vertical"
           @submit="handleSubmit">
-          <a-form-item :label="$t('name')">
+          <a-form-item :label="$t('label.name')">
             <a-input
               v-decorator="['name', {
                 rules: [{ required: true, message: 'Please enter name' }]
               }]"
-              :placeholder="this.$t('Name')"/>
+              :placeholder="this.$t('label.name')"/>
           </a-form-item>
-          <a-form-item :label="$t('displaytext')">
+          <a-form-item :label="$t('label.displaytext')">
             <a-input
               v-decorator="['displaytext', {
                 rules: [{ required: true, message: 'Please enter display text' }]
               }]"
-              :placeholder="this.$t('displaytext')"/>
+              :placeholder="this.$t('label.displaytext')"/>
           </a-form-item>
-          <a-form-item :label="$t('zoneid')">
+          <a-form-item :label="$t('label.zoneid')">
             <a-select
               v-decorator="['zoneid', {
                 rules: [
                   {
                     required: true,
-                    message: 'Please select option'
+                    message: `${this.$t('message.error.select')}`
                   }
                 ]
               }]"
@@ -53,14 +53,14 @@
                 return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }"
               :loading="zoneLoading"
-              :placeholder="this.$t('zoneid')"
-              @change="val => { this.handleZoneChanged(this.zones[val]) }">
+              :placeholder="this.$t('label.zoneid')"
+              @change="val => { this.handleZoneChange(this.zones[val]) }">
               <a-select-option v-for="(opt, optIndex) in this.zones" :key="optIndex">
                 {{ opt.name || opt.description }}
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('domain')" v-if="this.isAdminOrDomainAdmin()">
+          <a-form-item :label="$t('label.domain')" v-if="this.isAdminOrDomainAdmin()">
             <a-select
               v-decorator="['domainid', {}]"
               showSearch
@@ -69,20 +69,20 @@
                 return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }"
               :loading="domainLoading"
-              :placeholder="this.$t('domainid')"
+              :placeholder="this.$t('label.domainid')"
               @change="val => { this.handleDomainChange(this.domains[val]) }">
               <a-select-option v-for="(opt, optIndex) in this.domains" :key="optIndex">
                 {{ opt.name || opt.description }}
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('networkofferingid')">
+          <a-form-item :label="$t('label.networkofferingid')">
             <a-select
               v-decorator="['networkofferingid', {
                 rules: [
                   {
                     required: true,
-                    message: 'Please select option'
+                    message: `${this.$t('message.error.select')}`
                   }
                 ]
               }]"
@@ -92,43 +92,43 @@
                 return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }"
               :loading="networkOfferingLoading"
-              :placeholder="this.$t('networkofferingid')"
+              :placeholder="this.$t('label.networkofferingid')"
               @change="val => { this.handleNetworkOfferingChange(this.networkOfferings[val]) }">
               <a-select-option v-for="(opt, optIndex) in this.networkOfferings" :key="optIndex">
                 {{ opt.name || opt.description }}
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('vlan')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
+          <a-form-item :label="$t('label.vlan')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
             <a-input
               v-decorator="['vlanid', {
                 rules: [{ required: true, message: 'Please enter value' }]
               }]"
-              :placeholder="this.$t('vlanid')"/>
+              :placeholder="this.$t('label.vlanid')"/>
           </a-form-item>
-          <a-form-item :label="$t('bypassvlanoverlapcheck')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
+          <a-form-item :label="$t('label.bypassvlanoverlapcheck')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
             <a-switch v-decorator="['bypassvlanoverlapcheck']" />
           </a-form-item>
-          <a-form-item :label="$t('account')" v-if="this.accountVisible">
+          <a-form-item :label="$t('label.account')" v-if="this.accountVisible">
             <a-input
               v-decorator="['account', {
                 rules: [
-                  { required: true, message: this.$t('required') }
+                  { required: true, message: this.$t('label.required') }
                 ]
               }]"
-              :placeholder="this.$t('account')"/>
+              :placeholder="this.$t('label.account')"/>
           </a-form-item>
           <div :span="24" class="action-button">
             <a-button
               :loading="actionLoading"
               @click="closeAction">
-              {{ this.$t('Cancel') }}
+              {{ this.$t('label.cancel') }}
             </a-button>
             <a-button
               :loading="actionLoading"
               type="primary"
               @click="handleSubmit">
-              {{ this.$t('OK') }}
+              {{ this.$t('label.ok') }}
             </a-button>
           </div>
         </a-form>
@@ -329,10 +329,7 @@ export default {
             description: 'Successfully created L2 network'
           })
         }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.$emit('refresh-data')
           this.actionLoading = false

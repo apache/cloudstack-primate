@@ -28,11 +28,11 @@
         </div>
         <div v-if="item.traffictype === 'Public'">
           <div style="margin-bottom: 10px;">
-            <div><strong>{{ $t('traffictype') }}</strong></div>
+            <div><strong>{{ $t('label.traffictype') }}</strong></div>
             <div>{{ publicNetwork.traffictype }}</div>
           </div>
           <div style="margin-bottom: 10px;">
-            <div><strong>{{ $t('broadcastdomaintype') }}</strong></div>
+            <div><strong>{{ $t('label.broadcastdomaintype') }}</strong></div>
             <div>{{ publicNetwork.broadcastdomaintype }}</div>
           </div>
           <a-divider />
@@ -99,10 +99,7 @@ export default {
       api('listTrafficTypes', { physicalnetworkid: this.resource.id }).then(json => {
         this.traffictypes = json.listtraffictypesresponse.traffictype
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchLoading = false
       })
@@ -116,10 +113,7 @@ export default {
       }).then(json => {
         this.publicNetwork = json.listnetworksresponse.network[0] || {}
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchLoading = false
       })

@@ -22,21 +22,21 @@
         :form="form"
         @submit="handleSubmit"
         layout="vertical">
-        <a-form-item :label="$t('name')">
+        <a-form-item :label="$t('label.name')">
           <a-input
             v-decorator="['name', {
-              rules: [{ required: true, message: 'Please enter name' }]
+              rules: [{ required: true, message: $t('message.error.required.input') }]
             }]"
-            :placeholder="this.$t('Name')"/>
+            :placeholder="this.$t('label.name')"/>
         </a-form-item>
-        <a-form-item :label="$t('displaytext')">
+        <a-form-item :label="$t('label.displaytext')">
           <a-input
             v-decorator="['displaytext', {
-              rules: [{ required: true, message: 'Please enter description' }]
+              rules: [{ required: true, message: $t('message.error.required.input') }]
             }]"
-            :placeholder="this.$t('displaytext  ')"/>
+            :placeholder="this.$t('label.displaytext')"/>
         </a-form-item>
-        <a-form-item :label="$t('systemvmtype')" v-if="this.isSystem">
+        <a-form-item :label="$t('label.systemvmtype')" v-if="this.isSystem">
           <a-select
             v-decorator="['systemvmtype', {
               initialValue: 'domainrouter'
@@ -46,13 +46,13 @@
             :filterOption="(input, option) => {
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
-            :placeholder="this.$t('systemvmtype')">
+            :placeholder="this.$t('label.systemvmtype')">
             <a-select-option key="domainrouter">Domain Router</a-select-option>
             <a-select-option key="consoleproxy">Console Proxy</a-select-option>
             <a-select-option key="secondarystoragevm">Secondary Storage VM</a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="$t('storagetype')">
+        <a-form-item :label="$t('label.storagetype')">
           <a-radio-group
             v-decorator="['storagetype', {
               initialValue: this.storageType
@@ -60,14 +60,14 @@
             buttonStyle="solid"
             @change="selected => { this.handleStorageTypeChange(selected.target.value) }">
             <a-radio-button value="shared">
-              {{ $t('shared') }}
+              {{ $t('label.shared') }}
             </a-radio-button>
             <a-radio-button value="local">
-              {{ $t('local') }}
+              {{ $t('label.local') }}
             </a-radio-button>
           </a-radio-group>
         </a-form-item>
-        <a-form-item :label="$t('provisioningtype')">
+        <a-form-item :label="$t('label.provisioningtype')">
           <a-radio-group
             v-decorator="['provisioningtype', {
               initialValue: this.provisioningType
@@ -75,17 +75,17 @@
             buttonStyle="solid"
             @change="selected => { this.handleProvisioningTypeChange(selected.target.value) }">
             <a-radio-button value="thin">
-              {{ $t('thin') }}
+              {{ $t('label.provisioningtype.thin') }}
             </a-radio-button>
             <a-radio-button value="sparse">
-              {{ $t('sparse') }}
+              {{ $t('label.provisioningtype.sparse') }}
             </a-radio-button>
             <a-radio-button value="fat">
-              {{ $t('fat') }}
+              {{ $t('label.provisioningtype.fat') }}
             </a-radio-button>
           </a-radio-group>
         </a-form-item>
-        <a-form-item :label="$t('cachemode')">
+        <a-form-item :label="$t('label.cachemode')">
           <a-radio-group
             v-decorator="['cachemode', {
               initialValue: this.cacheMode
@@ -93,17 +93,17 @@
             buttonStyle="solid"
             @change="selected => { this.handleCacheModeChange(selected.target.value) }">
             <a-radio-button value="none">
-              {{ $t('No disk cache') }}
+              {{ $t('label.nodiskcache') }}
             </a-radio-button>
             <a-radio-button value="writeback">
-              {{ $t('Write-back disk caching') }}
+              {{ $t('label.writeback') }}
             </a-radio-button>
             <a-radio-button value="writethrough">
-              {{ $t('Write-through') }}
+              {{ $t('label.writethrough') }}
             </a-radio-button>
           </a-radio-group>
         </a-form-item>
-        <a-form-item :label="$t('offeringtype')" v-show="!this.isSystem">
+        <a-form-item :label="$t('label.offeringtype')" v-show="!this.isSystem">
           <a-radio-group
             v-decorator="['offeringtype', {
               initialValue: this.offeringType
@@ -111,145 +111,145 @@
             buttonStyle="solid"
             @change="selected => { this.handleComputeOfferingTypeChange(selected.target.value) }">
             <a-radio-button value="fixed">
-              {{ $t('fixed') }}
+              {{ $t('label.fixed') }}
             </a-radio-button>
             <a-radio-button value="customconstrained">
-              {{ $t('customconstrained') }}
+              {{ $t('label.customconstrained') }}
             </a-radio-button>
             <a-radio-button value="customunconstrained">
-              {{ $t('customunconstrained') }}
+              {{ $t('label.customunconstrained') }}
             </a-radio-button>
           </a-radio-group>
         </a-form-item>
-        <a-form-item :label="$t('cpunumber')" v-if="this.offeringType === 'fixed'">
+        <a-form-item :label="$t('label.cpunumber')" v-if="this.offeringType === 'fixed'">
           <a-input
             v-decorator="['cpunumber', {
-              rules: [{ required: true, message: 'Please enter value' },
+              rules: [{ required: true, message: $t('message.error.required.input') },
                       {
                         validator: (rule, value, callback) => {
                           if (value && (isNaN(value) || value <= 0)) {
-                            callback('Please enter a valid number')
+                            callback(this.$t('message.error.number'))
                           }
                           callback()
                         }
                       }
               ]
             }]"
-            :placeholder="this.$t('cpunumber')"/>
+            :placeholder="this.$t('label.cpunumber')"/>
         </a-form-item>
-        <a-form-item :label="$t('cpuspeed')" v-if="this.offeringType !== 'customunconstrained'">
+        <a-form-item :label="$t('label.cpuspeed')" v-if="this.offeringType !== 'customunconstrained'">
           <a-input
             v-decorator="['cpuspeed', {
-              rules: [{ required: true, message: 'Please enter value' },
+              rules: [{ required: true, message: $t('message.error.required.input') },
                       {
                         validator: (rule, value, callback) => {
                           if (value && (isNaN(value) || value <= 0)) {
-                            callback('Please enter a valid number')
+                            callback(this.$t('message.error.number'))
                           }
                           callback()
                         }
                       }
               ]
             }]"
-            :placeholder="this.$t('cpuspeed')"/>
+            :placeholder="this.$t('label.cpuspeed')"/>
         </a-form-item>
-        <a-form-item :label="$t('mincpunumber')" v-if="this.offeringType === 'customconstrained'">
+        <a-form-item :label="$t('label.mincpunumber')" v-if="this.offeringType === 'customconstrained'">
           <a-input
             v-decorator="['mincpunumber', {
-              rules: [{ required: true, message: 'Please enter value' },
+              rules: [{ required: true, message: $t('message.error.required.input') },
                       {
                         validator: (rule, value, callback) => {
                           if (value && (isNaN(value) || value <= 0)) {
-                            callback('Please enter a valid number')
+                            callback(this.$t('message.error.number'))
                           }
                           callback()
                         }
                       }
               ]
             }]"
-            :placeholder="this.$t('mincpunumber')"/>
+            :placeholder="this.$t('label.mincpunumber')"/>
         </a-form-item>
-        <a-form-item :label="$t('maxcpunumber')" v-if="this.offeringType === 'customconstrained'">
+        <a-form-item :label="$t('label.maxcpunumber')" v-if="this.offeringType === 'customconstrained'">
           <a-input
             v-decorator="['maxcpunumber', {
-              rules: [{ required: true, message: 'Please enter value' },
+              rules: [{ required: true, message: $t('message.error.required.input') },
                       {
                         validator: (rule, value, callback) => {
                           if (value && (isNaN(value) || value <= 0)) {
-                            callback('Please enter a valid number')
+                            callback(this.$t('message.error.number'))
                           }
                           callback()
                         }
                       }
               ]
             }]"
-            :placeholder="this.$t('maxcpunumber')"/>
+            :placeholder="this.$t('label.maxcpunumber')"/>
         </a-form-item>
-        <a-form-item :label="$t('memory')" v-if="this.offeringType === 'fixed'">
+        <a-form-item :label="$t('label.memory')" v-if="this.offeringType === 'fixed'">
           <a-input
             v-decorator="['memory', {
-              rules: [{ required: true, message: 'Please enter value' },
+              rules: [{ required: true, message: $t('message.error.required.input') },
                       {
                         validator: (rule, value, callback) => {
                           if (value && (isNaN(value) || value <= 0)) {
-                            callback('Please enter a valid number')
+                            callback(this.$t('message.error.number'))
                           }
                           callback()
                         }
                       }
               ]
             }]"
-            :placeholder="this.$t('memory')"/>
+            :placeholder="this.$t('label.memory')"/>
         </a-form-item>
-        <a-form-item :label="$t('minmemory')" v-if="this.offeringType === 'customconstrained'">
+        <a-form-item :label="$t('label.minmemory')" v-if="this.offeringType === 'customconstrained'">
           <a-input
             v-decorator="['minmemory', {
-              rules: [{ required: true, message: 'Please enter value' },
+              rules: [{ required: true, message: $t('message.error.required.input') },
                       {
                         validator: (rule, value, callback) => {
                           if (value && (isNaN(value) || value <= 0)) {
-                            callback('Please enter a valid number')
+                            callback(this.$t('message.error.number'))
                           }
                           callback()
                         }
                       }
               ]
             }]"
-            :placeholder="this.$t('minmemory')"/>
+            :placeholder="this.$t('label.minmemory')"/>
         </a-form-item>
-        <a-form-item :label="$t('maxmemory')" v-if="this.offeringType === 'customconstrained'">
+        <a-form-item :label="$t('label.maxmemory')" v-if="this.offeringType === 'customconstrained'">
           <a-input
             v-decorator="['maxmemory', {
-              rules: [{ required: true, message: 'Please enter value' },
+              rules: [{ required: true, message: $t('message.error.required.input') },
                       {
                         validator: (rule, value, callback) => {
                           if (value && (isNaN(value) || value <= 0)) {
-                            callback('Please enter a valid number')
+                            callback(this.$t('message.error.number'))
                           }
                           callback()
                         }
                       }
               ]
             }]"
-            :placeholder="this.$t('maxmemory')"/>
+            :placeholder="this.$t('label.maxmemory')"/>
         </a-form-item>
-        <a-form-item :label="$t('networkrate')">
+        <a-form-item :label="$t('label.networkrate')">
           <a-input
             v-decorator="['networkrate', {
               rules: [
                 {
                   validator: (rule, value, callback) => {
                     if (value && (isNaN(value) || value <= 0)) {
-                      callback('Please enter a valid number')
+                      callback(this.$t('message.error.number'))
                     }
                     callback()
                   }
                 }
               ]
             }]"
-            :placeholder="this.$t('networkrate')"/>
+            :placeholder="this.$t('label.networkrate')"/>
         </a-form-item>
-        <a-form-item :label="$t('qostype')">
+        <a-form-item :label="$t('label.qostype')">
           <a-radio-group
             v-decorator="['qostype', {
               initialValue: this.qosType
@@ -257,126 +257,126 @@
             buttonStyle="solid"
             @change="selected => { this.handleQosTypeChange(selected.target.value) }">
             <a-radio-button value="">
-              {{ $t('none') }}
+              {{ $t('label.none') }}
             </a-radio-button>
             <a-radio-button value="hypervisor">
-              {{ $t('hypervisor') }}
+              {{ $t('label.hypervisor') }}
             </a-radio-button>
             <a-radio-button value="storage">
-              {{ $t('storage') }}
+              {{ $t('label.storage') }}
             </a-radio-button>
           </a-radio-group>
         </a-form-item>
-        <a-form-item :label="$t('diskbytesreadrate')" v-if="this.qosType === 'hypervisor'">
+        <a-form-item :label="$t('label.diskbytesreadrate')" v-if="this.qosType === 'hypervisor'">
           <a-input
             v-decorator="['diskbytesreadrate', {
               rules: [{
                 validator: (rule, value, callback) => {
                   if (value && (isNaN(value) || value <= 0)) {
-                    callback('Please enter a valid number')
+                    callback(this.$t('message.error.number'))
                   }
                   callback()
                 }
               }]
             }]"
-            :placeholder="this.$t('diskbytesreadrate')"/>
+            :placeholder="this.$t('label.diskbytesreadrate')"/>
         </a-form-item>
-        <a-form-item :label="$t('diskbyteswriterate')" v-if="this.qosType === 'hypervisor'">
+        <a-form-item :label="$t('label.diskbyteswriterate')" v-if="this.qosType === 'hypervisor'">
           <a-input
             v-decorator="['diskbyteswriterate', {
               rules: [{
                 validator: (rule, value, callback) => {
                   if (value && (isNaN(value) || value <= 0)) {
-                    callback('Please enter a valid number')
+                    callback(this.$t('message.error.number'))
                   }
                   callback()
                 }
               }]
             }]"
-            :placeholder="this.$t('diskbyteswriterate')"/>
+            :placeholder="this.$t('label.diskbyteswriterate')"/>
         </a-form-item>
-        <a-form-item :label="$t('diskiopsreadrate')" v-if="this.qosType === 'hypervisor'">
+        <a-form-item :label="$t('label.diskiopsreadrate')" v-if="this.qosType === 'hypervisor'">
           <a-input
             v-decorator="['diskiopsreadrate', {
               rules: [{
                 validator: (rule, value, callback) => {
                   if (value && (isNaN(value) || value <= 0)) {
-                    callback('Please enter a valid number')
+                    callback(this.$t('message.error.number'))
                   }
                   callback()
                 }
               }]
             }]"
-            :placeholder="this.$t('diskiopsreadrate')"/>
+            :placeholder="this.$t('label.diskiopsreadrate')"/>
         </a-form-item>
-        <a-form-item :label="$t('diskiopswriterate')" v-if="this.qosType === 'hypervisor'">
+        <a-form-item :label="$t('label.diskiopswriterate')" v-if="this.qosType === 'hypervisor'">
           <a-input
             v-decorator="['diskiopswriterate', {
               rules: [{
                 validator: (rule, value, callback) => {
                   if (value && (isNaN(value) || value <= 0)) {
-                    callback('Please enter a valid number')
+                    callback(this.$t('message.error.number'))
                   }
                   callback()
                 }
               }]
             }]"
-            :placeholder="this.$t('diskiopswriterate')"/>
+            :placeholder="this.$t('label.diskiopswriterate')"/>
         </a-form-item>
-        <a-form-item :label="$t('iscustomizeddiskiops')" v-if="!this.isSystem && this.qosType === 'storage'">
+        <a-form-item :label="$t('label.iscustomizeddiskiops')" v-if="!this.isSystem && this.qosType === 'storage'">
           <a-switch v-decorator="['iscustomizeddiskiops', {initialValue: this.isCustomizedDiskIops}]" :defaultChecked="this.isCustomizedDiskIops" @change="val => { this.isCustomizedDiskIops = val }" />
         </a-form-item>
-        <a-form-item :label="$t('diskiopsmin')" v-if="this.qosType === 'storage' && !this.isCustomizedDiskIops">
+        <a-form-item :label="$t('label.diskiopsmin')" v-if="this.qosType === 'storage' && !this.isCustomizedDiskIops">
           <a-input
             v-decorator="['diskiopsmin', {
               rules: [{
                 validator: (rule, value, callback) => {
                   if (value && (isNaN(value) || value <= 0)) {
-                    callback('Please enter a valid number')
+                    callback(this.$t('message.error.number'))
                   }
                   callback()
                 }
               }]
             }]"
-            :placeholder="this.$t('diskiopsmin')"/>
+            :placeholder="this.$t('label.diskiopsmin')"/>
         </a-form-item>
-        <a-form-item :label="$t('diskiopsmax')" v-if="this.qosType === 'storage' && !this.isCustomizedDiskIops">
+        <a-form-item :label="$t('label.diskiopsmax')" v-if="this.qosType === 'storage' && !this.isCustomizedDiskIops">
           <a-input
             v-decorator="['diskiopsmax', {
               rules: [{
                 validator: (rule, value, callback) => {
                   if (value && (isNaN(value) || value <= 0)) {
-                    callback('Please enter a valid number')
+                    callback(this.$t('message.error.number'))
                   }
                   callback()
                 }
               }]
             }]"
-            :placeholder="this.$t('diskiopsmax')"/>
+            :placeholder="this.$t('label.diskiopsmax')"/>
         </a-form-item>
-        <a-form-item :label="$t('hypervisorsnapshotreserve')" v-if="!this.isSystem && this.qosType === 'storage'">
+        <a-form-item :label="$t('label.hypervisorsnapshotreserve')" v-if="!this.isSystem && this.qosType === 'storage'">
           <a-input
             v-decorator="['hypervisorsnapshotreserve', {
               rules: [{
                 validator: (rule, value, callback) => {
                   if (value && (isNaN(value) || value <= 0)) {
-                    callback('Please enter a valid number')
+                    callback(this.$t('message.error.number'))
                   }
                   callback()
                 }
               }]
             }]"
-            :placeholder="this.$t('hypervisorsnapshotreserve')"/>
+            :placeholder="this.$t('label.hypervisorsnapshotreserve')"/>
         </a-form-item>
-        <a-form-item :label="$t('offerha')">
+        <a-form-item :label="$t('label.offerha')">
           <a-switch v-decorator="['offerha', {initialValue: false}]" />
         </a-form-item>
-        <a-form-item :label="$t('hosttags')" v-if="this.isAdmin()">
+        <a-form-item :label="$t('label.hosttags')" v-if="this.isAdmin()">
           <a-input
             v-decorator="['hosttags', {}]"
-            :placeholder="this.$t('hosttags')"/>
+            :placeholder="this.$t('label.hosttags')"/>
         </a-form-item>
-        <a-form-item :label="$t('storagetags')" v-if="this.isAdmin()">
+        <a-form-item :label="$t('label.storagetags')" v-if="this.isAdmin()">
           <a-select
             mode="tags"
             v-decorator="['storagetags', {}]"
@@ -386,20 +386,20 @@
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
             :loading="storageTagLoading"
-            :placeholder="$t('storagetags')"
+            :placeholder="$t('label.storagetags')"
             v-if="this.isAdmin()">
             <a-select-option v-for="opt in storageTags" :key="opt">
               {{ opt }}
             </a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="$t('limitcpuuse')">
+        <a-form-item :label="$t('label.limitcpuuse')">
           <a-switch v-decorator="['limitcpuuse', {initialValue: false}]" />
         </a-form-item>
-        <a-form-item :label="$t('isvolatile')" v-if="!this.isSystem">
+        <a-form-item :label="$t('label.isvolatile')" v-if="!this.isSystem">
           <a-switch v-decorator="['isvolatile', {initialValue: false}]" />
         </a-form-item>
-        <a-form-item :label="$t('deploymentplanner')" v-if="!this.isSystem && this.isAdmin()">
+        <a-form-item :label="$t('label.deploymentplanner')" v-if="!this.isSystem && this.isAdmin()">
           <a-select
             v-decorator="['deploymentplanner', {
               initialValue: this.deploymentPlanners.length > 0 ? this.deploymentPlanners[0].name : ''
@@ -410,14 +410,14 @@
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
             :loading="deploymentPlannerLoading"
-            :placeholder="this.$t('deploymentplanner')"
+            :placeholder="this.$t('label.deploymentplanner')"
             @change="val => { this.handleDeploymentPlannerChange(val) }">
             <a-select-option v-for="(opt) in this.deploymentPlanners" :key="opt.name">
               {{ opt.name || opt.description }}
             </a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="$t('plannermode')" v-if="this.plannerModeVisible">
+        <a-form-item :label="$t('label.plannermode')" v-if="this.plannerModeVisible">
           <a-radio-group
             v-decorator="['plannermode', {
               initialValue: this.plannerMode
@@ -425,17 +425,17 @@
             buttonStyle="solid"
             @change="selected => { this.handlePlannerModeChange(selected.target.value) }">
             <a-radio-button value="">
-              {{ $t('none') }}
+              {{ $t('label.none') }}
             </a-radio-button>
             <a-radio-button value="strict">
-              {{ $t('strict') }}
+              {{ $t('label.strict') }}
             </a-radio-button>
             <a-radio-button value="preferred">
-              {{ $t('preferred') }}
+              {{ $t('label.preferred') }}
             </a-radio-button>
           </a-radio-group>
         </a-form-item>
-        <a-form-item :label="$t('gpu')" v-if="!this.isSystem">
+        <a-form-item :label="$t('label.gpu')" v-if="!this.isSystem">
           <a-radio-group
             v-decorator="['pcidevice', {
               initialValue: this.selectedGpu
@@ -447,7 +447,7 @@
             </a-radio-button>
           </a-radio-group>
         </a-form-item>
-        <a-form-item :label="$t('vgputype')" v-if="this.vGpuVisible">
+        <a-form-item :label="$t('label.vgputype')" v-if="this.vGpuVisible">
           <a-select
             v-decorator="['vgputype', {}]"
             showSearch
@@ -455,23 +455,23 @@
             :filterOption="(input, option) => {
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
-            :placeholder="this.$t('vgputype')">
+            :placeholder="this.$t('label.vgputype')">
             <a-select-option v-for="(opt, optIndex) in this.vGpuTypes" :key="optIndex">
               {{ opt }}
             </a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="$t('ispublic')" v-show="this.isAdmin()">
+        <a-form-item :label="$t('label.ispublic')" v-show="this.isAdmin()">
           <a-switch v-decorator="['ispublic', {initialValue: this.isPublic}]" :checked="this.isPublic" @change="val => { this.isPublic = val }" />
         </a-form-item>
-        <a-form-item :label="$t('domain')" v-if="!this.isPublic">
+        <a-form-item :label="$t('label.domain')" v-if="!this.isPublic">
           <a-select
             mode="multiple"
             v-decorator="['domainid', {
               rules: [
                 {
                   required: true,
-                  message: 'Please select option'
+                  message: $t('message.error.select')
                 }
               ]
             }]"
@@ -481,13 +481,13 @@
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
             :loading="domainLoading"
-            :placeholder="this.$t('domainid')">
+            :placeholder="this.$t('label.domainid')">
             <a-select-option v-for="(opt, optIndex) in this.domains" :key="optIndex">
               {{ opt.name || opt.description }}
             </a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="$t('zoneid')" v-if="!this.isSystem">
+        <a-form-item :label="$t('label.zoneid')" v-if="!this.isSystem">
           <a-select
             id="zone-selection"
             mode="multiple"
@@ -496,7 +496,7 @@
                 {
                   validator: (rule, value, callback) => {
                     if (value && value.length > 1 && value.indexOf(0) !== -1) {
-                      callback('All Zones cannot be combined with any other zone')
+                      callback(this.$t('label.error.zone.combined'))
                     }
                     callback()
                   }
@@ -509,7 +509,7 @@
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
             :loading="zoneLoading"
-            :placeholder="this.$t('zoneid')">
+            :placeholder="this.$t('label.zoneid')">
             <a-select-option v-for="(opt, optIndex) in this.zones" :key="optIndex">
               {{ opt.name || opt.description }}
             </a-select-option>
@@ -517,8 +517,8 @@
         </a-form-item>
       </a-form>
       <div :span="24" class="action-button">
-        <a-button @click="closeAction">{{ this.$t('Cancel') }}</a-button>
-        <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('OK') }}</a-button>
+        <a-button @click="closeAction">{{ this.$t('label.cancel') }}</a-button>
+        <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('label.ok') }}</a-button>
       </div>
     </a-spin>
   </div>
@@ -833,10 +833,7 @@ export default {
         api('createServiceOffering', params).then(json => {
           this.$message.success((this.isSystem ? 'Service offering created: ' : 'Compute offering created: ') + values.name)
         }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.loading = false
           this.$emit('refresh-data')

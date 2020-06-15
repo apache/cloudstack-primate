@@ -17,21 +17,21 @@
 
 export default {
   name: 'cluster',
-  title: 'Clusters',
+  title: 'label.clusters',
   icon: 'cluster',
-  permission: ['listClustersMetrics', 'listClusters'],
+  permission: ['listClustersMetrics'],
   columns: ['name', 'state', 'allocationstate', 'clustertype', 'hypervisortype', 'hosts', 'cpuused', 'cpumaxdeviation', 'cpuallocated', 'cputotal', 'memoryused', 'memorymaxdeviation', 'memoryallocated', 'memorytotal', 'podname', 'zonename'],
   details: ['name', 'id', 'allocationstate', 'clustertype', 'hypervisortype', 'podname', 'zonename'],
   related: [{
     name: 'host',
-    title: 'Hosts',
+    title: 'label.hosts',
     param: 'clusterid'
   }],
   tabs: [{
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
   }, {
-    name: 'Settings',
+    name: 'settings',
     component: () => import('@/components/view/SettingsTab.vue')
   }],
   actions: [
@@ -47,6 +47,7 @@ export default {
       api: 'updateCluster',
       icon: 'play-circle',
       label: 'label.action.enable.cluster',
+      message: 'message.action.enable.cluster',
       dataView: true,
       defaultArgs: { allocationstate: 'Enabled' },
       show: (record) => { return record.allocationstate === 'Disabled' }
@@ -55,6 +56,7 @@ export default {
       api: 'updateCluster',
       icon: 'pause-circle',
       label: 'label.action.disable.cluster',
+      message: 'message.action.disable.cluster',
       dataView: true,
       defaultArgs: { allocationstate: 'Disabled' },
       show: (record) => { return record.allocationstate === 'Enabled' }
@@ -62,7 +64,8 @@ export default {
     {
       api: 'updateCluster',
       icon: 'plus-square',
-      label: 'Manage Cluster',
+      label: 'label.action.manage.cluster',
+      message: 'message.action.manage.cluster',
       dataView: true,
       defaultArgs: { managedstate: 'Managed' },
       show: (record) => { return record.clustertype === 'CloudManaged' && ['PrepareUnmanaged', 'Unmanaged'].includes(record.state) }
@@ -70,7 +73,8 @@ export default {
     {
       api: 'updateCluster',
       icon: 'minus-square',
-      label: 'Unmanage Cluster',
+      label: 'label.action.unmanage.cluster',
+      message: 'message.action.unmanage.cluster',
       dataView: true,
       defaultArgs: { managedstate: 'Unmanaged' },
       show: (record) => { return record.clustertype === 'CloudManaged' && record.state === 'Enabled' }
@@ -79,6 +83,7 @@ export default {
       api: 'enableOutOfBandManagementForCluster',
       icon: 'plus-circle',
       label: 'label.outofbandmanagement.enable',
+      message: 'label.outofbandmanagement.enable',
       dataView: true,
       show: (record) => {
         return !record.resourcedetails || !record.resourcedetails.outOfBandManagementEnabled ||
@@ -95,6 +100,7 @@ export default {
       api: 'disableOutOfBandManagementForCluster',
       icon: 'minus-circle',
       label: 'label.outofbandmanagement.disable',
+      message: 'label.outofbandmanagement.disable',
       dataView: true,
       show: (record) => {
         return record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
@@ -111,6 +117,7 @@ export default {
       api: 'enableHAForCluster',
       icon: 'eye',
       label: 'label.ha.enable',
+      message: 'label.ha.enable',
       dataView: true,
       show: (record) => {
         return !record.resourcedetails || !record.resourcedetails.resourceHAEnabled ||
@@ -127,6 +134,7 @@ export default {
       api: 'disableHAForCluster',
       icon: 'eye-invisible',
       label: 'label.ha.disable',
+      message: 'label.ha.disable',
       dataView: true,
       show: (record) => {
         return record.resourcedetails && record.resourcedetails.resourceHAEnabled &&
@@ -143,6 +151,7 @@ export default {
       api: 'deleteCluster',
       icon: 'delete',
       label: 'label.action.delete.cluster',
+      message: 'message.action.delete.cluster',
       dataView: true
     }
   ]

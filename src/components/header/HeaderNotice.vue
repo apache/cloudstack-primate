@@ -25,11 +25,11 @@
     overlayClassName="header-notice-popover">
     <template slot="content">
       <a-spin :spinning="loading">
-        <a-list style="min-width: 200px">
+        <a-list style="min-width: 200px; max-width: 300px">
           <a-list-item>
-            <a-list-item-meta title="Notifications">
+            <a-list-item-meta :title="$t('label.notifications')">
               <a-avatar :style="{backgroundColor: '#6887d0', verticalAlign: 'middle'}" icon="notification" slot="avatar"/>
-              <a-button size="small" slot="description" @click="clearJobs">Clear All</a-button>
+              <a-button size="small" slot="description" @click="clearJobs">{{ $t('label.clear.list') }}</a-button>
             </a-list-item-meta>
           </a-list-item>
           <a-list-item v-for="(job, index) in jobs" :key="index">
@@ -72,9 +72,8 @@ export default {
       this.visible = !this.visible
     },
     clearJobs () {
-      this.visible = false
-      this.jobs = []
-      this.$store.commit('SET_ASYNC_JOB_IDS', [])
+      this.jobs = this.jobs.filter(x => x.status === 'progress')
+      this.$store.commit('SET_ASYNC_JOB_IDS', this.jobs)
     },
     startPolling () {
       this.poller = setInterval(() => {
@@ -89,9 +88,12 @@ export default {
             var result = json.queryasyncjobresultresponse
             if (result.jobstatus === 1 && this.jobs[i].status !== 'done') {
               hasUpdated = true
-              this.$notification.success({
-                message: this.jobs[i].title,
-                description: this.jobs[i].description
+              const title = this.jobs[i].title
+              const description = this.jobs[i].description
+              this.$message.success({
+                content: title + (description ? ' - ' + description : ''),
+                key: this.jobs[i].jobid,
+                duration: 2
               })
               this.jobs[i].status = 'done'
             } else if (result.jobstatus === 2 && this.jobs[i].status !== 'failed') {
@@ -102,7 +104,9 @@ export default {
               }
               this.$notification.error({
                 message: this.jobs[i].title,
-                description: this.jobs[i].description
+                description: this.jobs[i].description,
+                key: this.jobs[i].jobid,
+                duration: 0
               })
             }
           }).catch(function (e) {

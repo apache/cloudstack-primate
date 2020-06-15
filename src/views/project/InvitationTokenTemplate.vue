@@ -22,26 +22,26 @@
         :form="form"
         @submit="handleSubmit"
         layout="vertical">
-        <a-form-item :label="$t('projectid')">
+        <a-form-item :label="$t('label.projectid')">
           <a-input
             v-decorator="['projectid', {
-              rules: [{ required: true, message: 'Please enter input' }]
+              rules: [{ required: true, message: `${this.$t('message.error.required.input')}` }]
             }]"
-            :placeholder="$t('project.projectid.description')"
+            :placeholder="apiParams.projectid.description"
           />
         </a-form-item>
-        <a-form-item :label="$t('token')">
+        <a-form-item :label="$t('label.token')">
           <a-input
             v-decorator="['token', {
-              rules: [{ required: true, message: 'Please enter input' }]
+              rules: [{ required: true, message: `${this.$t('message.error.required.input')}` }]
             }]"
-            :placeholder="$t('project.token.description')"
+            :placeholder="apiParams.token.description"
           />
         </a-form-item>
         <div class="card-footer">
           <!-- ToDo extract as component -->
-          <a-button @click="() => $emit('close-action')">{{ this.$t('cancel') }}</a-button>
-          <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('OK') }}</a-button>
+          <a-button @click="() => $emit('close-action')">{{ this.$t('label.cancel') }}</a-button>
+          <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('label.ok') }}</a-button>
         </div>
       </a-form>
     </a-spin>
@@ -55,6 +55,11 @@ export default {
   name: 'InvitationTokenTemplate',
   beforeCreate () {
     this.form = this.$form.createForm(this)
+    this.apiConfig = this.$store.getters.apis.updateProjectInvitation || {}
+    this.apiParams = {}
+    this.apiConfig.params.forEach(param => {
+      this.apiParams[param.name] = param
+    })
   },
   data () {
     return {
@@ -71,7 +76,7 @@ export default {
         }
 
         const title = this.$t('label.accept.project.invitation')
-        const description = this.$t('projectid') + ' ' + values.projectid
+        const description = this.$t('label.projectid') + ' ' + values.projectid
         const loading = this.$message.loading(title + 'in progress for ' + description, 0)
 
         this.loading = true
@@ -80,10 +85,7 @@ export default {
           this.checkForAddAsyncJob(json, title, description)
           this.$emit('close-action')
         }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: error.response.headers['x-description']
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.$emit('refresh-data')
           this.loading = false

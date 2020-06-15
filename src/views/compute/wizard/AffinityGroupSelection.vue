@@ -19,7 +19,7 @@
   <div>
     <a-input-search
       style="width: 25vw;float: right;margin-bottom: 10px; z-index: 8"
-      placeholder="Search"
+      :placeholder="$t('label.search')"
       v-model="filter"
       @search="handleSearch" />
     <a-table
@@ -65,12 +65,12 @@ export default {
       columns: [
         {
           dataIndex: 'name',
-          title: this.$t('Affinity Groups'),
+          title: this.$t('label.affinity.groups'),
           width: '40%'
         },
         {
           dataIndex: 'description',
-          title: this.$t('description'),
+          title: this.$t('label.description'),
           width: '60%'
         }
       ],

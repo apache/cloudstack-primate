@@ -19,14 +19,14 @@
   <div class="form-layout">
     <a-spin :spinning="loading">
       <a-form :form="form" layout="vertical">
-        <a-form-item :label="$t('scope')">
+        <a-form-item :label="$t('label.scope')">
           <a-select v-decorator="['scope', { initialValue: 'cluster' }]" @change="val => { this.scope = val }">
-            <a-select-option :value="'cluster'"> {{ $t('clusterid') }} </a-select-option>
-            <a-select-option :value="'zone'"> {{ $t('zoneid') }} </a-select-option>
+            <a-select-option :value="'cluster'"> {{ $t('label.clusterid') }} </a-select-option>
+            <a-select-option :value="'zone'"> {{ $t('label.zoneid') }} </a-select-option>
           </a-select>
         </a-form-item>
         <div v-if="this.scope === 'zone'">
-          <a-form-item :label="$t('hypervisor')">
+          <a-form-item :label="$t('label.hypervisor')">
             <a-select
               v-decorator="['hypervisor', { initialValue: hypervisors[0]}]"
               @change="val => this.selectedHypervisor = val">
@@ -36,9 +36,9 @@
             </a-select>
           </a-form-item>
         </div>
-        <a-form-item :label="$t('zoneid')">
+        <a-form-item :label="$t('label.zoneid')">
           <a-select
-            v-decorator="['zone', { initialValue: this.zoneSelected, rules: [{ required: true, message: 'required'}] }]"
+            v-decorator="['zone', { initialValue: this.zoneSelected, rules: [{ required: true, message: `${this.$t('label.required')}`}] }]"
             @change="val => changeZone(val)">
             <a-select-option :value="zone.id" v-for="(zone) in zones" :key="zone.id">
               {{ zone.name }}
@@ -46,18 +46,18 @@
           </a-select>
         </a-form-item>
         <div v-if="this.scope === 'cluster' || this.scope === 'host'">
-          <a-form-item :label="$t('podId')">
+          <a-form-item :label="$t('label.podid')">
             <a-select
-              v-decorator="['pod', { initialValue: this.podSelected, rules: [{ required: true, message: 'required'}] }]"
+              v-decorator="['pod', { initialValue: this.podSelected, rules: [{ required: true, message: `${this.$t('label.required')}`}] }]"
               @change="val => changePod(val)">
               <a-select-option :value="pod.id" v-for="(pod) in pods" :key="pod.id">
                 {{ pod.name }}
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('clusterId')">
+          <a-form-item :label="$t('label.clusterid')">
             <a-select
-              v-decorator="['cluster', { initialValue: this.clusterSelected, rules: [{ required: true, message: 'required'}] }]"
+              v-decorator="['cluster', { initialValue: this.clusterSelected, rules: [{ required: true, message: `${this.$t('label.required')}`}] }]"
               @change="val => fetchHypervisor(val)">
               <a-select-option :value="cluster.id" v-for="cluster in clusters" :key="cluster.id">
                 {{ cluster.name }}
@@ -66,9 +66,9 @@
           </a-form-item>
         </div>
         <div v-if="this.scope === 'host'">
-          <a-form-item :label="$t('hostId')">
+          <a-form-item :label="$t('label.hostid')">
             <a-select
-              v-decorator="['host', { initialValue: this.hostSelected, rules: [{ required: true, message: 'required'}] }]"
+              v-decorator="['host', { initialValue: this.hostSelected, rules: [{ required: true, message: `${this.$t('label.required')}`}] }]"
               @change="val => this.hostSelected = val">
               <a-select-option :value="host.id" v-for="host in hosts" :key="host.id">
                 {{ host.name }}
@@ -76,12 +76,12 @@
             </a-select>
           </a-form-item>
         </div>
-        <a-form-item :label="$t('name')">
-          <a-input v-decorator="['name', { rules: [{ required: true, message: 'required' }] }]"/>
+        <a-form-item :label="$t('label.name')">
+          <a-input v-decorator="['name', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]"/>
         </a-form-item>
-        <a-form-item :label="$t('protocol')">
+        <a-form-item :label="$t('label.protocol')">
           <a-select
-            v-decorator="['protocol', { initialValue: this.protocols[0], rules: [{ required: true, message: 'required'}] }]"
+            v-decorator="['protocol', { initialValue: this.protocols[0], rules: [{ required: true, message: `${this.$t('label.required')}`}] }]"
             @change="val => this.protocolSelected = val">
             <a-select-option :value="protocol" v-for="(protocol,idx) in protocols" :key="idx">
               {{ protocol }}
@@ -90,45 +90,45 @@
         </a-form-item>
         <div
           v-if="protocolSelected === 'nfs' || protocolSelected === 'SMB' || protocolSelected === 'iscsi' || protocolSelected === 'vmfs'|| protocolSelected === 'Gluster'">
-          <a-form-item :label="$t('server')">
-            <a-input v-decorator="['server', { rules: [{ required: true, message: 'required' }] }]" />
+          <a-form-item :label="$t('label.server')">
+            <a-input v-decorator="['server', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]" />
           </a-form-item>
         </div>
         <div v-if="protocolSelected === 'nfs' || protocolSelected === 'SMB' || protocolSelected === 'ocfs2' || protocolSelected === 'preSetup'|| protocolSelected === 'SharedMountPoint'">
-          <a-form-item :label="$t('path')">
-            <a-input v-decorator="['path', { rules: [{ required: true, message: 'required' }] }]" />
+          <a-form-item :label="$t('label.path')">
+            <a-input v-decorator="['path', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]" />
           </a-form-item>
         </div>
         <div v-if="protocolSelected === 'SMB'">
-          <a-form-item :label="$t('smbUsername')">
-            <a-input v-decorator="['smbUsername', { rules: [{ required: true, message: 'required' }] }]"/>
+          <a-form-item :label="$t('label.smbusername')">
+            <a-input v-decorator="['smbUsername', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]"/>
           </a-form-item>
-          <a-form-item :label="$t('smbPassword')">
-            <a-input-password v-decorator="['smbPassword', { rules: [{ required: true, message: 'required' }] }]"/>
+          <a-form-item :label="$t('label.smbpassword')">
+            <a-input-password v-decorator="['smbPassword', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]"/>
           </a-form-item>
-          <a-form-item :label="$t('smbDomain')">
-            <a-input v-decorator="['smbDomain', { rules: [{ required: true, message: 'required' }] }]"/>
+          <a-form-item :label="$t('label.smbdomain')">
+            <a-input v-decorator="['smbDomain', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]"/>
           </a-form-item>
         </div>
         <div v-if="protocolSelected === 'iscsi'">
-          <a-form-item :label="$t('iqn')">
-            <a-input v-decorator="['iqn', { rules: [{ required: true, message: 'required' }] }]"/>
+          <a-form-item :label="$t('label.iqn')">
+            <a-input v-decorator="['iqn', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]"/>
           </a-form-item>
-          <a-form-item :label="$t('lun')">
-            <a-input v-decorator="['lun', { rules: [{ required: true, message: 'required' }] }]"/>
+          <a-form-item :label="$t('label.lun')">
+            <a-input v-decorator="['lun', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]"/>
           </a-form-item>
         </div>
         <div v-if="protocolSelected === 'vmfs'">
-          <a-form-item :label="$t('vCenterDataCenter')">
-            <a-input v-decorator="['vCenterDataCenter', { rules: [{ required: true, message: 'required' }] }]"/>
+          <a-form-item :label="$t('label.vcenterdatacenter')">
+            <a-input v-decorator="['vCenterDataCenter', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]"/>
           </a-form-item>
-          <a-form-item :label="$t('vCenterDataStore')">
-            <a-input v-decorator="['vCenterDataStore', { rules: [{ required: true, message: 'required' }] }]"/>
+          <a-form-item :label="$t('label.vcenterdatastore')">
+            <a-input v-decorator="['vCenterDataStore', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]"/>
           </a-form-item>
         </div>
-        <a-form-item :label="$t('providername')">
+        <a-form-item :label="$t('label.providername')">
           <a-select
-            v-decorator="['provider', { initialValue: providerSelected, rules: [{ required: true, message: 'required'}] }]"
+            v-decorator="['provider', { initialValue: providerSelected, rules: [{ required: true, message: `${this.$t('label.required')}`}] }]"
             @change="val => this.providerSelected = val">
             <a-select-option :value="provider" v-for="(provider,idx) in providers" :key="idx">
               {{ provider }}
@@ -136,45 +136,45 @@
           </a-select>
         </a-form-item>
         <div v-if="this.providerSelected !== 'DefaultPrimary'">
-          <a-form-item :label="$t('isManaged')">
+          <a-form-item :label="$t('label.ismanaged')">
             <a-checkbox-group v-decorator="['managed']" >
               <a-checkbox value="ismanaged"></a-checkbox>
             </a-checkbox-group>
           </a-form-item>
-          <a-form-item :label="$t('capacityBytes')">
+          <a-form-item :label="$t('label.capacitybytes')">
             <a-input v-decorator="['capacityBytes']" />
           </a-form-item>
-          <a-form-item :label="$t('capacityIops')">
+          <a-form-item :label="$t('label.capacityiops')">
             <a-input v-decorator="['capacityIops']" />
           </a-form-item>
-          <a-form-item :label="$t('url')">
+          <a-form-item :label="$t('label.url')">
             <a-input v-decorator="['url']" />
           </a-form-item>
         </div>
         <div v-if="this.protocolSelected === 'RBD'">
-          <a-form-item :label="$t('radosmonitor')">
+          <a-form-item :label="$t('label.rados.monitor')">
             <a-input v-decorator="['radosmonitor']" />
-          </a-form-item><a-form-item :label="$t('radospool')">
+          </a-form-item><a-form-item :label="$t('label.rados.pool')">
             <a-input v-decorator="['radospool']" />
           </a-form-item>
-          <a-form-item :label="$t('radosuser')">
-            <a-input v-decorator="['radosuser']" />
+          <a-form-item :label="$t('label.rados.user')">
+            <a-input v-decorator="['rados.user']" />
           </a-form-item>
-          <a-form-item :label="$t('radossecret')">
+          <a-form-item :label="$t('label.rados.secret')">
             <a-input v-decorator="['radossecret']" />
           </a-form-item>
         </div>
         <div v-if="protocolSelected === 'CLVM'">
-          <a-form-item :label="$t('volumegroup')">
-            <a-input v-decorator="['volumegroup', { rules: [{ required: true, message: 'required'}] }]" />
+          <a-form-item :label="$t('label.volumegroup')">
+            <a-input v-decorator="['volumegroup', { rules: [{ required: true, message: `${this.$t('label.required')}`}] }]" />
           </a-form-item>
         </div>
         <div v-if="protocolSelected === 'Gluster'">
-          <a-form-item :label="$t('volume')">
+          <a-form-item :label="$t('label.volume')">
             <a-input v-decorator="['volume']" />
           </a-form-item>
         </div>
-        <a-form-item :label="$t('storagetags')">
+        <a-form-item :label="$t('label.storagetags')">
           <a-select
             mode="tags"
             v-model="selectedTags"
@@ -184,8 +184,8 @@
         </a-form-item>
       </a-form>
       <div class="actions">
-        <a-button @click="closeModal">{{ $t('cancel') }}</a-button>
-        <a-button type="primary" @click="handleSubmit">{{ $t('ok') }}</a-button>
+        <a-button @click="closeModal">{{ $t('label.cancel') }}</a-button>
+        <a-button type="primary" @click="handleSubmit">{{ $t('label.ok') }}</a-button>
       </div>
     </a-spin>
   </div>
@@ -534,10 +534,7 @@ export default {
             description: this.$t('label.add.primary.storage')
           })
         }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.loading = false
           this.closeModal()

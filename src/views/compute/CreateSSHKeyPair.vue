@@ -23,19 +23,19 @@
         :form="form"
         @submit="handleSubmit"
         layout="vertical">
-        <a-form-item :label="$t('name')">
+        <a-form-item :label="$t('label.name')">
           <a-input
             v-decorator="['name', {
               rules: [{ required: true, message: 'Please enter name' }]
             }]"
             :placeholder="apiParams.name.description"/>
         </a-form-item>
-        <a-form-item :label="$t('publickey')">
+        <a-form-item :label="$t('label.publickey')">
           <a-input
             v-decorator="['publickey', {}]"
             :placeholder="apiParams.publickey.description"/>
         </a-form-item>
-        <a-form-item :label="$t('domainid')" v-if="this.isAdminOrDomainAdmin()">
+        <a-form-item :label="$t('label.domainid')" v-if="this.isAdminOrDomainAdmin()">
           <a-select
             id="domain-selection"
             v-decorator="['domainid', {}]"
@@ -52,15 +52,15 @@
             </a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="$t('account')" v-if="this.isAdminOrDomainAdmin() && !this.isObjectEmpty(this.selectedDomain) && this.selectedDomain.id !== null">
+        <a-form-item :label="$t('label.account')" v-if="this.isAdminOrDomainAdmin() && !this.isObjectEmpty(this.selectedDomain) && this.selectedDomain.id !== null">
           <a-input
-            v-decorator="['name', {}]"
+            v-decorator="['account', {}]"
             :placeholder="apiParams.account.description"/>
         </a-form-item>
 
         <div :span="24" class="action-button">
-          <a-button @click="closeAction">{{ this.$t('Cancel') }}</a-button>
-          <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('OK') }}</a-button>
+          <a-button @click="closeAction">{{ this.$t('label.cancel') }}</a-button>
+          <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('label.ok') }}</a-button>
         </div>
       </a-form>
     </a-spin>
@@ -166,10 +166,7 @@ export default {
           api('registerSSHKeyPair', params).then(json => {
             this.$message.success('Successfully registered SSH key pair: ' + values.name)
           }).catch(error => {
-            this.$notification.error({
-              message: 'Request Failed',
-              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-            })
+            this.$notifyError(error)
           }).finally(() => {
             this.$emit('refresh-data')
             this.loading = false
@@ -186,10 +183,7 @@ export default {
               })
             }
           }).catch(error => {
-            this.$notification.error({
-              message: 'Request Failed',
-              description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-            })
+            this.$notifyError(error)
           }).finally(() => {
             this.$emit('refresh-data')
             this.loading = false

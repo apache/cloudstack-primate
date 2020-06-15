@@ -17,21 +17,21 @@
 
 export default {
   name: 'storagepool',
-  title: 'Primary Storage',
+  title: 'label.primary.storage',
   icon: 'database',
-  permission: ['listStoragePoolsMetrics', 'listStoragePools'],
+  permission: ['listStoragePoolsMetrics'],
   columns: ['name', 'state', 'ipaddress', 'type', 'path', 'scope', 'disksizeusedgb', 'disksizetotalgb', 'disksizeallocatedgb', 'disksizeunallocatedgb', 'clustername', 'zonename'],
   details: ['name', 'id', 'ipaddress', 'type', 'scope', 'tags', 'path', 'provider', 'hypervisor', 'overprovisionfactor', 'disksizetotal', 'disksizeallocated', 'disksizeused', 'clustername', 'podname', 'zonename', 'created'],
   related: [{
     name: 'volume',
-    title: 'Volumes',
+    title: 'label.volumes',
     param: 'storageid'
   }],
   tabs: [{
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
   }, {
-    name: 'Settings',
+    name: 'settings',
     component: () => import('@/components/view/SettingsTab.vue')
   }],
   actions: [
@@ -54,6 +54,7 @@ export default {
       api: 'enableStorageMaintenance',
       icon: 'plus-square',
       label: 'label.action.enable.maintenance.mode',
+      message: 'message.action.primarystorage.enable.maintenance.mode',
       dataView: true,
       show: (record) => { return ['Up', 'Connecting', 'Down', 'ErrorInMaintenance'].includes(record.state) }
     },
@@ -61,6 +62,7 @@ export default {
       api: 'cancelStorageMaintenance',
       icon: 'minus-square',
       label: 'label.action.cancel.maintenance.mode',
+      message: 'message.action.cancel.maintenance.mode',
       dataView: true,
       show: (record) => { return ['Maintenance', 'PrepareForMaintenance', 'ErrorInMaintenance'].includes(record.state) }
     },

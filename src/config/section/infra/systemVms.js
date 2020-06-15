@@ -17,7 +17,7 @@
 
 export default {
   name: 'systemvm',
-  title: 'System VMs',
+  title: 'label.system.vms',
   icon: 'thunderbolt',
   permission: ['listSystemVms'],
   columns: ['name', 'state', 'agentstate', 'systemvmtype', 'publicip', 'privateip', 'linklocalip', 'hostname', 'zonename'],
@@ -27,6 +27,7 @@ export default {
       api: 'startSystemVm',
       icon: 'caret-right',
       label: 'label.action.start.systemvm',
+      message: 'message.action.start.systemvm',
       dataView: true,
       show: (record) => { return record.state === 'Stopped' }
     },
@@ -34,6 +35,7 @@ export default {
       api: 'stopSystemVm',
       icon: 'stop',
       label: 'label.action.stop.systemvm',
+      message: 'message.action.stop.systemvm',
       dataView: true,
       show: (record) => { return record.state === 'Running' },
       args: ['forced']
@@ -42,6 +44,7 @@ export default {
       api: 'rebootSystemVm',
       icon: 'sync',
       label: 'label.action.reboot.systemvm',
+      message: 'message.action.reboot.systemvm',
       dataView: true,
       show: (record) => { return record.state === 'Running' }
     },
@@ -49,6 +52,7 @@ export default {
       api: 'scaleSystemVm',
       icon: 'arrows-alt',
       label: 'label.change.service.offering',
+      message: 'message.confirm.scale.up.system.vm',
       dataView: true,
       show: (record) => { return record.hypervisor !== 'KVM' },
       args: ['serviceofferingid']
@@ -101,6 +105,7 @@ export default {
       api: 'destroySystemVm',
       icon: 'delete',
       label: 'label.action.destroy.systemvm',
+      message: 'message.action.destroy.systemvm',
       dataView: true,
       show: (record) => { return ['Running', 'Error', 'Stopped'].includes(record.state) }
     }

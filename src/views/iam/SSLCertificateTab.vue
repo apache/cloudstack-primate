@@ -31,15 +31,16 @@
           <span slot="action" slot-scope="text, record" class="cert-button-action">
             <a-tooltip placement="top">
               <template slot="title">
-                {{ $t('quickview') }}
+                {{ $t('label.quickview') }}
               </template>
               <a-button type="primary" shape="circle" icon="eye" size="small" @click="onQuickView(record.id)" />
             </a-tooltip>
             <a-tooltip placement="top">
               <template slot="title">
-                {{ $t('Delete SSL Certificate') }}
+                {{ $t('label.delete.sslcertificate') }}
               </template>
               <a-button
+                :disabled="!('deleteSslCert' in $store.getters.apis)"
                 type="danger"
                 shape="circle"
                 icon="delete"
@@ -51,7 +52,7 @@
 
         <a-list size="small" :dataSource="detailColumn" v-if="quickview">
           <div class="close-quickview">
-            <a-button @click="() => { this.quickview = false }">{{ $t('close') }}</a-button>
+            <a-button @click="() => { this.quickview = false }">{{ $t('label.close') }}</a-button>
           </div>
           <a-list-item slot="renderItem" slot-scope="item" v-if="item in detail">
             <div>
@@ -120,18 +121,18 @@ export default {
   created () {
     this.columns = [
       {
-        title: this.$t('name'),
+        title: this.$t('label.name'),
         dataIndex: 'name',
         scopedSlots: { customRender: 'name' }
       },
       {
-        title: this.$t('certificateid'),
+        title: this.$t('label.certificateid'),
         dataIndex: 'id',
         width: 450,
         scopedSlots: { customRender: 'id' }
       },
       {
-        title: this.$t('action'),
+        title: this.$t('label.action'),
         dataIndex: 'action',
         fixed: 'right',
         width: 80,
@@ -164,10 +165,7 @@ export default {
 
         this.dataSource = listSslResponse
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -203,16 +201,13 @@ export default {
         setTimeout(loading)
 
         // show error
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       })
     },
     onShowConfirm (row) {
       const self = this
-      let title = this.$t('deleteconfirm')
-      title = title.replace('{name}', this.$t('certificate'))
+      let title = this.$t('label.deleteconfirm')
+      title = title.replace('{name}', this.$t('label.certificate'))
 
       this.$confirm({
         title: title,

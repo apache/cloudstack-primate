@@ -21,24 +21,24 @@
       layout="vertical"
       :form="form"
       @submit="handleSubmit">
-      <a-form-item :label="$t('name')">
+      <a-form-item :label="$t('label.name')">
         <a-input
           v-decorator="['name', {
             rules: [{ required: true, message: 'Please enter input' }]
           }]"/>
       </a-form-item>
-      <a-form-item :label="$t('description')">
+      <a-form-item :label="$t('label.description')">
         <a-input
           v-decorator="['description', {
             rules: [{ required: true, message: 'Please enter input' }]
           }]"/>
       </a-form-item>
-      <a-form-item :label="$t('zoneid')">
+      <a-form-item :label="$t('label.zoneid')">
         <a-select
           showSearch
           allowClear
           v-decorator="['zoneid', {
-            rules: [{ required: true, message: 'Please select option' }]
+            rules: [{ required: true, message: `${this.$t('message.error.select')}` }]
           }]"
           :loading="zones.loading"
           @change="onChangeZone">
@@ -47,7 +47,7 @@
           </a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item :label="$t('externalid')">
+      <a-form-item :label="$t('label.externalid')">
         <a-select
           allowClear
           v-decorator="['externalid'] "
@@ -57,14 +57,14 @@
           </a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item :label="$t('allowuserdrivenbackups')">
+      <a-form-item :label="$t('label.allowuserdrivenbackups')">
         <a-switch
           v-decorator="['allowuserdrivenbackups']"
           :default-checked="true"/>
       </a-form-item>
       <div :span="24" class="action-button">
-        <a-button :loading="loading" @click="closeAction">{{ this.$t('Cancel') }}</a-button>
-        <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('OK') }}</a-button>
+        <a-button :loading="loading" @click="closeAction">{{ this.$t('label.cancel') }}</a-button>
+        <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('label.ok') }}</a-button>
       </div>
     </a-form>
   </div>
@@ -105,10 +105,7 @@ export default {
         this.zones.opts = json.listzonesresponse.zone || []
         this.$forceUpdate()
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-        })
+        this.$notifyError(error)
       }).finally(f => {
         this.zones.loading = false
       })
@@ -123,10 +120,7 @@ export default {
         this.externals.opts = json.listbackupproviderofferingsresponse.backupoffering || []
         this.$forceUpdate()
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-        })
+        this.$notifyError(error)
       }).finally(f => {
         this.externals.loading = false
       })
@@ -170,10 +164,7 @@ export default {
             })
           }
         }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-          })
+          this.$notifyError(error)
         }).finally(f => {
           this.loading = false
         })

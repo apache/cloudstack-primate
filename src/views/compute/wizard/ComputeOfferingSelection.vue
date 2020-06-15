@@ -19,7 +19,7 @@
   <div>
     <a-input-search
       style="width: 25vw;float: right;margin-bottom: 10px; z-index: 8"
-      placeholder="Search"
+      :placeholder="$t('label.search')"
       v-model="filter"
       @search="handleSearch" />
     <a-table
@@ -32,8 +32,8 @@
       @change="handleTableChange"
       :scroll="{ y: 225 }"
     >
-      <span slot="cpuTitle"><a-icon type="appstore" /> {{ $t('cpu') }}</span>
-      <span slot="ramTitle"><a-icon type="bulb" /> {{ $t('memory') }}</span>
+      <span slot="cpuTitle"><a-icon type="appstore" /> {{ $t('label.cpu') }}</span>
+      <span slot="ramTitle"><a-icon type="bulb" /> {{ $t('label.memory') }}</span>
     </a-table>
   </div>
 </template>
@@ -65,7 +65,7 @@ export default {
       columns: [
         {
           dataIndex: 'name',
-          title: this.$t('serviceOfferingId'),
+          title: this.$t('label.serviceofferingid'),
           width: '40%'
         },
         {
@@ -137,8 +137,10 @@ export default {
           this.selectedRowKeys = [this.preFillContent.computeofferingid]
           this.$emit('select-compute-item', this.preFillContent.computeofferingid)
         } else {
-          this.selectedRowKeys = []
-          this.$emit('select-compute-item', null)
+          if (this.computeItems && this.computeItems.length > 0) {
+            this.selectedRowKeys = [this.computeItems[0].id]
+            this.$emit('select-compute-item', this.computeItems[0].id)
+          }
         }
       }
     }
