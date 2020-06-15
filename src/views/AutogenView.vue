@@ -21,42 +21,58 @@
       <a-row>
         <a-col :span="device === 'mobile' ? 24 : 12" style="padding-left: 12px">
           <breadcrumb :resource="resource">
-            <a-tooltip placement="bottom" slot="end">
-              <template slot="title">
-                {{ $t('label.refresh') }}
-              </template>
-              <a-button
-                style="margin-top: 4px"
-                :loading="loading"
-                shape="round"
-                size="small"
-                icon="reload"
-                @click="fetchData()">
-                {{ $t('label.refresh') }}
-              </a-button>
-            </a-tooltip>
+            <span slot="end">
+              <a-tooltip placement="bottom">
+                <template slot="title">
+                  {{ $t('label.refresh') }}
+                </template>
+                <a-button
+                  style="margin-top: 4px"
+                  :loading="loading"
+                  shape="round"
+                  size="small"
+                  icon="reload"
+                  @click="fetchData()">
+                  {{ $t('label.refresh') }}
+                </a-button>
+              </a-tooltip>
+              <a-tooltip placement="right">
+                <template slot="title">
+                  {{ $t('label.filterby') }}
+                </template>
+                <a-select
+                  v-if="filters && filters.length > 0"
+                  :placeholder="$t('label.filterby')"
+                  :value="$t('label.' + selectedFilter)"
+                  style="min-width: 100px; margin-left: 10px"
+                  @change="changeFilter">
+                  <a-icon slot="suffixIcon" type="filter" />
+                  <a-select-option v-for="filter in filters" :key="filter">
+                    {{ $t('label.' + filter) }}
+                  </a-select-option>
+                </a-select>
+              </a-tooltip>
+            </span>
           </breadcrumb>
         </a-col>
         <a-col
           :span="device === 'mobile' ? 24 : 12"
-          :style="device !== 'mobile' ? { 'margin-bottom': '-6px' } : { 'margin-top': '12px', 'margin-bottom': '-6px' }">
-          <span :style="device !== 'mobile' ? { float: 'right' } : {}">
-            <action-button
-              style="margin-bottom: 5px"
-              :loading="loading"
-              :actions="actions"
-              :selectedRowKeys="selectedRowKeys"
-              :dataView="dataView"
-              :resource="resource"
-              @exec-action="execAction"/>
-            <search-view
-              :dataView="dataView"
-              :treeView="treeView"
-              :selectedFilter="selectedFilter"
-              :filters="filters"
-              :searchFilters="searchFilters"
-              :apiName="apiName"/>
-          </span>
+          :style="device === 'mobile' ? { float: 'right', 'margin-top': '12px', 'margin-bottom': '-6px', display: 'table' } : { float: 'right', display: 'table', 'margin-bottom': '-6px' }" >
+          <action-button
+            :style="dataView || treeView ? { float: device === 'mobile' ? 'left' : 'right' } : { 'margin-right': '10px', display: 'inline-flex' }"
+            :loading="loading"
+            :actions="actions"
+            :selectedRowKeys="selectedRowKeys"
+            :dataView="dataView"
+            :resource="resource"
+            @exec-action="execAction"/>
+          <a-input-search
+            style="width: 100%; display: table-cell"
+            :placeholder="$t('label.search')"
+            v-if="!dataView && !treeView"
+            v-model="searchQuery"
+            allowClear
+            @search="onSearch" />
         </a-col>
       </a-row>
     </a-card>
@@ -107,7 +123,9 @@
         </span>
         <a-spin :spinning="currentAction.loading">
           <span v-if="currentAction.message">
-            <a-alert :message="$t(currentAction.message)" type="warning" />
+            <a-alert type="warning">
+              <span slot="message" v-html="$t(currentAction.message)" />
+            </a-alert>
             <br v-if="currentAction.paramFields.length > 0"/>
           </span>
           <a-form
@@ -130,7 +148,7 @@
               <span v-if="field.type==='boolean'">
                 <a-switch
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please provide input' }]
+                    rules: [{ required: field.required, message: `${$t('message.error.required.input')}` }]
                   }]"
                   v-model="formModel[field.name]"
                   :placeholder="field.description"
@@ -140,10 +158,11 @@
                 <a-select
                   :loading="field.loading"
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please select option' }]
+                    rules: [{ required: field.required, message: `${$t('message.error.select')}` }]
                   }]"
                   :placeholder="field.description"
                 >
+                  <a-select-option :key="null">{{ }}</a-select-option>
                   <a-select-option v-for="(opt, optIndex) in currentAction.mapping[field.name].options" :key="optIndex">
                     {{ opt }}
                   </a-select-option>
@@ -156,7 +175,7 @@
                   showSearch
                   optionFilterProp="children"
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please select option' }]
+                    rules: [{ required: field.required, message: `${$t('message.error.select')}` }]
                   }]"
                   :loading="field.loading"
                   :placeholder="field.description"
@@ -164,6 +183,7 @@
                     return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }"
                 >
+                  <a-select-option :key="null">{{ }}</a-select-option>
                   <a-select-option v-for="(opt, optIndex) in field.opts" :key="optIndex">
                     {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
@@ -175,7 +195,7 @@
                   showSearch
                   optionFilterProp="children"
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please select option' }]
+                    rules: [{ required: field.required, message: `${$t('message.error.select')}` }]
                   }]"
                   :loading="field.loading"
                   :placeholder="field.description"
@@ -183,6 +203,7 @@
                     return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }"
                 >
+                  <a-select-option :key="null">{{ }}</a-select-option>
                   <a-select-option v-for="opt in field.opts" :key="opt.id">
                     {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
@@ -193,7 +214,7 @@
                   :loading="field.loading"
                   mode="multiple"
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please select option' }]
+                    rules: [{ required: field.required, message: `${$t('message.error.select')}` }]
                   }]"
                   :placeholder="field.description"
                 >
@@ -205,7 +226,7 @@
               <span v-else-if="field.type==='long'">
                 <a-input-number
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please enter a number' }]
+                    rules: [{ required: field.required, message: `${$t('message.validate.number')}` }]
                   }]"
                   :placeholder="field.description"
                 />
@@ -213,7 +234,7 @@
               <span v-else-if="field.name==='password' || field.name==='currentpassword'">
                 <a-input-password
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please enter input' }]
+                    rules: [{ required: field.required, message: `${$t('message.error.required.input')}` }]
                   }]"
                   :placeholder="field.description"
                 />
@@ -222,7 +243,7 @@
                 <a-textarea
                   rows="2"
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please enter input' }]
+                    rules: [{ required: field.required, message: `${$t('message.error.required.input')}` }]
                   }]"
                   :placeholder="field.description"
                 />
@@ -230,7 +251,7 @@
               <span v-else>
                 <a-input
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: 'Please enter input' }]
+                    rules: [{ required: field.required, message: `${$t('message.error.required.input')}` }]
                   }]"
                   :placeholder="field.description" />
               </span>
@@ -434,8 +455,8 @@ export default {
         return
       }
 
-      if (['listTemplates', 'listIsos'].includes(this.apiName) && !this.dataView) {
-        if (['Admin'].includes(this.$store.getters.userInfo.roletype)) {
+      if (['listTemplates', 'listIsos', 'listVirtualMachinesMetrics'].includes(this.apiName) && !this.dataView) {
+        if (['Admin'].includes(this.$store.getters.userInfo.roletype) || this.apiName === 'listVirtualMachinesMetrics') {
           this.filters = ['all', ...this.filters]
           if (this.selectedFilter === '') {
             this.selectedFilter = 'all'
@@ -451,6 +472,13 @@ export default {
           params.templatefilter = this.selectedFilter
         } else if (this.$route.path.startsWith('/iso')) {
           params.isofilter = this.selectedFilter
+        } else if (this.$route.path.startsWith('/vm')) {
+          if (this.selectedFilter === 'self') {
+            params.account = this.$store.getters.userInfo.account
+            params.domainid = this.$store.getters.userInfo.domainid
+          } else if (['running', 'stopped'].includes(this.selectedFilter)) {
+            params.state = this.selectedFilter
+          }
         }
       }
 
@@ -459,6 +487,8 @@ export default {
           params.name = this.searchQuery
         } else if (this.apiName === 'quotaEmailTemplateList') {
           params.templatetype = this.searchQuery
+        } else if (this.apiName === 'listConfigurations') {
+          params.name = this.searchQuery
         } else {
           params.keyword = this.searchQuery
         }
@@ -485,7 +515,7 @@ export default {
           customRender[key] = columnKey[key]
         }
         this.columns.push({
-          title: this.$t('label.' + key),
+          title: this.$t('label.' + String(key).toLowerCase()),
           dataIndex: key,
           scopedSlots: { customRender: key },
           sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
@@ -852,6 +882,7 @@ export default {
     },
     changeFilter (filter) {
       this.selectedFilter = filter
+      this.page = 1
       this.fetchData()
     },
     changePage (page, pageSize) {

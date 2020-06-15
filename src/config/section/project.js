@@ -44,7 +44,7 @@ export default {
     {
       api: 'createProject',
       icon: 'plus',
-      label: 'New Project',
+      label: 'label.new.project',
       listView: true,
       args: ['name', 'displaytext']
     },
@@ -72,28 +72,30 @@ export default {
     {
       api: 'updateProject',
       icon: 'edit',
-      label: 'Edit Project',
+      label: 'label.edit.project.details',
       dataView: true,
       args: ['displaytext']
     },
     {
       api: 'activateProject',
       icon: 'play-circle',
-      label: 'Activate Project',
+      label: 'label.activate.project',
+      message: 'message.activate.project',
       dataView: true,
       show: (record) => { return record.state === 'Suspended' }
     },
     {
       api: 'suspendProject',
       icon: 'pause-circle',
-      label: 'Suspend Project',
+      label: 'label.suspend.project',
+      message: 'message.suspend.project',
       dataView: true,
       show: (record) => { return record.state !== 'Suspended' }
     },
     {
       api: 'addAccountToProject',
       icon: 'user-add',
-      label: 'Add Account to Project',
+      label: 'label.action.project.add.account',
       dataView: true,
       args: ['projectid', 'account', 'email'],
       show: (record, store) => { return record.account === store.userInfo.account || ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) },
@@ -106,7 +108,8 @@ export default {
     {
       api: 'deleteProject',
       icon: 'delete',
-      label: 'Delete Project',
+      label: 'label.delete.project',
+      message: 'message.delete.project',
       dataView: true
     }
   ]

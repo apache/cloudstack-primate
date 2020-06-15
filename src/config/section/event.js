@@ -32,7 +32,8 @@ export default {
     {
       api: 'archiveEvents',
       icon: 'book',
-      label: 'Archive Event',
+      label: 'label.archive.events',
+      message: 'message.confirm.archive.selected.events',
       listView: false,
       dataView: true,
       args: ['ids'],
@@ -45,7 +46,8 @@ export default {
     {
       api: 'deleteEvents',
       icon: 'delete',
-      label: 'Delete Event',
+      label: 'label.delete.events',
+      message: 'message.confirm.remove.selected.events',
       listView: false,
       dataView: true,
       args: ['ids'],

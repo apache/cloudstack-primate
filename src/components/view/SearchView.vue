@@ -16,22 +16,11 @@
 // under the License.
 
 <template>
-  <span v-if="!dataView">
-    <span v-if="!searchFilters || searchFilters.length === 0">
-      <a-select
-        v-if="filters && filters.length > 0"
-        placeholder="Filter By"
-        :value="$t('label.' + selectedFilter)"
-        style="min-width: 100px; margin-left: 10px"
-        @change="changeFilter">
-        <a-icon slot="suffixIcon" type="filter" />
-        <a-select-option v-for="filter in filters" :key="filter">
-          {{ $t('label.' + filter) }}
-        </a-select-option>
-      </a-select>
+  <span v-if="!dataView" :style="styleSearch">
+    <span v-if="!searchFilters || searchFilters.length === 0" style="display: flex;">
       <a-input-search
-        class="input-search"
-        placeholder="Search"
+        style="width: 100%; display: table-cell"
+        :placeholder="$t('label.search')"
         v-model="searchQuery"
         allowClear
         @search="onSearch" />
@@ -40,17 +29,6 @@
     <span
       v-else
       class="filter-group">
-      <a-select
-        v-if="filters && filters.length > 0"
-        placeholder="Filter By"
-        :value="$t('label.' + selectedFilter)"
-        style="min-width: 100px; margin-left: 10px"
-        @change="changeFilter">
-        <a-icon slot="suffixIcon" type="filter" />
-        <a-select-option v-for="filter in filters" :key="filter">
-          {{ $t('label.' + filter) }}
-        </a-select-option>
-      </a-select>
       <a-input-search
         allowClear
         class="input-search"
@@ -69,7 +47,7 @@
               <a-form-item
                 v-for="(field, index) in fields"
                 :key="index"
-                :label="field.name==='keyword' ? $t('name') : $t(field.name)">
+                :label="field.name==='keyword' ? $t('label.name') : $t('label.' + field.name)">
                 <a-select
                   allowClear
                   v-if="field.type==='list'"
@@ -88,7 +66,7 @@
                     v-if="!inputVisible && tags.length === 0"
                     @click="showInput"
                     style="background: #fff; borderStyle: dashed;">
-                    <a-icon type="plus" /> New Tag
+                    <a-icon type="plus" /> {{ $t('label.new.tag') }}
                   </a-tag>
                   <template
                     v-if="tags.length > 0"
@@ -104,9 +82,9 @@
                       @blur="handleInputConfirm"
                       @keyup.enter="handleInputConfirm"
                       compact>
-                      <a-input ref="input" :value="inputKey" @change="handleKeyChange" style="width: 50px; text-align: center" placeholder="Key" />
+                      <a-input ref="input" :value="inputKey" @change="handleKeyChange" style="width: 50px; text-align: center" :placeholder="$t('label.key')" />
                       <a-input style=" width: 20px; border-left: 0; pointer-events: none; backgroundColor: #fff" placeholder="=" disabled />
-                      <a-input :value="inputValue" @change="handleValueChange" style="width: 50px; text-align: center; border-left: 0" placeholder="Value" />
+                      <a-input :value="inputValue" @change="handleValueChange" style="width: 50px; text-align: center; border-left: 0" :placeholder="$t('label.value')" />
                       <a-button shape="circle" size="small" @click="handleInputConfirm">
                         <a-icon type="check"/>
                       </a-button>
@@ -123,13 +101,13 @@
                   type="default"
                   size="small"
                   icon="stop"
-                  @click="onClear">Clear</a-button>
+                  @click="onClear">{{ $t('label.clear') }}</a-button>
                 <a-button
                   class="filter-group-button-search"
                   type="primary"
                   size="small"
                   icon="search"
-                  @click="handleSubmit">Search</a-button>
+                  @click="handleSubmit">{{ $t('label.search') }}</a-button>
               </div>
             </a-form>
           </template>
@@ -194,6 +172,22 @@ export default {
     visibleFilter (newValue, oldValue) {
       if (newValue) {
         this.initFormFieldData()
+      }
+    }
+  },
+  computed: {
+    styleSearch () {
+      if (!this.searchFilters || this.searchFilters.length === 0) {
+        return {
+          width: '100%',
+          display: 'table-cell'
+        }
+      }
+
+      return {
+        width: '100%',
+        display: 'table-cell',
+        lineHeight: '31px'
       }
     }
   },
@@ -415,7 +409,7 @@ export default {
 
 <style scoped lang="less">
 .input-search {
-  width: 20vw;
+  width: 33vw;
   margin-left: 10px;
 }
 

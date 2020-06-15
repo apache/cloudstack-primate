@@ -27,7 +27,7 @@ export default {
       title: 'label.templates',
       icon: 'save',
       permission: ['listTemplates'],
-      params: { templatefilter: 'self' },
+      params: { templatefilter: 'self', showunique: 'true' },
       resourceType: 'Template',
       filters: ['self', 'shared', 'featured', 'community'],
       columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain', 'order'],
@@ -52,15 +52,15 @@ export default {
         {
           api: 'registerTemplate',
           icon: 'plus',
-          label: 'Register Template',
+          label: 'label.action.register.template',
           listView: true,
           popup: true,
           component: () => import('@/views/image/RegisterOrUploadTemplate.vue')
         },
         {
-          api: 'getUploadParamsForTemplate',
+          api: 'registerTemplate',
           icon: 'cloud-upload',
-          label: 'Upload Local Template',
+          label: 'label.upload.template.from.local',
           listView: true,
           popup: true,
           component: () => import('@/views/image/RegisterOrUploadTemplate.vue')
@@ -75,7 +75,8 @@ export default {
         {
           api: 'extractTemplate',
           icon: 'cloud-download',
-          label: 'Download Template',
+          label: 'label.action.download.template',
+          message: 'message.action.download.template',
           dataView: true,
           show: (record) => { return record && record.isextractable },
           args: ['zoneid', 'mode'],
@@ -92,7 +93,7 @@ export default {
         {
           api: 'updateTemplatePermissions',
           icon: 'reconciliation',
-          label: 'Update Template Permissions',
+          label: 'label.action.share.template',
           dataView: true,
           popup: true,
           show: (record, store) => { return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) || record.templatetype !== 'BUILTIN') },
@@ -105,7 +106,7 @@ export default {
       title: 'label.isos',
       icon: 'usb',
       permission: ['listIsos'],
-      params: { isofilter: 'self' },
+      params: { isofilter: 'self', showunique: 'true' },
       resourceType: 'ISO',
       filters: ['self', 'shared', 'featured', 'community'],
       columns: ['name', 'ostypename', 'account', 'domain'],
@@ -127,15 +128,15 @@ export default {
         {
           api: 'registerIso',
           icon: 'plus',
-          label: 'Register ISO',
+          label: 'label.action.register.iso',
           listView: true,
           popup: true,
           component: () => import('@/views/image/RegisterOrUploadIso.vue')
         },
         {
-          api: 'getUploadParamsForIso',
+          api: 'registerIso',
           icon: 'cloud-upload',
-          label: 'Upload Local ISO',
+          label: 'label.upload.iso.from.local',
           listView: true,
           popup: true,
           component: () => import('@/views/image/RegisterOrUploadIso.vue')
@@ -150,7 +151,8 @@ export default {
         {
           api: 'extractIso',
           icon: 'cloud-download',
-          label: 'Download ISO',
+          label: 'label.action.download.iso',
+          message: 'message.action.download.iso',
           dataView: true,
           show: (record) => { return record && record.isextractable },
           args: ['zoneid', 'mode'],
@@ -167,7 +169,7 @@ export default {
         {
           api: 'updateIsoPermissions',
           icon: 'reconciliation',
-          label: 'Update ISO Permissions',
+          label: 'label.action.edit.iso',
           dataView: true,
           args: ['op', 'accounts', 'projectids'],
           popup: true,
@@ -203,7 +205,7 @@ export default {
         {
           api: 'deleteKubernetesSupportedVersion',
           icon: 'delete',
-          label: 'label.kubernetes.version.update',
+          label: 'label.kubernetes.version.delete',
           dataView: true
         }
       ]
