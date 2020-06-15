@@ -161,7 +161,11 @@ const messages = {
     'label.account': 'account-en',
     'label.domainids': 'domainids-en',
     'label.keypair': 'keypair-en',
-    'label.refresh': 'refresh'
+    'label.filterby': 'filterby-en',
+    'label.refresh': 'refresh-en',
+    'message.error.required.input': 'required-en',
+    'message.error.select': 'select-en',
+    'label.search': 'search-en'
   },
   de: {
     labelname: 'test-name-de',
@@ -178,7 +182,11 @@ const messages = {
     'label.account': 'account-de',
     'label.domainids': 'domainids-de',
     'label.keypair': 'keypair-de',
-    'label.refresh': 'refresh'
+    'label.filterby': 'filterby-de',
+    'label.refresh': 'refresh-de',
+    'message.error.required.input': 'required-de',
+    'message.error.select': 'select-de',
+    'label.search': 'search-de'
   }
 }
 
