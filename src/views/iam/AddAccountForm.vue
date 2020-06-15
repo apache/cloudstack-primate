@@ -71,7 +71,7 @@
         <a-select
           v-decorator="['roleid', {
             initialValue: selectedRole,
-            rules: [{ required: true, message: 'Please select domain' }] }]">
+            rules: [{ required: true, message: 'Please select a Role' }] }]">
           <a-select-option v-for="role in roles" :key="role.id">
             {{ role.name + ' (' + role.type + ')' }}
           </a-select-option>

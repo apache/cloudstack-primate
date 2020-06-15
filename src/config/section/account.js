@@ -53,7 +53,8 @@ export default {
       icon: 'plus',
       label: 'label.add.account',
       listView: true,
-      args: ['username', 'password', 'email', 'firstname', 'lastname', 'domainid', 'account', 'roleid', 'timezone', 'networkdomain']
+      popup: true,
+      component: () => import('@/views/iam/AddAccountForm.vue')
     },
     {
       api: 'ldapCreateAccount',
