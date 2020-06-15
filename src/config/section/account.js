@@ -54,7 +54,7 @@ export default {
       label: 'label.add.account',
       listView: true,
       popup: true,
-      component: () => import('@/views/iam/AddAccountForm.vue')
+      component: () => import('@/views/iam/AddAccount.vue')
     },
     {
       api: 'ldapCreateAccount',
