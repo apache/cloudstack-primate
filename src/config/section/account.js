@@ -20,8 +20,8 @@ export default {
   title: 'label.accounts',
   icon: 'team',
   permission: ['listAccounts'],
-  columns: ['name', 'state', 'rolename', 'roletype', 'domain'],
-  details: ['name', 'id', 'rolename', 'roletype', 'domain', 'networkdomain', 'iptotal', 'vmtotal', 'volumetotal', 'receivedbytes', 'sentbytes', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit'],
+  columns: ['name', 'state', 'rolename', 'roletype', 'domainpath'],
+  details: ['name', 'id', 'rolename', 'roletype', 'domainpath', 'networkdomain', 'iptotal', 'vmtotal', 'volumetotal', 'receivedbytes', 'sentbytes', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit'],
   related: [{
     name: 'accountuser',
     title: 'label.users',
@@ -33,13 +33,13 @@ export default {
       component: () => import('@/components/view/DetailsTab.vue')
     },
     {
-      name: 'certificate',
-      component: () => import('@/views/iam/SSLCertificateTab.vue')
-    },
-    {
       name: 'limits',
       show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
       component: () => import('@/components/view/ResourceLimitTab.vue')
+    },
+    {
+      name: 'certificate',
+      component: () => import('@/views/iam/SSLCertificateTab.vue')
     },
     {
       name: 'settings',
@@ -85,6 +85,7 @@ export default {
       api: 'updateResourceCount',
       icon: 'sync',
       label: 'label.action.update.resource.count',
+      message: 'message.update.resource.count',
       dataView: true,
       args: ['account', 'domainid'],
       mapping: {
@@ -100,6 +101,7 @@ export default {
       api: 'enableAccount',
       icon: 'play-circle',
       label: 'label.action.enable.account',
+      message: 'message.enable.account',
       dataView: true,
       show: (record) => { return record.state === 'disabled' || record.state === 'locked' },
       params: { lock: 'false' }
@@ -108,6 +110,7 @@ export default {
       api: 'disableAccount',
       icon: 'pause-circle',
       label: 'label.action.disable.account',
+      message: 'message.disable.account',
       dataView: true,
       show: (record) => { return record.state === 'enabled' },
       args: ['lock'],
@@ -121,6 +124,7 @@ export default {
       api: 'disableAccount',
       icon: 'lock',
       label: 'label.action.lock.account',
+      message: 'message.lock.account',
       dataView: true,
       show: (record) => { return record.state === 'enabled' },
       args: ['lock'],
@@ -150,6 +154,7 @@ export default {
       api: 'deleteAccount',
       icon: 'delete',
       label: 'label.action.delete.account',
+      message: 'message.delete.account',
       dataView: true,
       hidden: (record) => { return record.name === 'admin' }
     }

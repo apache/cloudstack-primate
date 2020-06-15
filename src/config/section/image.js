@@ -27,7 +27,7 @@ export default {
       title: 'label.templates',
       icon: 'save',
       permission: ['listTemplates'],
-      params: { templatefilter: 'self' },
+      params: { templatefilter: 'self', showunique: 'true' },
       resourceType: 'Template',
       filters: ['self', 'shared', 'featured', 'community'],
       columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain', 'order'],
@@ -57,7 +57,7 @@ export default {
           component: () => import('@/views/image/RegisterOrUploadTemplate.vue')
         },
         {
-          api: 'getUploadParamsForTemplate',
+          api: 'registerTemplate',
           icon: 'cloud-upload',
           label: 'label.upload.template.from.local',
           listView: true,
@@ -75,6 +75,7 @@ export default {
           api: 'extractTemplate',
           icon: 'cloud-download',
           label: 'label.action.download.template',
+          message: 'message.action.download.template',
           dataView: true,
           show: (record) => { return record && record.isextractable },
           args: ['zoneid', 'mode'],
@@ -104,7 +105,7 @@ export default {
       title: 'label.isos',
       icon: 'usb',
       permission: ['listIsos'],
-      params: { isofilter: 'self' },
+      params: { isofilter: 'self', showunique: 'true' },
       resourceType: 'ISO',
       filters: ['self', 'shared', 'featured', 'community'],
       columns: ['name', 'ostypename', 'account', 'domain'],
@@ -131,7 +132,7 @@ export default {
           component: () => import('@/views/image/RegisterOrUploadIso.vue')
         },
         {
-          api: 'getUploadParamsForIso',
+          api: 'registerIso',
           icon: 'cloud-upload',
           label: 'label.upload.iso.from.local',
           listView: true,
@@ -149,6 +150,7 @@ export default {
           api: 'extractIso',
           icon: 'cloud-download',
           label: 'label.action.download.iso',
+          message: 'message.action.download.iso',
           dataView: true,
           show: (record) => { return record && record.isextractable },
           args: ['zoneid', 'mode'],
@@ -201,7 +203,7 @@ export default {
         {
           api: 'deleteKubernetesSupportedVersion',
           icon: 'delete',
-          label: 'label.kubernetes.version.update',
+          label: 'label.kubernetes.version.delete',
           dataView: true
         }
       ]

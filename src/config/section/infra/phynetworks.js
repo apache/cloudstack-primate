@@ -17,7 +17,7 @@
 
 export default {
   name: 'physicalnetwork',
-  title: 'label.physical.networks',
+  title: 'label.physical.network',
   icon: 'api',
   hidden: true,
   permission: ['listPhysicalNetworks'],
@@ -38,7 +38,7 @@ export default {
   }],
   related: [{
     name: 'guestnetwork',
-    title: 'label.networks',
+    title: 'label.guest.networks',
     param: 'physicalnetworkid'
   }],
   actions: [
@@ -122,6 +122,7 @@ export default {
       api: 'deletePhysicalNetwork',
       icon: 'delete',
       label: 'label.action.delete.physical.network',
+      message: 'message.action.delete.physical.network',
       dataView: true
     }
   ]
