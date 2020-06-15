@@ -37,7 +37,7 @@
                     <a-form-item :label="this.$t('label.zoneid')">
                       <a-select
                         v-decorator="['zoneid', {
-                          rules: [{ required: true, message: 'Please select option' }]
+                          rules: [{ required: true, message: `${this.$t('message.error.select')}` }]
                         }]"
                         :options="zoneSelectOptions"
                         @change="onSelectZoneId"
@@ -127,7 +127,7 @@
                               initialValue: hypervisorSelectOptions && hypervisorSelectOptions.length > 0
                                 ? hypervisorSelectOptions[0].value
                                 : null,
-                              rules: [{ required: true, message: 'Please select option' }]
+                              rules: [{ required: true, message: `${this.$t('message.error.select')}` }]
                             }]"
                             :options="hypervisorSelectOptions"
                             @change="value => this.hypervisor = value" />
@@ -606,43 +606,43 @@ export default {
       })
     },
     podSelectOptions () {
-      const pods = this.options.pods
-      pods.unshift({
-        id: '-1',
-        name: this.$t('label.default')
-      })
-      return pods.map((pod) => {
+      const options = this.options.pods.map((pod) => {
         return {
           label: pod.name,
           value: pod.id
         }
       })
+      options.unshift({
+        label: this.$t('label.default'),
+        value: undefined
+      })
+      return options
     },
     clusterSelectOptions () {
-      const clusters = this.options.clusters
-      clusters.unshift({
-        id: '-1',
-        name: this.$t('label.default')
-      })
-      return clusters.map((cluster) => {
+      const options = this.options.clusters.map((cluster) => {
         return {
           label: cluster.name,
           value: cluster.id
         }
       })
+      options.unshift({
+        label: this.$t('label.default'),
+        value: undefined
+      })
+      return options
     },
     hostSelectOptions () {
-      const hosts = this.options.hosts
-      hosts.unshift({
-        id: '-1',
-        name: this.$t('label.default')
-      })
-      return hosts.map((host) => {
+      const options = this.options.hosts.map((host) => {
         return {
           label: host.name,
           value: host.id
         }
       })
+      options.unshift({
+        label: this.$t('label.default'),
+        value: undefined
+      })
+      return options
     },
     keyboardSelectOptions () {
       return this.options.keyboards.map((keyboard) => {
@@ -1252,7 +1252,7 @@ export default {
   .vm-info-card {
     .ant-card-body {
       min-height: 250px;
-      max-height: calc(100vh - 260px);
+      max-height: calc(100vh - 150px);
       overflow-y: auto;
       scroll-behavior: smooth;
     }

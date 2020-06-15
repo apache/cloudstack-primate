@@ -18,6 +18,7 @@
 <template>
   <a-spin :spinning="componentLoading">
     <a-button
+      :disabled="!('createStorageNetworkIpRange' in $store.getters.apis)"
       type="dashed"
       icon="plus"
       style="margin-bottom: 20px; width: 100%"
@@ -40,6 +41,7 @@
         <a-popover placement="bottom">
           <template slot="content">{{ $t('label.remove.ip.range') }}</template>
           <a-button
+            :disabled="!('deleteStorageNetworkIpRange' in $store.getters.apis)"
             icon="delete"
             shape="circle"
             type="danger"
@@ -70,7 +72,7 @@
         <a-form-item :label="$t('label.podid')" class="form__item">
           <a-select
             v-decorator="['pod', {
-              rules: [{ required: true, message: 'Required' }]
+              rules: [{ required: true, message: `${this.$t('label.required')}` }]
             }]"
           >
             <a-select-option v-for="pod in pods" :key="pod.id" :value="pod.id">{{ pod.name }}</a-select-option>
@@ -78,12 +80,12 @@
         </a-form-item>
         <a-form-item :label="$t('label.gateway')" class="form__item">
           <a-input
-            v-decorator="['gateway', { rules: [{ required: true, message: 'Required' }] }]">
+            v-decorator="['gateway', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]">
           </a-input>
         </a-form-item>
         <a-form-item :label="$t('label.netmask')" class="form__item">
           <a-input
-            v-decorator="['netmask', { rules: [{ required: true, message: 'Required' }] }]">
+            v-decorator="['netmask', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]">
           </a-input>
         </a-form-item>
         <a-form-item :label="$t('label.vlan')" class="form__item">
@@ -93,12 +95,12 @@
         </a-form-item>
         <a-form-item :label="$t('label.startip')" class="form__item">
           <a-input
-            v-decorator="['startip', { rules: [{ required: true, message: 'Required' }] }]">
+            v-decorator="['startip', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]">
           </a-input>
         </a-form-item>
         <a-form-item :label="$t('label.endip')" class="form__item">
           <a-input
-            v-decorator="['endip', { rules: [{ required: true, message: 'Required' }] }]">
+            v-decorator="['endip', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]">
           </a-input>
         </a-form-item>
       </a-form>
