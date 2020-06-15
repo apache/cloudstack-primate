@@ -58,7 +58,7 @@
                   <a-input-number
                     style="width: 100%"
                     v-decorator="['time', {
-                      rules: [{required: true, message: 'Please enter input'}]
+                      rules: [{required: true, message: `${this.$t('message.error.required.input')}`}]
                     }]"
                     :min="1"
                     :max="59"/>
@@ -87,7 +87,7 @@
                   v-decorator="['day-of-week', {
                     rules: [{
                       required: true,
-                      message: 'Please select option'
+                      message: `${this.$t('message.error.select')}`
                     }]
                   }]" >
                   <a-select-option v-for="(opt, optIndex) in dayOfWeek" :key="optIndex">
@@ -102,7 +102,7 @@
                   v-decorator="['day-of-month', {
                     rules: [{
                       required: true,
-                      message: 'Please select option'
+                      message: `${this.$t('message.error.select')}`
                     }]
                   }]">
                   <a-select-option v-for="opt in dayOfMonth" :key="opt.name">
@@ -133,7 +133,7 @@
                   v-decorator="['timezone', {
                     rules: [{
                       required: true,
-                      message: 'Please select option'
+                      message: `${this.$t('message.error.select')}`
                     }]
                   }]"
                   :loading="fetching">
@@ -148,7 +148,7 @@
           <div class="tagsTitle">{{ $t('label.tags') }}</div>
           <div>
             <template v-for="(tag, index) in tags">
-              <a-tag :key="index" :closable="true" :afterClose="() => handleDeleteTag(tag)">
+              <a-tag :key="index" :closable="'deleteTags' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
                 {{ tag.key }} = {{ tag.value }}
               </a-tag>
             </template>
