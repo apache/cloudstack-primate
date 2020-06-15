@@ -55,7 +55,8 @@ export default {
       dataSource: [],
       pattern: 'YYYY-MM-DD',
       currency: '',
-      totalQuota: 0
+      totalQuota: 0,
+      account: null
     }
   },
   computed: {
@@ -97,9 +98,11 @@ export default {
     async fetchData () {
       this.loading = true
       this.dataSource = []
+      this.account = this.$route.query && this.$route.query.account ? this.$route.query.account : null
 
       try {
-        const quotaStatement = await this.quotaStatement()
+        const resource = await this.quotaBalance()
+        const quotaStatement = await this.quotaStatement(resource)
         const quotaUsage = quotaStatement.quotausage
         this.dataSource = this.dataSource.concat(quotaUsage)
         this.currency = quotaStatement.currency
@@ -119,13 +122,27 @@ export default {
         this.loading = false
       }
     },
-    quotaStatement () {
+    quotaBalance () {
       return new Promise((resolve, reject) => {
         const params = {}
         params.domainid = this.resource.domainid
-        params.account = this.resource.account
+        params.account = this.account
+
+        api('quotaBalance', params).then(json => {
+          const quotaBalance = json.quotabalanceresponse.balance || {}
+          resolve(quotaBalance)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    quotaStatement (resource) {
+      return new Promise((resolve, reject) => {
+        const params = {}
+        params.domainid = this.resource.domainid
+        params.account = this.account
         params.startdate = moment(this.resource.startdate).format(this.pattern)
-        params.enddate = moment(this.resource.enddate).format(this.pattern)
+        params.enddate = moment(resource.startdate).format(this.pattern)
 
         api('quotaStatement', params).then(json => {
           const quotaStatement = json.quotastatementresponse.statement || {}

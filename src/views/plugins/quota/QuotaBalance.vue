@@ -57,14 +57,15 @@ export default {
       loading: false,
       pattern: 'YYYY-MM-DD',
       currency: '',
-      dataSource: []
+      dataSource: [],
+      account: null
     }
   },
   computed: {
     columns () {
       return [
         {
-          title: this.$t('date'),
+          title: this.$t('label.date'),
           dataIndex: 'date',
           width: 'calc(100% / 3)',
           scopedSlots: { customRender: 'date' }
@@ -76,7 +77,7 @@ export default {
           scopedSlots: { customRender: 'quota' }
         },
         {
-          title: this.$t('credit'),
+          title: this.$t('label.credit'),
           dataIndex: 'credit',
           width: 'calc(100% / 3)',
           scopedSlots: { customRender: 'credit' }
@@ -99,9 +100,11 @@ export default {
     async fetchData () {
       this.dataSource = []
       this.loading = true
+      this.account = this.$route.query && this.$route.query.account ? this.$route.query.account : null
 
       try {
-        const quotaBalance = await this.quotaBalance()
+        const resource = await this.fetchResource()
+        const quotaBalance = await this.quotaBalance(resource)
         this.currency = quotaBalance.currency
         this.dataSource = await this.createDataSource(quotaBalance)
         this.loading = false
@@ -134,13 +137,27 @@ export default {
 
       return dataSource
     },
-    quotaBalance () {
+    fetchResource () {
       return new Promise((resolve, reject) => {
         const params = {}
         params.domainid = this.resource.domainid
-        params.account = this.resource.account
+        params.account = this.account
+
+        api('quotaBalance', params).then(json => {
+          const quotaBalance = json.quotabalanceresponse.balance || {}
+          resolve(quotaBalance)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    quotaBalance (resource) {
+      return new Promise((resolve, reject) => {
+        const params = {}
+        params.domainid = this.resource.domainid
+        params.account = this.account
         params.startdate = moment(this.resource.startdate).format(this.pattern)
-        params.enddate = moment(this.resource.enddate).format(this.pattern)
+        params.enddate = moment(resource.startdate).format(this.pattern)
 
         api('quotaBalance', params).then(json => {
           const quotaBalance = json.quotabalanceresponse.balance || {}
