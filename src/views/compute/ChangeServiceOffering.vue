@@ -16,7 +16,7 @@
 // under the License.
 
 <template>
-  <div>
+  <div style="width: 50vw;">
     <p v-html="$t('message.change.offering.confirm')"></p>
 
     <a-form class="form">
@@ -24,48 +24,27 @@
         <a-icon type="loading" style="color: #1890ff;"></a-icon>
       </div>
 
-      <div class="form__item">
-        <p class="form__label">
-          <span class="required">*</span>
-          {{ $t('label.menu.service.offerings') }}
-        </p>
-        <a-select v-model="selectedOffering" :defaultValue="selectedOffering">
-          <a-select-option
-            v-for="offering in offerings"
-            :key="offering.name"
-            :value="offering.id"
-          >{{ offering.name }}</a-select-option>
-        </a-select>
-      </div>
+      <compute-offering-selection
+        :compute-items="offerings"
+        :loading="loading"
+        size="small"
+        @select-compute-item="($event) => updateComputeOffering($event)"
+        @handle-search-filter="($event) => fetchData($event)" />
 
-      <template v-if="isOfferingCustomized()">
-        <div class="form__item">
-          <p class="form__label">
-            <span class="required">*</span>
-            {{ $t('label.cpuspeed') }}
-          </p>
-          <a-input-number v-model="cpuSpeed"></a-input-number>
-          <span v-if="validationError" class="required">{{ $t('label.required') }}</span>
-        </div>
-
-        <div class="form__item">
-          <p class="form__label">
-            <span class="required">*</span>
-            {{ $t('label.cpunumber') }}
-          </p>
-          <a-input-number v-model="cpuNumber"></a-input-number>
-          <span v-if="validationError" class="required">{{ $t('label.required') }}</span>
-        </div>
-
-        <div class="form__item">
-          <p class="form__label">
-            <span class="required">*</span>
-            {{ $t('label.memory.mb') }}
-          </p>
-          <a-input-number v-model="memory"></a-input-number>
-          <span v-if="validationError" class="required">{{ $t('label.required') }}</span>
-        </div>
-      </template>
+      <compute-selection
+        v-if="selectedOffering && selectedOffering.iscustomized"
+        :cpunumber-input-decorator="cpuNumberKey"
+        :cpuspeed-input-decorator="cpuSpeedKey"
+        :memory-input-decorator="memoryKey"
+        :computeOfferingId="selectedOffering.id"
+        :isConstrained="'serviceofferingdetails' in selectedOffering"
+        :minCpu="'serviceofferingdetails' in selectedOffering ? selectedOffering.serviceofferingdetails.mincpunumber*1 : 1"
+        :maxCpu="'serviceofferingdetails' in selectedOffering ? selectedOffering.serviceofferingdetails.maxcpunumber*1 : Number.MAX_SAFE_INTEGER"
+        :minMemory="'serviceofferingdetails' in selectedOffering ? selectedOffering.serviceofferingdetails.minmemory*1 : 32"
+        :maxMemory="'serviceofferingdetails' in selectedOffering ? selectedOffering.serviceofferingdetails.maxmemory*1 : Number.MAX_SAFE_INTEGER"
+        @update-compute-cpunumber="updateFieldValue"
+        @update-compute-cpuspeed="updateFieldValue"
+        @update-compute-memory="updateFieldValue" />
 
       <div :span="24" class="action-button">
         <a-button @click="closeAction">{{ this.$t('label.cancel') }}</a-button>
@@ -78,9 +57,15 @@
 
 <script>
 import { api } from '@/api'
+import ComputeOfferingSelection from '@views/compute/wizard/ComputeOfferingSelection'
+import ComputeSelection from '@views/compute/wizard/ComputeSelection'
 
 export default {
   name: 'ChangeServiceOffering',
+  components: {
+    ComputeOfferingSelection,
+    ComputeSelection
+  },
   props: {
     resource: {
       type: Object,
@@ -90,61 +75,87 @@ export default {
   inject: ['parentFetchData'],
   data () {
     return {
+      offeringsMap: {},
       offerings: [],
-      selectedOffering: '',
-      cpuSpeed: '',
-      memory: '',
-      cpuNumber: '',
-      customOfferings: [],
-      validationError: false,
-      loading: false
+      selectedOffering: {},
+      params: { id: this.resource.id },
+      loading: false,
+      cpuNumberKey: 'details[0].cpuNumber',
+      cpuSpeedKey: 'details[0].cpuSpeed',
+      memoryKey: 'details[0].memory'
     }
   },
   mounted () {
-    this.fetchData()
+    this.fetchData({
+      keyword: '',
+      pageSize: 10,
+      page: 1
+    })
   },
   methods: {
-    fetchData () {
+    fetchData (options) {
       this.loading = true
+      this.offerings = []
+      this.offeringsMap = []
       api('listServiceOfferings', {
         response: 'json',
+        keyword: options.keyword,
         listAll: true,
-        details: 'min'
+        details: 'min',
+        virtualmachineid: this.resource.id
       }).then(response => {
+        if (!response.listserviceofferingsresponse.serviceoffering) {
+          return
+        }
         this.offerings = response.listserviceofferingsresponse.serviceoffering
-        this.selectedOffering = this.offerings[0].id
+        for (const offering of this.offerings) {
+          this.offeringsMap[offering.id] = offering
+        }
+      }).finally(() => {
         this.loading = false
       })
     },
-    isOfferingCustomized () {
-      for (var offering of this.offerings) {
-        if (offering.id === this.selectedOffering) {
-          return offering.iscustomized
-        }
+    updateComputeOffering (id) {
+      this.params.serviceofferingid = id
+      this.selectedOffering = this.offeringsMap[id]
+
+      // Delete custom details
+      delete this.params[this.cpuNumberKey]
+      delete this.params[this.cpuSpeedKey]
+      delete this.params[this.memoryKey]
+
+      if (!this.selectedOffering.iscustomized) {
+        return
       }
+
+      // Set custom defaults if unconstrained
+      if (!this.selectedOffering.serviceofferingdetails) {
+        this.params[this.cpuNumberKey] = 1
+        this.params[this.cpuSpeedKey] = 1
+        this.params[this.memoryKey] = 32
+        return
+      }
+
+      // Set min defaults
+      if (this.selectedOffering.serviceofferingdetails.mincpunumber) {
+        this.params[this.cpuNumberKey] = this.selectedOffering.serviceofferingdetails.mincpunumber
+      }
+      if (this.selectedOffering.serviceofferingdetails.mincpuspeed) {
+        this.params[this.cpuSpeedKey] = this.selectedOffering.serviceofferingdetails.mincpuspeed
+      }
+      if (this.selectedOffering.serviceofferingdetails.minmemory) {
+        this.params[this.memoryKey] = this.selectedOffering.serviceofferingdetails.minmemory
+      }
+    },
+    updateFieldValue (name, value) {
+      this.params[name] = value
     },
     closeAction () {
       this.$emit('close-action')
     },
     handleSubmit () {
-      if (this.isOfferingCustomized()) {
-        if (!(this.cpuSpeed && this.cpuNumber && this.memory)) {
-          this.validationError = true
-          return
-        }
-      }
-
-      var params = {
-        id: this.resource.id,
-        serviceofferingid: this.selectedOffering,
-        response: 'json'
-      }
-      params['details[0].cpuSpeed'] = this.cpuSpeed
-      params['details[0].cpuNumber'] = this.cpuNumber
-      params['details[0].memory'] = this.memory
-
       this.loading = true
-      api('changeServiceForVirtualMachine', params).then(response => {
+      api('changeServiceForVirtualMachine', this.params).then(response => {
         this.$notification.success({
           message: 'Successfully changed offering'
         })
@@ -162,48 +173,13 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.form {
-  display: flex;
-  flex-direction: column;
-
-  &__item {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    margin-bottom: 10px;
-  }
-
-  &__label {
-    display: flex;
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-}
 
 .action-button {
+  margin-top: 10px;
   text-align: right;
 
   button {
     margin-right: 5px;
   }
-}
-
-.required {
-  margin-right: 2px;
-  color: red;
-  font-size: 0.7rem;
-}
-
-.loading {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3rem;
 }
 </style>

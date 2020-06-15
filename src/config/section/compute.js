@@ -290,8 +290,7 @@ export default {
           icon: 'sliders',
           label: 'label.change.service.offering',
           dataView: true,
-          args: ['serviceofferingid'],
-          show: (record) => { return ['Stopped'].includes(record.state) || (['Running'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC') },
+          show: (record) => { return ['Stopped'].includes(record.state) },
           popup: true,
           component: () => import('@/views/compute/ChangeServiceOffering.vue')
         },
