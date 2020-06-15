@@ -17,7 +17,12 @@
 
 <template>
   <a-spin :spinning="fetchLoading">
-    <a-button type="dashed" icon="plus" style="width: 100%;margin-bottom: 20px;" @click="handleOpenModal">Add Network</a-button>
+    <a-button
+      type="dashed"
+      icon="plus"
+      style="width: 100%;margin-bottom: 20px;"
+      :disabled="!('createNetwork' in $store.getters.apis)"
+      @click="handleOpenModal">Add Network</a-button>
     <a-list class="list">
       <a-list-item v-for="(network, idx) in networks" :key="idx" class="list__item">
         <div class="list__item-outer-container">
@@ -57,8 +62,13 @@
               <a-icon type="caret-right" :rotate="props.isActive ? 90 : 0" />
             </template>
             <a-collapse-panel :header="$t('label.instances')" key="vm" :style="customStyle">
-              <a-button icon="plus" type="dashed" style="margin-bottom: 15px; width: 100%" @click="$router.push({ path: '/action/deployVirtualMachine?networkid=' + network.id })">
-                {{ $t('label.add.instance') }}
+              <a-button
+                icon="plus"
+                type="dashed"
+                style="margin-bottom: 15px; width: 100%"
+                :disabled="!('deployVirtualMachine' in $store.getters.apis)"
+                @click="$router.push({ path: '/action/deployVirtualMachine?networkid=' + network.id })">
+                {{ $t('label.vm.add') }}
               </a-button>
               <a-table
                 class="table"
@@ -93,7 +103,12 @@
                 showSizeChanger/>
             </a-collapse-panel>
             <a-collapse-panel :header="$t('label.internal.lb')" key="ilb" :style="customStyle" :disabled="!showIlb(network)" >
-              <a-button icon="plus" type="dashed" style="margin-bottom: 15px; width: 100%" @click="handleAddInternalLB(network.id)">
+              <a-button
+                icon="plus"
+                type="dashed"
+                style="margin-bottom: 15px; width: 100%"
+                :disabled="!('createLoadBalancer' in $store.getters.apis)"
+                @click="handleAddInternalLB(network.id)">
                 {{ $t('label.add.internal.lb') }}
               </a-button>
               <a-table
@@ -134,11 +149,11 @@
           <a-form-item :label="$t('label.name')">
             <a-input
               placeholder="A unique name of the tier"
-              v-decorator="['name',{rules: [{ required: true, message: 'Required' }]}]"></a-input>
+              v-decorator="['name',{rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"></a-input>
           </a-form-item>
           <a-form-item :label="$t('label.networkofferingid')">
             <a-select
-              v-decorator="['networkOffering',{rules: [{ required: true, message: 'Required' }]}]">
+              v-decorator="['networkOffering',{rules: [{ required: true, message: `${this.$t('label.required')}` }]}]">
               <a-select-option v-for="item in networkOfferings" :key="item.id" :value="item.id">
                 {{ item.name }}
               </a-select-option>
@@ -147,12 +162,12 @@
           <a-form-item :label="$t('label.gateway')">
             <a-input
               placeholder="The gateway of the tier in the super CIDR range and not overlapping the CIDR of any other tier in this VPC."
-              v-decorator="['gateway',{rules: [{ required: true, message: 'Required' }]}]"></a-input>
+              v-decorator="['gateway',{rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"></a-input>
           </a-form-item>
           <a-form-item :label="$t('label.netmask')">
             <a-input
               placeholder="Netmask of the tier. For example, with VPC CIDR of 10.0.0.0/16 and network tier CIDR of 10.1.1.0/24, gateway is 10.1.1.1 and netmask is 255.255.255.0"
-              v-decorator="['netmask',{rules: [{ required: true, message: 'Required' }]}]"></a-input>
+              v-decorator="['netmask',{rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"></a-input>
           </a-form-item>
           <a-form-item :label="$t('label.externalid')">
             <a-input
@@ -201,7 +216,7 @@
                 'algorithm',
                 {
                   initialValue: 'Source',
-                  rules: [{ required: true, message: 'required'}]
+                  rules: [{ required: true, message: `${this.$t('label.required')}`}]
                 }]">
               <a-select-option v-for="(key, idx) in Object.keys(algorithms)" :key="idx" :value="algorithms[key]">
                 {{ key }}

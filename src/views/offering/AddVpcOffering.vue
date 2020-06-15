@@ -52,10 +52,10 @@
             </a-list>
           </div>
         </a-form-item>
-        <a-form-item :label="$t('label.regionlevelvpc')" v-if="this.connectivityServiceChecked">
+        <a-form-item :label="$t('label.service.connectivity.regionlevelvpccapabilitycheckbox')" v-if="this.connectivityServiceChecked">
           <a-switch v-decorator="['regionlevelvpc', {initialValue: true}]" defaultChecked />
         </a-form-item>
-        <a-form-item :label="$t('label.distributedrouter')" v-if="this.connectivityServiceChecked">
+        <a-form-item :label="$t('label.service.connectivity.distributedroutercapabilitycheckbox')" v-if="this.connectivityServiceChecked">
           <a-switch v-decorator="['distributedrouter', {initialValue: true}]" defaultChecked />
         </a-form-item>
         <a-form-item :label="$t('label.redundantrouter')" v-if="this.sourceNatServiceChecked">
@@ -71,7 +71,7 @@
               rules: [
                 {
                   required: true,
-                  message: 'Please select option'
+                  message: `${this.$t('message.error.select')}`
                 }
               ]
             }]"
