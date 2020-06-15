@@ -17,26 +17,39 @@
 
 <template>
   <a-spin :spinning="loading">
-    <div v-show="!showAddDetail">
-      <a-button type="dashed" style="width: 100%" icon="plus" @click="showAddDetail = true">Add Setting</a-button>
-    </div>
-    <div v-show="showAddDetail">
-      <a-auto-complete
-        style="width: 100%"
-        :filterOption="filterOption"
-        :value="newKey"
-        :dataSource="Object.keys(detailOptions)"
-        placeholder="Name"
-        @change="e => onAddInputChange(e, 'newKey')" />
-      <a-auto-complete
-        style="width: 100%"
-        :filterOption="filterOption"
-        :value="newValue"
-        :dataSource="detailOptions[newKey]"
-        placeholder="Value"
-        @change="e => onAddInputChange(e, 'newValue')" />
-      <a-button type="primary" style="width: 25%" icon="plus" @click="addDetail">Add Setting</a-button>
-      <a-button type="dashed" style="width: 25%" icon="close" @click="showAddDetail = false">Cancel</a-button>
+    <a-alert
+      v-if="disableSettings"
+      banner
+      :message="$t('message.action.settings.warning.vm.running')" />
+    <div v-else>
+      <div v-show="!showAddDetail">
+        <a-button
+          type="dashed"
+          style="width: 100%"
+          icon="plus"
+          :disabled="!('updateTemplate' in $store.getters.apis && 'updateVirtualMachine' in $store.getters.apis)"
+          @click="showAddDetail = true">
+          {{ $t('label.add.setting') }}
+        </a-button>
+      </div>
+      <div v-show="showAddDetail">
+        <a-auto-complete
+          style="width: 100%"
+          :filterOption="filterOption"
+          :value="newKey"
+          :dataSource="Object.keys(detailOptions)"
+          :placeholder="$t('label.name')"
+          @change="e => onAddInputChange(e, 'newKey')" />
+        <a-auto-complete
+          style="width: 100%"
+          :filterOption="filterOption"
+          :value="newValue"
+          :dataSource="detailOptions[newKey]"
+          :placeholder="$t('label.value')"
+          @change="e => onAddInputChange(e, 'newValue')" />
+        <a-button type="primary" style="width: 25%" icon="plus" @click="addDetail">{{ $t('label.add.setting') }}</a-button>
+        <a-button type="dashed" style="width: 25%" icon="close" @click="showAddDetail = false">{{ $t('label.cancel') }}</a-button>
+      </div>
     </div>
     <a-list size="large">
       <a-list-item :key="index" v-for="(item, index) in details">
@@ -53,21 +66,23 @@
                 @change="val => handleInputChange(val, index)"
                 @pressEnter="e => updateDetail(index)" />
             </span>
-            <span v-else @click="showEditDetail(index)">{{ item.value }}</span>
+            <span v-else>{{ item.value }}</span>
           </span>
         </a-list-item-meta>
-        <div slot="actions">
+        <div slot="actions" v-if="!disableSettings && 'updateTemplate' in $store.getters.apis && 'updateVirtualMachine' in $store.getters.apis">
           <a-button shape="circle" size="default" @click="updateDetail(index)" v-if="item.edit">
             <a-icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />
           </a-button>
           <a-button shape="circle" size="default" @click="hideEditDetail(index)" v-if="item.edit">
             <a-icon type="close-circle" theme="twoTone" twoToneColor="#f5222d" />
           </a-button>
-          <a-button shape="circle" @click="showEditDetail(index)" v-if="!item.edit">
-            <a-icon type="edit" />
-          </a-button>
+          <a-button
+            shape="circle"
+            icon="edit"
+            v-if="!item.edit"
+            @click="showEditDetail(index)" />
         </div>
-        <div slot="actions">
+        <div slot="actions" v-if="!disableSettings && 'updateTemplate' in $store.getters.apis && 'updateVirtualMachine' in $store.getters.apis">
           <a-popconfirm
             title="Delete setting?"
             @confirm="deleteDetail(index)"
@@ -75,9 +90,7 @@
             cancelText="No"
             placement="left"
           >
-            <a-button shape="circle">
-              <a-icon type="delete" theme="twoTone" twoToneColor="#f5222d" />
-            </a-button>
+            <a-button shape="circle" type="danger" icon="delete" />
           </a-popconfirm>
         </div>
       </a-list-item>
@@ -101,6 +114,7 @@ export default {
       details: [],
       detailOptions: {},
       showAddDetail: false,
+      disableSettings: false,
       newKey: '',
       newValue: '',
       loading: false,
@@ -136,6 +150,7 @@ export default {
       api('listDetailOptions', { resourcetype: this.resourceType, resourceid: this.resource.id }).then(json => {
         this.detailOptions = json.listdetailoptionsresponse.detailoptions.details
       })
+      this.disableSettings = (this.$route.meta.name === 'vm' && this.resource.state !== 'Stopped')
     },
     showEditDetail (index) {
       this.details[index].edit = true
@@ -185,10 +200,7 @@ export default {
           return { name: k, value: details[k], edit: false }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: 'Failed to add setting',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(f => {
         this.loading = false
         this.showAddDetail = false

@@ -22,7 +22,7 @@
         <a-card :bordered="false">
           <a-input-search
             style="margin-bottom: 10px"
-            placeholder="Search"
+            :placeholder="$t('label.search')"
             v-model="searchQuery"
             @search="handleSearch" />
           <a-table
@@ -50,11 +50,11 @@
             @submit="handleSubmit"
             layout="vertical"
           >
-            <a-form-item :label="$t('domain')">
+            <a-form-item :label="$t('label.domain')">
               <a-select
                 showSearch
                 v-decorator="['domainid', {
-                  rules: [{ required: true, message: 'Please select option' }]
+                  rules: [{ required: true, memessage: `${this.$t('message.error.select')}` }]
                 }]"
                 :placeholder="apiParams.domainid.description"
                 :loading="domainLoading">
@@ -63,17 +63,17 @@
                 </a-select-option>
               </a-select>
             </a-form-item>
-            <a-form-item :label="$t('account')">
+            <a-form-item :label="$t('label.account')">
               <a-input
                 v-decorator="['account']"
                 :placeholder="apiParams.account.description"
               />
             </a-form-item>
-            <a-form-item :label="$t('role')">
+            <a-form-item :label="$t('label.role')">
               <a-select
                 showSearch
                 v-decorator="['roleid', {
-                  rules: [{ required: true, message: 'Please select option' }]
+                  rules: [{ required: true, message: `${this.$t('message.error.select')}` }]
                 }]"
                 :placeholder="apiParams.roleid.description"
                 :loading="roleLoading">
@@ -82,7 +82,7 @@
                 </a-select-option>
               </a-select>
             </a-form-item>
-            <a-form-item :label="$t('timezone')">
+            <a-form-item :label="$t('label.timezone')">
               <a-select
                 showSearch
                 v-decorator="['timezone']"
@@ -93,13 +93,13 @@
                 </a-select-option>
               </a-select>
             </a-form-item>
-            <a-form-item :label="$t('networkdomain')">
+            <a-form-item :label="$t('label.networkdomain')">
               <a-input
                 v-decorator="['networkdomain']"
                 :placeholder="apiParams.networkdomain.description"
               />
             </a-form-item>
-            <a-form-item :label="$t('group')">
+            <a-form-item :label="$t('label.group')">
               <a-input
                 v-decorator="['group']"
                 :placeholder="apiParams.group.description"
@@ -124,8 +124,8 @@
             </div>
 
             <div class="card-footer">
-              <a-button @click="handleClose">{{ $t('Close') }}</a-button>
-              <a-button :loading="loading" type="primary" @click="handleSubmit">{{ $t('add') }}</a-button>
+              <a-button @click="handleClose">{{ $t('label.close') }}</a-button>
+              <a-button :loading="loading" type="primary" @click="handleSubmit">{{ $t('label.add') }}</a-button>
             </div>
           </a-form>
         </a-card>
@@ -181,19 +181,19 @@ export default {
     this.listIdps = []
     this.columns = [
       {
-        title: this.$t('name'),
+        title: this.$t('label.name'),
         dataIndex: 'name',
         width: 120,
         scopedSlots: { customRender: 'name' }
       },
       {
-        title: this.$t('username'),
+        title: this.$t('label.username'),
         dataIndex: 'username',
         width: 120,
         scopedSlots: { customRender: 'username' }
       },
       {
-        title: this.$t('email'),
+        title: this.$t('label.email'),
         dataIndex: 'email',
         scopedSlots: { customRender: 'email' }
       }
@@ -221,10 +221,7 @@ export default {
         this.fetchListRoles(),
         ('listIdps' in this.$store.getters.apis) ? this.fetchIdps() : []
       ]).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.listLoading = false
         this.timeZoneLoading = false
@@ -354,10 +351,7 @@ export default {
           this.$emit('refresh-data')
           this.handleClose()
         }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
-          })
+          this.$notifyError(error)
           this.$emit('refresh-data')
         }).finally(() => {
           this.loading = false
@@ -400,10 +394,7 @@ export default {
         }))
       }
       Promise.all(promises).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       })
     },
     onSelectChange (selectedRowKeys) {

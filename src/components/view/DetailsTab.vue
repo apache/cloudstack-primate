@@ -21,13 +21,24 @@
     :dataSource="$route.meta.details">
     <a-list-item slot="renderItem" slot-scope="item" v-if="item in resource">
       <div>
-        <strong>{{ $t(item) }}</strong>
+        <strong>{{ item === 'service' ? $t('label.supportedservices') : $t('label.' + String(item).toLowerCase()) }}</strong>
         <br/>
-        <div>
+        <div v-if="Array.isArray(resource[item]) && item === 'service'">
+          <div v-for="(service, idx) in resource[item]" :key="idx">
+            {{ service.name }} : {{ service.provider[0].name }}
+          </div>
+        </div>
+        <div v-else-if="$route.meta.name === 'backup' && item === 'volumes'">
+          <div v-for="(volume, idx) in JSON.parse(resource[item])" :key="idx">
+            <router-link :to="{ path: '/volume/' + volume.uuid }">{{ volume.type }} - {{ volume.path }}</router-link> ({{ parseFloat(volume.size / (1024.0 * 1024.0 * 1024.0)).toFixed(1) }} GB)
+          </div>
+        </div>
+        <div v-else>
           {{ resource[item] }}
         </div>
       </div>
     </a-list-item>
+    <HostInfo :resource="resource" v-if="$route.meta.name === 'host' && 'listHosts' in $store.getters.apis" />
     <DedicateData :resource="resource" v-if="dedicatedSectionActive" />
     <VmwareData :resource="resource" v-if="$route.meta.name === 'zone' && 'listVmwareDcs' in $store.getters.apis" />
   </a-list>
@@ -35,12 +46,14 @@
 
 <script>
 import DedicateData from './DedicateData'
+import HostInfo from '@/views/infra/HostInfo'
 import VmwareData from './VmwareData'
 
 export default {
   name: 'DetailsTab',
   components: {
     DedicateData,
+    HostInfo,
     VmwareData
   },
   props: {

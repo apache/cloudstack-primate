@@ -15,7 +15,7 @@
           @keydown.esc="editableValueKey = null"
           @pressEnter="updateData(item)">
         </a-input>
-        <span v-else class="value" @click="setEditableSetting(item, index)">
+        <span v-else class="value">
           {{ item.value }}
         </span>
       </div>
@@ -23,6 +23,7 @@
       <div slot="actions" class="action">
         <a-button
           shape="circle"
+          :disabled="!('updateConfiguration' in $store.getters.apis)"
           v-if="editableValueKey !== index"
           icon="edit"
           @click="setEditableSetting(item, index)" />
@@ -131,7 +132,7 @@ export default {
         console.error(error)
         this.$message.error('There was an error saving this setting.')
         this.$notification.error({
-          message: 'Error',
+          message: this.$t('label.error'),
           description: 'There was an error saving this setting. Please try again later.'
         })
       }).finally(() => {

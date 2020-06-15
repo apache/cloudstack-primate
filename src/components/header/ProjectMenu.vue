@@ -20,12 +20,23 @@
     <a-select
       class="project-select"
       defaultValue="Default View"
-      :value="selectedProject"
+      :value="('id' in $store.getters.project) ? ($store.getters.project.displaytext || $store.getters.project.name) : 'Default View'"
       :disabled="isDisabled()"
       :filterOption="filterProject"
       @change="changeProject"
+      @focus="fetchData"
       showSearch>
-      <a-icon slot="suffixIcon" style="font-size:14px" type="project" />
+
+      <a-tooltip placement="bottom" slot="suffixIcon">
+        <template slot="title">
+          <span>{{ $t('label.projects') }}</span>
+        </template>
+        <span style="font-size: 20px; color: #999; margin-top: -5px">
+          <a-icon v-if="!loading" type="project" />
+          <a-icon v-else type="loading" />
+        </span>
+      </a-tooltip>
+
       <a-select-option v-for="(project, index) in projects" :key="index">
         {{ project.displaytext || project.name }}
       </a-select-option>
@@ -34,18 +45,15 @@
 </template>
 
 <script>
-import Vue from 'vue'
 import store from '@/store'
 import { api } from '@/api'
-import { CURRENT_PROJECT } from '@/store/mutation-types'
 
 export default {
   name: 'ProjectMenu',
   data () {
     return {
-      visible: false,
       projects: [],
-      selectedProject: 'Default View'
+      loading: false
     }
   },
   mounted () {
@@ -56,28 +64,22 @@ export default {
       if (this.isDisabled()) {
         return
       }
-      // TODO: refactor fetching project list for project selector
-      this.projects = []
       var page = 1
       const getNextPage = () => {
+        this.loading = true
         api('listProjects', { listAll: true, details: 'min', page: page, pageSize: 500 }).then(json => {
-          if (this.projects.length === 0) {
-            this.projects.push({ name: 'Default View' })
+          if (page === 1) {
+            this.projects = [{ name: 'Default View' }]
           }
           if (json && json.listprojectsresponse && json.listprojectsresponse.project) {
             this.projects.push(...json.listprojectsresponse.project)
-          }
-          const currentProject = Vue.ls.get(CURRENT_PROJECT)
-          for (var project of this.projects) {
-            if (project.id === currentProject.id) {
-              this.setSelectedProject(project)
-              break
-            }
           }
           if (this.projects.length - 1 < json.listprojectsresponse.count) {
             page++
             getNextPage()
           }
+        }).finally(() => {
+          this.loading = false
         })
       }
       getNextPage()
@@ -85,16 +87,14 @@ export default {
     isDisabled () {
       return !Object.prototype.hasOwnProperty.call(store.getters.apis, 'listProjects')
     },
-    setSelectedProject (project) {
-      this.selectedProject = project.displaytext || project.name
-    },
     changeProject (index) {
       const project = this.projects[index]
-      this.setSelectedProject(project)
       this.$store.dispatch('SetProject', project)
       this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
       this.$message.success(`Switched to "${project.name}"`)
-      this.$router.push({ name: 'dashboard' })
+      if (this.$route.name !== 'dashboard') {
+        this.$router.push({ name: 'dashboard' })
+      }
     },
     filterProject (input, option) {
       return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -106,7 +106,7 @@ export default {
 <style lang="less" scoped>
 .project {
   &-select {
-    width: 30vw;
+    width: 40vw;
   }
 
   &-icon {

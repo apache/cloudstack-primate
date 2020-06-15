@@ -17,21 +17,20 @@
 
 export default {
   name: 'config',
-  title: 'Configuration',
+  title: 'label.configuration',
   icon: 'setting',
   permission: ['listConfigurations'],
   children: [
     {
       name: 'globalsetting',
-      title: 'Global Settings',
+      title: 'label.global.settings',
       icon: 'setting',
       permission: ['listConfigurations'],
-      columns: ['name', 'description', 'category', 'value', 'actions'],
-      details: ['name', 'category', 'description', 'value']
+      columns: ['name', 'description', 'category', 'value', 'actions']
     },
     {
       name: 'ldapsetting',
-      title: 'LDAP Configuration',
+      title: 'label.ldap.configuration',
       icon: 'team',
       permission: ['listLdapConfigurations'],
       columns: ['hostname', 'port', 'domainid'],
@@ -50,6 +49,7 @@ export default {
           api: 'deleteLdapConfiguration',
           icon: 'delete',
           label: 'label.remove.ldap',
+          message: 'message.remove.ldap',
           dataView: true,
           args: ['hostname'],
           mapping: {
@@ -62,19 +62,18 @@ export default {
     },
     {
       name: 'hypervisorcapability',
-      title: 'Hypervisor Capabilities',
+      title: 'label.hypervisor.capabilities',
       icon: 'database',
       permission: ['listHypervisorCapabilities'],
-      columns: ['hypervisor', 'hypervisorversion', 'maxguestlimit', 'maxdatavolumeslimit', 'maxhostspercluster'],
+      columns: ['hypervisor', 'hypervisorversion', 'maxguestslimit', 'maxhostspercluster'],
+      details: ['hypervisor', 'hypervisorversion', 'maxguestslimit', 'maxdatavolumeslimit', 'maxhostspercluster', 'securitygroupenabled', 'storagemotionenabled'],
       actions: [
         {
           api: 'updateHypervisorCapabilities',
           icon: 'edit',
           label: 'label.edit',
           dataView: true,
-          args: [
-            'id', 'maxguestslimit'
-          ]
+          args: ['maxguestslimit']
         }
       ]
     }

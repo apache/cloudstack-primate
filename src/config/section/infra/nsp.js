@@ -17,7 +17,7 @@
 
 export default {
   name: 'nsp',
-  title: 'Network Service Providers',
+  title: 'label.network.service.providers',
   icon: 'compass',
   hidden: true,
   permission: ['listNetworkServiceProviders'],
@@ -31,7 +31,8 @@ export default {
     {
       api: 'updateNetworkServiceProvider',
       icon: 'stop',
-      label: 'Disable Provider',
+      label: 'label.disable.provider',
+      message: 'message.confirm.disable.provider',
       dataView: true,
       args: ['state'],
       show: (record) => { return record.state === 'Enabled' },
@@ -44,7 +45,8 @@ export default {
     {
       api: 'updateNetworkServiceProvider',
       icon: 'right-circle',
-      label: 'Enable Provider',
+      label: 'label.enable.provider',
+      message: 'message.confirm.enable.provider',
       dataView: true,
       args: ['state'],
       show: (record) => { return record.state === 'Disabled' },

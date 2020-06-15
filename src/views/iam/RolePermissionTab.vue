@@ -34,7 +34,7 @@
             :dataSource="apis"
             :value="newRule"
             @change="val => newRule = val"
-            placeholder="Rule"
+            :placeholder="$t('label.rule')"
             :class="{'rule-dropdown-error' : newRuleSelectError}" />
         </div>
         <div class="rules-table__col rules-table__col--permission">
@@ -52,6 +52,7 @@
               Save new Rule
             </template>
             <a-button
+              :disabled="!('createRolePermission' in $store.getters.apis)"
               icon="plus"
               type="primary"
               shape="circle"
@@ -94,6 +95,7 @@
             </div>
             <div class="rules-table__col rules-table__col--actions">
               <rule-delete
+                :disabled="!('deleteRolePermission' in $store.getters.apis)"
                 :record="record"
                 @delete="onRuleDelete(record.id)" />
             </div>
@@ -255,7 +257,7 @@ export default {
 
   .rules-list {
     max-height: 600px;
-    overflow: scroll;
+    overflow: auto;
 
     &--overflow-hidden {
       overflow: hidden;

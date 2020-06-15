@@ -19,15 +19,15 @@
   <a-list-item v-if="dedicatedDomainId">
     <div>
       <div style="margin-bottom: 10px;">
-        <strong>{{ $t('dedicated') }}</strong>
+        <strong>{{ $t('label.dedicated') }}</strong>
         <div>Yes</div>
       </div>
       <p>
-        <strong>{{ $t('domainid') }}</strong><br/>
+        <strong>{{ $t('label.domainid') }}</strong><br/>
         <router-link :to="{ path: '/domain/' + dedicatedDomainId }">{{ dedicatedDomainId }}</router-link>
       </p>
       <p v-if="dedicatedAccountId">
-        <strong>{{ $t('account') }}</strong><br/>
+        <strong>{{ $t('label.account') }}</strong><br/>
         <router-link :to="{ path: '/account/' + dedicatedAccountId }">{{ dedicatedAccountId }}</router-link>
       </p>
       <a-button style="margin-top: 10px; margin-bottom: 10px;" type="danger" @click="handleRelease">
@@ -37,9 +37,9 @@
   </a-list-item>
   <a-list-item v-else>
     <div>
-      <strong>{{ $t('dedicated') }}</strong>
+      <strong>{{ $t('label.dedicated') }}</strong>
       <div>No</div>
-      <a-button type="primary" style="margin-top: 10px; margin-bottom: 10px;" @click="modalActive = true">
+      <a-button type="primary" style="margin-top: 10px; margin-bottom: 10px;" @click="modalActive = true" :disabled="!dedicateButtonAvailable">
         {{ dedicatedButtonLabel }}
       </a-button>
     </div>
@@ -70,6 +70,7 @@ export default {
   data () {
     return {
       modalActive: false,
+      dedicateButtonAvailable: true,
       dedicatedButtonLabel: 'Dedicate',
       releaseButtonLabel: 'Release',
       dedicatedModalLabel: 'Dedicate',
@@ -86,27 +87,32 @@ export default {
   },
   methods: {
     fetchData () {
+      this.dedicateButtonAvailable = true
       if (this.$route.meta.name === 'zone') {
         this.fetchDedicatedZones()
         this.releaseButtonLabel = this.$t('label.release.dedicated.zone')
+        this.dedicateButtonAvailable = ('dedicateZone' in this.$store.getters.apis)
         this.dedicatedButtonLabel = this.$t('label.dedicate.zone')
         this.dedicatedModalLabel = this.$t('label.dedicate.zone')
       }
       if (this.$route.meta.name === 'pod') {
         this.fetchDedicatedPods()
         this.releaseButtonLabel = this.$t('label.release.dedicated.pod')
+        this.dedicateButtonAvailable = ('dedicatePod' in this.$store.getters.apis)
         this.dedicatedButtonLabel = this.$t('label.dedicate.pod')
         this.dedicatedModalLabel = this.$t('label.dedicate.pod')
       }
       if (this.$route.meta.name === 'cluster') {
         this.fetchDedicatedClusters()
         this.releaseButtonLabel = this.$t('label.release.dedicated.cluster')
+        this.dedicateButtonAvailable = ('dedicateCluster' in this.$store.getters.apis)
         this.dedicatedButtonLabel = this.$t('label.dedicate.cluster')
         this.dedicatedModalLabel = this.$t('label.dedicate.cluster')
       }
       if (this.$route.meta.name === 'host') {
         this.fetchDedicatedHosts()
         this.releaseButtonLabel = this.$t('label.release.dedicated.host')
+        this.dedicateButtonAvailable = ('dedicateHost' in this.$store.getters.apis)
         this.dedicatedButtonLabel = this.$t('label.dedicate.host')
         this.dedicatedModalLabel = this.$t('label.dedicate.host')
       }
@@ -121,10 +127,7 @@ export default {
           this.dedicatedAccountId = response.listdedicatedzonesresponse.dedicatedzone[0].accountid
         }
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     fetchDedicatedPods () {
@@ -137,10 +140,7 @@ export default {
           this.dedicatedAccountId = response.listdedicatedpodsresponse.dedicatedpod[0].accountid
         }
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     fetchDedicatedClusters () {
@@ -153,10 +153,7 @@ export default {
           this.dedicatedAccountId = response.listdedicatedclustersresponse.dedicatedcluster[0].accountid
         }
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     fetchDedicatedHosts () {
@@ -169,10 +166,7 @@ export default {
           this.dedicatedAccountId = response.listdedicatedhostsresponse.dedicatedhost[0].accountid
         }
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     releaseDedidcatedZone () {
@@ -181,12 +175,12 @@ export default {
       }).then(response => {
         this.$pollJob({
           jobId: response.releasededicatedzoneresponse.jobid,
-          successMessage: `Successfully released dedicated zone`,
+          successMessage: this.$t('message.dedicated.zone.released'),
           successMethod: () => {
             this.parentFetchData()
             this.dedicatedDomainId = null
             this.$store.dispatch('AddAsyncJob', {
-              title: 'Successfully released dedicated zone',
+              title: this.$t('message.dedicated.zone.released'),
               jobid: response.releasededicatedzoneresponse.jobid,
               status: 'progress'
             })
@@ -195,17 +189,14 @@ export default {
           errorMethod: () => {
             this.parentFetchData()
           },
-          loadingMessage: `Releasing dedicated zone...`,
+          loadingMessage: this.$t('message.releasing.dedicated.zone'),
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
             this.parentFetchData()
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     releaseDedidcatedPod () {
@@ -214,12 +205,12 @@ export default {
       }).then(response => {
         this.$pollJob({
           jobId: response.releasededicatedpodresponse.jobid,
-          successMessage: `Successfully released dedicated pod`,
+          successMessage: this.$t('message.pod.dedication.released'),
           successMethod: () => {
             this.parentFetchData()
             this.dedicatedDomainId = null
             this.$store.dispatch('AddAsyncJob', {
-              title: 'Successfully released dedicated pod',
+              title: this.$t('message.pod.dedication.released'),
               jobid: response.releasededicatedpodresponse.jobid,
               status: 'progress'
             })
@@ -228,17 +219,14 @@ export default {
           errorMethod: () => {
             this.parentFetchData()
           },
-          loadingMessage: `Releasing dedicated pod...`,
+          loadingMessage: this.$t('message.releasing.dedicated.pod'),
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
             this.parentFetchData()
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     releaseDedidcatedCluster () {
@@ -247,12 +235,12 @@ export default {
       }).then(response => {
         this.$pollJob({
           jobId: response.releasededicatedclusterresponse.jobid,
-          successMessage: `Successfully released dedicated cluster`,
+          successMessage: this.$t('message.cluster.dedication.released'),
           successMethod: () => {
             this.parentFetchData()
             this.dedicatedDomainId = null
             this.$store.dispatch('AddAsyncJob', {
-              title: 'Successfully released dedicated cluster',
+              title: this.$t('message.cluster.dedication.released'),
               jobid: response.releasededicatedclusterresponse.jobid,
               status: 'progress'
             })
@@ -261,17 +249,14 @@ export default {
           errorMethod: () => {
             this.parentFetchData()
           },
-          loadingMessage: `Releasing dedicated cluster...`,
+          loadingMessage: this.$t('message.releasing.dedicated.cluster'),
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
             this.parentFetchData()
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     releaseDedidcatedHost () {
@@ -280,12 +265,12 @@ export default {
       }).then(response => {
         this.$pollJob({
           jobId: response.releasededicatedhostresponse.jobid,
-          successMessage: `Successfully released dedicated host`,
+          successMessage: this.$t('message.host.dedication.released'),
           successMethod: () => {
             this.parentFetchData()
             this.dedicatedDomainId = null
             this.$store.dispatch('AddAsyncJob', {
-              title: 'Successfully released dedicated host',
+              title: this.$t('message.host.dedication.released'),
               jobid: response.releasededicatedhostresponse.jobid,
               status: 'progress'
             })
@@ -294,17 +279,14 @@ export default {
           errorMethod: () => {
             this.parentFetchData()
           },
-          loadingMessage: `Releasing dedicated host...`,
+          loadingMessage: this.$t('message.releasing.dedicated.host'),
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
             this.parentFetchData()
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     handleRelease () {

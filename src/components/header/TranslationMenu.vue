@@ -16,7 +16,6 @@
 // under the License.
 
 <template>
-
   <a-dropdown>
     <span class="action ant-dropdown-link translation-menu">
       <font-awesome-icon :icon="['fas', 'language']" size="lg" />
@@ -44,7 +43,6 @@
       <a-menu-item key="ru_RU" :value="ruRU">Русский</a-menu-item>
     </a-menu>
   </a-dropdown>
-
 </template>
 
 <script>
@@ -95,6 +93,10 @@ export default {
       hi
     }
   },
+  mounted () {
+    this.language = Vue.ls.get('LOCALE') || 'en'
+    this.setLocale(this.language)
+  },
   methods: {
     moment,
     onClick (e) {
@@ -109,7 +111,7 @@ export default {
       this.$i18n.locale = localeValue
       this.language = localeValue
       moment.locale(localeValue)
-      Vue.ls.set('current_locale', localeValue)
+      Vue.ls.set('LOCALE', localeValue)
     }
   }
 }

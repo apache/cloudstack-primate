@@ -32,7 +32,13 @@
               <template slot="title">
                 {{ $t('label.make.project.owner') }}
               </template>
-              <a-button type="default" shape="circle" icon="user" size="small" @click="onMakeProjectOwner(record)" />
+              <a-button
+                type="default"
+                shape="circle"
+                icon="user"
+                size="small"
+                :disabled="!('updateProject' in $store.getters.apis)"
+                @click="onMakeProjectOwner(record)" />
             </a-tooltip>
             <a-tooltip placement="top">
               <template slot="title">
@@ -43,6 +49,7 @@
                 shape="circle"
                 icon="delete"
                 size="small"
+                :disabled="!('deleteAccountFromProject' in $store.getters.apis)"
                 @click="onShowConfirmDelete(record)"/>
             </a-tooltip>
           </span>
@@ -88,18 +95,18 @@ export default {
   created () {
     this.columns = [
       {
-        title: this.$t('account'),
+        title: this.$t('label.account'),
         dataIndex: 'account',
         width: '35%',
         scopedSlots: { customRender: 'account' }
       },
       {
-        title: this.$t('role'),
+        title: this.$t('label.role'),
         dataIndex: 'role',
         scopedSlots: { customRender: 'role' }
       },
       {
-        title: this.$t('action'),
+        title: this.$t('label.action'),
         dataIndex: 'action',
         fixed: 'right',
         width: 100,
@@ -144,10 +151,7 @@ export default {
         this.itemCount = itemCount
         this.dataSource = listProjectAccount
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.loading = false
       })
@@ -178,18 +182,15 @@ export default {
         }
       }).catch(error => {
         // show error
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         setTimeout(loading, 1000)
       })
     },
     onShowConfirmDelete (record) {
       const self = this
-      let title = this.$t('deleteconfirm')
-      title = title.replace('{name}', this.$t('account'))
+      let title = this.$t('label.deleteconfirm')
+      title = title.replace('{name}', this.$t('label.account'))
 
       this.$confirm({
         title: title,
@@ -217,10 +218,7 @@ export default {
         }
       }).catch(error => {
         // show error
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         setTimeout(loading, 1000)
       })

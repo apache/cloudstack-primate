@@ -17,7 +17,7 @@
 
 export default {
   name: 'imagestore',
-  title: 'Secondary Storages',
+  title: 'label.secondary.storage',
   icon: 'picture',
   permission: ['listImageStores'],
   columns: ['name', 'url', 'protocol', 'scope', 'zonename'],
@@ -26,7 +26,7 @@ export default {
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
   }, {
-    name: 'Settings',
+    name: 'settings',
     component: () => import('@/components/view/SettingsTab.vue')
   }],
   actions: [
@@ -42,6 +42,7 @@ export default {
       api: 'deleteImageStore',
       icon: 'delete',
       label: 'label.action.delete.secondary.storage',
+      message: 'message.action.delete.secondary.storage',
       dataView: true
     }
   ]

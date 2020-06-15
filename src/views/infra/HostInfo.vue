@@ -20,16 +20,21 @@
     <a-list size="small">
       <a-list-item>
         <div>
-          <strong>{{ $t('hypervisorversion') }}</strong>
-          <div v-if="host.details">
+          <strong>{{ $t('label.hypervisorversion') }}</strong>
+          <div>
             {{ host.hypervisor }}
-            {{ host.details['Host.OS'] + ' ' + host.details['Host.OS.Version'] }}
+            <span v-if="host.details">
+              {{ host.details['Host.OS'] + ' ' + host.details['Host.OS.Version'] }}
+            </span>
+            <span v-else>
+              {{ host.version }}
+            </span>
           </div>
         </div>
       </a-list-item>
       <a-list-item v-if="host.details && host.details.secured">
         <div>
-          <strong>{{ $t('Secured') }}</strong>
+          <strong>{{ $t('label.secured') }}</strong>
           <div>
             {{ host.details.secured }}
           </div>
@@ -37,7 +42,7 @@
       </a-list-item>
       <a-list-item>
         <div>
-          <strong>{{ $t('hosttags') }}</strong>
+          <strong>{{ $t('label.hosttags') }}</strong>
           <div>
             {{ host.hosttags }}
           </div>
@@ -45,7 +50,7 @@
       </a-list-item>
       <a-list-item>
         <div>
-          <strong>{{ $t('oscategoryid') }}</strong>
+          <strong>{{ $t('label.oscategoryid') }}</strong>
           <div>
             {{ host.oscategoryname }}
           </div>
@@ -53,7 +58,7 @@
       </a-list-item>
       <a-list-item v-if="host.outofbandmanagement">
         <div>
-          <strong>{{ $t('OOBM') }}</strong>
+          <strong>{{ $t('label.outofbandmanagement') }}</strong>
           <div>
             {{ host.outofbandmanagement.enabled }}
           </div>
@@ -61,7 +66,7 @@
       </a-list-item>
       <a-list-item v-if="host.outofbandmanagement">
         <div>
-          <strong>{{ $t('powerstate') }}</strong>
+          <strong>{{ $t('label.powerstate') }}</strong>
           <div>
             {{ host.outofbandmanagement.powerstate }}
           </div>
@@ -69,7 +74,7 @@
       </a-list-item>
       <a-list-item v-if="host.hostha">
         <div>
-          <strong>{{ $t('haenable') }}</strong>
+          <strong>{{ $t('label.haenable') }}</strong>
           <div>
             {{ host.hostha.haenable }}
           </div>
@@ -77,7 +82,7 @@
       </a-list-item>
       <a-list-item v-if="host.hostha">
         <div>
-          <strong>{{ $t('hastate') }}</strong>
+          <strong>{{ $t('label.hastate') }}</strong>
           <div>
             {{ host.hostha.hastate }}
           </div>
@@ -85,7 +90,7 @@
       </a-list-item>
       <a-list-item v-if="host.hostha">
         <div>
-          <strong>{{ $t('haprovider') }}</strong>
+          <strong>{{ $t('label.haprovider') }}</strong>
           <div>
             {{ host.hostha.haprovider }}
           </div>
@@ -100,7 +105,7 @@
 import { api } from '@/api'
 
 export default {
-  name: 'HostInfoTab',
+  name: 'HostInfo',
   props: {
     resource: {
       type: Object,
@@ -121,8 +126,8 @@ export default {
     this.fetchData()
   },
   watch: {
-    loading (newData, oldData) {
-      if (!newData && this.resource.id) {
+    resource (newItem, oldItem) {
+      if (this.resource && this.resource.id && newItem && newItem.id !== oldItem.id) {
         this.fetchData()
       }
     }
@@ -135,10 +140,7 @@ export default {
       api('listHosts', { id: this.resource.id }).then(json => {
         this.host = json.listhostsresponse.host[0]
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchLoading = false
       })

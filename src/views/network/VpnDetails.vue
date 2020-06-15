@@ -22,7 +22,7 @@
       <p>Your IPSec pre-shared key is <strong>{{ remoteAccessVpn.presharedkey }}</strong></p>
       <a-divider/>
       <a-button><router-link :to="{ path: '/vpnuser'}">Manage VPN Users</router-link></a-button>
-      <a-button style="margin-left: 10px" type="danger" @click="disableVpn = true">Disable VPN</a-button>
+      <a-button style="margin-left: 10px" type="danger" @click="disableVpn = true" :disabled="!('deleteRemoteAccessVpn' in $store.getters.apis)">Disable VPN</a-button>
     </div>
 
     <a-modal v-model="disableVpn" :footer="null" oncancel="disableVpn = false" title="Disable Remove Access VPN">
@@ -38,7 +38,7 @@
 
   </div>
   <div v-else>
-    <a-button type="primary" @click="enableVpn = true">Enable VPN</a-button>
+    <a-button :disabled="!('createRemoteAccessVpn' in $store.getters.apis)" type="primary" @click="enableVpn = true">Enable VPN</a-button>
 
     <a-modal v-model="enableVpn" :footer="null" onCancel="enableVpn = false" title="Enable Remote Access VPN">
       <p>Please confirm that you want Remote Access VPN enabled for this IP address.</p>
@@ -94,10 +94,7 @@ export default {
           ? response.listremoteaccessvpnsresponse.remoteaccessvpn[0] : null
       }).catch(error => {
         console.log(error)
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     handleCreateVpn () {
@@ -137,11 +134,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.createremoteaccessvpnresponse
-            ? error.response.data.createremoteaccessvpnresponse.errortext : error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.fetchData()
         this.parentFetchData()
         this.parentToggleLoading()
@@ -177,11 +170,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.deleteremoteaccessvpnresponse
-            ? error.response.data.deleteremoteaccessvpnresponse.errortext : error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.fetchData()
         this.parentFetchData()
         this.parentToggleLoading()

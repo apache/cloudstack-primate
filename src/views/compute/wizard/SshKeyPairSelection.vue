@@ -16,16 +16,26 @@
 // under the License.
 
 <template>
-  <a-table
-    :columns="columns"
-    :dataSource="tableSource"
-    :pagination="{showSizeChanger: true}"
-    :rowSelection="rowSelection"
-    size="middle"
-  >
-    <template v-slot:account><a-icon type="user" /> {{ $t('account') }}</template>
-    <template v-slot:domain><a-icon type="block" /> {{ $t('domain') }}</template>
-  </a-table>
+  <div>
+    <a-input-search
+      style="width: 25vw;float: right;margin-bottom: 10px; z-index: 8"
+      :placeholder="$t('label.search')"
+      v-model="filter"
+      @search="handleSearch" />
+    <a-table
+      :loading="loading"
+      :columns="columns"
+      :dataSource="tableSource"
+      :pagination="{showSizeChanger: true}"
+      :rowSelection="rowSelection"
+      size="middle"
+      @change="handleTableChange"
+      :scroll="{ y: 225 }"
+    >
+      <template v-slot:account><a-icon type="user" /> {{ $t('label.account') }}</template>
+      <template v-slot:domain><a-icon type="block" /> {{ $t('label.domain') }}</template>
+    </a-table>
+  </div>
 </template>
 
 <script>
@@ -39,14 +49,23 @@ export default {
     value: {
       type: String,
       default: ''
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
     return {
+      filter: '',
       columns: [
         {
           dataIndex: 'name',
-          title: this.$t('sshKeyPairs'),
+          title: this.$t('label.sshkeypairs'),
           width: '40%'
         },
         {
@@ -60,12 +79,23 @@ export default {
           width: '30%'
         }
       ],
-      selectedRowKeys: []
+      selectedRowKeys: [this.$t('label.noselect')],
+      dataItems: []
     }
   },
+  created () {
+    this.initDataItem()
+  },
   computed: {
+    options () {
+      return {
+        page: 1,
+        pageSize: 10,
+        keyword: ''
+      }
+    },
     tableSource () {
-      return this.items.map((item) => {
+      return this.dataItems.map((item) => {
         return {
           key: item.name,
           name: item.name,
@@ -78,9 +108,7 @@ export default {
       return {
         type: 'radio',
         selectedRowKeys: this.selectedRowKeys,
-        onSelect: (row) => {
-          this.$emit('select-ssh-key-pair-item', row.key)
-        }
+        onChange: this.onSelectRow
       }
     }
   },
@@ -89,6 +117,47 @@ export default {
       if (newValue && newValue !== oldValue) {
         this.selectedRowKeys = [newValue]
       }
+    },
+    items (newData, oldData) {
+      if (newData && newData.length > 0) {
+        this.initDataItem()
+        this.dataItems = this.dataItems.concat(newData)
+      }
+    },
+    loading () {
+      if (!this.loading) {
+        if (this.preFillContent.keypair) {
+          this.selectedRowKeys = [this.preFillContent.keypair]
+          this.$emit('select-ssh-key-pair-item', this.preFillContent.keypair)
+        } else {
+          this.selectedRowKeys = [this.$t('label.noselect')]
+          this.$emit('select-ssh-key-pair-item', this.$t('label.noselect'))
+        }
+      }
+    }
+  },
+  methods: {
+    initDataItem () {
+      this.dataItems = []
+      this.dataItems.push({
+        name: this.$t('label.noselect'),
+        account: '-',
+        domain: '-'
+      })
+    },
+    onSelectRow (value) {
+      this.selectedRowKeys = value
+      this.$emit('select-ssh-key-pair-item', value[0])
+    },
+    handleSearch (value) {
+      this.filter = value
+      this.options.keyword = this.filter
+      this.$emit('handle-search-filter', this.options)
+    },
+    handleTableChange (pagination) {
+      this.options.page = pagination.current
+      this.options.pageSize = pagination.pageSize
+      this.$emit('handle-search-filter', this.options)
     }
   }
 }

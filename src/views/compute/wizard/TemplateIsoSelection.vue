@@ -16,27 +16,82 @@
 // under the License.
 
 <template>
-  <a-tabs :defaultActiveKey="Object.keys(osTypes)[0]" v-if="view === TAB_VIEW">
-    <a-button icon="search" slot="tabBarExtraContent" @click="() => toggleView(FILTER_VIEW)"/>
-    <a-tab-pane v-for="(osList, osName) in osTypes" :key="osName">
-      <span slot="tab">
-        <os-logo :os-name="osName"></os-logo>
-      </span>
-      <TemplateIsoRadioGroup
-        :osList="osList"
-        :input-decorator="inputDecorator"
-      ></TemplateIsoRadioGroup>
-    </a-tab-pane>
-  </a-tabs>
-  <div v-else>
-    <a-input class="search-input" v-model="filter">
-      <a-icon slot="prefix" type="search"/>
-      <a-icon slot="addonAfter" type="close" @click="toggleView(TAB_VIEW)"/>
-    </a-input>
-    <TemplateIsoRadioGroup
-      :osList="filteredItems"
-      :input-decorator="inputDecorator"
-    ></TemplateIsoRadioGroup>
+  <div>
+    <span class="filter-group">
+      <a-input-search
+        class="search-input"
+        :placeholder="$t('label.search')"
+        v-model="filter"
+        @search="filterDataSource">
+        <a-popover
+          placement="bottomRight"
+          slot="addonAfter"
+          trigger="click"
+          v-model="visibleFilter">
+          <template slot="content">
+            <a-form
+              style="width: 170px"
+              :form="form"
+              layout="vertical"
+              @submit="handleSubmit">
+              <a-form-item :label="$t('label.filter')">
+                <a-select
+                  allowClear
+                  mode="multiple"
+                  v-decorator="['filter']">
+                  <a-select-option
+                    v-for="(opt) in filterOpts"
+                    :key="opt.id">{{ $t('label.' + opt.name) }}</a-select-option>
+                </a-select>
+              </a-form-item>
+              <div class="filter-group-button">
+                <a-button
+                  class="filter-group-button-clear"
+                  type="default"
+                  size="small"
+                  icon="stop"
+                  @click="onClear">Clear</a-button>
+                <a-button
+                  class="filter-group-button-search"
+                  type="primary"
+                  size="small"
+                  icon="search"
+                  @click="handleSubmit">Search</a-button>
+              </div>
+            </a-form>
+          </template>
+          <a-button
+            class="filter-group-button"
+            icon="filter"
+            size="small"/>
+        </a-popover>
+      </a-input-search>
+    </span>
+    <a-spin :spinning="loading">
+      <a-tabs
+        :animated="false"
+        :defaultActiveKey="Object.keys(dataSource)[0]"
+        tabPosition="top"
+        v-model="osType"
+        @change="changeOsName">
+        <a-tab-pane v-for="(osList, osName) in dataSource" :key="osName">
+          <span slot="tab">
+            <os-logo :os-name="osName"></os-logo>
+          </span>
+          <TemplateIsoRadioGroup
+            v-if="osType===osName"
+            :osType="osType"
+            :osList="dataSource[osName]"
+            :input-decorator="inputDecorator"
+            :selected="checkedValue"
+            :itemCount="itemCount[osName]"
+            :preFillContent="preFillContent"
+            @handle-filter-tag="filterDataSource"
+            @emit-update-template-iso="updateTemplateIso"
+          ></TemplateIsoRadioGroup>
+        </a-tab-pane>
+      </a-tabs>
+    </a-spin>
   </div>
 </template>
 
@@ -45,9 +100,7 @@ import OsLogo from '@/components/widgets/OsLogo'
 import { getNormalizedOsName } from '@/utils/icons'
 import _ from 'lodash'
 import TemplateIsoRadioGroup from '@views/compute/wizard/TemplateIsoRadioGroup'
-
-export const TAB_VIEW = 1
-export const FILTER_VIEW = 2
+import store from '@/store'
 
 export default {
   name: 'TemplateIsoSelection',
@@ -60,27 +113,77 @@ export default {
     inputDecorator: {
       type: String,
       default: ''
+    },
+    selected: {
+      type: String,
+      default: ''
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
     return {
-      TAB_VIEW: TAB_VIEW,
-      FILTER_VIEW: FILTER_VIEW,
-      visible: false,
       filter: '',
       filteredItems: this.items,
-      view: TAB_VIEW
+      checkedValue: '',
+      dataSource: {},
+      itemCount: {},
+      visibleFilter: false,
+      filterOpts: [{
+        id: 'featured',
+        name: 'featured'
+      }, {
+        id: 'community',
+        name: 'community'
+      }, {
+        id: 'selfexecutable',
+        name: 'selfexecutable'
+      }, {
+        id: 'sharedexecutable',
+        name: 'sharedexecutable'
+      }],
+      osType: ''
     }
   },
-  computed: {
-    osTypes () {
+  watch: {
+    items (items) {
+      this.filteredItems = []
+      this.checkedValue = ''
+      if (items && items.length > 0) {
+        this.filteredItems = items
+        this.checkedValue = items[0].id
+      }
+      this.dataSource = this.mappingDataSource()
+      this.osType = Object.keys(this.dataSource)[0]
+    },
+    inputDecorator (newValue, oldValue) {
+      if (newValue !== oldValue) {
+        this.filter = ''
+      }
+    }
+  },
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
+  },
+  inject: ['vmFetchTemplates', 'vmFetchIsos'],
+  methods: {
+    mappingDataSource () {
       let mappedItems = {}
-      this.items.forEach((os) => {
+      const itemCount = {}
+      this.filteredItems.forEach((os) => {
         const osName = getNormalizedOsName(os.ostypename)
         if (Array.isArray(mappedItems[osName])) {
           mappedItems[osName].push(os)
+          itemCount[osName] = itemCount[osName] + 1
         } else {
           mappedItems[osName] = [os]
+          itemCount[osName] = 1
         }
       })
       mappedItems = _.mapValues(mappedItems, (list) => {
@@ -90,24 +193,78 @@ export default {
         nonFeaturedItems = _.sortBy(nonFeaturedItems, (item) => item.displaytext.toLowerCase())
         return featuredItems.concat(nonFeaturedItems) // pin featured isos/templates at the top
       })
+      this.itemCount = itemCount
       return mappedItems
-    }
-  },
-  watch: {
-    items (items) {
-      this.filteredItems = items
     },
-    filter (filterString) {
-      if (filterString !== '') {
-        this.filteredItems = this.filteredItems.filter((item) => item.displaytext.toLowerCase().includes(filterString))
+    updateTemplateIso (name, id) {
+      this.checkedValue = id
+      this.$emit('update-template-iso', name, id)
+    },
+    filterDataSource (strQuery) {
+      if (strQuery !== '' && strQuery.includes('is:')) {
+        this.filteredItems = []
+        this.filter = strQuery
+        const filters = strQuery.split(';')
+        filters.forEach((filter) => {
+          const query = filter.replace(/ /g, '')
+          const data = this.filterDataSourceByTag(query)
+          this.filteredItems = this.filteredItems.concat(data)
+        })
+      } else if (strQuery !== '') {
+        this.filteredItems = this.items.filter((item) => item.displaytext.toLowerCase().includes(strQuery.toLowerCase()))
       } else {
         this.filteredItems = this.items
       }
-    }
-  },
-  methods: {
-    toggleView (view) {
-      this.view = view
+      this.dataSource = this.mappingDataSource()
+    },
+    filterDataSourceByTag (tag) {
+      let arrResult = []
+      if (tag.includes('public')) {
+        arrResult = this.items.filter((item) => {
+          return item.ispublic && item.isfeatured
+        })
+      } else if (tag.includes('featured')) {
+        arrResult = this.items.filter((item) => {
+          return item.isfeatured
+        })
+      } else if (tag.includes('self')) {
+        arrResult = this.items.filter((item) => {
+          return !item.ispublic && (item.account === store.getters.userInfo.account)
+        })
+      } else if (tag.includes('shared')) {
+        arrResult = this.items.filter((item) => {
+          return !item.ispublic && (item.account !== store.getters.userInfo.account)
+        })
+      }
+
+      return arrResult
+    },
+    handleSubmit (e) {
+      e.preventDefault()
+      this.form.validateFields((err, values) => {
+        if (err) {
+          return
+        }
+        const filtered = values.filter || []
+        this.filter = ''
+        filtered.map(item => {
+          if (this.filter.length === 0) {
+            this.filter += 'is:' + item
+          } else {
+            this.filter += '; is:' + item
+          }
+        })
+        this.filterDataSource(this.filter)
+      })
+    },
+    onClear () {
+      const field = { filter: undefined }
+      this.form.setFieldsValue(field)
+      this.filter = ''
+      this.filterDataSource('')
+    },
+    changeOsName (value) {
+      this.osType = value
     }
   }
 }
@@ -115,6 +272,68 @@ export default {
 
 <style lang="less" scoped>
   .search-input {
-    margin: 0.5rem 0 1rem;
+    width: 25vw;
+    z-index: 8;
+    position: absolute;
+    top: 11px;
+    right: 10px;
+
+    @media (max-width: 600px) {
+      position: relative;
+      width: 100%;
+      top: 0;
+      right: 0;
+    }
+  }
+
+  /deep/.ant-tabs-nav-scroll {
+    min-height: 45px;
+  }
+
+  .filter-group {
+    /deep/.ant-input-affix-wrapper {
+      float: right;
+      width: calc(100% - 32px);
+
+      .ant-input {
+        border-radius: 4px;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+    }
+
+    /deep/.ant-input-group-addon {
+      float: left;
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      border-right: 0;
+      border-left: 1px solid #d9d9d9;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      padding: 0 0 0 1px;
+    }
+
+    &-button {
+      background: inherit;
+      border: 0;
+      padding: 0;
+    }
+
+    &-button {
+      position: relative;
+      display: block;
+      min-height: 30px;
+
+      &-clear {
+        position: absolute;
+        left: 0;
+      }
+
+      &-search {
+        position: absolute;
+        right: 0;
+      }
+    }
   }
 </style>

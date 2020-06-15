@@ -18,21 +18,24 @@
 <template>
   <a-table
     :columns="columns"
-    :dataSource="items"
-    :pagination="{showSizeChanger: true}"
+    :dataSource="dataItems"
+    :pagination="false"
     :rowSelection="rowSelection"
     :rowKey="record => record.id"
     size="middle"
+    :scroll="{ y: 225 }"
   >
-    <template v-slot:ipAddress="text">
+    <template slot="ipAddress" slot-scope="text, record">
       <a-input
-        :value="text"
-      ></a-input>
+        style="width: 150px;"
+        :placeholder="$t('label.ipaddress')"
+        @change="($event) => updateNetworkData('ipAddress', record.id, $event.target.value)" />
     </template>
-    <template v-slot:macAddress="text">
+    <template slot="macAddress" slot-scope="text, record">
       <a-input
-        :value="text"
-      ></a-input>
+        style="width: 150px;"
+        :placeholder="$t('label.macaddress')"
+        @change="($event) => updateNetworkData('macAddress', record.id, $event.target.value)" />
     </template>
   </a-table>
 </template>
@@ -48,30 +51,46 @@ export default {
     value: {
       type: String,
       default: ''
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
     return {
+      networks: [],
       columns: [
         {
           dataIndex: 'name',
-          title: this.$t('defaultNetwork'),
-          width: '40%'
+          title: this.$t('label.defaultnetwork'),
+          width: '30%'
         },
         {
           dataIndex: 'ip',
-          title: this.$t('ip'),
+          title: this.$t('label.ip'),
           width: '30%',
           scopedSlots: { customRender: 'ipAddress' }
         },
         {
           dataIndex: 'mac',
-          title: this.$t('macaddress'),
+          title: this.$t('label.macaddress'),
           width: '30%',
           scopedSlots: { customRender: 'macAddress' }
         }
       ],
-      selectedRowKeys: []
+      selectedRowKeys: [],
+      dataItems: []
+    }
+  },
+  beforeCreate () {
+    this.dataItems = []
+  },
+  created () {
+    this.dataItems = this.items
+    if (this.dataItems.length > 0) {
+      this.selectedRowKeys = [this.dataItems[0].id]
+      this.$emit('select-default-network-item', this.dataItems[0].id)
     }
   },
   computed: {
@@ -79,9 +98,7 @@ export default {
       return {
         type: 'radio',
         selectedRowKeys: this.selectedRowKeys,
-        onSelect: (row) => {
-          this.$emit('select-default-network-item', row.key)
-        }
+        onChange: this.onSelectRow
       }
     }
   },
@@ -89,6 +106,49 @@ export default {
     value (newValue, oldValue) {
       if (newValue && newValue !== oldValue) {
         this.selectedRowKeys = [newValue]
+      }
+    },
+    items (newData, oldData) {
+      if (newData && newData.length > 0) {
+        this.dataItems = newData
+        const keyEx = this.dataItems.filter((item) => this.selectedRowKeys.includes(item.id))
+        if (!keyEx || keyEx.length === 0) {
+          this.selectedRowKeys = [this.dataItems[0].id]
+          this.$emit('select-default-network-item', this.dataItems[0].id)
+        }
+      }
+    }
+  },
+  methods: {
+    onSelectRow (value) {
+      this.selectedRowKeys = value
+      this.$emit('select-default-network-item', value[0])
+    },
+    updateNetworkData (name, key, value) {
+      const index = this.networks.findIndex(item => item.key === key)
+      if (index === -1) {
+        const networkItem = {}
+        networkItem.key = key
+        networkItem[name] = value
+        this.networks.push(networkItem)
+        this.$emit('update-network-config', this.networks)
+        return
+      }
+
+      this.networks.filter((item, index) => {
+        if (item.key === key) {
+          this.$set(this.networks[index], name, value)
+        }
+      })
+      this.$emit('update-network-config', this.networks)
+    },
+    removeItem (id) {
+      this.dataItems = this.dataItems.filter(item => item.id !== id)
+      if (this.selectedRowKeys.includes(id)) {
+        if (this.dataItems && this.dataItems.length > 0) {
+          this.selectedRowKeys = [this.dataItems[0].id]
+          this.$emit('select-default-network-item', this.dataItems[0].id)
+        }
       }
     }
   }

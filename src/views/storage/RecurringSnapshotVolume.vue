@@ -17,8 +17,8 @@
 
 <template>
   <div class="snapshot-layout">
-    <a-tabs defaultActiveKey="1">
-      <a-tab-pane :tab="$t('schedule')" key="1">
+    <a-tabs defaultActiveKey="1" :animated="false">
+      <a-tab-pane :tab="$t('label.schedule')" key="1">
         <FormSchedule
           :loading="loading"
           :resource="resource"

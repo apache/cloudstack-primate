@@ -18,15 +18,16 @@
 import Cookies from 'js-cookie'
 import Vue from 'vue'
 import md5 from 'md5'
+import message from 'ant-design-vue/es/message'
+import router from '@/router'
+import store from '@/store'
 import { login, logout, api } from '@/api'
-import { ACCESS_TOKEN, CURRENT_PROJECT, DEFAULT_THEME, ASYNC_JOB_IDS } from '@/store/mutation-types'
-import { welcome } from '@/utils/util'
+import { ACCESS_TOKEN, CURRENT_PROJECT, DEFAULT_THEME, APIS, ASYNC_JOB_IDS } from '@/store/mutation-types'
 
 const user = {
   state: {
     token: '',
     name: '',
-    welcome: '',
     avatar: '',
     info: {},
     apis: {},
@@ -41,13 +42,12 @@ const user = {
     SET_TOKEN: (state, token) => {
       state.token = token
     },
-    SET_PROJECT: (state, project) => {
+    SET_PROJECT: (state, project = {}) => {
       Vue.ls.set(CURRENT_PROJECT, project)
       state.project = project
     },
-    SET_NAME: (state, { name, welcome }) => {
+    SET_NAME: (state, name) => {
       state.name = name
-      state.welcome = welcome
     },
     SET_AVATAR: (state, avatar) => {
       state.avatar = avatar
@@ -57,6 +57,7 @@ const user = {
     },
     SET_APIS: (state, apis) => {
       state.apis = apis
+      Vue.ls.set(APIS, apis)
     },
     SET_FEATURES: (state, features) => {
       state.features = features
@@ -97,8 +98,16 @@ const user = {
 
           Vue.ls.set(ACCESS_TOKEN, result.sessionkey, 24 * 60 * 60 * 1000)
           commit('SET_TOKEN', result.sessionkey)
+
+          commit('SET_APIS', {})
+          commit('SET_NAME', '')
+          commit('SET_AVATAR', '')
+          commit('SET_INFO', {})
           commit('SET_PROJECT', {})
           commit('SET_ASYNC_JOB_IDS', [])
+          commit('SET_FEATURES', {})
+          commit('SET_LDAP', {})
+          commit('SET_CLOUDIAN', {})
 
           resolve()
         }).catch(error => {
@@ -109,27 +118,52 @@ const user = {
 
     GetInfo ({ commit }) {
       return new Promise((resolve, reject) => {
-        api('listApis').then(response => {
+        const cachedApis = Vue.ls.get(APIS, {})
+        const hasAuth = Object.keys(cachedApis).length > 0
+        if (hasAuth) {
+          console.log('Login detected, using cached APIs')
+          commit('SET_APIS', cachedApis)
+          resolve(cachedApis)
+        } else {
+          // This will show the dashboard and some common navigation sections
+          // to most users/roles, while we complete API autodiscovery
           const apis = {}
-          const apiList = response.listapisresponse.api
-          for (var idx = 0; idx < apiList.length; idx++) {
-            const api = apiList[idx]
-            const apiName = api.name
-            apis[apiName] = {
-              params: api.params,
-              response: api.response
-            }
-          }
+          apis.listVirtualMachinesMetrics = {}
+          apis.listVolumesMetrics = {}
+          apis.listNetworks = {}
+          apis.listTemplates = {}
+          apis.listUsers = {}
+          apis.listAccounts = {}
           commit('SET_APIS', apis)
           resolve(apis)
-        }).catch(error => {
-          reject(error)
-        })
+
+          const hide = message.loading('Discovering features...', 0)
+          api('listApis').then(response => {
+            const apis = {}
+            const apiList = response.listapisresponse.api
+            for (var idx = 0; idx < apiList.length; idx++) {
+              const api = apiList[idx]
+              const apiName = api.name
+              apis[apiName] = {
+                params: api.params,
+                response: api.response
+              }
+            }
+            commit('SET_APIS', apis)
+            store.dispatch('GenerateRoutes', { apis }).then(() => {
+              router.addRoutes(store.getters.addRouters)
+            })
+            hide()
+            message.success('Discovered all available features!')
+          }).catch(error => {
+            reject(error)
+          })
+        }
 
         api('listUsers').then(response => {
           const result = response.listusersresponse.user[0]
           commit('SET_INFO', result)
-          commit('SET_NAME', { name: result.firstname + ' ' + result.lastname, welcome: welcome() })
+          commit('SET_NAME', result.firstname + ' ' + result.lastname)
           if ('email' in result) {
             commit('SET_AVATAR', 'https://www.gravatar.com/avatar/' + md5(result.email))
           } else {
@@ -174,8 +208,11 @@ const user = {
         })
 
         commit('SET_TOKEN', '')
-        commit('SET_PROJECT', {})
         commit('SET_APIS', {})
+        commit('SET_PROJECT', {})
+        commit('SET_ASYNC_JOB_IDS', [])
+        commit('SET_FEATURES', {})
+        commit('SET_LDAP', {})
         commit('SET_CLOUDIAN', {})
         commit('RESET_THEME')
         Vue.ls.remove(CURRENT_PROJECT)

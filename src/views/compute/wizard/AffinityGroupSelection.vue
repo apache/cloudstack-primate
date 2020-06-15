@@ -16,15 +16,24 @@
 // under the License.
 
 <template>
-  <a-table
-    :columns="columns"
-    :dataSource="items"
-    :rowKey="record => record.id"
-    :pagination="{showSizeChanger: true}"
-    :rowSelection="rowSelection"
-    size="middle"
-  >
-  </a-table>
+  <div>
+    <a-input-search
+      style="width: 25vw;float: right;margin-bottom: 10px; z-index: 8"
+      :placeholder="$t('label.search')"
+      v-model="filter"
+      @search="handleSearch" />
+    <a-table
+      :loading="loading"
+      :columns="columns"
+      :dataSource="items"
+      :rowKey="record => record.id"
+      :pagination="{showSizeChanger: true}"
+      :rowSelection="rowSelection"
+      size="middle"
+      :scroll="{ y: 225 }"
+    >
+    </a-table>
+  </div>
 </template>
 
 <script>
@@ -40,19 +49,28 @@ export default {
     value: {
       type: Array,
       default: () => []
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
     return {
+      filter: '',
       columns: [
         {
           dataIndex: 'name',
-          title: this.$t('Affinity Groups'),
+          title: this.$t('label.affinity.groups'),
           width: '40%'
         },
         {
           dataIndex: 'description',
-          title: this.$t('description'),
+          title: this.$t('label.description'),
           width: '60%'
         }
       ],
@@ -60,6 +78,13 @@ export default {
     }
   },
   computed: {
+    options () {
+      return {
+        page: 1,
+        pageSize: 10,
+        keyword: ''
+      }
+    },
     rowSelection () {
       return {
         type: 'checkbox',
@@ -75,6 +100,29 @@ export default {
       if (newValue && !_.isEqual(newValue, oldValue)) {
         this.selectedRowKeys = newValue
       }
+    },
+    loading () {
+      if (!this.loading) {
+        if (this.preFillContent.affinitygroupids) {
+          this.selectedRowKeys = this.preFillContent.affinitygroupids
+          this.$emit('select-affinity-group-item', this.preFillContent.affinitygroupids)
+        } else {
+          this.selectedRowKeys = []
+          this.$emit('select-affinity-group-item', null)
+        }
+      }
+    }
+  },
+  methods: {
+    handleSearch (value) {
+      this.filter = value
+      this.options.keyword = this.filter
+      this.$emit('handle-search-filter', this.options)
+    },
+    handleTableChange (pagination) {
+      this.options.page = pagination.current
+      this.options.pageSize = pagination.pageSize
+      this.$emit('handle-search-filter', this.options)
     }
   }
 }

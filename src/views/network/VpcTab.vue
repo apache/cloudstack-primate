@@ -19,23 +19,24 @@
   <a-spin :spinning="fetchLoading">
     <a-tabs
       :activeKey="currentTab"
-      :tabPosition="device === 'tablet' || device === 'mobile' ? 'top' : 'left'"
+      :tabPosition="device === 'mobile' ? 'top' : 'left'"
       :animated="false"
       @change="handleChangeTab">
-      <a-tab-pane :tab="$t('details')" key="details">
+      <a-tab-pane :tab="$t('label.details')" key="details">
         <DetailsTab :resource="resource" :loading="loading" />
       </a-tab-pane>
-      <a-tab-pane :tab="$t('networks')" key="tier">
+      <a-tab-pane :tab="$t('label.networks')" key="tier">
         <VpcTiersTab :resource="resource" :loading="loading" />
       </a-tab-pane>
-      <a-tab-pane tab="Public IP Addresses" key="ip" v-if="'listPublicIpAddresses' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.public.ips')" key="ip" v-if="'listPublicIpAddresses' in $store.getters.apis">
         <IpAddressesTab :resource="resource" :loading="loading" />
       </a-tab-pane>
-      <a-tab-pane tab="Network ACL Lists" key="acl" v-if="'listNetworkACLLists' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.network.acl.lists')" key="acl" v-if="'listNetworkACLLists' in $store.getters.apis">
         <a-button
           type="dashed"
           icon="plus"
           style="width: 100%"
+          :disabled="!('createNetworkACLList' in $store.getters.apis)"
           @click="() => handleOpenModals('networkAcl')">
           Add Network ACL List
         </a-button>
@@ -70,19 +71,20 @@
           @ok="handleNetworkAclFormSubmit">
           <a-form @submit.prevent="handleNetworkAclFormSubmit" :form="networkAclForm">
             <a-form-item :label="$t('label.add.list.name')">
-              <a-input v-decorator="['name', {rules: [{ required: true, message: 'Required' }]}]"></a-input>
+              <a-input v-decorator="['name', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"></a-input>
             </a-form-item>
-            <a-form-item :label="$t('description')">
-              <a-input v-decorator="['description', {rules: [{ required: true, message: 'Required' }]}]"></a-input>
+            <a-form-item :label="$t('label.description')">
+              <a-input v-decorator="['description', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"></a-input>
             </a-form-item>
           </a-form>
         </a-modal>
       </a-tab-pane>
-      <a-tab-pane tab="Private Gateways" key="pgw" v-if="'listPrivateGateways' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.private.gateway')" key="pgw" v-if="'listPrivateGateways' in $store.getters.apis">
         <a-button
           type="dashed"
           icon="plus"
           style="width: 100%"
+          :disabled="!('createPrivateGateway' in $store.getters.apis)"
           @click="() => handleOpenModals('privateGateways')">Add Private Gateway</a-button>
         <a-table
           class="table"
@@ -115,7 +117,7 @@
           <a-spin :spinning="modals.gatewayLoading">
             <p>{{ $t('message.add.new.gateway.to.vpc') }}</p>
             <a-form @submit.prevent="handleGatewayFormSubmit" :form="gatewayForm">
-              <a-form-item :label="$t('physicalnetworkid')">
+              <a-form-item :label="$t('label.physicalnetworkid')">
                 <a-select v-decorator="['physicalnetwork']">
                   <a-select-option v-for="item in physicalnetworks" :key="item.id" :value="item.id">
                     {{ item.name }}
@@ -125,31 +127,31 @@
               <a-form-item :label="$t('label.vlan')" :required="true">
                 <a-input
                   :placeholder="placeholders.vlan"
-                  v-decorator="['vlan', {rules: [{ required: true, message: 'Required' }]}]"
+                  v-decorator="['vlan', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"
                 ></a-input>
               </a-form-item>
-              <a-form-item :label="$t('publicip')" :required="true">
+              <a-form-item :label="$t('label.publicip')" :required="true">
                 <a-input
                   :placeholder="placeholders.ipaddress"
-                  v-decorator="['ipaddress', {rules: [{ required: true, message: 'Required' }]}]"
+                  v-decorator="['ipaddress', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"
                 ></a-input>
               </a-form-item>
-              <a-form-item :label="$t('gateway')" :required="true">
+              <a-form-item :label="$t('label.gateway')" :required="true">
                 <a-input
                   :placeholder="placeholders.gateway"
-                  v-decorator="['gateway', {rules: [{ required: true, message: 'Required' }]}]"
+                  v-decorator="['gateway', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"
                 ></a-input>
               </a-form-item>
-              <a-form-item :label="$t('netmask')" :required="true">
+              <a-form-item :label="$t('label.netmask')" :required="true">
                 <a-input
                   :placeholder="placeholders.netmask"
-                  v-decorator="['netmask', {rules: [{ required: true, message: 'Required' }]}]"
+                  v-decorator="['netmask', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"
                 ></a-input>
               </a-form-item>
-              <a-form-item :label="$t('sourceNat')">
+              <a-form-item :label="$t('label.sourcenat')">
                 <a-checkbox v-decorator="['nat']"></a-checkbox>
               </a-form-item>
-              <a-form-item :label="$t('aclid')">
+              <a-form-item :label="$t('label.aclid')">
                 <a-select v-decorator="['acl']">
                   <a-select-option v-for="item in networkAcls" :key="item.id" :value="item.id">
                     {{ item.name }}
@@ -160,12 +162,13 @@
           </a-spin>
         </a-modal>
       </a-tab-pane>
-      <a-tab-pane tab="VPN Gateway" key="vpngw" v-if="'listVpnGateways' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.vpn.gateway')" key="vpngw" v-if="'listVpnGateways' in $store.getters.apis">
         <a-button
           v-if="vpnGateways.length === 0"
           type="dashed"
           icon="plus"
           style="width: 100%"
+          :disabled="!('createVpnGateway' in $store.getters.apis)"
           @click="handleCreateVpnGateway">
           Create Site-to-Site VPN Gateway
         </a-button>
@@ -173,7 +176,7 @@
           <a-list-item v-for="item in vpnGateways" :key="item.id">
             <div class="list__item">
               <div class="list__col">
-                <div class="list__label">{{ $t('ip') }}</div>
+                <div class="list__label">{{ $t('label.ip') }}</div>
                 <div>
                   <router-link :to="{ path: '/s2svpn/' + item.id }">
                     {{ item.publicip }}
@@ -184,11 +187,12 @@
           </a-list-item>
         </a-list>
       </a-tab-pane>
-      <a-tab-pane tab="VPN Connections" key="vpnc" v-if="'listVpnConnections' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.vpn.connection')" key="vpnc" v-if="'listVpnConnections' in $store.getters.apis">
         <a-button
           type="dashed"
           icon="plus"
           style="width: 100%"
+          :disabled="!('createVpnConnection' in $store.getters.apis)"
           @click="handleOpenModals('vpnConnection')">
           Create Site-to-Site VPN Connection
         </a-button>
@@ -219,24 +223,24 @@
           @change="changePage"
           @showSizeChange="changePageSize"
           showSizeChanger/>
-        <a-modal v-model="modals.vpnConnection" :title="$t('label.create.VPN.connection')" @ok="handleVpnConnectionFormSubmit">
+        <a-modal v-model="modals.vpnConnection" :title="$t('label.create.vpn.connection')" @ok="handleVpnConnectionFormSubmit">
           <a-spin :spinning="modals.vpnConnectionLoading">
             <a-form @submit.prevent="handleVpnConnectionFormSubmit" :form="vpnConnectionForm">
-              <a-form-item :label="$t('vpncustomergatewayid')">
+              <a-form-item :label="$t('label.vpncustomergatewayid')">
                 <a-select v-decorator="['vpncustomergateway']">
                   <a-select-option v-for="item in vpncustomergateways" :key="item.id" :value="item.id">
                     {{ item.name }}
                   </a-select-option>
                 </a-select>
               </a-form-item>
-              <a-form-item :label="$t('passive')">
+              <a-form-item :label="$t('label.passive')">
                 <a-checkbox v-decorator="['passive']"></a-checkbox>
               </a-form-item>
             </a-form>
           </a-spin>
         </a-modal>
       </a-tab-pane>
-      <a-tab-pane tab="Virtual Routers" key="vr" v-if="'listRouters' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.virtual.routers')" key="vr" v-if="'listRouters' in $store.getters.apis">
         <RoutersTab :resource="resource" :loading="loading" />
       </a-tab-pane>
     </a-tabs>
@@ -296,56 +300,56 @@ export default {
       vpncustomergateways: [],
       privateGatewaysColumns: [
         {
-          title: this.$t('ip'),
+          title: this.$t('label.ip'),
           dataIndex: 'ipaddress',
           scopedSlots: { customRender: 'ipaddress' }
         },
         {
-          title: this.$t('state'),
+          title: this.$t('label.state'),
           dataIndex: 'state',
           scopedSlots: { customRender: 'state' }
         },
         {
-          title: this.$t('gateway'),
+          title: this.$t('label.gateway'),
           dataIndex: 'gateway'
         },
         {
-          title: this.$t('netmask'),
+          title: this.$t('label.netmask'),
           dataIndex: 'netmask'
         },
         {
-          title: this.$t('vlan'),
+          title: this.$t('label.vlan'),
           dataIndex: 'vlan'
         }
       ],
       vpnConnectionsColumns: [
         {
-          title: this.$t('ip'),
+          title: this.$t('label.ip'),
           dataIndex: 'publicip',
           scopedSlots: { customRender: 'publicip' }
         },
         {
-          title: this.$t('state'),
+          title: this.$t('label.state'),
           dataIndex: 'state',
           scopedSlots: { customRender: 'state' }
         },
         {
-          title: this.$t('gateway'),
+          title: this.$t('label.gateway'),
           dataIndex: 'gateway'
         },
         {
-          title: this.$t('ipsecpsk'),
+          title: this.$t('label.ipsecpsk'),
           dataIndex: 'ipsecpsk'
         }
       ],
       networkAclsColumns: [
         {
-          title: this.$t('name'),
+          title: this.$t('label.name'),
           dataIndex: 'name',
           scopedSlots: { customRender: 'name' }
         },
         {
-          title: this.$t('description'),
+          title: this.$t('label.description'),
           dataIndex: 'description'
         }
       ],
@@ -408,10 +412,7 @@ export default {
         this.privateGateways = json.listprivategatewaysresponse.privategateway
         this.itemCounts.privateGateways = json.listprivategatewaysresponse.count
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchLoading = false
       })
@@ -424,10 +425,7 @@ export default {
       }).then(json => {
         this.vpnGateways = json.listvpngatewaysresponse.vpngateway ? json.listvpngatewaysresponse.vpngateway : []
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchLoading = false
       })
@@ -443,10 +441,7 @@ export default {
         this.vpnConnections = json.listvpnconnectionsresponse.vpnconnection
         this.itemCounts.vpnConnections = json.listvpnconnectionsresponse.count
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchLoading = false
       })
@@ -467,10 +462,7 @@ export default {
           })
         }
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchLoading = false
       })
@@ -485,10 +477,7 @@ export default {
           })
         }
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.modals.gatewayLoading = false
       })
@@ -503,10 +492,7 @@ export default {
           })
         }
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.modals.vpnConnectionLoading = false
       })
@@ -576,10 +562,7 @@ export default {
             }
           })
         }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: error.response.headers['x-description']
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.modals.gatewayLoading = false
           this.modals.gateway = false
@@ -626,10 +609,7 @@ export default {
             }
           })
         }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: error.response.headers['x-description']
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.fetchVpnConnections()
           this.fetchLoading = false
@@ -671,10 +651,7 @@ export default {
             }
           })
         }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: error.response.headers['x-description']
-          })
+          this.$notifyError(error)
         }).finally(() => {
           this.fetchLoading = false
           this.fetchAclList()
@@ -707,10 +684,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description']
-        })
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchLoading = false
         this.handleFetchData()

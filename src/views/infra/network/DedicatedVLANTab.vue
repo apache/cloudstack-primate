@@ -17,42 +17,43 @@
 
 <template>
   <a-spin :spinning="fetchLoading">
-    <a-button type="dashed" icon="plus" style="width: 100%" @click="handleOpenModal">{{ $t('label.dedicate.vlan.vni.range') }}</a-button>
-    <a-list class="list">
-      <a-list-item v-for="item in items" :key="item.id" class="list__item">
-        <div class="list__item-outer-container">
-          <div class="list__item-container">
-            <div class="list__col">
-              <div class="list__label">{{ $t('vlanrange') }}</div>
-              <div>{{ item.guestvlanrange }}</div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">{{ $t('domain') }}</div>
-              <div>{{ item.domain }}</div>
-            </div>
-            <div class="list__col">
-              <div class="list__label">{{ $t('account') }}</div>
-              <div>{{ item.account }}</div>
-            </div>
-          </div>
-          <div class="list__col">
-            <div class="list__label">{{ $t('id') }}</div>
-            <div>{{ item.id }}</div>
-          </div>
-        </div>
-        <div slot="actions">
-          <a-popconfirm
-            :title="`${$t('label.delete')}?`"
-            @confirm="handleDelete(item)"
-            okText="Yes"
-            cancelText="No"
-            placement="top"
-          >
-            <a-button icon="delete" type="danger" shape="round"></a-button>
-          </a-popconfirm>
-        </div>
-      </a-list-item>
-    </a-list>
+    <a-button
+      :disabled="!('dedicateGuestVlanRange' in $store.getters.apis)"
+      type="dashed"
+      icon="plus"
+      style="width: 100%"
+      @click="handleOpenModal">{{ $t('label.dedicate.vlan.vni.range') }}</a-button>
+    <a-table
+      size="small"
+      style="overflow-y: auto; margin-top: 20px;"
+      :loading="fetchLoading"
+      :columns="columns"
+      :dataSource="items"
+      :pagination="false"
+      :rowKey="record => record.id">
+      <template slot="actions" slot-scope="record">
+        <a-popconfirm
+          :title="`${$t('label.delete')}?`"
+          @confirm="handleDelete(record)"
+          okText="Yes"
+          cancelText="No"
+          placement="top"
+        >
+          <a-button :disabled="!('releaseDedicatedGuestVlanRange' in $store.getters.apis)" icon="delete" type="danger" shape="circle"></a-button>
+        </a-popconfirm>
+      </template>
+    </a-table>
+    <a-pagination
+      class="pagination"
+      size="small"
+      :current="page"
+      :pageSize="pageSize"
+      :total="totalCount"
+      :showTotal="total => `Total ${total} items`"
+      :pageSizeOptions="['10', '20', '40', '80', '100']"
+      @change="handleChangePage"
+      @showSizeChange="handleChangePageSize"
+      showSizeChanger/>
 
     <a-modal v-model="modal" :title="$t('label.dedicate.vlan.vni.range')" @ok="handleSubmit">
       <a-spin :spinning="formLoading">
@@ -60,36 +61,36 @@
           :form="form"
           @submit="handleSubmit"
           layout="vertical" >
-          <a-form-item :label="$t('vlanRange')">
+          <a-form-item :label="$t('label.vlanrange')">
             <a-input
               v-decorator="['range', {
-                rules: [{ required: true, message: 'Required' }]
+                rules: [{ required: true, message: `${this.$t('label.required')}` }]
               }]"
             ></a-input>
           </a-form-item>
 
-          <a-form-item :label="$t('scope')">
+          <a-form-item :label="$t('label.scope')">
             <a-select defaultValue="account" v-model="selectedScope" @change="handleScopeChange">
-              <a-select-option value="account">{{ $t('account') }}</a-select-option>
-              <a-select-option value="project">{{ $t('project') }}</a-select-option>
+              <a-select-option value="account">{{ $t('label.account') }}</a-select-option>
+              <a-select-option value="project">{{ $t('label.project') }}</a-select-option>
             </a-select>
           </a-form-item>
 
-          <a-form-item :label="$t('domain')">
+          <a-form-item :label="$t('label.domain')">
             <a-select
               @change="handleDomainChange"
               v-decorator="['domain', {
-                rules: [{ required: true, message: 'Required' }]
+                rules: [{ required: true, message: `${this.$t('label.required')}` }]
               }]"
             >
               <a-select-option v-for="domain in domains" :key="domain.id" :value="domain.id">{{ domain.name }}</a-select-option>
             </a-select>
           </a-form-item>
 
-          <a-form-item :label="$t('account')" v-if="selectedScope === 'account'">
+          <a-form-item :label="$t('label.account')" v-if="selectedScope === 'account'">
             <a-select
               v-decorator="['account', {
-                rules: [{ required: true, message: 'Required' }]
+                rules: [{ required: true, message: `${this.$t('label.required')}` }]
               }]"
             >
               <a-select-option
@@ -101,10 +102,10 @@
             </a-select>
           </a-form-item>
 
-          <a-form-item :label="$t('project')" v-if="selectedScope === 'project'">
+          <a-form-item :label="$t('label.project')" v-if="selectedScope === 'project'">
             <a-select
               v-decorator="['project', {
-                rules: [{ required: true, message: 'Required' }]
+                rules: [{ required: true, message: `${this.$t('label.required')}` }]
               }]"
             >
               <a-select-option
@@ -147,7 +148,28 @@ export default {
       accounts: [],
       projects: [],
       modal: false,
-      selectedScope: 'account'
+      selectedScope: 'account',
+      totalCount: 0,
+      page: 1,
+      pageSize: 10,
+      columns: [
+        {
+          title: this.$t('label.vlanrange'),
+          dataIndex: 'guestvlanrange'
+        },
+        {
+          title: this.$t('label.domain'),
+          dataIndex: 'domain'
+        },
+        {
+          title: this.$t('label.account'),
+          dataIndex: 'account'
+        },
+        {
+          title: this.$t('label.action'),
+          scopedSlots: { customRender: 'actions' }
+        }
+      ]
     }
   },
   beforeCreate () {
@@ -166,20 +188,23 @@ export default {
   methods: {
     fetchData () {
       this.form.resetFields()
+      this.formLoading = true
       api('listDedicatedGuestVlanRanges', {
-        physicalnetworkid: this.resource.id
+        physicalnetworkid: this.resource.id,
+        page: this.page,
+        pageSize: this.pageSize
       }).then(response => {
-        this.items = response.listdedicatedguestvlanrangesresponse.dedicatedguestvlanrange
-          ? response.listdedicatedguestvlanrangesresponse.dedicatedguestvlanrange : []
-        this.parentFinishLoading()
-        this.formLoading = false
+        this.items = response.listdedicatedguestvlanrangesresponse.dedicatedguestvlanrange || []
+        this.totalCount = response.listdedicatedguestvlanrangesresponse.count || 0
       }).catch(error => {
         this.$notification.error({
           message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
+          description: error.response.data.errorresponse.errortext,
+          duration: 0
         })
-        this.parentFinishLoading()
+      }).finally(() => {
         this.formLoading = false
+        this.parentFinishLoading()
       })
     },
     fetchDomains () {
@@ -187,8 +212,7 @@ export default {
         details: 'min',
         listAll: true
       }).then(response => {
-        this.domains = response.listdomainsresponse.domain
-          ? response.listdomainsresponse.domain : []
+        this.domains = response.listdomainsresponse.domain || []
         if (this.domains.length > 0) {
           this.form.setFieldsValue({
             domain: this.domains[0].id
@@ -201,10 +225,7 @@ export default {
         }
         this.formLoading = false
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.formLoading = false
       })
     },
@@ -228,10 +249,7 @@ export default {
         }
         this.formLoading = false
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.formLoading = false
       })
     },
@@ -254,10 +272,7 @@ export default {
         }
         this.formLoading = false
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
         this.formLoading = false
       })
     },
@@ -315,10 +330,7 @@ export default {
           this.modal = false
           this.fetchData()
         }).catch(error => {
-          this.$notification.error({
-            message: `Error ${error.response.status}`,
-            description: error.response.data.dedicateguestvlanrangeresponse.errortext
-          })
+          this.$notifyError(error)
           this.modal = false
           this.fetchData()
         })
@@ -340,6 +352,16 @@ export default {
       this.modal = true
       this.formLoading = true
       this.fetchDomains()
+    },
+    handleChangePage (page, pageSize) {
+      this.page = page
+      this.pageSize = pageSize
+      this.fetchData()
+    },
+    handleChangePageSize (currentPage, pageSize) {
+      this.page = currentPage
+      this.pageSize = pageSize
+      this.fetchData()
     }
   }
 }
@@ -380,5 +402,9 @@ export default {
       }
     }
   }
+}
+
+.pagination {
+  margin-top: 20px;
 }
 </style>

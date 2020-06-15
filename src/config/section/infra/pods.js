@@ -17,18 +17,18 @@
 
 export default {
   name: 'pod',
-  title: 'Pods',
+  title: 'label.pods',
   icon: 'appstore',
   permission: ['listPods'],
   columns: ['name', 'allocationstate', 'gateway', 'netmask', 'zonename'],
   details: ['name', 'id', 'allocationstate', 'netmask', 'gateway', 'zonename'],
   related: [{
     name: 'cluster',
-    title: 'Clusters',
+    title: 'label.clusters',
     param: 'podid'
   }, {
     name: 'host',
-    title: 'Hosts',
+    title: 'label.hosts',
     param: 'podid'
   }],
   actions: [
@@ -51,21 +51,35 @@ export default {
       api: 'updatePod',
       icon: 'play-circle',
       label: 'label.action.enable.pod',
+      message: 'message.action.enable.pod',
       dataView: true,
-      show: (record) => { return record.allocationstate === 'Disabled' }
+      show: (record) => { return record.allocationstate === 'Disabled' },
+      args: ['allocationstate'],
+      mapping: {
+        allocationstate: {
+          value: (record) => 'Enabled'
+        }
+      }
     },
     {
       api: 'updatePod',
       icon: 'pause-circle',
       label: 'label.action.disable.pod',
+      message: 'message.action.disable.pod',
       dataView: true,
       show: (record) => { return record.allocationstate === 'Enabled' },
-      defaultArgs: { allocationstate: 'Disabled' }
+      args: ['allocationstate'],
+      mapping: {
+        allocationstate: {
+          value: (record) => 'Disabled'
+        }
+      }
     },
     {
       api: 'deletePod',
       icon: 'delete',
       label: 'label.action.delete.pod',
+      message: 'message.action.delete.pod',
       dataView: true
     }
   ]

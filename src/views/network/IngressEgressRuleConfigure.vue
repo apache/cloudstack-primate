@@ -29,27 +29,27 @@
 
       <div class="form">
         <div class="form__item">
-          <div class="form__label">{{ $t('protocol') }}</div>
+          <div class="form__label">{{ $t('label.protocol') }}</div>
           <a-select v-model="newRule.protocol" style="width: 100%;" @change="resetRulePorts">
-            <a-select-option value="tcp">{{ $t('tcp') | capitalise }}</a-select-option>
-            <a-select-option value="udp">{{ $t('udp') | capitalise }}</a-select-option>
-            <a-select-option value="icmp">{{ $t('icmp') | capitalise }}</a-select-option>
+            <a-select-option value="tcp">{{ $t('label.tcp') | capitalise }}</a-select-option>
+            <a-select-option value="udp">{{ $t('label.udp') | capitalise }}</a-select-option>
+            <a-select-option value="icmp">{{ $t('label.icmp') | capitalise }}</a-select-option>
           </a-select>
         </div>
         <div v-show="newRule.protocol === 'tcp' || newRule.protocol === 'udp'" class="form__item">
-          <div class="form__label">{{ $t('startport') }}</div>
+          <div class="form__label">{{ $t('label.startport') }}</div>
           <a-input v-model="newRule.startport"></a-input>
         </div>
         <div v-show="newRule.protocol === 'tcp' || newRule.protocol === 'udp'" class="form__item">
-          <div class="form__label">{{ $t('endport') }}</div>
+          <div class="form__label">{{ $t('label.endport') }}</div>
           <a-input v-model="newRule.endport"></a-input>
         </div>
         <div v-show="newRule.protocol === 'icmp'" class="form__item">
-          <div class="form__label">{{ $t('icmptype') }}</div>
+          <div class="form__label">{{ $t('label.icmptype') }}</div>
           <a-input v-model="newRule.icmptype"></a-input>
         </div>
         <div v-show="newRule.protocol === 'icmp'" class="form__item">
-          <div class="form__label">{{ $t('icmpcode') }}</div>
+          <div class="form__label">{{ $t('label.icmpcode') }}</div>
           <a-input v-model="newRule.icmpcode"></a-input>
         </div>
         <div class="form__item" v-if="addType === 'cidr'">
@@ -64,68 +64,52 @@
           </div>
         </div>
         <div class="form__item" style="flex: 0">
-          <a-button type="primary" @click="handleAddRule">{{ $t('label.add') }}</a-button>
+          <a-button :disabled="!('authorizeSecurityGroupInress' in $store.getters.apis) && !('authorizeSecurityGroupEgress' in $store.getters.apis)" type="primary" @click="handleAddRule">{{ $t('label.add') }}</a-button>
         </div>
       </div>
     </div>
 
-    <a-list>
-      <a-list-item v-for="(rule, index) in rules" :key="index" class="list">
-        <div class="list__col">
-          <div class="list__title">Protocol</div>
-          <div>{{ rule.protocol | capitalise }}</div>
+    <a-table
+      size="small"
+      style="overflow-y: auto"
+      :columns="columns"
+      :dataSource="rules"
+      :pagination="false"
+      :rowKey="record => record.id">
+      <template slot="protocol" slot-scope="record">
+        {{ record.protocol | capitalise }}
+      </template>
+      <template slot="account" slot-scope="record">
+        <div v-if="record.account && record.securitygroupname">
+          {{ record.account }} - {{ record.securitygroupname }}
         </div>
-        <div v-if="rule.startport" class="list__col">
-          <div class="list__title">Start Port</div>
-          <div>{{ rule.startport }}</div>
-        </div>
-        <div v-if="rule.endport" class="list__col">
-          <div class="list__title">End Port</div>
-          <div>{{ rule.endport }}</div>
-        </div>
-        <div v-if="rule.icmptype" class="list__col">
-          <div class="list__title">ICMP Type</div>
-          <div>{{ rule.icmptype }}</div>
-        </div>
-        <div v-if="rule.icmpcode" class="list__col">
-          <div class="list__title">ICMP Code</div>
-          <div>{{ rule.icmpcode }}</div>
-        </div>
-        <div v-if="rule.cidr" class="list__col">
-          <div class="list__title">CIDR</div>
-          <div>{{ rule.cidr }}</div>
-        </div>
-        <div class="list__col" v-if="rule.account && rule.securitygroupname">
-          <div class="list__title">Account, Security Group</div>
-          <div>{{ rule.account }} - {{ rule.securitygroupname }}</div>
-        </div>
-        <div slot="actions" class="actions">
-          <a-button shape="round" icon="tag" class="rule-action" @click="() => openTagsModal(rule)" />
-          <a-popconfirm
-            :title="$t('label.delete') + '?'"
-            @confirm="handleDeleteRule(rule)"
-            okText="Yes"
-            cancelText="No"
-          >
-            <a-button shape="round" type="danger" icon="delete" class="rule-action" />
-          </a-popconfirm>
-        </div>
-      </a-list-item>
-    </a-list>
+      </template>
+      <template slot="actions" slot-scope="record">
+        <a-button shape="circle" icon="tag" class="rule-action" @click="() => openTagsModal(record)" />
+        <a-popconfirm
+          :title="$t('label.delete') + '?'"
+          @confirm="handleDeleteRule(record)"
+          okText="Yes"
+          cancelText="No"
+        >
+          <a-button :disabled="!('revokeSecurityGroupIngress' in $store.getters.apis) && !('revokeSecurityGroupEgress' in $store.getters.apis)" shape="circle" type="danger" icon="delete" class="rule-action" />
+        </a-popconfirm>
+      </template>
+    </a-table>
 
-    <a-modal title="Edit Tags" v-model="tagsModalVisible" :footer="null" :afterClose="closeModal">
+    <a-modal :title="$t('label.edit.tags')" v-model="tagsModalVisible" :footer="null" :afterClose="closeModal">
       <a-spin v-if="tagsLoading"></a-spin>
 
       <div v-else>
         <a-form :form="newTagsForm" class="add-tags" @submit="handleAddTag">
           <div class="add-tags__input">
-            <p class="add-tags__label">{{ $t('key') }}</p>
+            <p class="add-tags__label">{{ $t('label.key') }}</p>
             <a-form-item>
               <a-input v-decorator="['key', { rules: [{ required: true, message: 'Please specify a tag key'}] }]" />
             </a-form-item>
           </div>
           <div class="add-tags__input">
-            <p class="add-tags__label">{{ $t('value') }}</p>
+            <p class="add-tags__label">{{ $t('label.value') }}</p>
             <a-form-item>
               <a-input v-decorator="['value', { rules: [{ required: true, message: 'Please specify a tag value'}] }]" />
             </a-form-item>
@@ -143,7 +127,7 @@
           </div>
         </div>
 
-        <a-button class="add-tags-done" @click="tagsModalVisible = false" type="primary">{{ $t('OK') }}</a-button>
+        <a-button class="add-tags-done" @click="tagsModalVisible = false" type="primary">{{ $t('label.ok') }}</a-button>
       </div>
 
     </a-modal>
@@ -187,7 +171,41 @@ export default {
       selectedRule: null,
       tagsLoading: false,
       addType: 'cidr',
-      tabType: null
+      tabType: null,
+      columns: [
+        {
+          title: this.$t('label.protocol'),
+          scopedSlots: { customRender: 'protocol' }
+        },
+        {
+          title: this.$t('label.startport'),
+          dataIndex: 'startport'
+        },
+        {
+          title: this.$t('label.endport'),
+          dataIndex: 'endport'
+        },
+        {
+          title: 'ICMP Type',
+          dataIndex: 'icmptype'
+        },
+        {
+          title: 'ICMP Code',
+          dataIndex: 'icmpcode'
+        },
+        {
+          title: 'CIDR',
+          dataIndex: 'cidr'
+        },
+        {
+          title: 'Account, Security Group',
+          scopedSlots: { customRender: 'account' }
+        },
+        {
+          title: this.$t('label.action'),
+          scopedSlots: { customRender: 'actions' }
+        }
+      ]
     }
   },
   watch: {
@@ -249,12 +267,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: this.tabType === 'ingress'
-            ? error.response.data.authorizesecuritygroupingressresponse.errortext
-            : error.response.data.authorizesecuritygroupegressresponse.errortext
-        })
+        this.$notifyError(error)
         this.parentToggleLoading()
       })
     },
@@ -286,11 +299,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: this.tabType === 'ingress' ? error.response.data.revokesecuritygroupingressresponse.errortext
-            : error.response.data.revokesecuritygroupegressresponse.errortext
-        })
+        this.$notifyError(error)
         this.parentToggleLoading()
       })
     },
@@ -302,10 +311,7 @@ export default {
       }).then(response => {
         this.tags = response.listtagsresponse.tag
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.errorresponse.errortext
-        })
+        this.$notifyError(error)
       })
     },
     handleDeleteTag (tag) {
@@ -343,10 +349,7 @@ export default {
           }
         })
       }).catch(error => {
-        this.$notification.error({
-          message: `Error ${error.response.status}`,
-          description: error.response.data.deletetagsresponse.errortext
-        })
+        this.$notifyError(error)
         this.parentToggleLoading()
         this.tagsLoading = false
       })
@@ -394,10 +397,7 @@ export default {
             }
           })
         }).catch(error => {
-          this.$notification.error({
-            message: `Error ${error.response.status}`,
-            description: error.response.data.createtagsresponse.errortext
-          })
+          this.$notifyError(error)
           this.parentToggleLoading()
           this.tagsLoading = false
         })

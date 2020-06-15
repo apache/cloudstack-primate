@@ -16,25 +16,851 @@
 // under the License.
 
 <template>
-  <div>
-    This must also check and handle for add system offering as it's the same API
+  <div class="form-layout">
+    <a-spin :spinning="loading">
+      <a-form
+        :form="form"
+        @submit="handleSubmit"
+        layout="vertical">
+        <a-form-item :label="$t('label.name')">
+          <a-input
+            v-decorator="['name', {
+              rules: [{ required: true, message: $t('message.error.required.input') }]
+            }]"
+            :placeholder="this.$t('label.name')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.displaytext')">
+          <a-input
+            v-decorator="['displaytext', {
+              rules: [{ required: true, message: $t('message.error.required.input') }]
+            }]"
+            :placeholder="this.$t('label.displaytext')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.systemvmtype')" v-if="this.isSystem">
+          <a-select
+            v-decorator="['systemvmtype', {
+              initialValue: 'domainrouter'
+            }]"
+            showSearch
+            optionFilterProp="children"
+            :filterOption="(input, option) => {
+              return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }"
+            :placeholder="this.$t('label.systemvmtype')">
+            <a-select-option key="domainrouter">Domain Router</a-select-option>
+            <a-select-option key="consoleproxy">Console Proxy</a-select-option>
+            <a-select-option key="secondarystoragevm">Secondary Storage VM</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item :label="$t('label.storagetype')">
+          <a-radio-group
+            v-decorator="['storagetype', {
+              initialValue: this.storageType
+            }]"
+            buttonStyle="solid"
+            @change="selected => { this.handleStorageTypeChange(selected.target.value) }">
+            <a-radio-button value="shared">
+              {{ $t('label.shared') }}
+            </a-radio-button>
+            <a-radio-button value="local">
+              {{ $t('label.local') }}
+            </a-radio-button>
+          </a-radio-group>
+        </a-form-item>
+        <a-form-item :label="$t('label.provisioningtype')">
+          <a-radio-group
+            v-decorator="['provisioningtype', {
+              initialValue: this.provisioningType
+            }]"
+            buttonStyle="solid"
+            @change="selected => { this.handleProvisioningTypeChange(selected.target.value) }">
+            <a-radio-button value="thin">
+              {{ $t('label.provisioningtype.thin') }}
+            </a-radio-button>
+            <a-radio-button value="sparse">
+              {{ $t('label.provisioningtype.sparse') }}
+            </a-radio-button>
+            <a-radio-button value="fat">
+              {{ $t('label.provisioningtype.fat') }}
+            </a-radio-button>
+          </a-radio-group>
+        </a-form-item>
+        <a-form-item :label="$t('label.cachemode')">
+          <a-radio-group
+            v-decorator="['cachemode', {
+              initialValue: this.cacheMode
+            }]"
+            buttonStyle="solid"
+            @change="selected => { this.handleCacheModeChange(selected.target.value) }">
+            <a-radio-button value="none">
+              {{ $t('label.nodiskcache') }}
+            </a-radio-button>
+            <a-radio-button value="writeback">
+              {{ $t('label.writeback') }}
+            </a-radio-button>
+            <a-radio-button value="writethrough">
+              {{ $t('label.writethrough') }}
+            </a-radio-button>
+          </a-radio-group>
+        </a-form-item>
+        <a-form-item :label="$t('label.offeringtype')" v-show="!this.isSystem">
+          <a-radio-group
+            v-decorator="['offeringtype', {
+              initialValue: this.offeringType
+            }]"
+            buttonStyle="solid"
+            @change="selected => { this.handleComputeOfferingTypeChange(selected.target.value) }">
+            <a-radio-button value="fixed">
+              {{ $t('label.fixed') }}
+            </a-radio-button>
+            <a-radio-button value="customconstrained">
+              {{ $t('label.customconstrained') }}
+            </a-radio-button>
+            <a-radio-button value="customunconstrained">
+              {{ $t('label.customunconstrained') }}
+            </a-radio-button>
+          </a-radio-group>
+        </a-form-item>
+        <a-form-item :label="$t('label.cpunumber')" v-if="this.offeringType === 'fixed'">
+          <a-input
+            v-decorator="['cpunumber', {
+              rules: [{ required: true, message: $t('message.error.required.input') },
+                      {
+                        validator: (rule, value, callback) => {
+                          if (value && (isNaN(value) || value <= 0)) {
+                            callback(this.$t('message.error.number'))
+                          }
+                          callback()
+                        }
+                      }
+              ]
+            }]"
+            :placeholder="this.$t('label.cpunumber')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.cpuspeed')" v-if="this.offeringType !== 'customunconstrained'">
+          <a-input
+            v-decorator="['cpuspeed', {
+              rules: [{ required: true, message: $t('message.error.required.input') },
+                      {
+                        validator: (rule, value, callback) => {
+                          if (value && (isNaN(value) || value <= 0)) {
+                            callback(this.$t('message.error.number'))
+                          }
+                          callback()
+                        }
+                      }
+              ]
+            }]"
+            :placeholder="this.$t('label.cpuspeed')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.mincpunumber')" v-if="this.offeringType === 'customconstrained'">
+          <a-input
+            v-decorator="['mincpunumber', {
+              rules: [{ required: true, message: $t('message.error.required.input') },
+                      {
+                        validator: (rule, value, callback) => {
+                          if (value && (isNaN(value) || value <= 0)) {
+                            callback(this.$t('message.error.number'))
+                          }
+                          callback()
+                        }
+                      }
+              ]
+            }]"
+            :placeholder="this.$t('label.mincpunumber')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.maxcpunumber')" v-if="this.offeringType === 'customconstrained'">
+          <a-input
+            v-decorator="['maxcpunumber', {
+              rules: [{ required: true, message: $t('message.error.required.input') },
+                      {
+                        validator: (rule, value, callback) => {
+                          if (value && (isNaN(value) || value <= 0)) {
+                            callback(this.$t('message.error.number'))
+                          }
+                          callback()
+                        }
+                      }
+              ]
+            }]"
+            :placeholder="this.$t('label.maxcpunumber')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.memory')" v-if="this.offeringType === 'fixed'">
+          <a-input
+            v-decorator="['memory', {
+              rules: [{ required: true, message: $t('message.error.required.input') },
+                      {
+                        validator: (rule, value, callback) => {
+                          if (value && (isNaN(value) || value <= 0)) {
+                            callback(this.$t('message.error.number'))
+                          }
+                          callback()
+                        }
+                      }
+              ]
+            }]"
+            :placeholder="this.$t('label.memory')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.minmemory')" v-if="this.offeringType === 'customconstrained'">
+          <a-input
+            v-decorator="['minmemory', {
+              rules: [{ required: true, message: $t('message.error.required.input') },
+                      {
+                        validator: (rule, value, callback) => {
+                          if (value && (isNaN(value) || value <= 0)) {
+                            callback(this.$t('message.error.number'))
+                          }
+                          callback()
+                        }
+                      }
+              ]
+            }]"
+            :placeholder="this.$t('label.minmemory')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.maxmemory')" v-if="this.offeringType === 'customconstrained'">
+          <a-input
+            v-decorator="['maxmemory', {
+              rules: [{ required: true, message: $t('message.error.required.input') },
+                      {
+                        validator: (rule, value, callback) => {
+                          if (value && (isNaN(value) || value <= 0)) {
+                            callback(this.$t('message.error.number'))
+                          }
+                          callback()
+                        }
+                      }
+              ]
+            }]"
+            :placeholder="this.$t('label.maxmemory')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.networkrate')">
+          <a-input
+            v-decorator="['networkrate', {
+              rules: [
+                {
+                  validator: (rule, value, callback) => {
+                    if (value && (isNaN(value) || value <= 0)) {
+                      callback(this.$t('message.error.number'))
+                    }
+                    callback()
+                  }
+                }
+              ]
+            }]"
+            :placeholder="this.$t('label.networkrate')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.qostype')">
+          <a-radio-group
+            v-decorator="['qostype', {
+              initialValue: this.qosType
+            }]"
+            buttonStyle="solid"
+            @change="selected => { this.handleQosTypeChange(selected.target.value) }">
+            <a-radio-button value="">
+              {{ $t('label.none') }}
+            </a-radio-button>
+            <a-radio-button value="hypervisor">
+              {{ $t('label.hypervisor') }}
+            </a-radio-button>
+            <a-radio-button value="storage">
+              {{ $t('label.storage') }}
+            </a-radio-button>
+          </a-radio-group>
+        </a-form-item>
+        <a-form-item :label="$t('label.diskbytesreadrate')" v-if="this.qosType === 'hypervisor'">
+          <a-input
+            v-decorator="['diskbytesreadrate', {
+              rules: [{
+                validator: (rule, value, callback) => {
+                  if (value && (isNaN(value) || value <= 0)) {
+                    callback(this.$t('message.error.number'))
+                  }
+                  callback()
+                }
+              }]
+            }]"
+            :placeholder="this.$t('label.diskbytesreadrate')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.diskbyteswriterate')" v-if="this.qosType === 'hypervisor'">
+          <a-input
+            v-decorator="['diskbyteswriterate', {
+              rules: [{
+                validator: (rule, value, callback) => {
+                  if (value && (isNaN(value) || value <= 0)) {
+                    callback(this.$t('message.error.number'))
+                  }
+                  callback()
+                }
+              }]
+            }]"
+            :placeholder="this.$t('label.diskbyteswriterate')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.diskiopsreadrate')" v-if="this.qosType === 'hypervisor'">
+          <a-input
+            v-decorator="['diskiopsreadrate', {
+              rules: [{
+                validator: (rule, value, callback) => {
+                  if (value && (isNaN(value) || value <= 0)) {
+                    callback(this.$t('message.error.number'))
+                  }
+                  callback()
+                }
+              }]
+            }]"
+            :placeholder="this.$t('label.diskiopsreadrate')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.diskiopswriterate')" v-if="this.qosType === 'hypervisor'">
+          <a-input
+            v-decorator="['diskiopswriterate', {
+              rules: [{
+                validator: (rule, value, callback) => {
+                  if (value && (isNaN(value) || value <= 0)) {
+                    callback(this.$t('message.error.number'))
+                  }
+                  callback()
+                }
+              }]
+            }]"
+            :placeholder="this.$t('label.diskiopswriterate')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.iscustomizeddiskiops')" v-if="!this.isSystem && this.qosType === 'storage'">
+          <a-switch v-decorator="['iscustomizeddiskiops', {initialValue: this.isCustomizedDiskIops}]" :defaultChecked="this.isCustomizedDiskIops" @change="val => { this.isCustomizedDiskIops = val }" />
+        </a-form-item>
+        <a-form-item :label="$t('label.diskiopsmin')" v-if="this.qosType === 'storage' && !this.isCustomizedDiskIops">
+          <a-input
+            v-decorator="['diskiopsmin', {
+              rules: [{
+                validator: (rule, value, callback) => {
+                  if (value && (isNaN(value) || value <= 0)) {
+                    callback(this.$t('message.error.number'))
+                  }
+                  callback()
+                }
+              }]
+            }]"
+            :placeholder="this.$t('label.diskiopsmin')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.diskiopsmax')" v-if="this.qosType === 'storage' && !this.isCustomizedDiskIops">
+          <a-input
+            v-decorator="['diskiopsmax', {
+              rules: [{
+                validator: (rule, value, callback) => {
+                  if (value && (isNaN(value) || value <= 0)) {
+                    callback(this.$t('message.error.number'))
+                  }
+                  callback()
+                }
+              }]
+            }]"
+            :placeholder="this.$t('label.diskiopsmax')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.hypervisorsnapshotreserve')" v-if="!this.isSystem && this.qosType === 'storage'">
+          <a-input
+            v-decorator="['hypervisorsnapshotreserve', {
+              rules: [{
+                validator: (rule, value, callback) => {
+                  if (value && (isNaN(value) || value <= 0)) {
+                    callback(this.$t('message.error.number'))
+                  }
+                  callback()
+                }
+              }]
+            }]"
+            :placeholder="this.$t('label.hypervisorsnapshotreserve')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.offerha')">
+          <a-switch v-decorator="['offerha', {initialValue: false}]" />
+        </a-form-item>
+        <a-form-item :label="$t('label.hosttags')" v-if="this.isAdmin()">
+          <a-input
+            v-decorator="['hosttags', {}]"
+            :placeholder="this.$t('label.hosttags')"/>
+        </a-form-item>
+        <a-form-item :label="$t('label.storagetags')" v-if="this.isAdmin()">
+          <a-select
+            mode="tags"
+            v-decorator="['storagetags', {}]"
+            showSearch
+            optionFilterProp="children"
+            :filterOption="(input, option) => {
+              return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }"
+            :loading="storageTagLoading"
+            :placeholder="$t('label.storagetags')"
+            v-if="this.isAdmin()">
+            <a-select-option v-for="opt in storageTags" :key="opt">
+              {{ opt }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item :label="$t('label.limitcpuuse')">
+          <a-switch v-decorator="['limitcpuuse', {initialValue: false}]" />
+        </a-form-item>
+        <a-form-item :label="$t('label.isvolatile')" v-if="!this.isSystem">
+          <a-switch v-decorator="['isvolatile', {initialValue: false}]" />
+        </a-form-item>
+        <a-form-item :label="$t('label.deploymentplanner')" v-if="!this.isSystem && this.isAdmin()">
+          <a-select
+            v-decorator="['deploymentplanner', {
+              initialValue: this.deploymentPlanners.length > 0 ? this.deploymentPlanners[0].name : ''
+            }]"
+            showSearch
+            optionFilterProp="children"
+            :filterOption="(input, option) => {
+              return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }"
+            :loading="deploymentPlannerLoading"
+            :placeholder="this.$t('label.deploymentplanner')"
+            @change="val => { this.handleDeploymentPlannerChange(val) }">
+            <a-select-option v-for="(opt) in this.deploymentPlanners" :key="opt.name">
+              {{ opt.name || opt.description }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item :label="$t('label.plannermode')" v-if="this.plannerModeVisible">
+          <a-radio-group
+            v-decorator="['plannermode', {
+              initialValue: this.plannerMode
+            }]"
+            buttonStyle="solid"
+            @change="selected => { this.handlePlannerModeChange(selected.target.value) }">
+            <a-radio-button value="">
+              {{ $t('label.none') }}
+            </a-radio-button>
+            <a-radio-button value="strict">
+              {{ $t('label.strict') }}
+            </a-radio-button>
+            <a-radio-button value="preferred">
+              {{ $t('label.preferred') }}
+            </a-radio-button>
+          </a-radio-group>
+        </a-form-item>
+        <a-form-item :label="$t('label.gpu')" v-if="!this.isSystem">
+          <a-radio-group
+            v-decorator="['pcidevice', {
+              initialValue: this.selectedGpu
+            }]"
+            buttonStyle="solid"
+            @change="selected => { this.handleGpuChange(selected.target.value) }">
+            <a-radio-button v-for="(opt, optIndex) in this.gpuTypes" :key="optIndex" :value="opt.value">
+              {{ opt.title }}
+            </a-radio-button>
+          </a-radio-group>
+        </a-form-item>
+        <a-form-item :label="$t('label.vgputype')" v-if="this.vGpuVisible">
+          <a-select
+            v-decorator="['vgputype', {}]"
+            showSearch
+            optionFilterProp="children"
+            :filterOption="(input, option) => {
+              return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }"
+            :placeholder="this.$t('label.vgputype')">
+            <a-select-option v-for="(opt, optIndex) in this.vGpuTypes" :key="optIndex">
+              {{ opt }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item :label="$t('label.ispublic')" v-show="this.isAdmin()">
+          <a-switch v-decorator="['ispublic', {initialValue: this.isPublic}]" :checked="this.isPublic" @change="val => { this.isPublic = val }" />
+        </a-form-item>
+        <a-form-item :label="$t('label.domain')" v-if="!this.isPublic">
+          <a-select
+            mode="multiple"
+            v-decorator="['domainid', {
+              rules: [
+                {
+                  required: true,
+                  message: $t('message.error.select')
+                }
+              ]
+            }]"
+            showSearch
+            optionFilterProp="children"
+            :filterOption="(input, option) => {
+              return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }"
+            :loading="domainLoading"
+            :placeholder="this.$t('label.domainid')">
+            <a-select-option v-for="(opt, optIndex) in this.domains" :key="optIndex">
+              {{ opt.name || opt.description }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item :label="$t('label.zoneid')" v-if="!this.isSystem">
+          <a-select
+            id="zone-selection"
+            mode="multiple"
+            v-decorator="['zoneid', {
+              rules: [
+                {
+                  validator: (rule, value, callback) => {
+                    if (value && value.length > 1 && value.indexOf(0) !== -1) {
+                      callback(this.$t('label.error.zone.combined'))
+                    }
+                    callback()
+                  }
+                }
+              ]
+            }]"
+            showSearch
+            optionFilterProp="children"
+            :filterOption="(input, option) => {
+              return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }"
+            :loading="zoneLoading"
+            :placeholder="this.$t('label.zoneid')">
+            <a-select-option v-for="(opt, optIndex) in this.zones" :key="optIndex">
+              {{ opt.name || opt.description }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+      </a-form>
+      <div :span="24" class="action-button">
+        <a-button @click="closeAction">{{ this.$t('label.cancel') }}</a-button>
+        <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('label.ok') }}</a-button>
+      </div>
+    </a-spin>
   </div>
 </template>
 
 <script>
+import { api } from '@/api'
 
 export default {
-  name: '',
+  name: 'AddServiceOffering',
+  props: {
+  },
   components: {
   },
   data () {
     return {
+      isSystem: false,
+      storageType: 'shared',
+      provisioningType: 'thin',
+      cacheMode: 'none',
+      offeringType: 'fixed',
+      qosType: '',
+      isCustomizedDiskIops: false,
+      isPublic: true,
+      selectedDomains: [],
+      domains: [],
+      domainLoading: false,
+      selectedZones: [],
+      zones: [],
+      zoneLoading: false,
+      selectedDeployementPlanner: null,
+      storageTags: [],
+      storageTagLoading: false,
+      deploymentPlanners: [],
+      deploymentPlannerLoading: false,
+      plannerModeVisible: false,
+      plannerMode: '',
+      selectedGpu: '',
+      gpuTypes: [
+        {
+          value: '',
+          title: 'None',
+          vgpu: []
+        },
+        {
+          value: 'Group of NVIDIA Corporation GK107GL [GRID K1] GPUs',
+          title: 'NVIDIA GRID K1',
+          vgpu: ['', 'passthrough', 'GRID K100', 'GRID K120Q', 'GRID K140Q', 'GRID K160Q', 'GRID K180Q']
+        },
+        {
+          value: 'Group of NVIDIA Corporation GK104GL [GRID K2] GPUs',
+          title: 'NVIDIA GRID K2',
+          vgpu: ['', 'passthrough', 'GRID K200', 'GRID K220Q', 'GRID K240Q', 'GRID K260Q', 'GRID K280Q']
+        }
+      ],
+      vGpuVisible: false,
+      vGpuTypes: [],
+      loading: false
     }
   },
+  beforeCreate () {
+    this.form = this.$form.createForm(this)
+  },
+  created () {
+    this.zones = [
+      {
+        id: null,
+        name: this.$t('label.all.zone')
+      }
+    ]
+  },
+  mounted () {
+    if (this.$route.meta.name === 'systemoffering') {
+      this.isSystem = true
+    }
+    this.fetchData()
+  },
   methods: {
+    fetchData () {
+      this.fetchDomainData()
+      this.fetchZoneData()
+      if (this.isAdmin()) {
+        this.fetchStorageTagData()
+        this.fetchDeploymentPlannerData()
+      }
+    },
+    isAdmin () {
+      return ['Admin'].includes(this.$store.getters.userInfo.roletype)
+    },
+    arrayHasItems (array) {
+      return array !== null && array !== undefined && Array.isArray(array) && array.length > 0
+    },
+    fetchDomainData () {
+      const params = {}
+      params.listAll = true
+      params.details = 'min'
+      this.domainLoading = true
+      api('listDomains', params).then(json => {
+        const listDomains = json.listdomainsresponse.domain
+        this.domains = this.domains.concat(listDomains)
+      }).finally(() => {
+        this.domainLoading = false
+      })
+    },
+    fetchZoneData () {
+      const params = {}
+      params.listAll = true
+      this.zoneLoading = true
+      api('listZones', params).then(json => {
+        const listZones = json.listzonesresponse.zone
+        this.zones = this.zones.concat(listZones)
+      }).finally(() => {
+        this.zoneLoading = false
+      })
+    },
+    fetchStorageTagData () {
+      const params = {}
+      params.listAll = true
+      this.storageTagLoading = true
+      this.storageTags = []
+      api('listStorageTags', params).then(json => {
+        const tags = json.liststoragetagsresponse.storagetag || []
+        for (const tag of tags) {
+          if (!this.storageTags.includes(tag.name)) {
+            this.storageTags.push(tag.name)
+          }
+        }
+      }).finally(() => {
+        this.storageTagLoading = false
+      })
+    },
+    fetchDeploymentPlannerData () {
+      const params = {}
+      params.listAll = true
+      this.deploymentPlannerLoading = true
+      api('listDeploymentPlanners', params).then(json => {
+        const planners = json.listdeploymentplannersresponse.deploymentPlanner
+        this.deploymentPlanners = this.deploymentPlanners.concat(planners)
+        this.deploymentPlanners.unshift({ name: '' })
+      }).finally(() => {
+        this.deploymentPlannerLoading = false
+      })
+    },
+    handleStorageTypeChange (val) {
+      this.storageType = val
+    },
+    handleProvisioningTypeChange (val) {
+      this.provisioningType = val
+    },
+    handleCacheModeChange (val) {
+      this.cacheMode = val
+    },
+    handleComputeOfferingTypeChange (val) {
+      this.offeringType = val
+    },
+    handleQosTypeChange (val) {
+      this.qosType = val
+    },
+    handleDeploymentPlannerChange (planner) {
+      this.selectedDeployementPlanner = planner
+      this.plannerModeVisible = false
+      if (this.selectedDeployementPlanner === 'ImplicitDedicationPlanner') {
+        this.plannerModeVisible = this.isAdmin()
+      }
+    },
+    handlePlannerModeChange (val) {
+      this.plannerMode = val
+    },
+    handleGpuChange (val) {
+      this.vGpuTypes = []
+      for (var i in this.gpuTypes) {
+        if (this.gpuTypes[i].value === val) {
+          this.vGpuTypes = this.gpuTypes[i].vgpu
+          break
+        }
+      }
+      this.vGpuVisible = true
+      if (!this.arrayHasItems(this.vGpuTypes)) {
+        this.vGpuVisible = false
+      }
+    },
+    handleSubmit (e) {
+      e.preventDefault()
+      this.form.validateFields((err, values) => {
+        if (err) {
+          return
+        }
+        var params = {
+          issystem: this.isSystem,
+          name: values.name,
+          displaytext: values.displaytext,
+          storagetype: values.storageType,
+          provisioningtype: values.provisioningtype,
+          cachemode: values.cachemode,
+          customized: values.offeringtype !== 'fixed',
+          offerha: values.offerha === true,
+          limitcpuuse: values.limitcpuuse === true
+        }
+
+        // custom fields (begin)
+        if (values.offeringtype === 'fixed') {
+          params.cpunumber = values.cpunumber
+          params.cpuspeed = values.cpuspeed
+          params.memory = values.memory
+        } else {
+          if (values.cpuspeed != null &&
+              values.mincpunumber != null &&
+              values.maxcpunumber != null &&
+              values.minmemory != null &&
+              values.maxmemory != null) {
+            params.cpuspeed = values.cpuspeed
+            params.mincpunumber = values.mincpunumber
+            params.maxcpunumber = values.maxcpunumber
+            params.minmemory = values.minmemory
+            params.maxmemory = values.maxmemory
+          }
+        }
+        // custom fields (end)
+
+        if (values.networkRate != null && values.networkRate.length > 0) {
+          params.networkrate = values.networkrate
+        }
+        if (values.qostype === 'storage') {
+          var customIops = values.iscustomizeddiskiops === true
+          params.customizediops = customIops
+          if (!customIops) {
+            if (values.diskiopsmin != null && values.diskiopsmin.length > 0) {
+              params.miniops = values.diskiopsmin
+            }
+            if (values.diskiopsmax != null && values.diskiopsmax.length > 0) {
+              params.maxiops = values.diskiopsmax
+            }
+            if (values.hypervisorsnapshotreserve !== undefined &&
+              values.hypervisorsnapshotreserve != null && values.hypervisorsnapshotreserve.length > 0) {
+              params.hypervisorsnapshotreserve = values.hypervisorsnapshotreserve
+            }
+          }
+        } else if (values.qostype === 'hypervisor') {
+          if (values.diskbytesreadrate != null && values.diskbytesreadrate.length > 0) {
+            params.bytesreadrate = values.diskbytesreadrate
+          }
+          if (values.diskbyteswriterate != null && values.diskbyteswriterate.length > 0) {
+            params.byteswriterate = values.diskbyteswriterate
+          }
+          if (values.diskiopsreadrate != null && values.diskiopsreadrate.length > 0) {
+            params.iopsreadrate = values.diskiopsreadrate
+          }
+          if (values.diskiopswriterate != null && values.diskiopswriterate.length > 0) {
+            params.iopswriterate = values.diskiopswriterate
+          }
+        }
+        if (values.storagetags != null && values.storagetags.length > 0) {
+          var tags = values.storagetags.join(',')
+          params.tags = tags
+        }
+        if (values.hosttags != null && values.hosttags.length > 0) {
+          params.hosttags = values.hosttags
+        }
+        if ('deploymentplanner' in values &&
+          values.deploymentplanner !== undefined &&
+          values.deploymentplanner != null && values.deploymentplanner.length > 0) {
+          params.deploymentplanner = values.deploymentplanner
+        }
+        if ('deploymentplanner' in values &&
+          values.deploymentplanner !== undefined &&
+          values.deploymentplanner === 'ImplicitDedicationPlanner' &&
+          values.plannermode !== undefined &&
+          values.plannermode !== '') {
+          params['serviceofferingdetails[0].key'] = 'ImplicitDedicationMode'
+          params['serviceofferingdetails[0].value'] = values.plannermode
+        }
+        if ('pcidevice' in values &&
+          values.pcidevice !== undefined && values.pcidevice !== '') {
+          params['serviceofferingdetails[1].key'] = 'pciDevice'
+          params['serviceofferingdetails[1].value'] = values.pcidevice
+        }
+        if ('vgputype' in values &&
+          this.vGpuTypes != null && this.vGpuTypes !== undefined &&
+          values.vgputype > this.vGpuTypes.length) {
+          params['serviceofferingdetails[2].key'] = 'vgpuType'
+          params['serviceofferingdetails[2].value'] = this.vGpuTypes[values.vgputype]
+        }
+        if ('isvolatile' in values && values.isvolatile !== undefined) {
+          params.isvolatile = values.isvolatile === true
+        }
+        if (values.ispublic !== true) {
+          var domainIndexes = values.domainid
+          var domainId = null
+          if (domainIndexes && domainIndexes.length > 0) {
+            var domainIds = []
+            for (var i = 0; i < domainIndexes.length; i++) {
+              domainIds = domainIds.concat(this.domains[domainIndexes[i]].id)
+            }
+            domainId = domainIds.join(',')
+          }
+          if (domainId) {
+            params.domainid = domainId
+          }
+        }
+        var zoneIndexes = values.zoneid
+        var zoneId = null
+        if (zoneIndexes && zoneIndexes.length > 0) {
+          var zoneIds = []
+          for (var j = 0; j < zoneIndexes.length; j++) {
+            zoneIds = zoneIds.concat(this.zones[zoneIndexes[j]].id)
+          }
+          zoneId = zoneIds.join(',')
+        }
+        if (zoneId) {
+          params.zoneid = zoneId
+        }
+        api('createServiceOffering', params).then(json => {
+          this.$message.success((this.isSystem ? 'Service offering created: ' : 'Compute offering created: ') + values.name)
+        }).catch(error => {
+          this.$notifyError(error)
+        }).finally(() => {
+          this.loading = false
+          this.$emit('refresh-data')
+          this.closeAction()
+        })
+      })
+    },
+    closeAction () {
+      this.$emit('close-action')
+    }
   }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+  .form-layout {
+    width: 80vw;
+    @media (min-width: 800px) {
+      width: 500px;
+    }
+  }
+
+  .action-button {
+    text-align: right;
+
+    button {
+      margin-right: 5px;
+    }
+  }
 </style>

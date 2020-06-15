@@ -25,19 +25,22 @@ import network from '@/config/section/network'
 import image from '@/config/section/image'
 import project from '@/config/section/project'
 import event from '@/config/section/event'
-import iam from '@/config/section/iam'
+import user from '@/config/section/user'
+import account from '@/config/section/account'
+import domain from '@/config/section/domain'
+import role from '@/config/section/role'
 import infra from '@/config/section/infra'
 import offering from '@/config/section/offering'
 import config from '@/config/section/config'
 import quota from '@/config/section/plugin/quota'
 import cloudian from '@/config/section/plugin/cloudian'
 
-export function generateRouterMap (section) {
+function generateRouterMap (section) {
   var map = {
     name: section.name,
     path: '/' + section.name,
     hidden: section.hidden,
-    meta: { title: section.title, keepAlive: true, icon: section.icon, docHelp: section.docHelp },
+    meta: { title: section.title, icon: section.icon, docHelp: section.docHelp },
     component: RouteView
   }
 
@@ -54,11 +57,11 @@ export function generateRouterMap (section) {
         meta: {
           title: child.title,
           name: child.name,
-          keepAlive: true,
           icon: child.icon,
           docHelp: child.docHelp,
           permission: child.permission,
           resourceType: child.resourceType,
+          filters: child.filters,
           params: child.params ? child.params : {},
           columns: child.columns,
           details: child.details,
@@ -76,7 +79,6 @@ export function generateRouterMap (section) {
             meta: {
               title: child.title,
               name: child.name,
-              keepAlive: true,
               icon: child.icon,
               docHelp: child.docHelp,
               permission: child.permission,
@@ -104,7 +106,6 @@ export function generateRouterMap (section) {
             meta: {
               title: child.title,
               name: child.name,
-              keepAlive: true,
               permission: [action.api]
             },
             component: action.component
@@ -116,13 +117,22 @@ export function generateRouterMap (section) {
   } else {
     map.component = section.component ? section.component : AutogenView
     map.hideChildrenInMenu = true
+
+    map.meta.name = section.name
+    map.meta.permission = section.permission
+    map.meta.resourceType = section.resourceType
+    map.meta.details = section.details
+    map.meta.actions = section.actions
+    map.meta.filters = section.filters
+    map.meta.treeView = section.treeView ? section.treeView : false
+    map.meta.tabs = section.treeView ? section.tabs : {}
+
     map.children = [{
       path: '/' + section.name + '/:id',
       actions: section.actions ? section.actions : [],
       meta: {
         title: section.title,
         name: section.name,
-        keepAlive: true,
         icon: section.icon,
         docHelp: section.docHelp,
         hidden: section.hidden,
@@ -157,8 +167,8 @@ export function generateRouterMap (section) {
   return map
 }
 
-export const asyncRouterMap = [
-  {
+export function asyncRouterMap () {
+  return [{
     path: '/',
     name: 'index',
     component: BasicLayout,
@@ -169,12 +179,11 @@ export const asyncRouterMap = [
         path: '/dashboard',
         name: 'dashboard',
         meta: {
-          title: 'Dashboard',
-          keepAlive: true,
+          title: 'label.dashboard',
           icon: 'dashboard',
           tabs: [
             {
-              name: 'Dashboard',
+              name: 'dashboard',
               component: () => import('@/views/dashboard/UsageDashboardChart')
             },
             {
@@ -183,9 +192,12 @@ export const asyncRouterMap = [
               component: () => import('@/views/project/AccountsTab')
             },
             {
-              name: 'resources',
+              name: 'limits',
+              params: {
+                projectid: 'id'
+              },
               show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
-              component: () => import('@/views/project/ResourcesTab.vue')
+              component: () => import('@/components/view/ResourceLimitTab.vue')
             }
           ]
         },
@@ -196,9 +208,12 @@ export const asyncRouterMap = [
       generateRouterMap(storage),
       generateRouterMap(network),
       generateRouterMap(image),
-      generateRouterMap(project),
       generateRouterMap(event),
-      generateRouterMap(iam),
+      generateRouterMap(project),
+      generateRouterMap(user),
+      generateRouterMap(account),
+      generateRouterMap(domain),
+      generateRouterMap(role),
       generateRouterMap(infra),
       generateRouterMap(offering),
       generateRouterMap(config),
@@ -240,8 +255,8 @@ export const asyncRouterMap = [
   },
   {
     path: '*', redirect: '/exception/404', hidden: true
-  }
-]
+  }]
+}
 
 export const constantRouterMap = [
   {

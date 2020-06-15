@@ -22,11 +22,11 @@
     </div>
 
     <div class="form__item">
-      <p class="form__label">{{ $t('operation') }}</p>
+      <p class="form__label">{{ $t('label.operation') }}</p>
       <a-select v-model="selectedOperation" defaultValue="Add" @change="fetchData">
-        <a-select-option :value="$t('add')">{{ $t('add') }}</a-select-option>
-        <a-select-option :value="$t('remove')">{{ $t('remove') }}</a-select-option>
-        <a-select-option :value="$t('reset')">{{ $t('reset') }}</a-select-option>
+        <a-select-option :value="$t('label.add')">{{ $t('label.add') }}</a-select-option>
+        <a-select-option :value="$t('label.remove')">{{ $t('label.remove') }}</a-select-option>
+        <a-select-option :value="$t('label.reset')">{{ $t('label.reset') }}</a-select-option>
       </a-select>
     </div>
 
@@ -34,18 +34,18 @@
       <div class="form__item">
         <p class="form__label">
           <span class="required">*</span>
-          {{ $t('shareWith') }}
+          {{ $t('label.sharewith') }}
         </p>
         <a-select v-model="selectedShareWith" defaultValue="Account" @change="fetchData">
-          <a-select-option :value="$t('account')">{{ $t('account') }}</a-select-option>
-          <a-select-option :value="$t('project')">{{ $t('project') }}</a-select-option>
+          <a-select-option :value="$t('label.account')">{{ $t('label.account') }}</a-select-option>
+          <a-select-option :value="$t('label.project')">{{ $t('label.project') }}</a-select-option>
         </a-select>
       </div>
 
       <template v-if="selectedShareWith === 'Account'">
         <div class="form__item">
           <p class="form__label">
-            {{ $t('account') }}
+            {{ $t('label.account') }}
           </p>
           <div v-if="showAccountSelect">
             <a-select
@@ -67,7 +67,7 @@
       <template v-else>
         <div class="form__item">
           <p class="form__label">
-            {{ $t('project') }}
+            {{ $t('label.project') }}
           </p>
           <a-select
             mode="multiple"
@@ -83,10 +83,10 @@
     </template>
     <div class="actions">
       <a-button @click="closeModal">
-        {{ $t('Cancel') }}
+        {{ $t('label.cancel') }}
       </a-button>
       <a-button type="primary" @click="submitData">
-        {{ $t('OK') }}
+        {{ $t('label.ok') }}
       </a-button>
     </div>
   </div>
@@ -95,7 +95,7 @@
 import { api } from '@/api'
 
 export default {
-  name: 'UpdateTemplatePermissions',
+  name: 'UpdateTemplateIsoPermissions',
   props: {
     resource: {
       type: Object,
@@ -113,37 +113,43 @@ export default {
       selectedProjects: [],
       selectedAccountsList: '',
       selectedOperation: 'Add',
-      selectedShareWith: this.$t('account'),
+      selectedShareWith: this.$t('label.account'),
       accountError: false,
       projectError: false,
       showAccountSelect: true,
-      loading: false
+      loading: false,
+      isImageTypeIso: false
     }
   },
   computed: {
     accountsList () {
-      return this.accounts
+      return this.accounts.length > 0 ? this.accounts
         .filter(a =>
           this.selectedOperation === 'Add'
             ? !this.permittedAccounts.includes(a.name)
             : this.permittedAccounts.includes(a.name)
-        )
+        ) : this.accounts
     },
     projectsList () {
-      return this.projects
+      return this.projects > 0 ? this.projects
         .filter(p =>
           this.selectedOperation === 'Add'
             ? !this.permittedProjects.includes(p.id)
             : this.permittedProjects.includes(p.id)
-        )
+        ) : this.projects
     }
   },
   mounted () {
+    this.isImageTypeIso = this.$route.meta.name === 'iso'
     this.fetchData()
   },
   methods: {
     fetchData () {
-      this.fetchTemplatePermissions()
+      if (this.isImageTypeIso) {
+        this.fetchIsoPermissions()
+      } else {
+        this.fetchTemplatePermissions()
+      }
       if (this.selectedShareWith === 'Account') {
         this.selectedAccounts = []
         this.fetchAccounts()
@@ -189,6 +195,22 @@ export default {
         this.loading = false
       })
     },
+    fetchIsoPermissions () {
+      this.loading = true
+      api('listIsoPermissions', {
+        id: this.resource.id
+      }).then(response => {
+        const permission = response.listtemplatepermissionsresponse.templatepermission
+        if (permission && permission.account) {
+          this.permittedAccounts = permission.account
+        }
+        if (permission && permission.projectids) {
+          this.permittedProjects = permission.projectids
+        }
+      }).finally(e => {
+        this.loading = false
+      })
+    },
     handleChange (selectedItems) {
       if (this.selectedOperation === 'Add' || this.selectedOperation === 'Remove') {
         if (this.selectedShareWith === 'Account') {
@@ -216,7 +238,9 @@ export default {
         variableValue = this.projects.filter(p => this.selectedProjects.includes(p.name)).map(p => p.id).join(',')
       }
       this.loading = true
-      api('updateTemplatePermissions', {
+      const apiName = this.isImageTypeIso ? 'updateIsoPermissions' : 'updateTemplatePermissions'
+      const resourceType = this.isImageTypeIso ? 'ISO' : 'template'
+      api(apiName, {
         [variableKey]: variableValue,
         id: this.resource.id,
         ispublic: this.resource.isPublic,
@@ -226,14 +250,11 @@ export default {
       })
         .then(response => {
           this.$notification.success({
-            message: 'Successfully updated template permissions'
+            message: 'Successfully updated ' + resourceType + ' permissions'
           })
         })
         .catch(error => {
-          this.$notification.error({
-            message: 'Failed to update template permissions',
-            description: error.response.data.updatetemplatepermissions.errortext
-          })
+          this.$notifyError(error)
         })
         .finally(e => {
           this.loading = false
@@ -249,7 +270,11 @@ export default {
   .form {
     display: flex;
     flex-direction: column;
-    width: 50vw;
+    width: 80vw;
+
+    @media (min-width: 700px) {
+      width: 500px;
+    }
 
     &__item {
       display: flex;
