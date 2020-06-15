@@ -509,6 +509,7 @@
 "label.ciscovnmc.resource.details": "CiscoVNMC resource details",
 "label.cks.cluster.size": "Cluster size (Worker nodes)",
 "label.cleanup": "Clean up",
+"label.clear": "Clear",
 "label.clear.list": "Clear list",
 "label.close": "Close",
 "label.cloud.console": "Cloud Management Console",

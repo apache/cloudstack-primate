@@ -66,13 +66,13 @@
             :dataView="dataView"
             :resource="resource"
             @exec-action="execAction"/>
-          <a-input-search
-            style="width: 100%; display: table-cell"
-            :placeholder="$t('label.search')"
-            v-if="!dataView && !treeView"
-            v-model="searchQuery"
-            allowClear
-            @search="onSearch" />
+          <search-view
+            :dataView="dataView"
+            :treeView="treeView"
+            :selectedFilter="selectedFilter"
+            :filters="filters"
+            :searchFilters="searchFilters"
+            :apiName="apiName"/>
         </a-col>
       </a-row>
     </a-card>
