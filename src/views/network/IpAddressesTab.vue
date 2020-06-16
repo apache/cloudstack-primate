@@ -105,6 +105,7 @@
         <a-form-item :label="$t('label.ipaddress')">
           <a-select
             style="width: 100%;"
+            showSearch
             v-model="acquireIp">
             <a-select-option
               v-for="ip in listPublicIpAddress"
@@ -322,6 +323,11 @@ export default {
               ipaddress: item.ipaddress
             })
           }
+        })
+        this.listPublicIpAddress.sort(function (a, b) {
+          if (a.ipaddress < b.ipaddress) { return -1 }
+          if (a.ipaddress > b.ipaddress) { return 1 }
+          return 0
         })
         this.acquireIp = this.listPublicIpAddress && this.listPublicIpAddress.length > 0 ? this.listPublicIpAddress[0].ipaddress : null
         this.acquireLoading = false
