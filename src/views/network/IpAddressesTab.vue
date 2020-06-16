@@ -17,7 +17,7 @@
 
 <template>
   <a-spin :spinning="fetchLoading">
-    <a-button type="dashed" icon="plus" style="width: 100%; margin-bottom: 15px" @click="acquireIpAddress">
+    <a-button :disabled="!('associateIpAddress' in $store.getters.apis)" type="dashed" icon="plus" style="width: 100%; margin-bottom: 15px" @click="acquireIpAddress">
       {{ $t('label.acquire.new.ip') }}
     </a-button>
     <div v-if="$route.path.startsWith('/vpc')">
@@ -30,7 +30,7 @@
         @change="handleTierSelect"
       >
         <a-select-option key="all" value="">
-          {{ $t('label.show.all') }}
+          {{ $t('label.view.all') }}
         </a-select-option>
         <a-select-option v-for="network in networksList" :key="network.id" :value="network.id">
           {{ network.name }}
@@ -68,6 +68,7 @@
           type="danger"
           icon="delete"
           shape="circle"
+          :disabled="!('disassociateIpAddress' in $store.getters.apis)"
           @click="releaseIpAddress(record)" />
       </template>
     </a-table>

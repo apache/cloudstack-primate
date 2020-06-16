@@ -43,7 +43,7 @@
                 rules: [
                   {
                     required: true,
-                    message: 'Please select option'
+                    message: `${this.$t('message.error.select')}`
                   }
                 ]
               }]"
@@ -53,7 +53,7 @@
                 return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }"
               :loading="zoneLoading"
-              :placeholder="this.$t('label..zoneid')"
+              :placeholder="this.$t('label.zoneid')"
               @change="val => { this.handleZoneChange(this.zones[val]) }">
               <a-select-option v-for="(opt, optIndex) in this.zones" :key="optIndex">
                 {{ opt.name || opt.description }}
@@ -82,7 +82,7 @@
                 rules: [
                   {
                     required: true,
-                    message: 'Please select option'
+                    message: `${this.$t('message.error.select')}`
                   }
                 ]
               }]"
@@ -112,7 +112,7 @@
                 rules: [
                   {
                     required: true,
-                    message: 'Please select option'
+                    message: `${this.$t('message.error.select')}`
                   }
                 ]
               }]"
