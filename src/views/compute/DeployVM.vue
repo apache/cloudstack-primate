@@ -87,11 +87,6 @@
                         v-decorator="['userdata']">
                       </a-textarea>
                     </a-form-item>
-                    <a-form-item :label="this.$t('label.bootintosetup')" v-if="zoneSelected && ((tabKey === 'isoid' && hypervisor === 'VMware') || (tabKey === 'templateid' && template && template.hypervisor === 'VMware'))" >
-                      <a-switch
-                        v-decorator="['bootintosetup']">
-                      </a-switch>
-                    </a-form-item>
                   </div>
                 </template>
               </a-step>
@@ -138,6 +133,11 @@
                             @change="value => this.hypervisor = value" />
                         </a-form-item>
                       </p>
+                      <a-form-item :label="this.$t('label.bootintosetup')" v-if="zoneSelected && ((tabKey === 'isoid' && hypervisor === 'VMware') || (tabKey === 'templateid' && template && template.hypervisor === 'VMware'))" >
+                        <a-switch
+                          v-decorator="['bootintosetup']">
+                        </a-switch>
+                      </a-form-item>
                     </a-card>
                     <a-form-item class="form-item-hidden">
                       <a-input v-decorator="['templateid']"/>
