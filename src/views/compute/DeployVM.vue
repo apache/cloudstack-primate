@@ -362,25 +362,7 @@ export default {
       podId: null,
       clusterId: null,
       zoneSelected: false,
-      vm: {
-        name: null,
-        zoneid: null,
-        zonename: null,
-        hypervisor: null,
-        templateid: null,
-        templatename: null,
-        keyboard: null,
-        keypair: null,
-        group: null,
-        affinitygroupids: [],
-        affinitygroup: [],
-        serviceofferingid: null,
-        serviceofferingname: null,
-        ostypeid: null,
-        ostypename: null,
-        rootdisksize: null,
-        disksize: null
-      },
+      vm: {},
       options: {
         templates: [],
         isos: [],
@@ -461,8 +443,7 @@ export default {
         }
       ],
       tabKey: 'templateid',
-      dataPreFill: {},
-      defaultZone: {}
+      dataPreFill: {}
     }
   },
   computed: {
@@ -515,7 +496,7 @@ export default {
         hypervisors: {
           list: 'listHypervisors',
           options: {
-            zoneid: _.get(this.zone, 'id') === '-1' ? this.defaultZone.id : _.get(this.zone, 'id')
+            zoneid: _.get(this.zone, 'id')
           },
           field: 'hypervisor'
         },
@@ -540,7 +521,7 @@ export default {
         networks: {
           list: 'listNetworks',
           options: {
-            zoneid: _.get(this.zone, 'id') === '-1' ? this.defaultZone.id : _.get(this.zone, 'id'),
+            zoneid: _.get(this.zone, 'id'),
             canusefordeploy: true,
             projectid: store.getters.project ? store.getters.project.id : null,
             domainid: store.getters.project && store.getters.project.id ? null : store.getters.userInfo.domainid,
@@ -554,7 +535,7 @@ export default {
           list: 'listPods',
           isLoad: !this.isNormalAndDomainUser,
           options: {
-            zoneid: _.get(this.zone, 'id') === '-1' ? null : _.get(this.zone, 'id')
+            zoneid: _.get(this.zone, 'id')
           },
           field: 'podid'
         },
@@ -562,8 +543,8 @@ export default {
           list: 'listClusters',
           isLoad: !this.isNormalAndDomainUser,
           options: {
-            zoneid: _.get(this.zone, 'id') === '-1' ? null : _.get(this.zone, 'id'),
-            podid: this.podId === -1 ? null : this.podId
+            zoneid: _.get(this.zone, 'id'),
+            podid: this.podId
           },
           field: 'clusterid'
         },
@@ -571,9 +552,9 @@ export default {
           list: 'listHosts',
           isLoad: !this.isNormalAndDomainUser,
           options: {
-            zoneid: _.get(this.zone, 'id') === -1 ? null : _.get(this.zone, 'id'),
-            podid: this.podId === '-1' ? null : this.podId,
-            clusterid: this.clusterId === '-1' ? null : this.clusterId,
+            zoneid: _.get(this.zone, 'id'),
+            podid: this.podId,
+            clusterid: this.clusterId,
             state: 'Up',
             type: 'Routing'
           },
@@ -585,12 +566,7 @@ export default {
       return _.map(this.networks, 'id')
     },
     zoneSelectOptions () {
-      const zones = this.options.zones
-      zones.unshift({
-        id: '-1',
-        name: this.$t('label.default')
-      })
-      return zones.map((zone) => {
+      return this.options.zones.map((zone) => {
         return {
           label: zone.name,
           value: zone.id
@@ -721,11 +697,7 @@ export default {
           this.form.setFieldsValue({ isoid: null })
         }
         this.instanceConfig = { ...this.form.getFieldsValue(), ...fields }
-        Object.keys(fields).forEach(field => {
-          if (field in this.vm) {
-            this.vm[field] = this.instanceConfig[field]
-          }
-        })
+        this.vm = Object.assign({}, this.instanceConfig)
       }
     })
     this.form.getFieldDecorator('computeofferingid', { initialValue: undefined, preserve: true })
@@ -1079,12 +1051,8 @@ export default {
     },
     fetchTemplates (templateFilter) {
       return new Promise((resolve, reject) => {
-        let zoneId = _.get(this.zone, 'id')
-        if (zoneId === '-1') {
-          zoneId = this.defaultZone.id
-        }
         api('listTemplates', {
-          zoneid: zoneId,
+          zoneid: _.get(this.zone, 'id'),
           templatefilter: templateFilter
         }).then((response) => {
           resolve(response)
@@ -1096,12 +1064,8 @@ export default {
     },
     fetchIsos (isoFilter) {
       return new Promise((resolve, reject) => {
-        let zoneId = _.get(this.zone, 'id')
-        if (zoneId === '-1') {
-          zoneId = this.defaultZone.id
-        }
         api('listIsos', {
-          zoneid: zoneId,
+          zoneid: _.get(this.zone, 'id'),
           isofilter: isoFilter,
           bootable: true
         }).then((response) => {
@@ -1171,9 +1135,6 @@ export default {
         isoid: undefined
       })
       this.tabKey = 'templateid'
-      if (value === '-1') {
-        this.defaultZone = this.options.zones.filter(item => item.id !== '-1')[0] || {}
-      }
       _.each(this.params, (param, name) => {
         if (!('isLoad' in param) || param.isLoad) {
           this.fetchOptions(param, name, ['zones'])
