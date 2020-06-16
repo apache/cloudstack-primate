@@ -73,6 +73,14 @@ export default {
           component: () => import('@/views/compute/DeployVM.vue')
         },
         {
+          api: 'importUnmanagedInstance',
+          icon: 'down-square',
+          label: 'label.vm.import',
+          listView: true,
+          popup: true,
+          component: () => import('@/views/compute/ImportVM.vue')
+        },
+        {
           api: 'updateVirtualMachine',
           icon: 'edit',
           label: 'label.action.edit.instance',

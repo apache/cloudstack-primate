@@ -2022,6 +2022,7 @@
 "label.vm.bootmode": "Boot Mode",
 "label.vm.boottype": "Boot Type",
 "label.vm.destroy": "Destroy",
+"label.vm.import": "Import Instance",
 "label.vm.password": "Password of the VM is",
 "label.vm.reboot": "Reboot",
 "label.vm.snapshots": "VM Snapshots",
