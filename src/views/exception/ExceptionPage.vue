@@ -18,13 +18,31 @@
 <template>
   <div class="exception">
     <div class="img" v-if="type == '403'">
-      <img src="@/assets/403.png"/>
+      <img
+        v-if="$store.getters.configs.error['403']"
+        :src="$store.getters.configs.error['403']"
+        :style="{
+          width: $store.getters.configs.theme['@error-width'],
+          height: $store.getters.configs.theme['@error-height']
+        }"/>
     </div>
     <div class="img" v-if="type == '404'">
-      <img src="@/assets/404.png"/>
+      <img
+        v-if="$store.getters.configs.error['404']"
+        :src="$store.getters.configs.error['404']"
+        :style="{
+          width: $store.getters.configs.theme['@error-width'],
+          height: $store.getters.configs.theme['@error-height']
+        }"/>
     </div>
     <div class="img" v-if="type == '500'">
-      <img src="@/assets/500.png"/>
+      <img
+        v-if="$store.getters.configs.error['500']"
+        :src="$store.getters.configs.error['500']"
+        :style="{
+          width: $store.getters.configs.theme['@error-width'],
+          height: $store.getters.configs.theme['@error-height']
+        }"/>
     </div>
     <div class="content">
       <h1>{{ config[type].title }}</h1>
@@ -71,10 +89,6 @@ export default {
       display: inline-block;
       padding-right: 52px;
       zoom: 1;
-      img {
-        height: 256px;
-        max-width: 256px;
-      }
     }
     .content {
       display: inline-block;
@@ -102,7 +116,6 @@ export default {
         padding-right: unset;
 
         img {
-          height: 40%;
           max-width: 80%;
         }
       }

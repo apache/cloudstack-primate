@@ -15,6 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import configs from '@public/config'
+
 export default {
   primaryColor: '#39A7DE', // primary color of ant design
   navTheme: 'light', // theme for nav menu
@@ -26,9 +28,9 @@ export default {
   invertedMode: true,
   multiTab: false, // enable to have tab/route history stuff
   // CloudStack options
-  apiBase: '/client/api',
-  docBase: 'http://docs.cloudstack.apache.org/en/latest',
-  appTitle: 'CloudStack',
+  apiBase: configs.apiBase,
+  docBase: configs.docBase,
+  appTitle: configs.appTitle,
   // vue-ls options
   storageOptions: {
     namespace: 'primate__', // key prefix

@@ -1,4 +1,25 @@
 {
+  "apiBase": "/client/api",
+  "docBase": "http://docs.cloudstack.apache.org/en/latest",
+  "appTitle": "CloudStack",
+  "aboutText": "label.app.name",
+  "aboutTitle": "label.about.app",
+  "docTitle": "label.app.name",
+  "keyboardOptions": {
+    "us": "label.standard.us.keyboard",
+    "uk": "label.uk.keyboard",
+    "fr": "label.french.azerty.keyboard",
+    "jp": "label.japanese.keyboard",
+    "sc": "label.simplified.chinese.keyboard"
+  },
+  "hiddenFields": {
+    "metrics.zones":[],
+    "metrics.clusters": [],
+    "metrics.hosts": [],
+    "metrics.storagepool": [],
+    "metrics.instances": [],
+    "metrics.volumes": []
+  },
   "theme": {
     "@primary-color": "#1890ff",
     "@success-color": "#52c41a",
@@ -9,7 +30,19 @@
     "@text-color": "rgba(0, 0, 0, 0.65)",
     "@text-color-secondary": "rgba(0, 0, 0, 0.45)",
     "@disabled-color": "rgba(0, 0, 0, 0.25)",
-    "@border-color-base": "#d9d9d9"
+    "@border-color-base": "#d9d9d9",
+    "@logo-width": "256px",
+    "@logo-height": "64px",
+    "@login-banner-width": "700px",
+    "@login-banner-height": "110px",
+    "@error-width": "256px",
+    "@error-height": "256px"
   },
-  "logo": "assets/logo.svg"
+  "logo": "assets/logo.svg",
+  "loginBanner": "assets/banner.svg",
+  "error": {
+    "404": "assets/404.png",
+    "403": "assets/403.png",
+    "500": "assets/500.png"
+  }
 }

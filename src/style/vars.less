@@ -16,3 +16,31 @@
 // under the License.
 
 @import "~ant-design-vue/lib/style/themes/default.less";
+
+@logo-width: 256px;
+@logo-height: 64px;
+@login-banner-width: 450px;
+@login-banner-height: 110px;
+@error-width: 256px;
+@error-height: 256px;
+
+.ant-layout-sider-children .logo-image {
+  width: @logo-width;
+  height: @logo-height;
+}
+
+.user-layout {
+  &-logo {
+    width: @login-banner-width;
+    height: @login-banner-height;
+  }
+}
+
+.exception {
+  .img {
+    img {
+      width: @error-width;
+      height: @error-height;
+    }
+  }
+}

@@ -17,7 +17,14 @@
 
 <template>
   <div class="logo">
-    <img class="logo-image" :src="logo"/>
+    <img
+      v-if="$store.getters.configs.logo"
+      :style="{
+        width: $store.getters.configs.theme['@logo-width'],
+        height: $store.getters.configs.theme['@logo-height']
+      }"
+      :src="$store.getters.configs.logo"
+      class="logo-image" />
   </div>
 </template>
 
@@ -37,11 +44,6 @@ export default {
       type: Boolean,
       default: true,
       required: false
-    }
-  },
-  computed: {
-    logo () {
-      return this.$store.getters.configs.logo || null
     }
   }
 }
@@ -64,7 +66,6 @@ export default {
 }
 
 .logo-image {
-  width: 256px;
   display: inline-block;
   vertical-align: middle;
 }

@@ -51,6 +51,7 @@ const vueConfig = {
 
   chainWebpack: (config) => {
     config.resolve.alias
+      .set('@public', resolve('public'))
       .set('@$', resolve('src'))
       .set('@api', resolve('src/api'))
       .set('@assets', resolve('src/assets'))
