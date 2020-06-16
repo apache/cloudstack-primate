@@ -20,12 +20,12 @@
     <div class="user-layout-container">
       <div class="user-layout-header">
         <img
-          v-if="$store.getters.configs.loginBanner"
+          v-if="$store.getters.configs.banner"
           :style="{
-            width: $store.getters.configs.theme['@login-banner-width'],
-            height: $store.getters.configs.theme['@login-banner-height']
+            width: $store.getters.configs.theme['@banner-width'],
+            height: $store.getters.configs.theme['@banner-height']
           }"
-          :src="$store.getters.configs.loginBanner"
+          :src="$store.getters.configs.banner"
           class="user-layout-logo"
           alt="logo">
       </div>

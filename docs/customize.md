@@ -1,13 +1,25 @@
 # UI customization
 Use a `public/config.json` (or `dist/config.json` after build) file for customizing theme, logos,...
 
-## Logo
-Change the logo by changing the path to the logo file as follows:
+## Images
+Change the image of the logo, login banner, error page, etc.
 ```json
 {
-  "logo": "assets/logo.svg"
+  "logo": "assets/logo.svg",
+  "banner": "assets/banner.svg",
+  "error": {
+    "404": "assets/404.png",
+    "403": "assets/403.png",
+    "500": "assets/500.png"
+  }
 }
 ```
+
+- `logo` changes the logo top-left side image.
+- `banner` changes the login banner image.
+- `error.404` change the image of error Page not found.
+- `error.403` change the image of error Forbidden.
+- `error.500` change the image of error Internal Server Error.
 
 ## Theme
 Customize themes like colors, border color, etc.
@@ -23,7 +35,13 @@ Customize themes like colors, border color, etc.
     "@text-color": "rgba(0, 0, 0, 0.65)",
     "@text-color-secondary": "rgba(0, 0, 0, 0.45)",
     "@disabled-color": "rgba(0, 0, 0, 0.25)",
-    "@border-color-base": "#d9d9d9"
+    "@border-color-base": "#d9d9d9",
+    "@logo-width": "256px",
+    "@logo-height": "64px",
+    "@banner-width": "700px",
+    "@banner-height": "110px",
+    "@error-width": "256px",
+    "@error-height": "256px"
   }
 }
 ```
@@ -38,6 +56,12 @@ Customize themes like colors, border color, etc.
 - `@text-color-secondary` change of secondary text color (breadcrumb icon).
 - `@disabled-color` change disable state color (disabled button, switch, etc).
 - `@border-color-base` change in major border color.
+- `@logo-width` change the width of the logo top-left side.
+- `@logo-height` change the height of the logo top-left side.
+- `@banner-width` changes the width of the login banner.
+- `@banner-height` changes the height of the login banner.
+- `@error-width` changes the width of the error image.
+- `@error-height` changes the height of the error image.
 
 Also, to add other properties, we can add new properties into `config/theme.config.js` based on the Ant Design Vue Less variable. 
 Refer: https://www.antdv.com/docs/vue/customize-theme/#Ant-Design-Vue-Less-variables

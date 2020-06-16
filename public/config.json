@@ -39,7 +39,7 @@
     "@error-height": "256px"
   },
   "logo": "assets/logo.svg",
-  "loginBanner": "assets/banner.svg",
+  "banner": "assets/banner.svg",
   "error": {
     "404": "assets/404.png",
     "403": "assets/403.png",
