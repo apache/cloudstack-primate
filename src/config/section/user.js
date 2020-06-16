@@ -14,7 +14,6 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-import store from '@/store'
 
 export default {
   name: 'accountuser',
@@ -75,7 +74,6 @@ export default {
       icon: 'check-circle',
       label: 'Configure SAML SSO Authorization',
       dataView: true,
-      show: () => { return 'authorizeSamlSso' in store.getters.apis },
       popup: true,
       component: () => import('@/views/iam/ConfigureSamlSsoAuth.vue')
     },
