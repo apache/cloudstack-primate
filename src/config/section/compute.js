@@ -279,11 +279,11 @@ export default {
         {
           api: 'scaleVirtualMachine',
           icon: 'arrows-alt',
-          // label: label.change.service.offering
           label: 'Scale VM',
           dataView: true,
-          args: ['serviceofferingid', 'details'],
-          show: (record) => { return ['Running'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC' }
+          show: (record) => { return ['Stopped'].includes(record.state) || ['Running'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC' },
+          popup: true,
+          component: () => import('@/views/compute/ChangeServiceOffering.vue')
         },
         {
           api: 'changeServiceForVirtualMachine',

@@ -17,7 +17,7 @@
 
 <template>
   <div style="width: 50vw;">
-    <p v-html="$t('message.change.offering.confirm')"></p>
+    <p v-html="getMessage()"></p>
 
     <a-form class="form">
       <div v-if="loading" class="loading">
@@ -38,9 +38,9 @@
         :memory-input-decorator="memoryKey"
         :computeOfferingId="selectedOffering.id"
         :isConstrained="'serviceofferingdetails' in selectedOffering"
-        :minCpu="'serviceofferingdetails' in selectedOffering ? selectedOffering.serviceofferingdetails.mincpunumber*1 : 1"
+        :minCpu="getMinCpu()"
         :maxCpu="'serviceofferingdetails' in selectedOffering ? selectedOffering.serviceofferingdetails.maxcpunumber*1 : Number.MAX_SAFE_INTEGER"
-        :minMemory="'serviceofferingdetails' in selectedOffering ? selectedOffering.serviceofferingdetails.minmemory*1 : 32"
+        :minMemory="getMinMemory()"
         :maxMemory="'serviceofferingdetails' in selectedOffering ? selectedOffering.serviceofferingdetails.maxmemory*1 : Number.MAX_SAFE_INTEGER"
         @update-compute-cpunumber="updateFieldValue"
         @update-compute-cpuspeed="updateFieldValue"
@@ -75,6 +75,7 @@ export default {
   inject: ['parentFetchData'],
   data () {
     return {
+      apiName: '',
       offeringsMap: {},
       offerings: [],
       selectedOffering: {},
@@ -86,6 +87,7 @@ export default {
     }
   },
   mounted () {
+    this.apiName = this.$attrs.action.currentAction.api
     this.fetchData({
       keyword: '',
       pageSize: 10,
@@ -98,22 +100,39 @@ export default {
       this.offerings = []
       this.offeringsMap = []
       api('listServiceOfferings', {
-        response: 'json',
+        virtualmachineid: this.resource.id,
         keyword: options.keyword,
-        listAll: true,
         details: 'min',
-        virtualmachineid: this.resource.id
+        response: 'json'
       }).then(response => {
         if (!response.listserviceofferingsresponse.serviceoffering) {
           return
         }
         this.offerings = response.listserviceofferingsresponse.serviceoffering
-        for (const offering of this.offerings) {
-          this.offeringsMap[offering.id] = offering
-        }
+        this.offerings.map(i => { this.offeringsMap[i.id] = i })
       }).finally(() => {
         this.loading = false
       })
+    },
+    getMinCpu () {
+      // We can only scale up while a VM is running
+      if (this.apiName === 'scaleVirtualMachine' && this.resource.state === 'Running') {
+        return this.resource.cpunumber
+      }
+      return 'serviceofferingdetails' in this.selectedOffering ? this.selectedOffering.serviceofferingdetails.mincpunumber * 1 : 1
+    },
+    getMinMemory () {
+      // We can only scale up while a VM is running
+      if (this.apiName === 'scaleVirtualMachine' && this.resource.state === 'Running') {
+        return this.resource.memory
+      }
+      return 'serviceofferingdetails' in this.selectedOffering ? this.selectedOffering.serviceofferingdetails.minmemory * 1 : 32
+    },
+    getMessage () {
+      if (this.apiName === 'scaleVirtualMachine' && this.resource.hypervisor === 'VMware') {
+        return this.$t('message.read.admin.guide.scaling.up')
+      }
+      return this.$t('message.change.offering.confirm')
     },
     updateComputeOffering (id) {
       this.params.serviceofferingid = id
@@ -155,17 +174,34 @@ export default {
     },
     handleSubmit () {
       this.loading = true
-      api('changeServiceForVirtualMachine', this.params).then(response => {
-        this.$notification.success({
-          message: 'Successfully changed offering'
-        })
-        this.loading = false
+      api(this.apiName, this.params).then(response => {
+        if (this.apiName === 'scaleVirtualMachine') {
+          const jobId = response.scalevirtualmachineresponse.jobid
+          if (jobId) {
+            this.$pollJob({
+              jobId,
+              successMethod: result => {
+                this.$notification.success({
+                  message: 'Successfully changed offering'
+                })
+              },
+              loadingMessage: 'Scale in progress',
+              catchMessage: 'Error encountered while fetching async job result'
+            })
+          }
+        } else {
+          this.$notification.success({
+            message: 'Successfully changed offering'
+          })
+        }
         this.$parent.$parent.close()
         this.parentFetchData()
       }).catch(error => {
         this.$notifyError(error)
         this.$parent.$parent.close()
         this.parentFetchData()
+      }).finally(() => {
+        this.loading = false
       })
     }
   }
