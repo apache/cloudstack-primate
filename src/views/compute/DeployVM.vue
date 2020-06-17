@@ -26,14 +26,10 @@
             layout="vertical"
           >
             <a-steps direction="vertical" size="small">
-              <a-step :title="this.$t('label.details')" status="process">
+              <a-step :title="this.$t('label.select.deployment.infrastructure')" status="process">
                 <template slot="description">
                   <div style="margin-top: 15px">
-                    <a-form-item :label="this.$t('label.name')">
-                      <a-input
-                        v-decorator="['name']"
-                      />
-                    </a-form-item>
+                    <span>{{ $t('message.select.a.zone') }}</span><br/>
                     <a-form-item :label="this.$t('label.zoneid')">
                       <a-select
                         v-decorator="['zoneid', {
@@ -73,20 +69,6 @@
                         :loading="loading.hosts"
                       ></a-select>
                     </a-form-item>
-                    <a-form-item :label="this.$t('label.group')">
-                      <a-input v-decorator="['group']" />
-                    </a-form-item>
-                    <a-form-item :label="this.$t('label.keyboard')">
-                      <a-select
-                        v-decorator="['keyboard']"
-                        :options="keyboardSelectOptions"
-                      ></a-select>
-                    </a-form-item>
-                    <a-form-item :label="this.$t('label.userdata')">
-                      <a-textarea
-                        v-decorator="['userdata']">
-                      </a-textarea>
-                    </a-form-item>
                   </div>
                 </template>
               </a-step>
@@ -100,6 +82,7 @@
                       :activeTabKey="tabKey"
                       @tabChange="key => onTabChange(key, 'tabKey')">
                       <p v-if="tabKey === 'templateid'">
+                        {{ $t('message.template.desc') }}
                         <template-iso-selection
                           input-decorator="templateid"
                           :items="options.templates"
@@ -114,6 +97,7 @@
                           @update-disk-size="updateFieldValue"/>
                       </p>
                       <p v-else>
+                        {{ $t('message.iso.desc') }}
                         <template-iso-selection
                           input-decorator="isoid"
                           :items="options.isos"
@@ -133,41 +117,6 @@
                             @change="value => this.hypervisor = value" />
                         </a-form-item>
                       </p>
-                      <a-form-item :label="this.$t('label.bootintosetup')" v-if="zoneSelected && ((tabKey === 'isoid' && hypervisor === 'VMware') || (tabKey === 'templateid' && template && template.hypervisor === 'VMware'))" >
-                        <a-switch
-                          v-decorator="['bootintosetup']">
-                        </a-switch>
-                      </a-form-item>
-                    </a-card>
-
-                    <a-card
-                      style="margin-top: 15px"
-                      v-if="vm.templateid && ['KVM', 'VMware'].includes(hypervisor)">
-                      <a-row :gutter="12">
-                        <a-col :md="24" :lg="12">
-                          <a-form-item :label="this.$t('label.vm.boottype')">
-                            <a-select
-                              v-decorator="['boottype']"
-                              @change="fetchBootModes"
-                            >
-                              <a-select-option v-for="bootType in options.bootTypes" :key="bootType.id">
-                                {{ bootType.description }}
-                              </a-select-option>
-                            </a-select>
-                          </a-form-item>
-                        </a-col>
-                        <a-col :md="24" :lg="12">
-                          <a-form-item :label="this.$t('label.vm.bootmode')">
-                            <a-select
-                              v-decorator="['bootmode']"
-                            >
-                              <a-select-option v-for="bootMode in options.bootModes" :key="bootMode.id">
-                                {{ bootMode.description }}
-                              </a-select-option>
-                            </a-select>
-                          </a-form-item>
-                        </a-col>
-                      </a-row>
                     </a-card>
                     <a-form-item class="form-item-hidden">
                       <a-input v-decorator="['templateid']"/>
@@ -302,6 +251,62 @@
                       @select-ssh-key-pair-item="($event) => updateSshKeyPairs($event)"
                       @handle-search-filter="($event) => handleSearchFilter('sshKeyPairs', $event)"
                     />
+                  </div>
+                </template>
+              </a-step>
+              <a-step
+                :title="this.$t('label.details')"
+                :status="zoneSelected ? 'process' : 'wait'">
+                <template slot="description" v-if="zoneSelected">
+                  {{ $t('message.vm.review.launch') }}
+                  <div style="margin-top: 15px">
+                    <a-form-item :label="$t('label.name.optional')">
+                      <a-input
+                        v-decorator="['name']"
+                      />
+                    </a-form-item>
+                    <a-form-item :label="$t('label.group.optional')">
+                      <a-input v-decorator="['group']" />
+                    </a-form-item>
+                    <a-form-item :label="$t('label.keyboard')">
+                      <a-select
+                        v-decorator="['keyboard']"
+                        :options="keyboardSelectOptions"
+                      ></a-select>
+                    </a-form-item>
+                    <div
+                      v-if="vm.templateid && ['KVM', 'VMware'].includes(hypervisor)">
+                      <a-form-item :label="$t('label.vm.boottype')">
+                        <a-select
+                          v-decorator="['boottype']"
+                          @change="fetchBootModes"
+                        >
+                          <a-select-option v-for="bootType in options.bootTypes" :key="bootType.id">
+                            {{ bootType.description }}
+                          </a-select-option>
+                        </a-select>
+                      </a-form-item>
+                      <a-form-item :label="$t('label.vm.bootmode')">
+                        <a-select
+                          v-decorator="['bootmode']">
+                          <a-select-option v-for="bootMode in options.bootModes" :key="bootMode.id">
+                            {{ bootMode.description }}
+                          </a-select-option>
+                        </a-select>
+                      </a-form-item>
+                    </div>
+                    <a-form-item
+                      :label="this.$t('label.bootintosetup')"
+                      v-if="zoneSelected && ((tabKey === 'isoid' && hypervisor === 'VMware') || (tabKey === 'templateid' && template && template.hypervisor === 'VMware'))" >
+                      <a-switch
+                        v-decorator="['bootintosetup']">
+                      </a-switch>
+                    </a-form-item>
+                    <a-form-item :label="$t('label.userdata')">
+                      <a-textarea
+                        v-decorator="['userdata']">
+                      </a-textarea>
+                    </a-form-item>
                   </div>
                 </template>
               </a-step>
