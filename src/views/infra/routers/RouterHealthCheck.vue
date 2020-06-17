@@ -32,9 +32,6 @@
       <template slot="status" slot-scope="record">
         <status class="status" :text="record.success === true ? 'True' : 'False'" displayText />
       </template>
-      <template slot="actions" slot-scope="record">
-        <a-button shape="circle" type="check-circle" icon="check" @click="console.log('Hello', record)" />
-      </template>
     </a-table>
 
     <a-modal
@@ -51,7 +48,13 @@
           :form="form"
           @submit="handleGetHealthChecksSubmit"
           layout="vertical">
-          <a-form-item :label="$t('label.perform.fresh.checks')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.perform.fresh.checks') }}
+              <a-tooltip :title="apiParams.performfreshchecks.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-switch
               v-decorator="[$t('performfreshchecks')]"
               :placeholder="apiParams.performfreshchecks.description" />
@@ -134,9 +137,6 @@ export default {
       this.getHealthChecks()
     },
     showGetHelathCheck () {
-      this.form.setFieldsValue({
-        performfreshchecks: false
-      })
       this.showGetHealthChecksForm = true
     },
     onCloseGetHealthChecksForm () {
@@ -160,6 +160,8 @@ export default {
       this.loading = true
       api('getRouterHealthCheckResults', params).then(json => {
         this.healthChecks = json.getrouterhealthcheckresultsresponse.routerhealthchecks.healthchecks
+      }).catch(error => {
+        this.$notifyError(error)
       }).finally(f => {
         this.loading = false
       })

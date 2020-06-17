@@ -122,20 +122,6 @@ export default {
       response: (result) => { return result && result.diagnostics && result.diagnostics.url ? `Please click the link to download the retrieved diagnostics: <p><a href='${result.diagnostics.url}'>${result.diagnostics.url}</a></p>` : 'Invalid response' }
     },
     {
-      api: 'getRouterHealthCheckResults',
-      icon: 'download',
-      label: 'label.action.router.health.checks',
-      message: 'message.action.router.health.checks',
-      args: ['routerid', 'performfreshchecks'],
-      mapping: {
-        routerid: {
-          value: (record) => { return record.id }
-        }
-      },
-      dataView: true,
-      show: (record, store) => { return ['Running'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) }
-    },
-    {
       api: 'destroyRouter',
       icon: 'delete',
       label: 'label.destroy.router',
