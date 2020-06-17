@@ -18,7 +18,8 @@
 const path = require('path')
 const webpack = require('webpack')
 const fs = require('fs')
-const config = require('./public/config.json')
+const packageJson = fs.readFileSync('./package.json')
+const version = JSON.parse(packageJson).version || 'master'
 const createThemeColorReplacerPlugin = require('./config/theme.config')
 
 function resolve (dir) {
@@ -45,7 +46,12 @@ const vueConfig = {
   configureWebpack: {
     plugins: [
       // Ignore all locale files of moment.js
-      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
+      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+      new webpack.DefinePlugin({
+        'process.env': {
+          PACKAGE_VERSION: '"' + version + '"'
+        }
+      })
     ]
   },
 
@@ -98,7 +104,13 @@ const vueConfig = {
   css: {
     loaderOptions: {
       less: {
-        modifyVars: config.theme,
+        modifyVars: {
+          // Refer:
+          // https://ant.design/docs/spec/colors
+          // https://vue.ant.design/docs/vue/customize-theme/
+          'primary-color': '#1890ff',
+          'link-color': '#1890ff'
+        },
         javascriptEnabled: true
       }
     }

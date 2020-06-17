@@ -32,6 +32,7 @@ import {
 
 const app = {
   state: {
+    version: process.env.PACKAGE_VERSION || 'master',
     sidebar: true,
     device: 'desktop',
     theme: '',
