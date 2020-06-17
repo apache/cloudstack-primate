@@ -68,7 +68,7 @@ export default {
       message: 'message.action.manage.cluster',
       dataView: true,
       defaultArgs: { managedstate: 'Managed' },
-      show: (record) => { return !(record.clustertype === 'Enabled' || record.state === 'Disabled') }
+      show: (record) => { return !(record.managedstate === 'Managed' && (record.allocationstate === 'Enabled' || record.allocationstate === 'Disabled')) }
     },
     {
       api: 'updateCluster',
@@ -77,7 +77,7 @@ export default {
       message: 'message.action.unmanage.cluster',
       dataView: true,
       defaultArgs: { managedstate: 'Unmanaged' },
-      show: (record) => { return record.clustertype === 'Enabled' || record.state === 'Disabled' }
+      show: (record) => { return record.managedstate === 'Managed' && (record.allocationstate === 'Enabled' || record.allocationstate === 'Disabled') }
     },
     {
       api: 'enableOutOfBandManagementForCluster',
