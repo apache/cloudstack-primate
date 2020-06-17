@@ -41,7 +41,7 @@
             v-if="!(action.mapping && field.name in action.mapping && action.mapping[field.name].value)"
           >
             <span slot="label">
-              {{ $t(field.name) }}
+              {{ $t('label.' + field.name) }}
               <a-tooltip :title="field.description">
                 <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
               </a-tooltip>
@@ -50,7 +50,7 @@
             <span v-if="field.type==='boolean'">
               <a-switch
                 v-decorator="[field.name, {
-                  rules: [{ required: field.required, message: 'Please provide input' }]
+                  rules: [{ required: field.required, message: `${$t('message.error.required.input')}` }]
                 }]"
                 :placeholder="field.description"
               />
@@ -59,7 +59,7 @@
               <a-select
                 :loading="field.loading"
                 v-decorator="[field.name, {
-                  rules: [{ required: field.required, message: 'Please select option' }]
+                  rules: [{ required: field.required, message: $t('message.error.select') }]
                 }]"
                 :placeholder="field.description"
               >
@@ -74,7 +74,7 @@
                 showSearch
                 optionFilterProp="children"
                 v-decorator="[field.name, {
-                  rules: [{ required: field.required, message: 'Please select option' }]
+                  rules: [{ required: field.required, message: $t('message.error.select') }]
                 }]"
                 :loading="field.loading"
                 :placeholder="field.description"
@@ -92,7 +92,7 @@
                 :loading="field.loading"
                 mode="multiple"
                 v-decorator="[field.name, {
-                  rules: [{ required: field.required, message: 'Please select option' }]
+                  rules: [{ required: field.required, message: $t('message.error.select') }]
                 }]"
                 :placeholder="field.description"
               >
@@ -104,7 +104,7 @@
             <span v-else-if="field.type==='long'">
               <a-input-number
                 v-decorator="[field.name, {
-                  rules: [{ required: field.required, message: 'Please enter a number' }]
+                  rules: [{ required: field.required, message: `${$t('message.validate.number')}` }]
                 }]"
                 :placeholder="field.description"
               />
@@ -112,7 +112,7 @@
             <span v-else>
               <a-input
                 v-decorator="[field.name, {
-                  rules: [{ required: field.required, message: 'Please enter input' }]
+                  rules: [{ required: field.required, message: $t('message.error.required.input') }]
                 }]"
                 :placeholder="field.description" />
             </span>

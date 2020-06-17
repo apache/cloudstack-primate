@@ -22,20 +22,15 @@
         <a-col :span="device === 'mobile' ? 24 : 12" style="padding-left: 12px">
           <breadcrumb :resource="resource">
             <span slot="end">
-              <a-tooltip placement="bottom">
-                <template slot="title">
-                  {{ $t('label.refresh') }}
-                </template>
-                <a-button
-                  style="margin-top: 4px"
-                  :loading="loading"
-                  shape="round"
-                  size="small"
-                  icon="reload"
-                  @click="fetchData()">
-                  {{ $t('label.refresh') }}
-                </a-button>
-              </a-tooltip>
+              <a-button
+                :loading="loading"
+                style="margin-bottom: 5px"
+                shape="round"
+                size="small"
+                icon="reload"
+                @click="fetchData()">
+                {{ $t('label.refresh') }}
+              </a-button>
               <a-tooltip placement="right">
                 <template slot="title">
                   {{ $t('label.filterby') }}
@@ -69,7 +64,7 @@
           <a-input-search
             style="width: 100%; display: table-cell"
             :placeholder="$t('label.search')"
-            v-if="!dataView && !treeView"
+            v-if="!dataView"
             v-model="searchQuery"
             allowClear
             @search="onSearch" />
@@ -231,12 +226,21 @@
                   :placeholder="field.description"
                 />
               </span>
-              <span v-else-if="field.name==='password' || field.name==='currentpassword'">
+              <span v-else-if="field.name==='password' || field.name==='currentpassword' || field.name==='confirmpassword'">
                 <a-input-password
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: `${$t('message.error.required.input')}` }]
+                    rules: [
+                      {
+                        required: field.required,
+                        message: `${$t('message.error.required.input')}`
+                      },
+                      {
+                        validator: validateTwoPassword
+                      }
+                    ]
                   }]"
                   :placeholder="field.description"
+                  @blur="($event) => handleConfirmBlur($event, field.name)"
                 />
               </span>
               <span v-else-if="field.name==='certificate' || field.name==='privatekey' || field.name==='certchain'">
@@ -341,7 +345,8 @@ export default {
       selectedFilter: '',
       filters: [],
       actions: [],
-      formModel: {}
+      formModel: {},
+      confirmDirty: false
     }
   },
   computed: {
@@ -573,6 +578,7 @@ export default {
       this.currentAction = {}
     },
     execAction (action) {
+      const self = this
       this.form = this.$form.createForm(this)
       this.formModel = {}
       if (action.component && action.api && !action.popup) {
@@ -598,6 +604,14 @@ export default {
         }
         if (args.length > 0) {
           this.currentAction.paramFields = args.map(function (arg) {
+            if (arg === 'confirmpassword') {
+              return {
+                type: 'password',
+                name: 'confirmpassword',
+                required: true,
+                description: self.$t('label.confirmpassword.description')
+              }
+            }
             return paramFields.filter(function (param) {
               return param.name.toLowerCase() === arg.toLowerCase()
             })[0]
@@ -846,6 +860,40 @@ export default {
     },
     finishLoading () {
       this.loading = false
+    },
+    handleConfirmBlur (e, name) {
+      if (name !== 'confirmpassword') {
+        return
+      }
+      const value = e.target.value
+      this.confirmDirty = this.confirmDirty || !!value
+    },
+    validateTwoPassword (rule, value, callback) {
+      if (!value || value.length === 0) {
+        callback()
+      } else if (rule.field === 'confirmpassword') {
+        const form = this.form
+        const messageConfirm = this.$t('message.validate.equalto')
+        const passwordVal = form.getFieldValue('password')
+        if (passwordVal && passwordVal !== value) {
+          callback(messageConfirm)
+        } else {
+          callback()
+        }
+      } else if (rule.field === 'password') {
+        const form = this.form
+        const confirmPasswordVal = form.getFieldValue('confirmpassword')
+        if (!confirmPasswordVal || confirmPasswordVal.length === 0) {
+          callback()
+        } else if (value && this.confirmDirty) {
+          form.validateFields(['confirmpassword'], { force: true })
+          callback()
+        } else {
+          callback()
+        }
+      } else {
+        callback()
+      }
     }
   }
 }
@@ -856,7 +904,7 @@ export default {
 .breadcrumb-card {
   margin-left: -24px;
   margin-right: -24px;
-  margin-top: -18px;
+  margin-top: -16px;
   margin-bottom: 12px;
 }
 
@@ -867,9 +915,5 @@ export default {
 
 .ant-breadcrumb {
   vertical-align: text-bottom;
-}
-
-.ant-breadcrumb .anticon {
-  margin-left: 8px;
 }
 </style>

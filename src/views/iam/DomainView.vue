@@ -21,9 +21,9 @@
       <a-row>
         <a-col :span="14" style="padding-left: 6px">
           <breadcrumb :resource="resource">
-            <a-tooltip placement="bottom" slot="end">
+            <span slot="end">
               <template slot="title">
-                {{ "Refresh" }}
+                {{ $t('label.refresh') }}
               </template>
               <a-button
                 style="margin-top: 4px"
@@ -32,19 +32,19 @@
                 size="small"
                 icon="reload"
                 @click="fetchData()">
-                {{ "Refresh" }}
+                {{ $t('label.refresh') }}
               </a-button>
-            </a-tooltip>
+            </span>
           </breadcrumb>
         </a-col>
         <a-col :span="10">
           <span style="float: right">
             <action-button
-              style="margin-bottom: 5px"
+              :style="dataView ? { float: device === 'mobile' ? 'left' : 'right' } : { 'margin-right': '10px', display: 'inline-flex' }"
               :loading="loading"
               :actions="actions"
               :selectedRowKeys="selectedRowKeys"
-              :dataView="true"
+              :dataView="dataView"
               :resource="resource"
               @exec-action="execAction"/>
           </span>
@@ -53,7 +53,13 @@
     </a-card>
 
     <div class="row-element">
+      <resource-view
+        v-if="dataView"
+        :resource="resource"
+        :loading="loading"
+        :tabs="$route.meta.tabs" />
       <tree-view
+        v-else
         :treeData="treeData"
         :treeSelected="treeSelected"
         :loading="loading"
@@ -74,11 +80,13 @@
 <script>
 import { api } from '@/api'
 import store from '@/store'
+import { mixinDevice } from '@/utils/mixin.js'
 
 import Breadcrumb from '@/components/widgets/Breadcrumb'
 import ActionButton from '@/components/view/ActionButton'
 import TreeView from '@/components/view/TreeView'
 import DomainActionForm from '@/views/iam/DomainActionForm'
+import ResourceView from '@/components/view/ResourceView'
 
 export default {
   name: 'DomainView',
@@ -86,8 +94,10 @@ export default {
     Breadcrumb,
     ActionButton,
     TreeView,
-    DomainActionForm
+    DomainActionForm,
+    ResourceView
   },
+  mixins: [mixinDevice],
   data () {
     return {
       resource: {},
@@ -97,7 +107,8 @@ export default {
       actionData: [],
       treeSelected: {},
       showAction: false,
-      action: {}
+      action: {},
+      dataView: false
     }
   },
   computed: {
@@ -147,16 +158,22 @@ export default {
       this.treeData = []
       this.treeSelected = {}
       const params = { listall: true }
-      const domainId = this.$store.getters.userInfo.domainid
-      params.id = domainId
+      if (this.$route && this.$route.params && this.$route.params.id) {
+        this.resource = {}
+        this.dataView = true
+        params.id = this.$route.params.id
+      } else {
+        this.dataView = false
+        params.id = this.$store.getters.userInfo.domainid
+      }
 
       this.loading = true
 
       api('listDomains', params).then(json => {
         const domains = json.listdomainsresponse.domain || []
         this.treeData = this.generateTreeData(domains)
-        this.resource = domains[0]
-        this.treeSelected = domains[0]
+        this.resource = domains[0] || {}
+        this.treeSelected = domains[0] || {}
       }).catch(error => {
         this.$notification.error({
           message: 'Request Failed',
