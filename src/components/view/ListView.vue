@@ -76,6 +76,9 @@
           </span>
         </div>
       </span>
+      <a slot="templatetype" slot-scope="text, record" href="javascript:;">
+        <router-link :to="{ path: $route.path + '/' + record.templatetype }">{{ text }}</router-link>
+      </a>
       <a slot="displayname" slot-scope="text, record" href="javascript:;">
         <router-link :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
       </a>

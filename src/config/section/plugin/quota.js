@@ -34,11 +34,11 @@ export default {
           component: () => import('@/components/view/DetailsTab.vue')
         },
         {
-          name: 'Quota Usage',
+          name: 'quota.statement.quota',
           component: () => import('@/views/plugins/quota/QuotaUsage.vue')
         },
         {
-          name: 'Quota Balance',
+          name: 'quota.statement.balance',
           component: () => import('@/views/plugins/quota/QuotaBalance.vue')
         }
       ],
@@ -65,7 +65,7 @@ export default {
       title: 'label.quota.tariff',
       icon: 'credit-card',
       permission: ['quotaTariffList'],
-      columns: ['usageName', 'description', 'usageUnit', 'tariffValue', 'tariffActions'],
+      columns: ['usageName', 'description', 'usageUnit', 'tariffValue', 'tariffactions'],
       details: ['usageName', 'description', 'usageUnit', 'tariffValue']
     },
     {
@@ -74,7 +74,11 @@ export default {
       icon: 'mail',
       permission: ['quotaEmailTemplateList'],
       columns: ['templatetype', 'templatesubject', 'templatebody'],
-      details: ['templatetype', 'templatesubject', 'templatebody']
+      details: ['templatetype', 'templatesubject', 'templatebody'],
+      tabs: [{
+        name: 'details',
+        component: () => import('@/views/plugins/quota/EmailTemplateDetails.vue')
+      }]
     }
   ]
 }
