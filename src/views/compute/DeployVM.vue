@@ -362,7 +362,25 @@ export default {
       podId: null,
       clusterId: null,
       zoneSelected: false,
-      vm: {},
+      vm: {
+        name: null,
+        zoneid: null,
+        zonename: null,
+        hypervisor: null,
+        templateid: null,
+        templatename: null,
+        keyboard: null,
+        keypair: null,
+        group: null,
+        affinitygroupids: [],
+        affinitygroup: [],
+        serviceofferingid: null,
+        serviceofferingname: null,
+        ostypeid: null,
+        ostypename: null,
+        rootdisksize: null,
+        disksize: null
+      },
       options: {
         templates: [],
         isos: [],
@@ -621,10 +639,11 @@ export default {
       return options
     },
     keyboardSelectOptions () {
-      return this.options.keyboards.map((keyboard) => {
+      const keyboardOpts = this.$store.getters.configs.keyboardOptions || {}
+      return Object.keys(keyboardOpts).map((keyboard) => {
         return {
-          label: this.$t(keyboard.description),
-          value: keyboard.id
+          label: this.$t(keyboardOpts[keyboard]),
+          value: keyboard
         }
       })
     }
@@ -697,7 +716,11 @@ export default {
           this.form.setFieldsValue({ isoid: null })
         }
         this.instanceConfig = { ...this.form.getFieldsValue(), ...fields }
-        this.vm = Object.assign({}, this.instanceConfig)
+        Object.keys(fields).forEach(field => {
+          if (field in this.vm) {
+            this.vm[field] = this.instanceConfig[field]
+          }
+        })
       }
     })
     this.form.getFieldDecorator('computeofferingid', { initialValue: undefined, preserve: true })
@@ -735,7 +758,6 @@ export default {
         })
       }
 
-      this.fetchKeyboard()
       Vue.nextTick().then(() => {
         ['name', 'keyboard', 'userdata'].forEach(this.fillValue)
         this.instanceConfig = this.form.getFieldsValue() // ToDo: maybe initialize with some other defaults
@@ -753,35 +775,6 @@ export default {
         }
       })
       await this.fetchAllTemplates()
-    },
-    fetchKeyboard () {
-      const keyboardType = []
-      keyboardType.push({
-        id: '',
-        description: ''
-      })
-      keyboardType.push({
-        id: 'us',
-        description: 'label.standard.us.keyboard'
-      })
-      keyboardType.push({
-        id: 'uk',
-        description: 'label.uk.keyboard'
-      })
-      keyboardType.push({
-        id: 'fr',
-        description: 'label.french.azerty.keyboard'
-      })
-      keyboardType.push({
-        id: 'jp',
-        description: 'label.japanese.keyboard'
-      })
-      keyboardType.push({
-        id: 'sc',
-        description: 'label.simplified.chinese.keyboard'
-      })
-
-      this.$set(this.options, 'keyboards', keyboardType)
     },
     fetchNetwork () {
       const param = this.params.networks

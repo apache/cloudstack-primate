@@ -30,9 +30,8 @@
       :columns="columns"
       :dataSource="networkItems"
       :rowKey="record => record.id"
-      :pagination="{showSizeChanger: true, size: 'small', total: rowCount}"
+      :pagination="false"
       :rowSelection="rowSelection"
-      @change="handleTableChange"
       :scroll="{ y: 225 }"
     >
       <a-list
@@ -51,6 +50,20 @@
         </a-list-item>
       </a-list>
     </a-table>
+
+    <div style="display: block; text-align: right;">
+      <a-pagination
+        size="small"
+        :current="options.page"
+        :pageSize="options.pageSize"
+        :total="rowCount"
+        :showTotal="total => `Total ${total} items`"
+        :pageSizeOptions="['10', '20', '40', '80', '100', '500']"
+        @change="onChangePage"
+        @showSizeChange="onChangePageSize"
+        showSizeChanger />
+    </div>
+
     <a-modal
       :visible="showCreateForm"
       :title="$t('label.add.network')"
@@ -116,17 +129,15 @@ export default {
         opts: []
       },
       showCreateForm: false,
-      oldZoneId: null
+      oldZoneId: null,
+      options: {
+        page: 1,
+        pageSize: 10,
+        keyword: null
+      }
     }
   },
   computed: {
-    options () {
-      return {
-        page: 1,
-        pageSize: 10,
-        keyword: ''
-      }
-    },
     columns () {
       let vpcFilter = []
       if (this.vpcs) {
@@ -234,12 +245,19 @@ export default {
     },
     handleSearch (value) {
       this.filter = value
+      this.options.page = 1
+      this.options.pageSize = 10
       this.options.keyword = this.filter
       this.$emit('handle-search-filter', this.options)
     },
-    handleTableChange (pagination) {
-      this.options.page = pagination.current
-      this.options.pageSize = pagination.pageSize
+    onChangePage (page, pageSize) {
+      this.options.page = page
+      this.options.pageSize = pageSize
+      this.$emit('handle-search-filter', this.options)
+    },
+    onChangePageSize (page, pageSize) {
+      this.options.page = page
+      this.options.pageSize = pageSize
       this.$emit('handle-search-filter', this.options)
     },
     listNetworkOfferings () {
