@@ -83,6 +83,9 @@ export default {
     }
   },
   mounted () {
+    for (const group of this.resource.affinitygroup) {
+      this.selectedRowKeys.push(group.id)
+    }
     this.fetchData()
   },
   methods: {
@@ -99,10 +102,6 @@ export default {
         title: this.$t('label.type'),
         sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
       })
-
-      for (const group of this.resource.affinitygroup) {
-        this.selectedRowKeys.push(group.id)
-      }
 
       api('listAffinityGroups', {
         keyword: this.options.keyword,
