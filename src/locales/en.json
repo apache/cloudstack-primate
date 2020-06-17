@@ -2204,6 +2204,7 @@
 "message.action.restore.instance": "Please confirm that you want to restore this instance.",
 "message.action.revert.snapshot": "Please confirm that you want to revert the owning volume to this snapshot.",
 "message.action.router.health.checks": "Health checks result will be fetched from router.",
+"message.action.router.health.checks.disabled.warning": "Please enable router health checks.",
 "message.action.secure.host": "This will restart the host agent and libvirtd process after applying new X509 certificates, please confirm?",
 "message.action.settings.warning.vm.running": "Please stop the virtual machine to access settings",
 "message.action.settings.warning.vm.started": "Virtual machine has been started. It needs to be stopped to access settings",

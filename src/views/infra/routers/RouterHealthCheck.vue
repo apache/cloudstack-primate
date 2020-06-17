@@ -17,51 +17,57 @@
 
 <template>
   <a-spin :spinning="loading">
-    <center>
-      <a-button :disabled="!('getRouterHealthCheckResults' in $store.getters.apis)" type="primary" icon="download" style="width: 50%; margin-bottom: 15px" @click="showGetHelathCheck">
-        {{ $t('label.action.router.health.checks') }}
-      </a-button>
-    </center>
-    <a-table
-      style="overflow-y: auto"
-      :columns="columns"
-      :dataSource="healthChecks"
-      :pagination="false"
-      :rowKey="record => record.checkname"
-      size="large">
-      <template slot="status" slot-scope="record">
-        <status class="status" :text="record.success === true ? 'True' : 'False'" displayText />
-      </template>
-    </a-table>
+    <a-alert
+      v-if="!routerHealthChecksEnabled"
+      banner
+      :message="$t('message.action.router.health.checks.disabled.warning')" />
+    <div v-else>
+      <center>
+        <a-button :disabled="!('getRouterHealthCheckResults' in $store.getters.apis)" type="primary" icon="download" style="width: 50%; margin-bottom: 15px" @click="showGetHelathCheck">
+          {{ $t('label.action.router.health.checks') }}
+        </a-button>
+      </center>
+      <a-table
+        style="overflow-y: auto"
+        :columns="columns"
+        :dataSource="healthChecks"
+        :pagination="false"
+        :rowKey="record => record.checkname"
+        size="large">
+        <template slot="status" slot-scope="record">
+          <status class="status" :text="record.success === true ? 'True' : 'False'" displayText />
+        </template>
+      </a-table>
 
-    <a-modal
-      v-if="'getRouterHealthCheckResults' in $store.getters.apis"
-      style="top: 20px;"
-      :title="$t('label.action.router.health.checks')"
-      :visible="showGetHealthChecksForm"
-      :closable="true"
-      @ok="handleGetHealthChecksSubmit"
-      @cancel="onCloseGetHealthChecksForm"
-      centered>
-      <a-spin :spinning="loading">
-        <a-form
-          :form="form"
-          @submit="handleGetHealthChecksSubmit"
-          layout="vertical">
-          <a-form-item>
-            <span slot="label">
-              {{ $t('label.perform.fresh.checks') }}
-              <a-tooltip :title="apiParams.performfreshchecks.description">
-                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
-              </a-tooltip>
-            </span>
-            <a-switch
-              v-decorator="[$t('performfreshchecks')]"
-              :placeholder="apiParams.performfreshchecks.description" />
-          </a-form-item>
-        </a-form>
-      </a-spin>
-    </a-modal>
+      <a-modal
+        v-if="'getRouterHealthCheckResults' in $store.getters.apis"
+        style="top: 20px;"
+        :title="$t('label.action.router.health.checks')"
+        :visible="showGetHealthChecksForm"
+        :closable="true"
+        @ok="handleGetHealthChecksSubmit"
+        @cancel="onCloseGetHealthChecksForm"
+        centered>
+        <a-spin :spinning="loading">
+          <a-form
+            :form="form"
+            @submit="handleGetHealthChecksSubmit"
+            layout="vertical">
+            <a-form-item>
+              <span slot="label">
+                {{ $t('label.perform.fresh.checks') }}
+                <a-tooltip :title="apiParams.performfreshchecks.description">
+                  <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                </a-tooltip>
+              </span>
+              <a-switch
+                v-decorator="[$t('performfreshchecks')]"
+                :placeholder="apiParams.performfreshchecks.description" />
+            </a-form-item>
+          </a-form>
+        </a-spin>
+      </a-modal>
+    </div>
   </a-spin>
 </template>
 
@@ -82,6 +88,7 @@ export default {
   },
   data () {
     return {
+      routerHealthChecksEnabled: false,
       healthChecks: [],
       loading: false,
       columns: [
@@ -134,7 +141,7 @@ export default {
       if (!resource.id) {
         return
       }
-      this.getHealthChecks()
+      this.checkConfigurationAndGetHealthChecks()
     },
     showGetHelathCheck () {
       this.showGetHealthChecksForm = true
@@ -149,7 +156,27 @@ export default {
           return
         }
         this.onCloseGetHealthChecksForm()
-        this.getHealthChecks(values.performfreshchecks)
+        this.checkConfigurationAndGetHealthChecks(values.performfreshchecks)
+      })
+    },
+    checkConfigurationAndGetHealthChecks (performFreshChecks) {
+      var params = { name: 'router.health.checks.enabled' }
+      this.loading = true
+      api('listConfigurations', params).then(json => {
+        this.routerHealthChecksEnabled = false
+        if (json.listconfigurationsresponse.configuration !== null) {
+          var config = json.listconfigurationsresponse.configuration[0]
+          if (config && config.name === params.name) {
+            this.routerHealthChecksEnabled = config.value === 'true'
+          }
+        }
+      }).catch(error => {
+        this.$notifyError(error)
+      }).finally(f => {
+        this.loading = false
+        if (this.routerHealthChecksEnabled) {
+          this.getHealthChecks(performFreshChecks)
+        }
       })
     },
     getHealthChecks (performFreshChecks) {
