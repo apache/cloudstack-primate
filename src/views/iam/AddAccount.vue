@@ -101,7 +101,7 @@
           </a-select>
         </a-form-item>
         <a-form-item :label="$t('label.account')">
-          <a-input v-decorator="['accountid']" :placeholder="apiParams.accountid.description" />
+          <a-input v-decorator="['account']" :placeholder="apiParams.account.description" />
         </a-form-item>
         <a-form-item :label="$t('label.timezone')">
           <a-select
@@ -269,8 +269,8 @@ export default {
           lastname: values.lastname,
           domainid: values.domainid
         }
-        if (this.isValidValueForKey(values, 'accountid') && values.accountid.length > 0) {
-          params.accountid = values.accountid
+        if (this.isValidValueForKey(values, 'account') && values.account.length > 0) {
+          params.account = values.account
         }
         if (this.isValidValueForKey(values, 'timezone') && values.timezone.length > 0) {
           params.timezone = values.timezone
