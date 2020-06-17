@@ -57,7 +57,7 @@ export default {
       icon: 'plus',
       label: 'label.add.domain',
       listView: true,
-      dataView: true,
+      dataView: false,
       args: ['parentdomainid', 'name', 'networkdomain', 'domainid'],
       mapping: {
         parentdomainid: {
