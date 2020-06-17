@@ -224,6 +224,7 @@
 "label.action.revert.snapshot": "Revert to Snapshot",
 "label.action.revert.snapshot.processing": "Reverting to Snapshot...",
 "label.action.router.health.checks": "Get health checks result",
+"label.perform.fresh.checks":"Perform fresh checks",
 "label.action.run.diagnostics": "Run Diagnostics",
 "label.action.secure.host": "Provision Host Security Keys",
 "label.action.share.template": "Update Template Permissions",

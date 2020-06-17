@@ -23,6 +23,16 @@ export default {
   params: { projectid: '-1' },
   columns: ['name', 'state', 'publicip', 'guestnetworkname', 'vpcname', 'redundantstate', 'version', 'hostname', 'account', 'zonename', 'requiresupgrade'],
   details: ['name', 'id', 'version', 'requiresupgrade', 'guestnetworkname', 'vpcname', 'publicip', 'guestipaddress', 'linklocalip', 'serviceofferingname', 'networkdomain', 'isredundantrouter', 'redundantstate', 'hostname', 'account', 'zonename', 'created'],
+  tabs: [{
+    name: 'details',
+    component: () => import('@/components/view/DetailsTab.vue')
+  }, {
+    name: 'nics',
+    component: () => import('@views/infra/routers/RouterNics.vue')
+  }, {
+    name: 'router.health.checks',
+    component: () => import('@views/infra/routers/RouterHealthCheck.vue')
+  }],
   actions: [
     {
       api: 'startRouter',
@@ -72,7 +82,7 @@ export default {
       icon: 'drag',
       label: 'label.action.migrate.router',
       dataView: true,
-      show: (record) => { return record.state === 'Running' },
+      show: (record, store) => { return ['Running'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) },
       args: ['virtualmachineid', 'hostid'],
       mapping: {
         virtualmachineid: {
@@ -85,7 +95,7 @@ export default {
       icon: 'reconciliation',
       label: 'label.action.run.diagnostics',
       dataView: true,
-      show: (record) => { return record.state === 'Running' },
+      show: (record, store) => { return ['Running'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) },
       args: ['targetid', 'type', 'ipaddress', 'params'],
       mapping: {
         targetid: {
@@ -102,7 +112,7 @@ export default {
       icon: 'download',
       label: 'label.action.get.diagnostics',
       dataView: true,
-      show: (record) => { return record.state === 'Running' },
+      show: (record, store) => { return ['Running'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) },
       args: ['targetid', 'files'],
       mapping: {
         targetid: {
@@ -110,6 +120,20 @@ export default {
         }
       },
       response: (result) => { return result && result.diagnostics && result.diagnostics.url ? `Please click the link to download the retrieved diagnostics: <p><a href='${result.diagnostics.url}'>${result.diagnostics.url}</a></p>` : 'Invalid response' }
+    },
+    {
+      api: 'getRouterHealthCheckResults',
+      icon: 'download',
+      label: 'label.action.router.health.checks',
+      message: 'message.action.router.health.checks',
+      args: ['routerid', 'performfreshchecks'],
+      mapping: {
+        routerid: {
+          value: (record) => { return record.id }
+        }
+      },
+      dataView: true,
+      show: (record, store) => { return ['Running'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) }
     },
     {
       api: 'destroyRouter',
