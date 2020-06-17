@@ -64,7 +64,7 @@
           </div>
         </div>
         <div class="form__item" style="flex: 0">
-          <a-button type="primary" @click="handleAddRule">{{ $t('label.add') }}</a-button>
+          <a-button :disabled="!('authorizeSecurityGroupInress' in $store.getters.apis) && !('authorizeSecurityGroupEgress' in $store.getters.apis)" type="primary" @click="handleAddRule">{{ $t('label.add') }}</a-button>
         </div>
       </div>
     </div>
@@ -92,12 +92,12 @@
           okText="Yes"
           cancelText="No"
         >
-          <a-button shape="circle" type="danger" icon="delete" class="rule-action" />
+          <a-button :disabled="!('revokeSecurityGroupIngress' in $store.getters.apis) && !('revokeSecurityGroupEgress' in $store.getters.apis)" shape="circle" type="danger" icon="delete" class="rule-action" />
         </a-popconfirm>
       </template>
     </a-table>
 
-    <a-modal title="Edit Tags" v-model="tagsModalVisible" :footer="null" :afterClose="closeModal">
+    <a-modal :title="$t('label.edit.tags')" v-model="tagsModalVisible" :footer="null" :afterClose="closeModal">
       <a-spin v-if="tagsLoading"></a-spin>
 
       <div v-else>

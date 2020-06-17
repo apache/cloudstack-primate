@@ -75,11 +75,11 @@
 
       <template v-if="selectedClusterHyperVisorType === 'Ovm3'">
         <div class="form__item">
-          <div class="form__label">{{ $t('label.agentusername') }}</div>
+          <div class="form__label">{{ $t('label.agent.username') }}</div>
           <a-input v-model="agentusername"></a-input>
         </div>
         <div class="form__item required-field">
-          <div class="form__label"><span class="required">* </span>{{ $t('label.agentpassword') }}</div>
+          <div class="form__label"><span class="required">* </span>{{ $t('label.agent.password') }}</div>
           <span class="required required-label">Required</span>
           <a-input type="password" v-model="agentpassword"></a-input>
         </div>
@@ -315,11 +315,11 @@ export default {
       }).then(response => {
         this.$pollJob({
           jobId: response.dedicatehostresponse.jobid,
-          successMessage: `Successfully dedicated host`,
+          successMessage: this.$t('message.host.dedicated'),
           successMethod: () => {
             this.loading = false
             this.$store.dispatch('AddAsyncJob', {
-              title: 'Successfully dedicated host',
+              title: this.$t('message.host.dedicated'),
               jobid: response.dedicatehostresponse.jobid,
               description: `Domain ID: ${this.dedicatedDomainId}`,
               status: 'progress'
@@ -329,7 +329,7 @@ export default {
           errorMethod: () => {
             this.loading = false
           },
-          loadingMessage: `Dedicating host...`,
+          loadingMessage: this.$t('message.dedicate.host'),
           catchMessage: 'Error encountered while fetching async job result',
           catchMethod: () => {
             this.loading = false
