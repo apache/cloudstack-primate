@@ -22,13 +22,16 @@
         :form="form"
         @submit="handleSubmit"
         layout="vertical">
-        <a-form-item :label="$t('label.name')">
+        <form-info-item
+          :title="$t('label.name')"
+          :description="apiParams.name.description"
+          bindfield="name">
           <a-input
             v-decorator="['name', {
               rules: [{ required: true, message: 'Please enter Kubernetes cluster name' }]
             }]"
             :placeholder="apiParams.name.description"/>
-        </a-form-item>
+        </form-info-item>
         <a-form-item :label="$t('label.description')">
           <a-input
             v-decorator="['description', {
@@ -192,9 +195,13 @@
 
 <script>
 import { api } from '@/api'
+import FormInfoItem from '@/components/widgets/FormInfoItem'
 
 export default {
   name: 'CreateKubernetesCluster',
+  components: {
+    FormInfoItem
+  },
   props: {},
   data () {
     return {
