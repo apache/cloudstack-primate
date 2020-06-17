@@ -17,7 +17,7 @@
 
 <template>
   <a-row class="capacity-dashboard" :gutter="12">
-    <a-col :xl="18">
+    <a-col :xl="16">
       <div class="capacity-dashboard-wrapper">
         <div class="capacity-dashboard-select">
           <a-select
@@ -48,33 +48,35 @@
         <a-col
           :xs="12"
           :sm="8"
-          :md="6"
+          :md="8"
           :style="{ marginBottom: '12px' }"
           v-for="stat in stats"
           :key="stat.type">
           <chart-card :loading="loading">
-            <div class="capacity-dashboard-chart-card-inner">
-              <h4>{{ $t(stat.name) }}</h4>
-              <a-progress
-                type="dashboard"
-                :status="getStatus(parseFloat(stat.percentused))"
-                :percent="parseFloat(stat.percentused)"
-                :format="percent => `${parseFloat(stat.percentused).toFixed(2)}%`"
-                :strokeColor="getStrokeColour(parseFloat(stat.percentused))"
-                :width="100" />
-            </div>
+            <router-link :to="{ path: '/zone/' + zoneSelected.id }">
+              <div class="capacity-dashboard-chart-card-inner">
+                <h3>{{ $t(ts[stat.name]) }}</h3>
+                <a-progress
+                  type="dashboard"
+                  :status="getStatus(parseFloat(stat.percentused))"
+                  :percent="parseFloat(stat.percentused)"
+                  :format="percent => `${parseFloat(stat.percentused).toFixed(2)}%`"
+                  :strokeColor="getStrokeColour(parseFloat(stat.percentused))"
+                  :width="100" />
+              </div>
+            </router-link>
             <template slot="footer"><center>{{ displayData(stat.name, stat.capacityused) }} / {{ displayData(stat.name, stat.capacitytotal) }}</center></template>
           </chart-card>
         </a-col>
       </a-row>
     </a-col>
 
-    <a-col :xl="6">
+    <a-col :xl="8">
       <chart-card>
         <div style="text-align: center">
           <a-tooltip placement="bottom" class="capacity-dashboard-button-wrapper">
             <template slot="title">
-              View Hosts in Alert State
+              {{ $t('label.view') + ' ' + $t('label.host.alerts') }}
             </template>
             <a-button type="danger" shape="circle">
               <router-link :to="{ name: 'host', query: {'state': 'Alert'} }">
@@ -84,7 +86,7 @@
           </a-tooltip>
           <a-tooltip placement="bottom" class="capacity-dashboard-button-wrapper">
             <template slot="title">
-              View Alerts
+              {{ $t('label.view') + ' ' + $t('label.alerts') }}
             </template>
             <a-button shape="circle">
               <router-link :to="{ name: 'alert' }">
@@ -94,7 +96,7 @@
           </a-tooltip>
           <a-tooltip placement="bottom" class="capacity-dashboard-button-wrapper">
             <template slot="title">
-              View Events
+              {{ $t('label.view') + ' ' + $t('label.events') }}
             </template>
             <a-button shape="circle">
               <router-link :to="{ name: 'event' }">
@@ -138,7 +140,21 @@ export default {
       events: [],
       zones: [],
       zoneSelected: {},
-      stats: []
+      stats: [],
+      ts: {
+        CPU: 'label.cpu',
+        CPU_CORE: 'label.cpunumber',
+        DIRECT_ATTACHED_PUBLIC_IP: 'label.direct.ips',
+        GPU: 'label.gpu',
+        LOCAL_STORAGE: 'label.local.storage',
+        MEMORY: 'label.memory',
+        PRIVATE_IP: 'label.management.ips',
+        SECONDARY_STORAGE: 'label.secondary.storage',
+        STORAGE: 'label.storage',
+        STORAGE_ALLOCATED: 'label.primary.storage',
+        VIRTUAL_NETWORK_PUBLIC_IP: 'label.public.ips',
+        VLAN: 'label.vlan'
+      }
     }
   },
   mounted () {
@@ -181,7 +197,7 @@ export default {
         case 'STORAGE':
         case 'STORAGE_ALLOCATED':
         case 'SECONDARY_STORAGE':
-        case 'CAPACITY_TYPE_LOCAL_STORAGE':
+        case 'LOCAL_STORAGE':
           value = parseFloat(value / (1024 * 1024 * 1024.0), 10).toFixed(2)
           if (value >= 1024.0) {
             value = parseFloat(value / 1024.0).toFixed(2) + ' TB'
@@ -213,7 +229,7 @@ export default {
     listEvents () {
       const params = {
         page: 1,
-        pagesize: 6,
+        pagesize: 7,
         listall: true
       }
       this.loading = true

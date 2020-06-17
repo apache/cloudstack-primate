@@ -37,9 +37,10 @@
             </a-tooltip>
             <a-tooltip placement="top">
               <template slot="title">
-                {{ $t('label.delete.ssl.certificate') }}
+                {{ $t('label.delete.sslcertificate') }}
               </template>
               <a-button
+                :disabled="!('deleteSslCert' in $store.getters.apis)"
                 type="danger"
                 shape="circle"
                 icon="delete"

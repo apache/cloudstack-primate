@@ -37,7 +37,7 @@
                     <a-form-item :label="this.$t('label.zoneid')">
                       <a-select
                         v-decorator="['zoneid', {
-                          rules: [{ required: true, message: 'Please select option' }]
+                          rules: [{ required: true, message: `${this.$t('message.error.select')}` }]
                         }]"
                         :options="zoneSelectOptions"
                         @change="onSelectZoneId"
@@ -51,6 +51,7 @@
                         v-decorator="['podid']"
                         :options="podSelectOptions"
                         :loading="loading.pods"
+                        @change="onSelectPodId"
                       ></a-select>
                     </a-form-item>
                     <a-form-item
@@ -60,6 +61,7 @@
                         v-decorator="['clusterid']"
                         :options="clusterSelectOptions"
                         :loading="loading.clusters"
+                        @change="onSelectClusterId"
                       ></a-select>
                     </a-form-item>
                     <a-form-item
@@ -125,12 +127,17 @@
                               initialValue: hypervisorSelectOptions && hypervisorSelectOptions.length > 0
                                 ? hypervisorSelectOptions[0].value
                                 : null,
-                              rules: [{ required: true, message: 'Please select option' }]
+                              rules: [{ required: true, message: `${this.$t('message.error.select')}` }]
                             }]"
                             :options="hypervisorSelectOptions"
                             @change="value => this.hypervisor = value" />
                         </a-form-item>
                       </p>
+                      <a-form-item :label="this.$t('label.bootintosetup')" v-if="zoneSelected && ((tabKey === 'isoid' && hypervisor === 'VMware') || (tabKey === 'templateid' && template && template.hypervisor === 'VMware'))" >
+                        <a-switch
+                          v-decorator="['bootintosetup']">
+                        </a-switch>
+                      </a-form-item>
                     </a-card>
 
                     <a-card
@@ -378,6 +385,8 @@ export default {
   data () {
     return {
       zoneId: '',
+      podId: null,
+      clusterId: null,
       zoneSelected: false,
       vm: {},
       options: {
@@ -444,7 +453,8 @@ export default {
         DISK_OFFERING: 3,
         AFFINITY_GROUP: 4,
         NETWORK: 5,
-        SSH_KEY_PAIR: 6
+        SSH_KEY_PAIR: 6,
+        ENABLE_SETUP: 7
       },
       initDataConfig: {},
       defaultNetwork: '',
@@ -561,7 +571,8 @@ export default {
           list: 'listClusters',
           isLoad: !this.isNormalAndDomainUser,
           options: {
-            zoneid: _.get(this.zone, 'id')
+            zoneid: _.get(this.zone, 'id'),
+            podid: this.podId
           },
           field: 'clusterid'
         },
@@ -570,6 +581,8 @@ export default {
           isLoad: !this.isNormalAndDomainUser,
           options: {
             zoneid: _.get(this.zone, 'id'),
+            podid: this.podId,
+            clusterid: this.clusterId,
             state: 'Up',
             type: 'Routing'
           },
@@ -597,28 +610,43 @@ export default {
       })
     },
     podSelectOptions () {
-      return this.options.pods.map((pod) => {
+      const options = this.options.pods.map((pod) => {
         return {
           label: pod.name,
           value: pod.id
         }
       })
+      options.unshift({
+        label: this.$t('label.default'),
+        value: undefined
+      })
+      return options
     },
     clusterSelectOptions () {
-      return this.options.clusters.map((cluster) => {
+      const options = this.options.clusters.map((cluster) => {
         return {
           label: cluster.name,
           value: cluster.id
         }
       })
+      options.unshift({
+        label: this.$t('label.default'),
+        value: undefined
+      })
+      return options
     },
     hostSelectOptions () {
-      return this.options.hosts.map((host) => {
+      const options = this.options.hosts.map((host) => {
         return {
           label: host.name,
           value: host.id
         }
       })
+      options.unshift({
+        label: this.$t('label.default'),
+        value: undefined
+      })
+      return options
     },
     keyboardSelectOptions () {
       return this.options.keyboards.map((keyboard) => {
@@ -1002,6 +1030,10 @@ export default {
         deployVmData.keypair = values.keypair
         deployVmData.name = values.name
         deployVmData.displayname = values.name
+        // step 8: enter setup
+        if ('bootintosetup' in values) {
+          deployVmData.bootintosetup = values.bootintosetup
+        }
         const title = this.$t('label.launch.vm')
         const description = values.name || ''
         const password = this.$t('label.password')
@@ -1175,6 +1207,8 @@ export default {
     onSelectZoneId (value) {
       this.dataPreFill = {}
       this.zoneId = value
+      this.podId = null
+      this.clusterId = null
       this.zone = _.find(this.options.zones, (option) => option.id === value)
       this.zoneSelected = true
       this.form.setFieldsValue({
@@ -1191,6 +1225,17 @@ export default {
         }
       })
       this.fetchAllTemplates()
+    },
+    onSelectPodId (value) {
+      this.podId = value
+
+      this.fetchOptions(this.params.clusters, 'clusters')
+      this.fetchOptions(this.params.hosts, 'hosts')
+    },
+    onSelectClusterId (value) {
+      this.clusterId = value
+
+      this.fetchOptions(this.params.hosts, 'hosts')
     },
     handleSearchFilter (name, options) {
       this.params[name].options = { ...this.params[name].options, ...options }
@@ -1250,6 +1295,13 @@ export default {
   }
 
   .vm-info-card {
+    .ant-card-body {
+      min-height: 250px;
+      max-height: calc(100vh - 150px);
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
     .resource-detail-item__label {
       font-weight: normal;
     }
