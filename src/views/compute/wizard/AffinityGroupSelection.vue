@@ -39,7 +39,7 @@
         size="small"
         :current="options.page"
         :pageSize="options.pageSize"
-        :total="items.length >= options.pageSize ? rowCount : items.length"
+        :total="rowCount"
         :showTotal="total => `Total ${total} items`"
         :pageSizeOptions="['10', '20', '40', '80', '100', '500']"
         @change="onChangePage"
