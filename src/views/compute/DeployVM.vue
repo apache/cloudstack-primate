@@ -26,18 +26,14 @@
             layout="vertical"
           >
             <a-steps direction="vertical" size="small">
-              <a-step :title="this.$t('label.details')" status="process">
+              <a-step :title="this.$t('label.select.deployment.infrastructure')" status="process">
                 <template slot="description">
                   <div style="margin-top: 15px">
-                    <a-form-item :label="this.$t('label.name')">
-                      <a-input
-                        v-decorator="['name']"
-                      />
-                    </a-form-item>
+                    <span>{{ $t('message.select.a.zone') }}</span><br/>
                     <a-form-item :label="this.$t('label.zoneid')">
                       <a-select
                         v-decorator="['zoneid', {
-                          rules: [{ required: true, message: 'Please select option' }]
+                          rules: [{ required: true, message: `${this.$t('message.error.select')}` }]
                         }]"
                         :options="zoneSelectOptions"
                         @change="onSelectZoneId"
@@ -51,6 +47,7 @@
                         v-decorator="['podid']"
                         :options="podSelectOptions"
                         :loading="loading.pods"
+                        @change="onSelectPodId"
                       ></a-select>
                     </a-form-item>
                     <a-form-item
@@ -60,6 +57,7 @@
                         v-decorator="['clusterid']"
                         :options="clusterSelectOptions"
                         :loading="loading.clusters"
+                        @change="onSelectClusterId"
                       ></a-select>
                     </a-form-item>
                     <a-form-item
@@ -70,20 +68,6 @@
                         :options="hostSelectOptions"
                         :loading="loading.hosts"
                       ></a-select>
-                    </a-form-item>
-                    <a-form-item :label="this.$t('label.group')">
-                      <a-input v-decorator="['group']" />
-                    </a-form-item>
-                    <a-form-item :label="this.$t('label.keyboard')">
-                      <a-select
-                        v-decorator="['keyboard']"
-                        :options="keyboardSelectOptions"
-                      ></a-select>
-                    </a-form-item>
-                    <a-form-item :label="this.$t('label.userdata')">
-                      <a-textarea
-                        v-decorator="['userdata']">
-                      </a-textarea>
                     </a-form-item>
                   </div>
                 </template>
@@ -98,6 +82,7 @@
                       :activeTabKey="tabKey"
                       @tabChange="key => onTabChange(key, 'tabKey')">
                       <p v-if="tabKey === 'templateid'">
+                        {{ $t('message.template.desc') }}
                         <template-iso-selection
                           input-decorator="templateid"
                           :items="options.templates"
@@ -112,6 +97,7 @@
                           @update-disk-size="updateFieldValue"/>
                       </p>
                       <p v-else>
+                        {{ $t('message.iso.desc') }}
                         <template-iso-selection
                           input-decorator="isoid"
                           :items="options.isos"
@@ -125,7 +111,7 @@
                               initialValue: hypervisorSelectOptions && hypervisorSelectOptions.length > 0
                                 ? hypervisorSelectOptions[0].value
                                 : null,
-                              rules: [{ required: true, message: 'Please select option' }]
+                              rules: [{ required: true, message: `${this.$t('message.error.select')}` }]
                             }]"
                             :options="hypervisorSelectOptions"
                             @change="value => this.hypervisor = value" />
@@ -268,6 +254,62 @@
                   </div>
                 </template>
               </a-step>
+              <a-step
+                :title="this.$t('label.details')"
+                :status="zoneSelected ? 'process' : 'wait'">
+                <template slot="description" v-if="zoneSelected">
+                  {{ $t('message.vm.review.launch') }}
+                  <div style="margin-top: 15px">
+                    <a-form-item :label="$t('label.name.optional')">
+                      <a-input
+                        v-decorator="['name']"
+                      />
+                    </a-form-item>
+                    <a-form-item :label="$t('label.group.optional')">
+                      <a-input v-decorator="['group']" />
+                    </a-form-item>
+                    <a-form-item :label="$t('label.keyboard')">
+                      <a-select
+                        v-decorator="['keyboard']"
+                        :options="keyboardSelectOptions"
+                      ></a-select>
+                    </a-form-item>
+                    <div
+                      v-if="vm.templateid && ['KVM', 'VMware'].includes(hypervisor)">
+                      <a-form-item :label="$t('label.vm.boottype')">
+                        <a-select
+                          v-decorator="['boottype']"
+                          @change="fetchBootModes"
+                        >
+                          <a-select-option v-for="bootType in options.bootTypes" :key="bootType.id">
+                            {{ bootType.description }}
+                          </a-select-option>
+                        </a-select>
+                      </a-form-item>
+                      <a-form-item :label="$t('label.vm.bootmode')">
+                        <a-select
+                          v-decorator="['bootmode']">
+                          <a-select-option v-for="bootMode in options.bootModes" :key="bootMode.id">
+                            {{ bootMode.description }}
+                          </a-select-option>
+                        </a-select>
+                      </a-form-item>
+                    </div>
+                    <a-form-item
+                      :label="this.$t('label.bootintosetup')"
+                      v-if="zoneSelected && ((tabKey === 'isoid' && hypervisor === 'VMware') || (tabKey === 'templateid' && template && template.hypervisor === 'VMware'))" >
+                      <a-switch
+                        v-decorator="['bootintosetup']">
+                      </a-switch>
+                    </a-form-item>
+                    <a-form-item :label="$t('label.userdata')">
+                      <a-textarea
+                        v-decorator="['userdata']">
+                      </a-textarea>
+                    </a-form-item>
+                  </div>
+                </template>
+              </a-step>
             </a-steps>
             <div class="card-footer">
               <!-- ToDo extract as component -->
@@ -348,6 +390,8 @@ export default {
   data () {
     return {
       zoneId: '',
+      podId: null,
+      clusterId: null,
       zoneSelected: false,
       vm: {},
       options: {
@@ -364,7 +408,9 @@ export default {
         clusters: [],
         hosts: [],
         groups: [],
-        keyboards: []
+        keyboards: [],
+        bootTypes: [],
+        bootModes: []
       },
       loading: {
         deploy: false,
@@ -412,7 +458,8 @@ export default {
         DISK_OFFERING: 3,
         AFFINITY_GROUP: 4,
         NETWORK: 5,
-        SSH_KEY_PAIR: 6
+        SSH_KEY_PAIR: 6,
+        ENABLE_SETUP: 7
       },
       initDataConfig: {},
       defaultNetwork: '',
@@ -529,7 +576,8 @@ export default {
           list: 'listClusters',
           isLoad: !this.isNormalAndDomainUser,
           options: {
-            zoneid: _.get(this.zone, 'id')
+            zoneid: _.get(this.zone, 'id'),
+            podid: this.podId
           },
           field: 'clusterid'
         },
@@ -538,6 +586,8 @@ export default {
           isLoad: !this.isNormalAndDomainUser,
           options: {
             zoneid: _.get(this.zone, 'id'),
+            podid: this.podId,
+            clusterid: this.clusterId,
             state: 'Up',
             type: 'Routing'
           },
@@ -565,28 +615,43 @@ export default {
       })
     },
     podSelectOptions () {
-      return this.options.pods.map((pod) => {
+      const options = this.options.pods.map((pod) => {
         return {
           label: pod.name,
           value: pod.id
         }
       })
+      options.unshift({
+        label: this.$t('label.default'),
+        value: undefined
+      })
+      return options
     },
     clusterSelectOptions () {
-      return this.options.clusters.map((cluster) => {
+      const options = this.options.clusters.map((cluster) => {
         return {
           label: cluster.name,
           value: cluster.id
         }
       })
+      options.unshift({
+        label: this.$t('label.default'),
+        value: undefined
+      })
+      return options
     },
     hostSelectOptions () {
-      return this.options.hosts.map((host) => {
+      const options = this.options.hosts.map((host) => {
         return {
           label: host.name,
           value: host.id
         }
       })
+      options.unshift({
+        label: this.$t('label.default'),
+        value: undefined
+      })
+      return options
     },
     keyboardSelectOptions () {
       return this.options.keyboards.map((keyboard) => {
@@ -606,8 +671,12 @@ export default {
     instanceConfig (instanceConfig) {
       this.template = _.find(this.options.templates, (option) => option.id === instanceConfig.templateid)
       this.iso = _.find(this.options.isos, (option) => option.id === instanceConfig.isoid)
-      var hypervisorItem = _.find(this.options.hypervisors, (option) => option.name === instanceConfig.hypervisor)
-      this.hypervisor = hypervisorItem ? hypervisorItem.name : null
+
+      if (instanceConfig.hypervisor) {
+        var hypervisorItem = _.find(this.options.hypervisors, (option) => option.name === instanceConfig.hypervisor)
+        this.hypervisor = hypervisorItem ? hypervisorItem.name : null
+      }
+
       this.serviceOffering = _.find(this.options.serviceOfferings, (option) => option.id === instanceConfig.computeofferingid)
       this.diskOffering = _.find(this.options.diskOfferings, (option) => option.id === instanceConfig.diskofferingid)
       this.zone = _.find(this.options.zones, (option) => option.id === instanceConfig.zoneid)
@@ -707,8 +776,11 @@ export default {
       }
 
       this.fetchKeyboard()
+      this.fetchBootTypes()
+      this.fetchBootModes()
+
       Vue.nextTick().then(() => {
-        ['name', 'keyboard', 'userdata'].forEach(this.fillValue)
+        ['name', 'keyboard', 'boottype', 'bootmode', 'userdata'].forEach(this.fillValue)
         this.instanceConfig = this.form.getFieldsValue() // ToDo: maybe initialize with some other defaults
       })
     },
@@ -753,6 +825,43 @@ export default {
       })
 
       this.$set(this.options, 'keyboards', keyboardType)
+    },
+    fetchBootTypes () {
+      const bootTypes = []
+
+      bootTypes.push({
+        id: 'BIOS',
+        description: 'BIOS'
+      })
+      bootTypes.push({
+        id: 'UEFI',
+        description: 'UEFI'
+      })
+
+      this.options.bootTypes = bootTypes
+      this.$forceUpdate()
+    },
+    fetchBootModes (bootType) {
+      const bootModes = []
+
+      if (bootType === 'UEFI') {
+        bootModes.push({
+          id: 'LEGACY',
+          description: 'LEGACY'
+        })
+        bootModes.push({
+          id: 'SECURE',
+          description: 'SECURE'
+        })
+      } else {
+        bootModes.push({
+          id: 'LEGACY',
+          description: 'LEGACY'
+        })
+      }
+
+      this.options.bootModes = bootModes
+      this.$forceUpdate()
     },
     fetchNetwork () {
       const param = this.params.networks
@@ -857,6 +966,8 @@ export default {
         deployVmData.hostid = values.hostid
         deployVmData.group = values.group
         deployVmData.keyboard = values.keyboard
+        deployVmData.boottype = values.boottype
+        deployVmData.bootmode = values.bootmode
         if (values.userdata && values.userdata.length > 0) {
           deployVmData.userdata = encodeURIComponent(btoa(this.sanitizeReverse(values.userdata)))
         }
@@ -924,6 +1035,10 @@ export default {
         deployVmData.keypair = values.keypair
         deployVmData.name = values.name
         deployVmData.displayname = values.name
+        // step 8: enter setup
+        if ('bootintosetup' in values) {
+          deployVmData.bootintosetup = values.bootintosetup
+        }
         const title = this.$t('label.launch.vm')
         const description = values.name || ''
         const password = this.$t('label.password')
@@ -1005,6 +1120,11 @@ export default {
             }
             param.opts = response
             this.options[name] = response
+
+            if (name === 'hypervisors') {
+              this.hypervisor = response[0] && response[0].name ? response[0].name : null
+            }
+
             this.$forceUpdate()
             if (param.field) {
               this.fillValue(param.field)
@@ -1092,6 +1212,8 @@ export default {
     onSelectZoneId (value) {
       this.dataPreFill = {}
       this.zoneId = value
+      this.podId = null
+      this.clusterId = null
       this.zone = _.find(this.options.zones, (option) => option.id === value)
       this.zoneSelected = true
       this.form.setFieldsValue({
@@ -1108,6 +1230,17 @@ export default {
         }
       })
       this.fetchAllTemplates()
+    },
+    onSelectPodId (value) {
+      this.podId = value
+
+      this.fetchOptions(this.params.clusters, 'clusters')
+      this.fetchOptions(this.params.hosts, 'hosts')
+    },
+    onSelectClusterId (value) {
+      this.clusterId = value
+
+      this.fetchOptions(this.params.hosts, 'hosts')
     },
     handleSearchFilter (name, options) {
       this.params[name].options = { ...this.params[name].options, ...options }
@@ -1167,6 +1300,13 @@ export default {
   }
 
   .vm-info-card {
+    .ant-card-body {
+      min-height: 250px;
+      max-height: calc(100vh - 150px);
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
     .resource-detail-item__label {
       font-weight: normal;
     }

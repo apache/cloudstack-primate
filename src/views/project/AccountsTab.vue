@@ -77,6 +77,7 @@
                 shape="circle"
                 icon="delete"
                 size="small"
+                :disabled="!('deleteAccountFromProject' in $store.getters.apis)"
                 @click="onShowConfirmDelete(record)"/>
             </a-tooltip>
           </span>
