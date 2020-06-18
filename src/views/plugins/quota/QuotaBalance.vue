@@ -88,7 +88,7 @@ export default {
   watch: {
     tab (newTab, oldTab) {
       this.tab = newTab
-      if (this.tab === 'label.quota.statement.balance') {
+      if (this.tab === 'quota.statement.balance') {
         this.fetchData()
       }
     }

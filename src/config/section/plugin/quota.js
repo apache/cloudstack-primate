@@ -65,7 +65,7 @@ export default {
       title: 'label.quota.tariff',
       icon: 'credit-card',
       permission: ['quotaTariffList'],
-      columns: ['usageName', 'description', 'usageUnit', 'tariffValue', 'tariffactions'],
+      columns: ['usageName', 'description', 'usageUnit', 'tariffValue', 'tariffActions'],
       details: ['usageName', 'description', 'usageUnit', 'tariffValue']
     },
     {
