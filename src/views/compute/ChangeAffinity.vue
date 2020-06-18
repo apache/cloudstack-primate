@@ -71,7 +71,18 @@ export default {
   data () {
     return {
       items: [],
-      columns: [],
+      columns: [
+        {
+          dataIndex: 'name',
+          title: this.$t('label.name'),
+          sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
+        },
+        {
+          dataIndex: 'type',
+          title: this.$t('label.type'),
+          sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
+        }
+      ],
       selectedRowKeys: [],
       options: {
         page: 1,
@@ -91,25 +102,16 @@ export default {
   methods: {
     fetchData () {
       this.loading = true
-      this.columns = []
-      this.columns.push({
-        dataIndex: 'name',
-        title: this.$t('label.name'),
-        sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
-      })
-      this.columns.push({
-        dataIndex: 'type',
-        title: this.$t('label.type'),
-        sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
-      })
-
+      this.items = []
       api('listAffinityGroups', {
         keyword: this.options.keyword,
         domainid: this.resource.domainid,
         accountid: this.resource.accountid,
         response: 'json'
       }).then(response => {
-        this.items = response.listaffinitygroupsresponse.affinitygroup
+        if (response.listaffinitygroupsresponse.affinitygroup) {
+          this.items = response.listaffinitygroupsresponse.affinitygroup
+        }
       }).finally(() => {
         this.loading = false
       })
