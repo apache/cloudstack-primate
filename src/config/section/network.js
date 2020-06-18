@@ -188,7 +188,6 @@ export default {
           api: 'updateSecurityGroup',
           icon: 'edit',
           label: 'label.edit',
-          message: 'label.edit.network.details',
           dataView: true,
           args: ['name'],
           show: (record) => { return record.name !== 'default' }
