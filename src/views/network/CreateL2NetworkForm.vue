@@ -130,10 +130,10 @@
               </a-radio-button>
             </a-radio-group>
           </a-form-item>
-          <a-form-item :label="$t('label.isolatedpvlan')" v-if="this.isolatePvlanType=='community' || this.isolatePvlanType=='isolated'">
+          <a-form-item :label="$t('label.isolatedpvlanid')" v-if="this.isolatePvlanType=='community' || this.isolatePvlanType=='isolated'">
             <a-input
               v-decorator="['isolatedpvlan', {}]"
-              :placeholder="this.$t('label.isolatedpvlan')"/>
+              :placeholder="this.$t('label.isolatedpvlanid')"/>
           </a-form-item>
           <a-form-item :label="$t('label.account')" v-if="this.accountVisible">
             <a-input
