@@ -38,6 +38,7 @@ export default {
       api: 'addHost',
       icon: 'plus',
       label: 'label.add.host',
+      docHelp: 'adminguide/installguide/configuration.html#adding-a-host',
       listView: true,
       popup: true,
       component: () => import('@/views/infra/HostAdd.vue')
@@ -99,6 +100,7 @@ export default {
       icon: 'plus-square',
       label: 'label.action.enable.maintenance.mode',
       message: 'message.action.host.enable.maintenance.mode',
+      docHelp: 'adminguide/hosts.html#maintaining-hypervisors-on-hosts',
       dataView: true,
       show: (record) => { return record.resourcestate === 'Enabled' }
     },
@@ -107,6 +109,7 @@ export default {
       icon: 'minus-square',
       label: 'label.action.cancel.maintenance.mode',
       message: 'message.action.cancel.maintenance.mode',
+      docHelp: 'adminguide/hosts.html#maintaining-hypervisors-on-hosts',
       dataView: true,
       show: (record) => { return record.resourcestate === 'Maintenance' || record.resourcestate === 'ErrorInMaintenance' || record.resourcestate === 'PrepareForMaintenance' }
     },
@@ -115,6 +118,7 @@ export default {
       icon: 'setting',
       label: 'label.outofbandmanagement.configure',
       message: 'label.outofbandmanagement.configure',
+      docHelp: 'adminguide/hosts.html#out-of-band-management',
       dataView: true,
       args: ['hostid', 'address', 'port', 'username', 'password', 'driver'],
       mapping: {
@@ -131,6 +135,7 @@ export default {
       icon: 'plus-circle',
       label: 'label.outofbandmanagement.enable',
       message: 'label.outofbandmanagement.enable',
+      docHelp: 'adminguide/hosts.html#out-of-band-management',
       dataView: true,
       show: (record) => {
         return !(record.outofbandmanagement && record.outofbandmanagement.enabled &&
@@ -148,6 +153,7 @@ export default {
       icon: 'minus-circle',
       label: 'label.outofbandmanagement.disable',
       message: 'label.outofbandmanagement.disable',
+      docHelp: 'adminguide/hosts.html#out-of-band-management',
       dataView: true,
       show: (record) => {
         return record.outofbandmanagement && record.outofbandmanagement.enabled &&
@@ -165,6 +171,7 @@ export default {
       icon: 'login',
       label: 'label.outofbandmanagement.action.issue',
       message: 'label.outofbandmanagement.action.issue',
+      docHelp: 'adminguide/hosts.html#out-of-band-management',
       dataView: true,
       show: (record) => {
         return record.outofbandmanagement && record.outofbandmanagement.enabled &&
@@ -182,6 +189,7 @@ export default {
       icon: 'key',
       label: 'label.outofbandmanagement.changepassword',
       message: 'label.outofbandmanagement.changepassword',
+      docHelp: 'adminguide/hosts.html#out-of-band-management',
       dataView: true,
       show: (record) => {
         return record.outofbandmanagement && record.outofbandmanagement.enabled &&
@@ -199,6 +207,7 @@ export default {
       icon: 'tool',
       label: 'label.ha.configure',
       message: 'label.ha.configure',
+      docHelp: 'adminguide/reliability.html#ha-for-hosts',
       dataView: true,
       args: ['hostid', 'provider'],
       mapping: {
@@ -215,6 +224,7 @@ export default {
       icon: 'eye',
       label: 'label.ha.enable',
       message: 'label.ha.enable',
+      docHelp: 'adminguide/reliability.html#ha-for-hosts',
       dataView: true,
       show: (record) => {
         return !(record.hostha && record.hostha.haenable &&
@@ -232,6 +242,7 @@ export default {
       icon: 'eye-invisible',
       label: 'label.ha.disable',
       message: 'label.ha.disable',
+      docHelp: 'adminguide/reliability.html#ha-for-hosts',
       dataView: true,
       show: (record) => {
         return record.hostha && record.hostha.haenable &&
@@ -249,6 +260,7 @@ export default {
       icon: 'setting',
       label: 'label.start.rolling.maintenance',
       message: 'label.start.rolling.maintenance',
+      docHelp: 'adminguide/hosts.html#kvm-rolling-maintenance',
       dataView: true,
       show: (record) => {
         return record.hypervisor === 'KVM' && (record.resourcestate === 'Enabled' || record.resourcestate === 'ErrorInMaintenance')
@@ -264,6 +276,7 @@ export default {
       api: 'deleteHost',
       icon: 'delete',
       label: 'label.action.remove.host',
+      docHelp: 'adminguide/hosts.html#removing-hosts',
       dataView: true,
       args: ['forced'],
       show: (record) => { return ['Maintenance', 'Disabled', 'Down', 'Alert', 'Disconnected'].includes(record.resourcestate) }
