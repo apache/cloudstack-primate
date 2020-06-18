@@ -285,7 +285,8 @@ export default {
           icon: 'plus',
           label: 'label.add.private.gateway',
           listView: true,
-          args: ['physicalnetworkid', 'vlan', 'ipaddress', 'gateway', 'netmask', 'sourcenatsupported', 'aclid'],
+          // TODO : Add version check
+          args: ['physicalnetworkid', 'vlan', 'bypassvlanoverlapcheck', 'ipaddress', 'gateway', 'netmask', 'sourcenatsupported', 'aclid'],
           mapping: {
             aclid: {
               api: 'listNetworkACLLists'

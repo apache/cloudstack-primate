@@ -130,6 +130,12 @@
                   v-decorator="['vlan', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"
                 ></a-input>
               </a-form-item>
+              // TODO : Add version check
+              <a-form-item :label="$t('label.bypassvlanoverlapcheck')">
+                <a-checkbox
+                  v-decorator="['bypassvlanoverlapcheck']"
+                ></a-checkbox>
+              </a-form-item>
               <a-form-item :label="$t('label.publicip')" :required="true">
                 <a-input
                   :placeholder="placeholders.ipaddress"
