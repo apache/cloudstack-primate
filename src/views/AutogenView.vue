@@ -536,6 +536,29 @@ export default {
         if (['listTemplates', 'listIsos'].includes(this.apiName) && this.items.length > 1) {
           this.items = [...new Map(this.items.map(x => [x.id, x])).values()]
         }
+        if (this.apiName === 'listProjects' && this.items.length > 0) {
+          for (var index in this.items) {
+            api('listProjectAccounts', {
+              projectid: this.items[index].id,
+              role: 'Admin'
+            }).then(response => {
+              const projAccounts = response.listprojectaccountsresponse.projectaccount || []
+              var pA = projAccounts.map(a => {
+                if (a.userid) {
+                  return a.account + '(' + this.getUserName(a) + ')'
+                } else {
+                  return a.account
+                }
+              })
+              this.items[index].account = pA.join()
+            })
+          }
+          this.columns.map(col => {
+            if (col.title === 'Account') {
+              col.title = this.$t('label.project.owner')
+            }
+          })
+        }
         if (this.treeView) {
           this.treeData = this.generateTreeData(this.items)
         } else {
@@ -578,6 +601,12 @@ export default {
       }).finally(f => {
         this.loading = false
       })
+    },
+    getUserName (record) {
+      if (record.userid && record.userid !== null) {
+        return record.user ? record.user[0].username : record.userid
+      }
+      return null
     },
     onSearch (value) {
       this.searchQuery = value

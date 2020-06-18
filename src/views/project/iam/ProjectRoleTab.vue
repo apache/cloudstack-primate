@@ -268,7 +268,6 @@ export default {
           }
           params[key] = input
         }
-        console.log('params', params)
         api('createProjectRole', params).then(response => {
           this.$notification.success({
             message: this.$t('label.create.project.role'),

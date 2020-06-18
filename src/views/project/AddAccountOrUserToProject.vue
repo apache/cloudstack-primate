@@ -22,7 +22,13 @@
           :form="form"
           @submit="addAccountToProject"
           layout="vertical">
-          <a-form-item :label="$t('label.account')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.account') }}
+              <a-tooltip :title="fetchApiParams('addAccountToProject').account.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-select
               showSearch
               v-decorator="['account']"
@@ -35,10 +41,22 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('label.email')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.email') }}
+              <a-tooltip :title="fetchApiParams('addAccountToProject').email.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-input v-decorator="[ 'email']"></a-input>
           </a-form-item>
-          <a-form-item :label="$t('label.project.role')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.project.role') }}
+              <a-tooltip :title="fetchApiParams('addAccountToProject').projectroleid.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-select
               showSearch
               v-decorator="['projectroleid']"
@@ -50,7 +68,13 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('label.roletype')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.roletype') }}
+              <a-tooltip :title="fetchApiParams('addAccountToProject').roletype.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-select
               showSearch
               v-decorator="['roletype']"
@@ -70,7 +94,13 @@
           :form="form"
           @submit="addUserToProject"
           layout="vertical">
-          <a-form-item :label="$t('label.user')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.user') }}
+              <a-tooltip :title="fetchApiParams('addUserToProject').userid.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-select
               showSearch
               v-decorator="['userid', {
@@ -85,10 +115,22 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('label.email')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.email') }}
+              <a-tooltip :title="fetchApiParams('addUserToProject').email.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-input v-decorator="[ 'email']"></a-input>
           </a-form-item>
-          <a-form-item :label="$t('label.project.role')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.project.role') }}
+              <a-tooltip :title="fetchApiParams('addUserToProject').roletype.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-select
               showSearch
               v-decorator="['projectroleid']"
@@ -100,7 +142,13 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('label.roletype')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.roletype') }}
+              <a-tooltip :title="fetchApiParams('addUserToProject').roletype.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-select
               showSearch
               v-decorator="['roletype']"
@@ -179,6 +227,14 @@ export default {
       }).catch(error => {
         this.$notifyError(error)
       })
+    },
+    fetchApiParams (apiCommand) {
+      const apiConfig = this.$store.getters.apis[apiCommand]
+      const apiParams = {}
+      apiConfig.params.forEach(param => {
+        apiParams[param.name] = param
+      })
+      return apiParams
     },
     addAccountToProject (e) {
       e.preventDefault()

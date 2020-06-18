@@ -37,13 +37,19 @@ export default {
     },
     {
       name: 'accounts',
-      show: () => { return store.getters.userInfo.roletype !== 'User' },
-      component: () => import('@/views/project/AccountsTab.vue')
+      component: () => import('@/views/project/AccountsTab.vue'),
+      projectAccountFilter: projectAccount => {
+        return (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype) ||
+        projectAccount && projectAccount.role === 'Admin')
+      }
     },
     {
       name: 'project.roles',
-      show: () => { return store.getters.userInfo.roletype !== 'User' },
-      component: () => import('@/views/project/iam/ProjectRoleTab.vue')
+      component: () => import('@/views/project/iam/ProjectRoleTab.vue'),
+      projectAccountFilter: projectAccount => {
+        return (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype) ||
+        projectAccount && projectAccount.role === 'Admin')
+      }
     },
     {
       name: 'limits',

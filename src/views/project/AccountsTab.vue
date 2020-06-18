@@ -30,7 +30,10 @@
           <span slot="user" slot-scope="text, record" v-if="record.userid">
             {{ getUserName(record) }}
           </span>
-          <span slot="action" slot-scope="text, record" class="account-button-action">
+          <span slot="projectrole" slot-scope="text, record" v-if="record.projectroleid">
+            {{ getProjectRole(record) }}
+          </span>
+          <span v-if="isProjAdmin" slot="action" slot-scope="text, record" class="account-button-action">
             <a-tooltip placement="top">
               <template v-if="record.userid" slot="title">
                 {{ $t('label.make.user.project.owner') }}
@@ -109,10 +112,13 @@ export default {
     return {
       columns: [],
       dataSource: [],
+      isProjAdmin: false,
       loading: false,
       page: 1,
       pageSize: 10,
       itemCount: 0,
+      users: [],
+      projectRoles: [],
       owner: 'Admin',
       role: 'Regular'
     }
@@ -122,13 +128,13 @@ export default {
       {
         title: this.$t('label.account'),
         dataIndex: 'account',
-        width: '30%',
+        width: '20%',
         scopedSlots: { customRender: 'account' }
       },
       {
         title: this.$t('label.user'),
         dataIndex: 'userid',
-        width: '30%',
+        width: '20%',
         scopedSlots: { customRender: 'user' }
       },
       {
@@ -138,14 +144,19 @@ export default {
         scopedSlots: { customRender: 'role' }
       },
       {
+        title: this.$t('label.project.role'),
+        dataIndex: 'projectroleid',
+        width: '20%',
+        scopedSlots: { customRender: 'projectrole' }
+      },
+      {
         title: this.$t('label.action'),
         dataIndex: 'action',
         fixed: 'right',
-        width: '30%',
+        width: '20%',
         scopedSlots: { customRender: 'action' }
       }
     ]
-
     this.page = 1
     this.pageSize = 10
     this.itemCount = 0
@@ -170,21 +181,9 @@ export default {
       params.pageSize = this.pageSize
 
       this.loading = true
-      api('listProjectAccounts', params).then(json => {
-        const listProjectAccount = json.listprojectaccountsresponse.projectaccount
-        const itemCount = json.listprojectaccountsresponse.count
-        if (!listProjectAccount || listProjectAccount.length === 0) {
-          this.dataSource = []
-          return
-        }
-
-        this.itemCount = itemCount
-        this.dataSource = listProjectAccount
-      }).catch(error => {
-        this.$notifyError(error)
-      }).finally(() => {
-        this.loading = false
-      })
+      this.fetchUsers()
+      this.fetchProjectRoles()
+      this.fetchProjectAccounts(params)
     },
     changePage (page, pageSize) {
       this.page = page
@@ -200,9 +199,20 @@ export default {
       const uname = this.getUserName(record)
       var status = false
       if (record.userid) {
-        status = uname !== null && uname === this.$store.getters.loggedInUser
+        const user = this.users.filter(user => user.id === uname)
+        status = uname && uname === this.$store.getters.userInfo.username ||
+          (user[0] && user[0].username === this.$store.getters.userInfo.username)
       } else {
         status = record.account === this.$store.getters.userInfo.account
+      }
+      return status
+    },
+    isProjectAdmin (loggedInUser) {
+      var status = false
+      if (['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype)) {
+        status = true
+      } else if ((loggedInUser.role === this.owner)) {
+        status = true
       }
       return status
     },
@@ -211,6 +221,43 @@ export default {
         return record.user ? record.user[0].username : record.userid
       }
       return null
+    },
+    getProjectRole (record) {
+      const projectRole = this.projectRoles.filter(role => role.id === record.projectroleid)
+      return projectRole[0].name || projectRole[0].id || null
+    },
+    fetchUsers () {
+      api('listUsers', { listall: true }).then(response => {
+        this.users = response.listusersresponse.user || []
+      })
+    },
+    fetchProjectRoles () {
+      api('listProjectRoles', { projectId: this.resource.id }).then(response => {
+        this.projectRoles = response.listprojectrolesresponse.projectrole || []
+      })
+    },
+    fetchProjectAccounts (params) {
+      api('listProjectAccounts', params).then(json => {
+        const listProjectAccount = json.listprojectaccountsresponse.projectaccount
+        const itemCount = json.listprojectaccountsresponse.count
+        if (!listProjectAccount || listProjectAccount.length === 0) {
+          this.dataSource = []
+          return
+        }
+        for (const pa in listProjectAccount) {
+          if ((listProjectAccount[pa].userid && listProjectAccount[pa].userid === this.$store.getters.userInfo.username) ||
+            listProjectAccount[pa].account === this.$store.getters.userInfo.account) {
+            this.isProjAdmin = this.isProjectAdmin(listProjectAccount[pa])
+          }
+        }
+
+        this.itemCount = itemCount
+        this.dataSource = listProjectAccount
+      }).catch(error => {
+        this.$notifyError(error)
+      }).finally(() => {
+        this.loading = false
+      })
     },
     onMakeProjectOwner (record) {
       const title = this.$t('label.make.project.owner')
@@ -228,7 +275,7 @@ export default {
       params.id = this.resource.id
       if (record.userid && record.userid !== null) {
         params.userid = record.userid
-        params.accountid = record.user[0].accountid
+        params.accountid = (record.user && record.user[0].accountid) || record.accountid
         title = this.$t('label.make.user.project.owner')
       } else {
         params.account = record.account
@@ -243,7 +290,7 @@ export default {
       const params = {}
       if (record.userid && record.userid !== null) {
         params.userid = record.userid
-        params.accountid = record.user[0].accountid
+        params.accountid = (record.user && record.user[0].accountid) || record.accountid
         title = this.$t('label.demote.project.owner.user')
       } else {
         params.account = record.account

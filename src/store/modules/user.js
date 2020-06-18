@@ -35,8 +35,7 @@ const user = {
     project: {},
     asyncJobIds: [],
     isLdapEnabled: false,
-    cloudian: {},
-    loggedInUser: ''
+    cloudian: {}
   },
 
   mutations: {
@@ -75,9 +74,6 @@ const user = {
     },
     RESET_THEME: (state) => {
       Vue.ls.set(DEFAULT_THEME, 'light')
-    },
-    SET_LOGGED_IN_USER: (state, loggedInUser) => {
-      state.loggedInUser = loggedInUser
     }
   },
 
@@ -89,7 +85,7 @@ const user = {
       return new Promise((resolve, reject) => {
         login(userInfo).then(response => {
           const result = response.loginresponse || {}
-
+          console.log('sessionKey = ', result.sessionkey)
           Cookies.set('account', result.account, { expires: 1 })
           Cookies.set('domainid', result.domainid, { expires: 1 })
           Cookies.set('role', result.type, { expires: 1 })
@@ -111,9 +107,7 @@ const user = {
           commit('SET_FEATURES', {})
           commit('SET_LDAP', {})
           commit('SET_CLOUDIAN', {})
-          commit('SET_LOGGED_IN_USER', {})
 
-          commit('SET_LOGGED_IN_USER', result.username)
           resolve()
         }).catch(error => {
           reject(error)

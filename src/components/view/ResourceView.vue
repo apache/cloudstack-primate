@@ -88,7 +88,8 @@ export default {
   data () {
     return {
       activeTab: '',
-      networkService: null
+      networkService: null,
+      projectAccount: null
     }
   },
   watch: {
@@ -99,6 +100,19 @@ export default {
       if (this.resource.associatednetworkid) {
         api('listNetworks', { id: this.resource.associatednetworkid }).then(response => {
           this.networkService = response.listnetworksresponse.network[0]
+        })
+      }
+      if (this.resource.projectaccountname) {
+        var projectAccountList = []
+        api('listProjectAccounts', { projectid: this.resource.id }).then(response => {
+          projectAccountList = response.listprojectaccountsresponse.projectaccount
+          for (var pa in projectAccountList) {
+            if ((projectAccountList[pa].userid && 'fetchUser(projectAccountList[pa].userid)'.username === this.$store.getters.userInfo.username) ||
+              projectAccountList[pa].account === this.$store.getters.userInfo.account) {
+              this.projectAccount = projectAccountList[pa]
+              break
+            }
+          }
         })
       }
     }
@@ -117,11 +131,22 @@ export default {
         }
         return this.networkService && this.networkService.service &&
           tab.networkServiceFilter(this.networkService.service)
+      } else if ('projectAccountFilter' in tab) {
+        return tab.projectAccountFilter(this.projectAccount)
       } else if ('show' in tab) {
         return tab.show(this.resource, this.$route, this.$store.getters.userInfo)
       } else {
         return true
       }
+    },
+    fetchUser (userId) {
+      var user = null
+      api('listUsers', { listall: true }).then(response => {
+        var users = response.listusersresponse.user
+        users = users.filter(user => user.id === userId)
+        user = users[0]
+      })
+      return user
     }
   }
 }
