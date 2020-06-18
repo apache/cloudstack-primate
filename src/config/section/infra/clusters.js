@@ -68,7 +68,7 @@ export default {
       message: 'message.action.manage.cluster',
       dataView: true,
       defaultArgs: { managedstate: 'Managed' },
-      show: (record) => { return record.clustertype === 'CloudManaged' && ['PrepareUnmanaged', 'Unmanaged'].includes(record.state) }
+      show: (record) => { return record.managedstate !== 'Managed' }
     },
     {
       api: 'updateCluster',
@@ -77,7 +77,7 @@ export default {
       message: 'message.action.unmanage.cluster',
       dataView: true,
       defaultArgs: { managedstate: 'Unmanaged' },
-      show: (record) => { return record.clustertype === 'CloudManaged' && record.state === 'Enabled' }
+      show: (record) => { return record.managedstate === 'Managed' }
     },
     {
       api: 'enableOutOfBandManagementForCluster',
@@ -86,7 +86,7 @@ export default {
       message: 'label.outofbandmanagement.enable',
       dataView: true,
       show: (record) => {
-        return !record.resourcedetails || !record.resourcedetails.outOfBandManagementEnabled ||
+        return record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
           record.resourcedetails.outOfBandManagementEnabled === 'false'
       },
       args: ['clusterid'],
@@ -103,8 +103,8 @@ export default {
       message: 'label.outofbandmanagement.disable',
       dataView: true,
       show: (record) => {
-        return record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
-          record.resourcedetails.outOfBandManagementEnabled === 'true'
+        return !(record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
+          record.resourcedetails.outOfBandManagementEnabled === 'false')
       },
       args: ['clusterid'],
       mapping: {
@@ -120,7 +120,7 @@ export default {
       message: 'label.ha.enable',
       dataView: true,
       show: (record) => {
-        return !record.resourcedetails || !record.resourcedetails.resourceHAEnabled ||
+        return record.resourcedetails && record.resourcedetails.resourceHAEnabled &&
           record.resourcedetails.resourceHAEnabled === 'false'
       },
       args: ['clusterid'],
@@ -137,12 +137,25 @@ export default {
       message: 'label.ha.disable',
       dataView: true,
       show: (record) => {
-        return record.resourcedetails && record.resourcedetails.resourceHAEnabled &&
-          record.resourcedetails.resourceHAEnabled === 'true'
+        return !(record.resourcedetails && record.resourcedetails.resourceHAEnabled &&
+          record.resourcedetails.resourceHAEnabled === 'false')
       },
       args: ['clusterid'],
       mapping: {
         clusterid: {
+          value: (record) => { return record.id }
+        }
+      }
+    },
+    {
+      api: 'startRollingMaintenance',
+      icon: 'setting',
+      label: 'label.start.rolling.maintenance',
+      message: 'label.start.rolling.maintenance',
+      dataView: true,
+      args: ['timeout', 'payload', 'forced', 'clusterids'],
+      mapping: {
+        clusterids: {
           value: (record) => { return record.id }
         }
       }

@@ -53,16 +53,18 @@
           v-for="stat in stats"
           :key="stat.type">
           <chart-card :loading="loading">
-            <div class="capacity-dashboard-chart-card-inner">
-              <h3>{{ $t(ts[stat.name]) }}</h3>
-              <a-progress
-                type="dashboard"
-                :status="getStatus(parseFloat(stat.percentused))"
-                :percent="parseFloat(stat.percentused)"
-                :format="percent => `${parseFloat(stat.percentused).toFixed(2)}%`"
-                :strokeColor="getStrokeColour(parseFloat(stat.percentused))"
-                :width="100" />
-            </div>
+            <router-link :to="{ path: '/zone/' + zoneSelected.id }">
+              <div class="capacity-dashboard-chart-card-inner">
+                <h3>{{ $t(ts[stat.name]) }}</h3>
+                <a-progress
+                  type="dashboard"
+                  :status="getStatus(parseFloat(stat.percentused))"
+                  :percent="parseFloat(stat.percentused)"
+                  :format="percent => `${parseFloat(stat.percentused).toFixed(2)}%`"
+                  :strokeColor="getStrokeColour(parseFloat(stat.percentused))"
+                  :width="100" />
+              </div>
+            </router-link>
             <template slot="footer"><center>{{ displayData(stat.name, stat.capacityused) }} / {{ displayData(stat.name, stat.capacitytotal) }}</center></template>
           </chart-card>
         </a-col>
@@ -74,7 +76,7 @@
         <div style="text-align: center">
           <a-tooltip placement="bottom" class="capacity-dashboard-button-wrapper">
             <template slot="title">
-              View Hosts in Alert State
+              {{ $t('label.view') + ' ' + $t('label.host.alerts') }}
             </template>
             <a-button type="danger" shape="circle">
               <router-link :to="{ name: 'host', query: {'state': 'Alert'} }">
@@ -84,7 +86,7 @@
           </a-tooltip>
           <a-tooltip placement="bottom" class="capacity-dashboard-button-wrapper">
             <template slot="title">
-              View Alerts
+              {{ $t('label.view') + ' ' + $t('label.alerts') }}
             </template>
             <a-button shape="circle">
               <router-link :to="{ name: 'alert' }">
@@ -94,7 +96,7 @@
           </a-tooltip>
           <a-tooltip placement="bottom" class="capacity-dashboard-button-wrapper">
             <template slot="title">
-              View Events
+              {{ $t('label.view') + ' ' + $t('label.events') }}
             </template>
             <a-button shape="circle">
               <router-link :to="{ name: 'event' }">
@@ -227,7 +229,7 @@ export default {
     listEvents () {
       const params = {
         page: 1,
-        pagesize: 6,
+        pagesize: 7,
         listall: true
       }
       this.loading = true
