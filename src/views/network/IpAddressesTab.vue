@@ -310,7 +310,6 @@ export default {
       })
     },
     async onShowAcquireIp () {
-      this.fetchListPublicIpAddress()
       this.showAcquireIp = true
       this.acquireLoading = true
       this.listPublicIpAddress = []
