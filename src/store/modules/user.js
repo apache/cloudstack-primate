@@ -35,7 +35,8 @@ const user = {
     project: {},
     asyncJobIds: [],
     isLdapEnabled: false,
-    cloudian: {}
+    cloudian: {},
+    loggedInUser: ''
   },
 
   mutations: {
@@ -74,6 +75,9 @@ const user = {
     },
     RESET_THEME: (state) => {
       Vue.ls.set(DEFAULT_THEME, 'light')
+    },
+    SET_LOGGED_IN_USER: (state, loggedInUser) => {
+      state.loggedInUser = loggedInUser
     }
   },
 
@@ -107,7 +111,9 @@ const user = {
           commit('SET_FEATURES', {})
           commit('SET_LDAP', {})
           commit('SET_CLOUDIAN', {})
+          commit('SET_LOGGED_IN_USER', {})
 
+          commit('SET_LOGGED_IN_USER', result.username)
           resolve()
         }).catch(error => {
           reject(error)
