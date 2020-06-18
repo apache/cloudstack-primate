@@ -130,8 +130,9 @@
                   v-decorator="['vlan', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"
                 ></a-input>
               </a-form-item>
-              // TODO : Add version check
-              <a-form-item :label="$t('label.bypassvlanoverlapcheck')">
+              <a-form-item
+                :label="$t('label.bypassvlanoverlapcheck')"
+                v-if="$store.getters.apis.createPrivateGateway.params.filter(x => x.name === 'bypassvlanoverlapcheck').length > 0" >
                 <a-checkbox
                   v-decorator="['bypassvlanoverlapcheck']"
                 ></a-checkbox>
@@ -533,8 +534,7 @@ export default {
         }
 
         const data = this.gatewayForm.getFieldsValue()
-
-        api('createPrivateGateway', {
+        const params = {
           sourcenatsupported: data.nat,
           physicalnetworkid: data.physicalnetwork,
           vpcid: this.resource.id,
@@ -543,7 +543,12 @@ export default {
           netmask: data.netmask,
           vlan: data.vlan,
           aclid: data.acl
-        }).then(response => {
+        }
+        if (data.bypassvlanoverlapcheck) {
+          params.bypassvlanoverlapcheck = data.bypassvlanoverlapcheck
+        }
+
+        api('createPrivateGateway', params).then(response => {
           this.$store.dispatch('AddAsyncJob', {
             title: `Successfully added Private Gateway`,
             jobid: response.createprivategatewayresponse.jobid,
