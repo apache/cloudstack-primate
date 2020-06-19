@@ -188,6 +188,7 @@
                       :value="diskOffering ? diskOffering.id : ''"
                       :loading="loading.diskOfferings"
                       :preFillContent="dataPreFill"
+                      :isIsoSelected="tabKey==='isoid'"
                       @select-disk-offering-item="($event) => updateDiskOffering($event)"
                       @handle-search-filter="($event) => handleSearchFilter('diskOfferings', $event)"
                     ></disk-offering-selection>
@@ -682,11 +683,10 @@ export default {
       return options
     },
     keyboardSelectOptions () {
-      const keyboardOpts = this.$store.getters.configs.keyboardOptions || {}
-      return Object.keys(keyboardOpts).map((keyboard) => {
+      return this.options.keyboards.map((keyboard) => {
         return {
-          label: this.$t(keyboardOpts[keyboard]),
-          value: keyboard
+          label: this.$t(keyboard.description),
+          value: keyboard.id
         }
       })
     }
@@ -979,6 +979,12 @@ export default {
           this.$notification.error({
             message: 'Request Failed',
             description: this.$t('message.template.iso')
+          })
+          return
+        } else if (values.isoid && (!values.diskofferingid || values.diskofferingid === '0')) {
+          this.$notification.error({
+            message: 'Request Failed',
+            description: this.$t('Please select a Disk Offering to continue')
           })
           return
         }

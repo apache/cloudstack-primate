@@ -88,6 +88,10 @@ export default {
     zoneId: {
       type: String,
       default: () => ''
+    },
+    isIsoSelected: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -172,12 +176,26 @@ export default {
           this.$emit('select-disk-offering-item', '0')
         }
       }
+    },
+    isIsoSelected () {
+      if (this.isIsoSelected) {
+        this.dataItems = this.dataItems.filter(item => item.id !== '0')
+      } else {
+        this.dataItems.unshift({
+          id: '0',
+          name: this.$t('label.noselect'),
+          diskSize: undefined,
+          miniops: undefined,
+          maxiops: undefined,
+          isCustomized: undefined
+        })
+      }
     }
   },
   methods: {
     initDataItem () {
       this.dataItems = []
-      if (this.options.page === 1) {
+      if (this.options.page === 1 && !this.isIsoSelected) {
         this.dataItems.push({
           id: '0',
           name: this.$t('label.noselect'),
