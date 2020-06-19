@@ -273,14 +273,14 @@
 
                       <span v-if="property.type && property.type==='boolean'">
                         <a-switch
-                          v-decorator="[property.key]"
+                          v-decorator="['ovfproperties.' + property.key, { initialValue: property.value==='TRUE'?true:false}]"
                           :defaultChecked="property.value==='TRUE'?true:false"
                           :placeholder="property.description"
                         />
                       </span>
                       <span v-else-if="property.type && (property.type==='int' || property.type==='real')">
                         <a-input-number
-                          v-decorator="[property.name]"
+                          v-decorator="['ovfproperties.'+property.key]"
                           :defaultValue="property.value"
                           :placeholder="property.description"
                           :min="property.qualifiers && property.qualifiers.includes('MinValue') && property.qualifiers.includes('MaxValue')?property.qualifiers.split(',')[0].replace('MinValue(','').slice(0, -1):0"
@@ -290,7 +290,7 @@
                         <a-select
                           showSearch
                           optionFilterProp="children"
-                          v-decorator="[property.key, { initialValue: property.value}]"
+                          v-decorator="['ovfproperties.' + property.key, { initialValue: property.value }]"
                           :placeholder="property.description"
                           :filterOption="(input, option) => {
                             return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -304,14 +304,12 @@
                       </span>
                       <span v-else-if="property.type && property.type==='string' && property.password">
                         <a-input-password
-                          v-decorator="[property.name]"
-                          :defaultValue="property.value"
+                          v-decorator="['ovfproperties.' + property.key, { initialValue: property.value }]"
                           :placeholder="property.description" />
                       </span>
                       <span v-else>
                         <a-input
-                          v-decorator="[property.name]"
-                          :defaultValue="property.value"
+                          v-decorator="['ovfproperties.' + property.key, { initialValue: property.value }]"
                           :placeholder="property.description" />
                       </span>
                     </a-form-item>
@@ -1106,6 +1104,13 @@ export default {
         deployVmData.name = values.name
         deployVmData.displayname = values.name
         // step 8: enter setup
+        if ('ovfproperties' in values) {
+          const keys = Object.keys(values.ovfproperties)
+          for (var i = 0; i < keys.length; ++i) {
+            deployVmData['ovfproperties[' + i + '].key'] = keys[i]
+            deployVmData['ovfproperties[' + i + '].value'] = values.ovfproperties[keys[i]]
+          }
+        }
         if ('bootintosetup' in values) {
           deployVmData.bootintosetup = values.bootintosetup
         }
