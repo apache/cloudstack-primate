@@ -31,6 +31,13 @@
                 @click="fetchData()">
                 {{ $t('label.refresh') }}
               </a-button>
+              <a-switch
+                v-if="!dataView && ['vm', 'volume', 'zone', 'cluster', 'host', 'storagepool'].includes($route.name)"
+                style="margin-left: 8px"
+                :checked-children="$t('label.metrics')"
+                :un-checked-children="$t('label.metrics')"
+                :checked="$store.getters.metrics"
+                @change="(checked, event) => { $store.dispatch('SetMetrics', checked) }"/>
               <a-tooltip placement="right">
                 <template slot="title">
                   {{ $t('label.filterby') }}
@@ -62,9 +69,9 @@
             :resource="resource"
             @exec-action="execAction"/>
           <a-input-search
+            v-if="!dataView"
             style="width: 100%; display: table-cell"
             :placeholder="$t('label.search')"
-            v-if="!dataView"
             v-model="searchQuery"
             allowClear
             @search="onSearch" />
@@ -80,7 +87,7 @@
           :closable="true"
           style="top: 20px;"
           @cancel="closeAction"
-          :confirmLoading="currentAction.loading"
+          :confirmLoading="actionLoading"
           :footer="null"
           centered
           width="auto"
@@ -103,7 +110,7 @@
         style="top: 20px;"
         @ok="handleSubmit"
         @cancel="closeAction"
-        :confirmLoading="currentAction.loading"
+        :confirmLoading="actionLoading"
         centered
       >
         <span slot="title">
@@ -116,7 +123,7 @@
             <a-icon type="question-circle-o"></a-icon>
           </a>
         </span>
-        <a-spin :spinning="currentAction.loading">
+        <a-spin :spinning="actionLoading">
           <span v-if="currentAction.message">
             <a-alert type="warning">
               <span slot="message" v-html="$t(currentAction.message)" />
@@ -331,6 +338,7 @@ export default {
       apiName: '',
       docBase: config.docBase,
       loading: false,
+      actionLoading: false,
       columns: [],
       items: [],
       itemCount: 0,
@@ -383,6 +391,9 @@ export default {
       if (to !== from) {
         this.fetchData()
       }
+    },
+    '$store.getters.metrics' (oldVal, newVal) {
+      this.fetchData()
     }
   },
   methods: {
@@ -415,7 +426,12 @@ export default {
       if (this.$route && this.$route.meta && this.$route.meta.permission) {
         this.apiName = this.$route.meta.permission[0]
         if (this.$route.meta.columns) {
-          this.columnKeys = this.$route.meta.columns
+          const columns = this.$route.meta.columns
+          if (columns && typeof columns === 'function') {
+            this.columnKeys = columns()
+          } else {
+            this.columnKeys = columns
+          }
         }
 
         if (this.$route.meta.actions) {
@@ -573,7 +589,7 @@ export default {
       this.fetchData()
     },
     closeAction () {
-      this.currentAction.loading = false
+      this.actionLoading = false
       this.showAction = false
       this.currentAction = {}
     },
@@ -628,7 +644,7 @@ export default {
           this.listUuidOpts(param)
         }
       }
-      this.currentAction.loading = false
+      this.actionLoading = false
       if (action.dataView && ['copy', 'edit'].includes(action.icon)) {
         this.fillEditFormFieldValues()
       }
@@ -741,7 +757,6 @@ export default {
       this.form.validateFields((err, values) => {
         console.log(values)
         if (!err) {
-          this.currentAction.loading = true
           const params = {}
           if ('id' in this.resource && this.currentAction.params.map(i => { return i.name }).includes('id')) {
             params.id = this.resource.id
@@ -797,6 +812,7 @@ export default {
           const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username || params.ipaddress || params.virtualmachinename || this.resource.name
 
           var hasJobId = false
+          this.actionLoading = true
           api(this.currentAction.api, params).then(json => {
             for (const obj in json) {
               if (obj.includes('response')) {
@@ -807,7 +823,11 @@ export default {
                     hasJobId = true
                     break
                   } else {
-                    this.$message.success(this.$t(this.currentAction.label) + (resourceName ? ' - ' + resourceName : ''))
+                    this.$message.success({
+                      content: this.$t(this.currentAction.label) + (resourceName ? ' - ' + resourceName : ''),
+                      key: this.currentAction.label + resourceName,
+                      duration: 2
+                    })
                   }
                 }
                 break
@@ -824,6 +844,7 @@ export default {
             console.log(error)
             this.$notifyError(error)
           }).finally(f => {
+            this.actionLoading = false
             this.closeAction()
           })
         }

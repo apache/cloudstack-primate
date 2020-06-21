@@ -44,7 +44,8 @@ const app = {
     autoHideHeader: false,
     color: null,
     inverted: true,
-    multiTab: true
+    multiTab: true,
+    metrics: false
   },
   mutations: {
     SET_SIDEBAR_TYPE: (state, type) => {
@@ -97,6 +98,9 @@ const app = {
     TOGGLE_MULTI_TAB: (state, bool) => {
       Vue.ls.set(DEFAULT_MULTI_TAB, bool)
       state.multiTab = bool
+    },
+    SET_METRICS: (state, bool) => {
+      state.metrics = bool
     }
   },
   actions: {
@@ -141,6 +145,9 @@ const app = {
     },
     ToggleConfig ({ commit }, configs) {
       commit('TOGGLE_CONFIG', configs)
+    },
+    SetMetrics ({ commit }, bool) {
+      commit('SET_METRICS', bool)
     }
   }
 }

@@ -16,6 +16,7 @@
 // under the License.
 
 import kubernetes from '@/assets/icons/kubernetes.svg?inline'
+import store from '@/store'
 
 export default {
   name: 'compute',
@@ -30,16 +31,37 @@ export default {
       permission: ['listVirtualMachinesMetrics'],
       resourceType: 'UserVm',
       filters: ['self', 'running', 'stopped'],
-      columns: [
-        'name', 'state', 'instancename', 'ipaddress', 'cpunumber', 'cpuused', 'cputotal',
-        {
-          memoryused: (record) => {
-            return record.memorykbs && record.memoryintfreekbs ? parseFloat(100.0 * (record.memorykbs - record.memoryintfreekbs) / record.memorykbs).toFixed(2) + '%' : '0.0%'
-          }
-        },
-        'memorytotal', 'networkread', 'networkwrite', 'diskkbsread', 'diskkbswrite', 'diskiopstotal',
-        'account', 'zonename'
-      ],
+      columns: () => {
+        const fields = ['name', 'state', 'ipaddress']
+        const metricsFields = ['cpunumber', 'cpuused', 'cputotal',
+          {
+            memoryused: (record) => {
+              return record.memorykbs && record.memoryintfreekbs ? parseFloat(100.0 * (record.memorykbs - record.memoryintfreekbs) / record.memorykbs).toFixed(2) + '%' : '0.0%'
+            }
+          },
+          'memorytotal', 'networkread', 'networkwrite', 'diskkbsread', 'diskkbswrite', 'diskiopstotal'
+        ]
+
+        if (store.getters.metrics) {
+          fields.push(...metricsFields)
+        }
+
+        if (store.getters.userInfo.roletype === 'Admin') {
+          fields.splice(2, 0, 'instancename')
+          fields.push('account')
+          fields.push('hostname')
+          fields.push('zonename')
+        } else if (store.getters.userInfo.roletype === 'DomainAdmin') {
+          fields.splice(2, 0, 'displayname')
+          fields.push('account')
+          fields.push('zonename')
+        } else {
+          fields.splice(2, 0, 'displayname')
+          fields.push('zonename')
+        }
+        return fields
+      },
+      details: ['displayname', 'name', 'id', 'state', 'ipaddress', 'templatename', 'ostypename', 'serviceofferingname', 'isdynamicallyscalable', 'haenable', 'hypervisor', 'boottype', 'bootmode', 'account', 'domain', 'zonename'],
       related: [{
         name: 'volume',
         title: 'label.volumes',
@@ -58,11 +80,7 @@ export default {
         param: 'virtualmachineid'
       }],
       tabs: [{
-        name: 'hardware',
-        component: () => import('@/views/compute/InstanceHardware.vue')
-      }, {
-        name: 'settings',
-        component: () => import('@/components/view/DetailSettings')
+        component: () => import('@/views/compute/InstanceTab.vue')
       }],
       actions: [
         {
@@ -105,7 +123,7 @@ export default {
         },
         {
           api: 'stopVirtualMachine',
-          icon: 'stop',
+          icon: 'poweroff',
           label: 'label.action.stop.instance',
           message: 'message.action.stop.instance',
           docHelp: 'adminguide/virtual_machines.html#stopping-and-starting-vms',
@@ -418,7 +436,7 @@ export default {
         },
         {
           api: 'stopKubernetesCluster',
-          icon: 'stop',
+          icon: 'poweroff',
           label: 'label.kubernetes.cluster.stop',
           dataView: true,
           show: (record) => { return !['Stopped'].includes(record.state) }
