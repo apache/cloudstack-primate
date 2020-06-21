@@ -662,7 +662,7 @@ export default {
       Object.keys(keyboardOpts).forEach(keyboard => {
         keyboardType.push({
           id: keyboard,
-          description: keyboardOpts[keyboard]
+          description: this.$t(keyboardOpts[keyboard])
         })
       })
 

@@ -63,5 +63,14 @@ Customize themes like colors, border color, etc.
 - `@error-width` changes the width of the error image.
 - `@error-height` changes the height of the error image.
 
+Assorted primary theme colours:
+
+- Blue: #1890FF
+- Red: #F5222D
+- Yellow: #FAAD14
+- Cyan: #13C2C2
+- Green: #52C41A
+- Purple: #722ED1
+
 Also, to add other properties, we can add new properties into `config/theme.config.js` based on the Ant Design Vue Less variable. 
 Refer: https://www.antdv.com/docs/vue/customize-theme/#Ant-Design-Vue-Less-variables

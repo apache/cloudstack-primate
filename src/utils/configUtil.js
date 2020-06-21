@@ -21,7 +21,7 @@ const configUtils = {
   },
   fetchConfig: () => {
     return new Promise((resolve, reject) => {
-      fetch('./config.json')
+      fetch('config.json')
         .then(r => r.json())
         .then(data => {
           resolve(data)
