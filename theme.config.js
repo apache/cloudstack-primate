@@ -23,9 +23,9 @@ function resolve (dir) {
 }
 
 const options = {
-  stylesDir: resolve('./../src/style'),
-  antDir: resolve('./../node_modules/ant-design-vue'),
-  varFile: resolve('./../src/style/vars.less'),
+  stylesDir: resolve('./src/style'),
+  antDir: resolve('./node_modules/ant-design-vue'),
+  varFile: resolve('./src/style/vars.less'),
   themeVariables: [
     '@primary-color',
     '@processing-color',
@@ -39,6 +39,7 @@ const options = {
     '@border-color-base'
   ],
   indexFileName: 'index.html',
+  publicPath: '.',
   generateOnce: false
 }
 

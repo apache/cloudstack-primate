@@ -20,7 +20,7 @@ const webpack = require('webpack')
 const fs = require('fs')
 const packageJson = fs.readFileSync('./package.json')
 const version = JSON.parse(packageJson).version || 'master'
-const createThemeColorReplacerPlugin = require('./config/theme.config')
+const createThemeColorReplacerPlugin = require('./theme.config')
 
 function resolve (dir) {
   return path.join(__dirname, dir)

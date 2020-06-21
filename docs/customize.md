@@ -72,5 +72,5 @@ Assorted primary theme colours:
 - Green: #52C41A
 - Purple: #722ED1
 
-Also, to add other properties, we can add new properties into `config/theme.config.js` based on the Ant Design Vue Less variable. 
+Also, to add other properties, we can add new properties into `theme.config.js` based on the Ant Design Vue Less variable.
 Refer: https://www.antdv.com/docs/vue/customize-theme/#Ant-Design-Vue-Less-variables

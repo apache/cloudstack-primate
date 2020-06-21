@@ -41,17 +41,14 @@ export default {
   },
   methods: {
     async fetchConfig () {
-      const loading = this.$message.loading(this.$t('message.fetch.configuration'), 0)
       const config = await configUtils.fetchConfig()
       const storeConfig = this.$store.getters.configs
       this.configs = Object.assign({}, config, storeConfig)
-      setTimeout(loading)
       await this.$store.dispatch('ToggleConfig', this.configs)
       await this.applyTheme()
     },
     async applyTheme () {
       await configUtils.changeTheme(this.configs.theme)
-      this.$message.success(this.$t('message.apply.theme.success'))
     }
   }
 }
