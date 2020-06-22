@@ -26,6 +26,7 @@
     <compute-offering-selection
       :compute-items="offerings"
       :loading="loading"
+      :rowCount="total"
       size="small"
       @select-compute-item="($event) => updateComputeOffering($event)"
       @handle-search-filter="($event) => fetchData($event)" />
@@ -75,6 +76,7 @@ export default {
       offeringsMap: {},
       offerings: [],
       selectedOffering: {},
+      total: 0,
       params: { id: this.resource.id },
       loading: false,
       cpuNumberKey: 'details[0].cpuNumber',
@@ -92,6 +94,7 @@ export default {
   methods: {
     fetchData (options) {
       this.loading = true
+      this.total = 0
       this.offerings = []
       this.offeringsMap = []
       api('listServiceOfferings', {
@@ -102,7 +105,8 @@ export default {
         details: 'min',
         response: 'json'
       }).then(response => {
-        if (!response.listserviceofferingsresponse.serviceoffering) {
+        this.total = response.listserviceofferingsresponse.count
+        if (this.total === 0) {
           return
         }
         this.offerings = response.listserviceofferingsresponse.serviceoffering
