@@ -69,9 +69,7 @@
             :resource="resource"
             @exec-action="execAction"/>
           <search-view
-            v-if="!treeView"
             :dataView="dataView"
-            :treeView="treeView"
             :selectedFilter="selectedFilter"
             :filters="filters"
             :searchFilters="searchFilters"
