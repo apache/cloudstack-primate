@@ -17,13 +17,14 @@
 
 <template>
   <a-row class="capacity-dashboard" :gutter="12">
-    <a-col :xl="16">
+    <a-col :xl="18">
       <div class="capacity-dashboard-wrapper">
         <div class="capacity-dashboard-select">
           <a-select
             showSearch
             optionFilterProp="children"
             :defaultValue="zoneSelected.name"
+            :placeholder="$t('label.select.a.zone')"
             :value="zoneSelected.name"
             @change="changeZone">
             <a-select-option v-for="(zone, index) in zones" :key="index">
@@ -48,7 +49,7 @@
         <a-col
           :xs="12"
           :sm="8"
-          :md="8"
+          :md="6"
           :style="{ marginBottom: '12px' }"
           v-for="stat in stats"
           :key="stat.type">
@@ -71,8 +72,8 @@
       </a-row>
     </a-col>
 
-    <a-col :xl="8">
-      <chart-card>
+    <a-col :xl="6">
+      <chart-card :loading="loading">
         <div style="text-align: center">
           <a-tooltip placement="bottom" class="capacity-dashboard-button-wrapper">
             <template slot="title">
@@ -229,7 +230,7 @@ export default {
     listEvents () {
       const params = {
         page: 1,
-        pagesize: 7,
+        pagesize: 6,
         listall: true
       }
       this.loading = true

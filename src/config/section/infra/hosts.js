@@ -15,6 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import store from '@/store'
+
 export default {
   name: 'host',
   title: 'label.hosts',
@@ -22,7 +24,16 @@ export default {
   permission: ['listHostsMetrics'],
   resourceType: 'Host',
   params: { type: 'routing' },
-  columns: ['name', 'state', 'resourcestate', 'powerstate', 'ipaddress', 'hypervisor', 'instances', 'cpunumber', 'cputotalghz', 'cpuusedghz', 'cpuallocatedghz', 'memorytotalgb', 'memoryusedgb', 'memoryallocatedgb', 'networkread', 'networkwrite', 'clustername', 'zonename'],
+  columns: () => {
+    const fields = ['name', 'state', 'resourcestate', 'ipaddress', 'hypervisor', 'instances', 'powerstate']
+    const metricsFields = ['cpunumber', 'cputotalghz', 'cpuusedghz', 'cpuallocatedghz', 'memorytotalgb', 'memoryusedgb', 'memoryallocatedgb', 'networkread', 'networkwrite']
+    if (store.getters.metrics) {
+      fields.push(...metricsFields)
+    }
+    fields.push('clustername')
+    fields.push('zonename')
+    return fields
+  },
   details: ['name', 'id', 'resourcestate', 'ipaddress', 'hypervisor', 'type', 'clustername', 'podname', 'zonename', 'disconnected', 'created'],
   tabs: [{
     name: 'details',
@@ -133,8 +144,8 @@ export default {
       message: 'label.outofbandmanagement.enable',
       dataView: true,
       show: (record) => {
-        return !record.outofbandmanagement || !record.outofbandmanagement.enabled ||
-          record.outofbandmanagement.enabled === false
+        return !(record.outofbandmanagement && record.outofbandmanagement.enabled &&
+          record.outofbandmanagement.enabled === true)
       },
       args: ['hostid'],
       mapping: {
@@ -168,7 +179,7 @@ export default {
       dataView: true,
       show: (record) => {
         return record.outofbandmanagement && record.outofbandmanagement.enabled &&
-        record.outofbandmanagement.enabled === true
+          record.outofbandmanagement.enabled === true
       },
       args: ['hostid', 'action'],
       mapping: {
@@ -217,7 +228,8 @@ export default {
       message: 'label.ha.enable',
       dataView: true,
       show: (record) => {
-        return !record.hostha || !record.hostha.haenable || record.hostha.haenable === false
+        return !(record.hostha && record.hostha.haenable &&
+          record.hostha.haenable === true)
       },
       args: ['hostid'],
       mapping: {
@@ -239,6 +251,22 @@ export default {
       args: ['hostid'],
       mapping: {
         hostid: {
+          value: (record) => { return record.id }
+        }
+      }
+    },
+    {
+      api: 'startRollingMaintenance',
+      icon: 'setting',
+      label: 'label.start.rolling.maintenance',
+      message: 'label.start.rolling.maintenance',
+      dataView: true,
+      show: (record) => {
+        return record.hypervisor === 'KVM' && (record.resourcestate === 'Enabled' || record.resourcestate === 'ErrorInMaintenance')
+      },
+      args: ['timeout', 'payload', 'forced', 'hostids'],
+      mapping: {
+        hostids: {
           value: (record) => { return record.id }
         }
       }

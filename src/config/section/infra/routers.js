@@ -28,7 +28,7 @@ export default {
     component: () => import('@/components/view/DetailsTab.vue')
   }, {
     name: 'nics',
-    component: () => import('@views/infra/routers/RouterNics.vue')
+    component: () => import('@/views/network/NicsTable.vue')
   }, {
     name: 'router.health.checks',
     show: (record, route, user) => { return ['Running'].includes(record.state) && ['Admin'].includes(user.roletype) },
@@ -45,7 +45,7 @@ export default {
     },
     {
       api: 'stopRouter',
-      icon: 'stop',
+      icon: 'poweroff',
       label: 'label.action.stop.router',
       message: 'message.action.stop.router',
       dataView: true,

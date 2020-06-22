@@ -25,7 +25,7 @@ export default {
     {
       name: 'guestnetwork',
       title: 'label.guest.networks',
-      icon: 'gateway',
+      icon: 'apartment',
       permission: ['listNetworks'],
       resourceType: 'Network',
       columns: ['name', 'state', 'type', 'cidr', 'ip6cidr', 'broadcasturi', 'account', 'zonename'],
@@ -185,6 +185,14 @@ export default {
           args: ['name', 'description']
         },
         {
+          api: 'updateSecurityGroup',
+          icon: 'edit',
+          label: 'label.edit',
+          dataView: true,
+          args: ['name'],
+          show: (record) => { return record.name !== 'default' }
+        },
+        {
           api: 'deleteSecurityGroup',
           icon: 'delete',
           label: 'label.action.delete.security.group',
@@ -224,13 +232,6 @@ export default {
       }],
       actions: [
         {
-          api: 'associateIpAddress',
-          icon: 'plus',
-          label: 'label.acquire.new.ip',
-          listView: true,
-          args: ['networkid']
-        },
-        {
           api: 'enableStaticNat',
           icon: 'plus-circle',
           label: 'label.action.enable.static.nat',
@@ -266,7 +267,7 @@ export default {
     {
       name: 'privategw',
       title: 'label.private.gateway',
-      icon: 'branches',
+      icon: 'gateway',
       hidden: true,
       permission: ['listPrivateGateways'],
       columns: ['ipaddress', 'state', 'gateway', 'netmask', 'account', 'domain'],
@@ -285,7 +286,13 @@ export default {
           icon: 'plus',
           label: 'label.add.private.gateway',
           listView: true,
-          args: ['physicalnetworkid', 'vlan', 'ipaddress', 'gateway', 'netmask', 'sourcenatsupported', 'aclid'],
+          args: (record, store) => {
+            var fields = ['vpcid', 'physicalnetworkid', 'vlan', 'ipaddress', 'gateway', 'netmask', 'sourcenatsupported', 'aclid']
+            if (store.apis.createPrivateGateway.params.filter(x => x.name === 'bypassvlanoverlapcheck').length > 0) {
+              fields.push('bypassvlanoverlapcheck')
+            }
+            return fields
+          },
           mapping: {
             aclid: {
               api: 'listNetworkACLLists'

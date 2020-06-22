@@ -20,7 +20,8 @@
     <a-select
       class="project-select"
       defaultValue="Default View"
-      :value="('id' in $store.getters.project) ? ($store.getters.project.displaytext || $store.getters.project.name) : 'Default View'"
+      :loading="loading"
+      :value="($store.getters.project && 'id' in $store.getters.project) ? ($store.getters.project.displaytext || $store.getters.project.name) : 'Default View'"
       :disabled="isDisabled()"
       :filterOption="filterProject"
       @change="changeProject"
