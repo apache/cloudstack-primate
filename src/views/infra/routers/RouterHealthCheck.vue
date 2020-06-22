@@ -22,11 +22,9 @@
       banner
       :message="$t('message.action.router.health.checks.disabled.warning')" />
     <div v-else>
-      <center>
-        <a-button :disabled="!('getRouterHealthCheckResults' in $store.getters.apis)" type="primary" icon="download" style="width: 50%; margin-bottom: 15px" @click="showGetHelathCheck">
-          {{ $t('label.action.router.health.checks') }}
-        </a-button>
-      </center>
+      <a-button :disabled="!('getRouterHealthCheckResults' in $store.getters.apis)" type="primary" icon="download" style="width: 100%; margin-bottom: 15px" @click="showGetHelathCheck">
+        {{ $t('label.action.router.health.checks') }}
+      </a-button>
       <a-table
         style="overflow-y: auto"
         :columns="columns"
