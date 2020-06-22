@@ -683,7 +683,7 @@ export default {
       return options
     },
     keyboardSelectOptions () {
-      const keyboardOpts = this.$store.getters.configs.keyboardOptions || {}
+      const keyboardOpts = this.$config.keyboardOptions || {}
       return Object.keys(keyboardOpts).map((keyboard) => {
         return {
           label: this.$t(keyboardOpts[keyboard]),

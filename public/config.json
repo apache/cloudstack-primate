@@ -11,10 +11,9 @@
   },
   "theme": {
     "@primary-color": "#1890ff",
-    "@link-color": "#1890ff",
+    "@processing-color": "#1890ff",
     "@success-color": "#52c41a",
     "@warning-color": "#faad14",
-    "@processing-color": "#1890ff",
     "@error-color": "#f5222d",
     "@font-size-base": "14px",
     "@heading-color": "rgba(0, 0, 0, 0.85)",

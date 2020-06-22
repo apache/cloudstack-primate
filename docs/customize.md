@@ -27,7 +27,6 @@ Customize themes like colors, border color, etc.
 {
   "theme": {
     "@primary-color": "#1890ff",
-    "@link-color": "#1890ff",
     "@success-color": "#52c41a",
     "@processing-color": "#1890ff",
     "@warning-color": "#faad14",
@@ -49,7 +48,6 @@ Customize themes like colors, border color, etc.
 ```
 
 - `@primary-color` change the major background color of the page (background button, icon hover, etc).
-- `@link-color` change the link color of links on the page
 - `@success-color` change success state color.
 - `@processing-color` change processing state color. Exp: progress status.
 - `@warning-color` change warning state color.

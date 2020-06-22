@@ -105,11 +105,8 @@ const vueConfig = {
     loaderOptions: {
       less: {
         modifyVars: {
-          // Refer:
           // https://ant.design/docs/spec/colors
           // https://vue.ant.design/docs/vue/customize-theme/
-          'primary-color': '#1890ff',
-          'link-color': '#1890ff'
         },
         javascriptEnabled: true
       }

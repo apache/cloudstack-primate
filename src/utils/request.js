@@ -24,7 +24,6 @@ import notification from 'ant-design-vue/es/notification'
 import { CURRENT_PROJECT } from '@/store/mutation-types'
 
 const service = axios.create({
-  baseURL: store.getters.configs.apiBase,
   timeout: 600000
 })
 

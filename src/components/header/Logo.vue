@@ -18,12 +18,12 @@
 <template>
   <div class="logo">
     <img
-      v-if="$store.getters.configs.logo"
+      v-if="$config.logo"
       :style="{
-        width: $store.getters.configs.theme['@logo-width'],
-        height: $store.getters.configs.theme['@logo-height']
+        width: $config.theme['@logo-width'],
+        height: $config.theme['@logo-height']
       }"
-      :src="$store.getters.configs.logo"
+      :src="$config.logo"
       class="logo-image" />
   </div>
 </template>

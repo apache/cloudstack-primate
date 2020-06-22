@@ -19,29 +19,29 @@
   <div class="exception">
     <div class="img" v-if="type == '403'">
       <img
-        v-if="$store.getters.configs.error['403']"
-        :src="$store.getters.configs.error['403']"
+        v-if="$config.error['403']"
+        :src="$config.error['403']"
         :style="{
-          width: $store.getters.configs.theme['@error-width'],
-          height: $store.getters.configs.theme['@error-height']
+          width: $config.theme['@error-width'],
+          height: $config.theme['@error-height']
         }"/>
     </div>
     <div class="img" v-if="type == '404'">
       <img
-        v-if="$store.getters.configs.error['404']"
-        :src="$store.getters.configs.error['404']"
+        v-if="$config.error['404']"
+        :src="$config.error['404']"
         :style="{
-          width: $store.getters.configs.theme['@error-width'],
-          height: $store.getters.configs.theme['@error-height']
+          width: $config.theme['@error-width'],
+          height: $config.theme['@error-height']
         }"/>
     </div>
     <div class="img" v-if="type == '500'">
       <img
-        v-if="$store.getters.configs.error['500']"
-        :src="$store.getters.configs.error['500']"
+        v-if="$config.error['500']"
+        :src="$config.error['500']"
         :style="{
-          width: $store.getters.configs.theme['@error-width'],
-          height: $store.getters.configs.theme['@error-height']
+          width: $config.theme['@error-width'],
+          height: $config.theme['@error-height']
         }"/>
     </div>
     <div class="content">

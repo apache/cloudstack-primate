@@ -26,8 +26,7 @@ import {
   DEFAULT_FIXED_SIDEMENU,
   DEFAULT_FIXED_HEADER_HIDDEN,
   DEFAULT_CONTENT_WIDTH_TYPE,
-  DEFAULT_MULTI_TAB,
-  DEFAULT_CONFIG
+  DEFAULT_MULTI_TAB
 } from '@/store/mutation-types'
 
 const app = {
@@ -36,7 +35,6 @@ const app = {
     sidebar: true,
     device: 'desktop',
     theme: '',
-    configs: {},
     layout: '',
     contentWidth: '',
     fixedHeader: false,
@@ -62,10 +60,6 @@ const app = {
     TOGGLE_THEME: (state, theme) => {
       Vue.ls.set(DEFAULT_THEME, theme)
       state.theme = theme
-    },
-    TOGGLE_CONFIG: (state, configs) => {
-      Vue.ls.set(DEFAULT_CONFIG, configs)
-      state.configs = configs
     },
     TOGGLE_LAYOUT_MODE: (state, layout) => {
       Vue.ls.set(DEFAULT_LAYOUT_MODE, layout)
@@ -142,9 +136,6 @@ const app = {
     },
     ToggleMultiTab ({ commit }, bool) {
       commit('TOGGLE_MULTI_TAB', bool)
-    },
-    ToggleConfig ({ commit }, configs) {
-      commit('TOGGLE_CONFIG', configs)
     },
     SetMetrics ({ commit }, bool) {
       commit('SET_METRICS', bool)

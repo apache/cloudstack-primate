@@ -39,7 +39,7 @@
           <a
             v-if="item.meta.docHelp"
             style="margin-right: 12px"
-            :href="$store.getters.configs.docBase + '/' + $route.meta.docHelp"
+            :href="$config.docBase + '/' + $route.meta.docHelp"
             target="_blank">
             <a-icon type="question-circle-o"></a-icon>
           </a>

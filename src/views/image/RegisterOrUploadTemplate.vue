@@ -653,7 +653,7 @@ export default {
     },
     fetchKeyboardType () {
       const keyboardType = []
-      const keyboardOpts = this.$store.getters.configs.keyboardOptions || {}
+      const keyboardOpts = this.$config.keyboardOptions || {}
       keyboardType.push({
         id: '',
         description: ''
