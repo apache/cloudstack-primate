@@ -28,15 +28,18 @@ const options = {
   varFile: resolve('./src/style/vars.less'),
   themeVariables: [
     '@primary-color',
-    '@processing-color',
+    '@link-color',
     '@success-color',
     '@warning-color',
+    '@processing-color',
     '@error-color',
     '@heading-color',
     '@text-color',
     '@text-color-secondary',
     '@disabled-color',
-    '@border-color-base'
+    '@border-color-base',
+    '@border-radius-base',
+    '@box-shadow-base'
   ],
   indexFileName: 'index.html',
   publicPath: '.',
