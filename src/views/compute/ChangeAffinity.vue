@@ -16,43 +16,42 @@
 // under the License.
 
 <template>
-  <div>
+  <a-form class="form">
+
     <p v-html="$t('message.select.affinity.groups')" />
 
-    <a-form class="form">
-      <div v-if="loading" class="loading">
-        <a-icon type="loading" style="color: #1890ff;" />
-      </div>
+    <div v-if="loading" class="loading">
+      <a-icon type="loading" style="color: #1890ff;" />
+    </div>
 
-      <div class="form__item">
-        <a-input-search
-          style="margin-bottom: 10px;"
-          :placeholder="$t('label.search')"
-          v-model="filter"
-          @search="handleSearch" />
-      </div>
+    <div class="form__item">
+      <a-input-search
+        style="margin-bottom: 10px;"
+        :placeholder="$t('label.search')"
+        v-model="filter"
+        @search="handleSearch" />
+    </div>
 
-      <div class="form__item">
-        <a-table
-          size="small"
-          :loading="loading"
-          :columns="columns"
-          :dataSource="items"
-          :rowKey="record => record.id || record.name"
-          :pagination="items.length > 10"
-          :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
-          @change="handleTableChange"
-          @handle-search-filter="handleTableChange"
-          style="overflow-y: auto"/>
-      </div>
+    <div class="form__item">
+      <a-table
+        size="small"
+        :loading="loading"
+        :columns="columns"
+        :dataSource="items"
+        :rowKey="record => record.id || record.name"
+        :pagination="{showSizeChanger: true, total: total}"
+        :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
+        @change="handleTableChange"
+        @handle-search-filter="handleTableChange"
+        style="overflow-y: auto"/>
+    </div>
 
-      <div :span="24" class="action-button">
-        <a-button @click="closeAction">{{ this.$t('label.cancel') }}</a-button>
-        <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('label.ok') }}</a-button>
-      </div>
+    <div :span="24" class="action-button">
+      <a-button @click="closeAction">{{ this.$t('label.cancel') }}</a-button>
+      <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('label.ok') }}</a-button>
+    </div>
 
-    </a-form>
-  </div>
+  </a-form>
 </template>
 
 <script>
@@ -71,6 +70,7 @@ export default {
   data () {
     return {
       items: [],
+      total: 0,
       columns: [
         {
           dataIndex: 'name',
@@ -103,13 +103,17 @@ export default {
     fetchData () {
       this.loading = true
       this.items = []
+      this.total = 0
       api('listAffinityGroups', {
         keyword: this.options.keyword,
         domainid: this.resource.domainid,
         accountid: this.resource.accountid,
+        page: this.options.page,
+        pageSize: this.options.pageSize,
         response: 'json'
       }).then(response => {
-        if (response.listaffinitygroupsresponse.affinitygroup) {
+        this.total = response.listaffinitygroupsresponse.count
+        if (this.total !== 0) {
           this.items = response.listaffinitygroupsresponse.affinitygroup
         }
       }).finally(() => {
@@ -156,6 +160,13 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.form {
+  width: 90vw;
+  @media (min-width: 800px) {
+    width: 35vw;
+  }
+}
+
 .action-button {
   text-align: right;
   margin-top: 10px;
