@@ -33,7 +33,7 @@
           </router-link>
         </a-menu-item>
         <a-menu-item class="user-menu-item" key="1" disabled>
-          <a :href="docBase" target="_blank">
+          <a :href="$store.getters.configs.docBase" target="_blank">
             <a-icon class="user-menu-item-icon" type="question-circle-o"></a-icon>
             <span class="user-menu-item-name">{{ $t('label.help') }}</span>
           </a>
@@ -61,11 +61,6 @@ export default {
   components: {
     TranslationMenu,
     HeaderNotice
-  },
-  data () {
-    return {
-      docBase: config.docBase
-    }
   },
   methods: {
     ...mapActions(['Logout']),
