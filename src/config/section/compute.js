@@ -283,16 +283,7 @@ export default {
           dataView: true,
           show: (record) => { return ['Stopped'].includes(record.state) || ['Running'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC' },
           popup: true,
-          component: () => import('@/views/compute/ChangeServiceOffering.vue')
-        },
-        {
-          api: 'changeServiceForVirtualMachine',
-          icon: 'sliders',
-          label: 'label.change.service.offering',
-          dataView: true,
-          show: (record) => { return ['Stopped'].includes(record.state) },
-          popup: true,
-          component: () => import('@/views/compute/ChangeServiceOffering.vue')
+          component: () => import('@/views/compute/ScaleVM.vue')
         },
         {
           api: 'migrateVirtualMachine',

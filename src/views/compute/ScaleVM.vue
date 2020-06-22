@@ -16,43 +16,40 @@
 // under the License.
 
 <template>
-  <div style="width: 50vw;">
+  <a-form class="form">
     <p v-html="getMessage()"></p>
 
-    <a-form class="form">
-      <div v-if="loading" class="loading">
-        <a-icon type="loading" style="color: #1890ff;"></a-icon>
-      </div>
+    <div v-if="loading" class="loading">
+      <a-icon type="loading" style="color: #1890ff;"></a-icon>
+    </div>
 
-      <compute-offering-selection
-        :compute-items="offerings"
-        :loading="loading"
-        size="small"
-        @select-compute-item="($event) => updateComputeOffering($event)"
-        @handle-search-filter="($event) => fetchData($event)" />
+    <compute-offering-selection
+      :compute-items="offerings"
+      :loading="loading"
+      size="small"
+      @select-compute-item="($event) => updateComputeOffering($event)"
+      @handle-search-filter="($event) => fetchData($event)" />
 
-      <compute-selection
-        v-if="selectedOffering && selectedOffering.iscustomized"
-        :cpunumber-input-decorator="cpuNumberKey"
-        :cpuspeed-input-decorator="cpuSpeedKey"
-        :memory-input-decorator="memoryKey"
-        :computeOfferingId="selectedOffering.id"
-        :isConstrained="'serviceofferingdetails' in selectedOffering"
-        :minCpu="getMinCpu()"
-        :maxCpu="'serviceofferingdetails' in selectedOffering ? selectedOffering.serviceofferingdetails.maxcpunumber*1 : Number.MAX_SAFE_INTEGER"
-        :minMemory="getMinMemory()"
-        :maxMemory="'serviceofferingdetails' in selectedOffering ? selectedOffering.serviceofferingdetails.maxmemory*1 : Number.MAX_SAFE_INTEGER"
-        @update-compute-cpunumber="updateFieldValue"
-        @update-compute-cpuspeed="updateFieldValue"
-        @update-compute-memory="updateFieldValue" />
+    <compute-selection
+      v-if="selectedOffering && selectedOffering.iscustomized"
+      :cpunumber-input-decorator="cpuNumberKey"
+      :cpuspeed-input-decorator="cpuSpeedKey"
+      :memory-input-decorator="memoryKey"
+      :computeOfferingId="selectedOffering.id"
+      :isConstrained="'serviceofferingdetails' in selectedOffering"
+      :minCpu="getMinCpu()"
+      :maxCpu="'serviceofferingdetails' in selectedOffering ? selectedOffering.serviceofferingdetails.maxcpunumber*1 : Number.MAX_SAFE_INTEGER"
+      :minMemory="getMinMemory()"
+      :maxMemory="'serviceofferingdetails' in selectedOffering ? selectedOffering.serviceofferingdetails.maxmemory*1 : Number.MAX_SAFE_INTEGER"
+      @update-compute-cpunumber="updateFieldValue"
+      @update-compute-cpuspeed="updateFieldValue"
+      @update-compute-memory="updateFieldValue" />
 
-      <div :span="24" class="action-button">
-        <a-button @click="closeAction">{{ this.$t('label.cancel') }}</a-button>
-        <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('label.ok') }}</a-button>
-      </div>
-
-    </a-form>
-  </div>
+    <div :span="24" class="action-button">
+      <a-button @click="closeAction">{{ this.$t('label.cancel') }}</a-button>
+      <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('label.ok') }}</a-button>
+    </div>
+  </a-form>
 </template>
 
 <script>
@@ -61,7 +58,7 @@ import ComputeOfferingSelection from '@views/compute/wizard/ComputeOfferingSelec
 import ComputeSelection from '@views/compute/wizard/ComputeSelection'
 
 export default {
-  name: 'ChangeServiceOffering',
+  name: 'ScaleVM',
   components: {
     ComputeOfferingSelection,
     ComputeSelection
@@ -75,7 +72,6 @@ export default {
   inject: ['parentFetchData'],
   data () {
     return {
-      apiName: '',
       offeringsMap: {},
       offerings: [],
       selectedOffering: {},
@@ -87,7 +83,6 @@ export default {
     }
   },
   mounted () {
-    this.apiName = this.$attrs.action.currentAction.api
     this.fetchData({
       keyword: '',
       pageSize: 10,
@@ -102,6 +97,8 @@ export default {
       api('listServiceOfferings', {
         virtualmachineid: this.resource.id,
         keyword: options.keyword,
+        page: options.page,
+        pageSize: options.pageSize,
         details: 'min',
         response: 'json'
       }).then(response => {
@@ -116,20 +113,20 @@ export default {
     },
     getMinCpu () {
       // We can only scale up while a VM is running
-      if (this.apiName === 'scaleVirtualMachine' && this.resource.state === 'Running') {
+      if (this.resource.state === 'Running') {
         return this.resource.cpunumber
       }
       return 'serviceofferingdetails' in this.selectedOffering ? this.selectedOffering.serviceofferingdetails.mincpunumber * 1 : 1
     },
     getMinMemory () {
       // We can only scale up while a VM is running
-      if (this.apiName === 'scaleVirtualMachine' && this.resource.state === 'Running') {
+      if (this.resource.state === 'Running') {
         return this.resource.memory
       }
       return 'serviceofferingdetails' in this.selectedOffering ? this.selectedOffering.serviceofferingdetails.minmemory * 1 : 32
     },
     getMessage () {
-      if (this.apiName === 'scaleVirtualMachine' && this.resource.hypervisor === 'VMware') {
+      if (this.resource.hypervisor === 'VMware') {
         return this.$t('message.read.admin.guide.scaling.up')
       }
       return this.$t('message.change.offering.confirm')
@@ -151,7 +148,7 @@ export default {
       if (!this.selectedOffering.serviceofferingdetails) {
         this.params[this.cpuNumberKey] = 1
         this.params[this.cpuSpeedKey] = 1
-        this.params[this.memoryKey] = 32
+        this.params[this.memoryKey] = 32 // Min allowed by the backend is 32MB
         return
       }
 
@@ -174,24 +171,18 @@ export default {
     },
     handleSubmit () {
       this.loading = true
-      api(this.apiName, this.params).then(response => {
-        if (this.apiName === 'scaleVirtualMachine') {
-          const jobId = response.scalevirtualmachineresponse.jobid
-          if (jobId) {
-            this.$pollJob({
-              jobId,
-              successMethod: result => {
-                this.$notification.success({
-                  message: 'Successfully changed offering'
-                })
-              },
-              loadingMessage: 'Scale in progress',
-              catchMessage: 'Error encountered while fetching async job result'
-            })
-          }
-        } else {
-          this.$notification.success({
-            message: 'Successfully changed offering'
+      api('scaleVirtualMachine', this.params).then(response => {
+        const jobId = response.scalevirtualmachineresponse.jobid
+        if (jobId) {
+          this.$pollJob({
+            jobId,
+            successMethod: result => {
+              this.$notification.success({
+                message: 'Successfully changed offering'
+              })
+            },
+            loadingMessage: 'Scale in progress',
+            catchMessage: 'Error encountered while fetching async job result'
           })
         }
         this.$parent.$parent.close()
@@ -209,6 +200,13 @@ export default {
 </script>
 
 <style scoped lang="scss">
+
+.form {
+  width: 90vw;
+  @media (min-width: 700px) {
+    width: 50vw;
+  }
+}
 
 .action-button {
   margin-top: 10px;
