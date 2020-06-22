@@ -31,7 +31,8 @@ module.exports = {
   },
   moduleNameMapper: {
     '.+\\.svg?.+$': 'jest-transform-stub',
-    '^@/(.*)$': '<rootDir>/src/$1'
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@public/(.*)$': '<rootDir>/public/$1'
   },
   snapshotSerializers: [
     'jest-serializer-vue'
