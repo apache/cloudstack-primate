@@ -19,7 +19,13 @@
   <div class="form-layout">
     <a-spin :spinning="loading">
       <a-form :form="form" :loading="loading" @submit="handleSubmit" layout="vertical">
-        <a-form-item :label="$t('label.role')">
+        <a-form-item>
+          <span slot="label">
+            {{ $t('label.role') }}
+            <a-tooltip :title="apiParams.roleid.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
           <a-select
             v-decorator="['roleid', {
               initialValue: selectedRole,
@@ -31,7 +37,13 @@
             </a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="$t('label.username')">
+        <a-form-item>
+          <span slot="label">
+            {{ $t('label.username') }}
+            <a-tooltip :title="apiParams.username.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
           <a-input
             v-decorator="['username', {
               rules: [{ required: true, message: $t('message.error.required.input') }]
@@ -40,7 +52,13 @@
         </a-form-item>
         <a-row :gutter="12">
           <a-col :md="24" :lg="12">
-            <a-form-item :label="$t('label.password')">
+            <a-form-item>
+              <span slot="label">
+                {{ $t('label.password') }}
+                <a-tooltip :title="apiParams.password.description">
+                  <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                </a-tooltip>
+              </span>
               <a-input-password
                 v-decorator="['password', {
                   rules: [{ required: true, message: $t('message.error.required.input') }]
@@ -49,7 +67,13 @@
             </a-form-item>
           </a-col>
           <a-col :md="24" :lg="12">
-            <a-form-item :label="$t('label.confirmpassword')">
+            <a-form-item>
+              <span slot="label">
+                {{ $t('label.confirmpassword') }}
+                <a-tooltip :title="apiParams.password.description">
+                  <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                </a-tooltip>
+              </span>
               <a-input-password
                 v-decorator="['confirmpassword', {
                   rules: [
@@ -61,7 +85,13 @@
             </a-form-item>
           </a-col>
         </a-row>
-        <a-form-item :label="$t('label.email')">
+        <a-form-item>
+          <span slot="label">
+            {{ $t('label.email') }}
+            <a-tooltip :title="apiParams.email.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
           <a-input
             v-decorator="['email', {
               rules: [{ required: true, message: $t('message.error.required.input') }]
@@ -70,7 +100,13 @@
         </a-form-item>
         <a-row :gutter="12">
           <a-col :md="24" :lg="12">
-            <a-form-item :label="$t('label.firstname')">
+            <a-form-item>
+              <span slot="label">
+                {{ $t('label.firstname') }}
+                <a-tooltip :title="apiParams.firstname.description">
+                  <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                </a-tooltip>
+              </span>
               <a-input
                 v-decorator="['firstname', {
                   rules: [{ required: true, message: $t('message.error.required.input') }]
@@ -79,7 +115,13 @@
             </a-form-item>
           </a-col>
           <a-col :md="24" :lg="12">
-            <a-form-item :label="$t('label.lastname')">
+            <a-form-item>
+              <span slot="label">
+                {{ $t('label.lastname') }}
+                <a-tooltip :title="apiParams.lastname.description">
+                  <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                </a-tooltip>
+              </span>
               <a-input
                 v-decorator="['lastname', {
                   rules: [{ required: true, message: $t('message.error.required.input') }]
@@ -88,7 +130,13 @@
             </a-form-item>
           </a-col>
         </a-row>
-        <a-form-item :label="$t('label.domain')" v-if="this.isAdminOrDomainAdmin()">
+        <a-form-item v-if="this.isAdminOrDomainAdmin()">
+          <span slot="label">
+            {{ $t('label.domain') }}
+            <a-tooltip :title="apiParams.domainid.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
           <a-select
             :loading="domainLoading"
             v-decorator="['domainid', {
@@ -100,10 +148,22 @@
             </a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="$t('label.account')">
+        <a-form-item>
+          <span slot="label">
+            {{ $t('label.account') }}
+            <a-tooltip :title="apiParams.account.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
           <a-input v-decorator="['account']" :placeholder="apiParams.account.description" />
         </a-form-item>
-        <a-form-item :label="$t('label.timezone')">
+        <a-form-item>
+          <span slot="label">
+            {{ $t('label.timezone') }}
+            <a-tooltip :title="apiParams.timezone.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
           <a-select
             showSearch
             v-decorator="['timezone']"
@@ -113,7 +173,13 @@
             </a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="$t('label.networkdomain')">
+        <a-form-item>
+          <span slot="label">
+            {{ $t('label.networkdomain') }}
+            <a-tooltip :title="apiParams.networkdomain.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
           <a-input
             v-decorator="['networkdomain']"
             :placeholder="apiParams.networkdomain.description" />
@@ -122,7 +188,13 @@
           <a-form-item :label="$t('label.samlenable')">
             <a-switch v-decorator="['samlenable']" @change="checked => { this.samlEnable = checked }" />
           </a-form-item>
-          <a-form-item :label="$t('label.samlentity')" v-if="samlEnable">
+          <a-form-item v-if="samlEnable">
+            <span slot="label">
+              {{ $t('label.samlentity') }}
+              <a-tooltip :title="apiParams.entityid.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-select
               v-decorator="['samlentity', {
                 initialValue: selectedIdp,
@@ -171,6 +243,10 @@ export default {
     this.form = this.$form.createForm(this)
     this.apiConfig = this.$store.getters.apis.createAccount || {}
     this.apiParams = {}
+    this.apiConfig.params.forEach(param => {
+      this.apiParams[param.name] = param
+    })
+    this.apiConfig = this.$store.getters.apis.authorizeSamlSso || {}
     this.apiConfig.params.forEach(param => {
       this.apiParams[param.name] = param
     })
