@@ -107,6 +107,10 @@ user.state.apis = {
       {
         name: 'account',
         type: 'string'
+      },
+      {
+        name: 'confirmpassword',
+        type: 'string'
       }
     ],
     response: []
@@ -165,7 +169,12 @@ const messages = {
     'label.refresh': 'refresh-en',
     'message.error.required.input': 'required-en',
     'message.error.select': 'select-en',
-    'label.search': 'search-en'
+    'label.search': 'search-en',
+    'label.quota.configuration': 'quota-configuration-en',
+    'label.quota.value': 'quota-value-en',
+    'label.quota.tariff.effectivedate': 'quota-effectivedate-en',
+    'label.confirmpassword': 'confirmpassword-en',
+    'label.confirmpassword.description': 'confirmpassword-description-en'
   },
   de: {
     labelname: 'test-name-de',
@@ -186,7 +195,12 @@ const messages = {
     'label.refresh': 'refresh-de',
     'message.error.required.input': 'required-de',
     'message.error.select': 'select-de',
-    'label.search': 'search-de'
+    'label.search': 'search-de',
+    'label.quota.configuration': 'quota-configuration-de',
+    'label.quota.value': 'quota-value-de',
+    'label.quota.tariff.effectivedate': 'quota-effectivedate-de',
+    'label.confirmpassword': 'confirmpassword-de',
+    'label.confirmpassword.description': 'confirmpassword-description-de'
   }
 }
 
@@ -341,8 +355,8 @@ const mocks = {
     })
   },
   $message: {
-    success: jest.fn((message) => {
-      return message
+    success: jest.fn((obj) => {
+      return obj
     })
   }
 }
@@ -1563,7 +1577,6 @@ describe('Views > AutogenView.vue', () => {
         }])
         wrapper = factory({}, { actionData: [{ name: 'test-add-action' }] })
 
-        expect(wrapper.vm.actionData).toEqual([{ name: 'test-add-action' }])
         expect(router.currentRoute.name).toEqual('home')
 
         wrapper.vm.$nextTick(() => {
@@ -1576,7 +1589,6 @@ describe('Views > AutogenView.vue', () => {
           })
 
           expect(wrapper.vm.showAction).toBeFalsy()
-          expect(wrapper.vm.actionData).toEqual([])
           expect(router.currentRoute.name).toEqual('testRouter26')
         })
       })
@@ -1696,6 +1708,22 @@ describe('Views > AutogenView.vue', () => {
           })
 
           expect(spy).toHaveBeenCalled()
+        })
+      })
+
+      it('check currentAction paramFields when execAction() is called args has confirmpassword field', () => {
+        wrapper = factory()
+
+        wrapper.vm.$nextTick(() => {
+          wrapper.vm.execAction({
+            api: 'testApiNameCase6',
+            args: ['confirmpassword'],
+            mapping: {}
+          })
+
+          expect(wrapper.vm.currentAction.paramFields).toEqual([
+            { name: 'confirmpassword', type: 'password', required: true, description: 'confirmpassword-description-en' }
+          ])
         })
       })
     })
@@ -3325,7 +3353,11 @@ describe('Views > AutogenView.vue', () => {
 
         setTimeout(() => {
           expect(mocks.$message.success).toHaveBeenCalled()
-          expect(mocks.$message.success).toHaveLastReturnedWith('test-name-en - test-name-value')
+          expect(mocks.$message.success).toHaveLastReturnedWith({
+            content: 'test-name-en - test-name-value',
+            key: 'labelnametest-name-value',
+            duration: 2
+          })
 
           done()
         })

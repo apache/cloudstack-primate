@@ -22,20 +22,22 @@
         <a-col :span="device === 'mobile' ? 24 : 12" style="padding-left: 12px">
           <breadcrumb :resource="resource">
             <span slot="end">
-              <a-tooltip placement="bottom">
-                <template slot="title">
-                  {{ $t('label.refresh') }}
-                </template>
-                <a-button
-                  style="margin-top: 4px"
-                  :loading="loading"
-                  shape="round"
-                  size="small"
-                  icon="reload"
-                  @click="fetchData()">
-                  {{ $t('label.refresh') }}
-                </a-button>
-              </a-tooltip>
+              <a-button
+                :loading="loading"
+                style="margin-bottom: 5px"
+                shape="round"
+                size="small"
+                icon="reload"
+                @click="fetchData()">
+                {{ $t('label.refresh') }}
+              </a-button>
+              <a-switch
+                v-if="!dataView && ['vm', 'volume', 'zone', 'cluster', 'host', 'storagepool'].includes($route.name)"
+                style="margin-left: 8px"
+                :checked-children="$t('label.metrics')"
+                :un-checked-children="$t('label.metrics')"
+                :checked="$store.getters.metrics"
+                @change="(checked, event) => { $store.dispatch('SetMetrics', checked) }"/>
               <a-tooltip placement="right">
                 <template slot="title">
                   {{ $t('label.filterby') }}
@@ -59,7 +61,7 @@
           :span="device === 'mobile' ? 24 : 12"
           :style="device === 'mobile' ? { float: 'right', 'margin-top': '12px', 'margin-bottom': '-6px', display: 'table' } : { float: 'right', display: 'table', 'margin-bottom': '-6px' }" >
           <action-button
-            :style="dataView || treeView ? { float: device === 'mobile' ? 'left' : 'right' } : { 'margin-right': '10px', display: 'inline-flex' }"
+            :style="dataView ? { float: device === 'mobile' ? 'left' : 'right' } : { 'margin-right': '10px', display: 'inline-flex' }"
             :loading="loading"
             :actions="actions"
             :selectedRowKeys="selectedRowKeys"
@@ -67,9 +69,9 @@
             :resource="resource"
             @exec-action="execAction"/>
           <a-input-search
+            v-if="!dataView"
             style="width: 100%; display: table-cell"
             :placeholder="$t('label.search')"
-            v-if="!dataView && !treeView"
             v-model="searchQuery"
             allowClear
             @search="onSearch" />
@@ -85,7 +87,7 @@
           :closable="true"
           style="top: 20px;"
           @cancel="closeAction"
-          :confirmLoading="currentAction.loading"
+          :confirmLoading="actionLoading"
           :footer="null"
           centered
           width="auto"
@@ -108,7 +110,7 @@
         style="top: 20px;"
         @ok="handleSubmit"
         @cancel="closeAction"
-        :confirmLoading="currentAction.loading"
+        :confirmLoading="actionLoading"
         centered
       >
         <span slot="title">
@@ -121,7 +123,7 @@
             <a-icon type="question-circle-o"></a-icon>
           </a>
         </span>
-        <a-spin :spinning="currentAction.loading">
+        <a-spin :spinning="actionLoading">
           <span v-if="currentAction.message">
             <a-alert type="warning">
               <span slot="message" v-html="$t(currentAction.message)" />
@@ -231,12 +233,21 @@
                   :placeholder="field.description"
                 />
               </span>
-              <span v-else-if="field.name==='password' || field.name==='currentpassword'">
+              <span v-else-if="field.name==='password' || field.name==='currentpassword' || field.name==='confirmpassword'">
                 <a-input-password
                   v-decorator="[field.name, {
-                    rules: [{ required: field.required, message: `${$t('message.error.required.input')}` }]
+                    rules: [
+                      {
+                        required: field.required,
+                        message: `${$t('message.error.required.input')}`
+                      },
+                      {
+                        validator: validateTwoPassword
+                      }
+                    ]
                   }]"
                   :placeholder="field.description"
+                  @blur="($event) => handleConfirmBlur($event, field.name)"
                 />
               </span>
               <span v-else-if="field.name==='certificate' || field.name==='privatekey' || field.name==='certchain'">
@@ -261,7 +272,7 @@
       </a-modal>
     </div>
 
-    <div v-if="dataView && !treeView">
+    <div v-if="dataView">
       <resource-view
         :resource="resource"
         :loading="loading"
@@ -272,8 +283,7 @@
         :loading="loading"
         :columns="columns"
         :items="items"
-        @refresh="this.fetchData"
-        v-if="!treeView" />
+        @refresh="this.fetchData" />
       <a-pagination
         class="row-element"
         size="small"
@@ -285,16 +295,7 @@
         @change="changePage"
         @showSizeChange="changePageSize"
         showSizeChanger
-        showQuickJumper
-        v-if="!treeView" />
-      <tree-view
-        v-if="treeView"
-        :treeData="treeData"
-        :treeSelected="treeSelected"
-        :loading="loading"
-        :tabs="$route.meta.tabs"
-        @change-resource="changeResource"
-        :actionData="actionData"/>
+        showQuickJumper />
     </div>
   </div>
 </template>
@@ -311,7 +312,6 @@ import ChartCard from '@/components/widgets/ChartCard'
 import Status from '@/components/widgets/Status'
 import ListView from '@/components/view/ListView'
 import ResourceView from '@/components/view/ResourceView'
-import TreeView from '@/components/view/TreeView'
 import ActionButton from '@/components/view/ActionButton'
 
 export default {
@@ -321,7 +321,6 @@ export default {
     ChartCard,
     ResourceView,
     ListView,
-    TreeView,
     Status,
     ActionButton
   },
@@ -339,6 +338,7 @@ export default {
       apiName: '',
       docBase: config.docBase,
       loading: false,
+      actionLoading: false,
       columns: [],
       items: [],
       itemCount: 0,
@@ -350,14 +350,11 @@ export default {
       currentAction: {},
       showAction: false,
       dataView: false,
-      treeView: false,
       selectedFilter: '',
       filters: [],
       actions: [],
-      treeData: [],
-      treeSelected: {},
-      actionData: [],
-      formModel: {}
+      formModel: {},
+      confirmDirty: false
     }
   },
   computed: {
@@ -394,6 +391,9 @@ export default {
       if (to !== from) {
         this.fetchData()
       }
+    },
+    '$store.getters.metrics' (oldVal, newVal) {
+      this.fetchData()
     }
   },
   methods: {
@@ -410,21 +410,15 @@ export default {
       this.filters = this.$route.meta.filters || []
       this.columns = []
       this.columnKeys = []
-      this.treeData = []
-      this.treeSelected = {}
-
       if (Object.keys(this.$route.query).length > 0) {
         Object.assign(params, this.$route.query)
       } else if (this.$route.meta.params) {
         Object.assign(params, this.$route.meta.params)
       }
 
-      this.treeView = this.$route && this.$route.meta && this.$route.meta.treeView
-
       if (this.$route && this.$route.params && this.$route.params.id) {
         this.resource = {}
         this.dataView = true
-        this.treeView = false
       } else {
         this.dataView = false
       }
@@ -432,7 +426,12 @@ export default {
       if (this.$route && this.$route.meta && this.$route.meta.permission) {
         this.apiName = this.$route.meta.permission[0]
         if (this.$route.meta.columns) {
-          this.columnKeys = this.$route.meta.columns
+          const columns = this.$route.meta.columns
+          if (columns && typeof columns === 'function') {
+            this.columnKeys = columns()
+          } else {
+            this.columnKeys = columns
+          }
         }
 
         if (this.$route.meta.actions) {
@@ -521,14 +520,8 @@ export default {
         }
       }
 
-      if (!this.treeView) {
-        params.page = this.page
-        params.pagesize = this.pageSize
-      } else {
-        const domainId = this.$store.getters.userInfo.domainid
-        params.id = domainId
-        delete params.treeView
-      }
+      params.page = this.page
+      params.pagesize = this.pageSize
 
       api(this.apiName, params).then(json => {
         var responseName
@@ -555,30 +548,22 @@ export default {
         if (['listTemplates', 'listIsos'].includes(this.apiName) && this.items.length > 1) {
           this.items = [...new Map(this.items.map(x => [x.id, x])).values()]
         }
-        if (this.treeView) {
-          this.treeData = this.generateTreeData(this.items)
-        } else {
-          for (let idx = 0; idx < this.items.length; idx++) {
-            this.items[idx].key = idx
-            for (const key in customRender) {
-              const func = customRender[key]
-              if (func && typeof func === 'function') {
-                this.items[idx][key] = func(this.items[idx])
-              }
+        for (let idx = 0; idx < this.items.length; idx++) {
+          this.items[idx].key = idx
+          for (const key in customRender) {
+            const func = customRender[key]
+            if (func && typeof func === 'function') {
+              this.items[idx][key] = func(this.items[idx])
             }
-            if (this.$route.path.startsWith('/ssh')) {
-              this.items[idx].id = this.items[idx].name
-            } else if (this.$route.path.startsWith('/ldapsetting')) {
-              this.items[idx].id = this.items[idx].hostname
-            }
+          }
+          if (this.$route.path.startsWith('/ssh')) {
+            this.items[idx].id = this.items[idx].name
+          } else if (this.$route.path.startsWith('/ldapsetting')) {
+            this.items[idx].id = this.items[idx].hostname
           }
         }
         if (this.items.length > 0) {
           this.resource = this.items[0]
-          this.treeSelected = this.treeView ? this.items[0] : {}
-        } else {
-          this.resource = {}
-          this.treeSelected = {}
         }
       }).catch(error => {
         this.$notifyError(error)
@@ -604,14 +589,14 @@ export default {
       this.fetchData()
     },
     closeAction () {
-      this.currentAction.loading = false
+      this.actionLoading = false
       this.showAction = false
       this.currentAction = {}
     },
     execAction (action) {
+      const self = this
       this.form = this.$form.createForm(this)
       this.formModel = {}
-      this.actionData = []
       if (action.component && action.api && !action.popup) {
         this.$router.push({ name: action.api })
         return
@@ -635,6 +620,14 @@ export default {
         }
         if (args.length > 0) {
           this.currentAction.paramFields = args.map(function (arg) {
+            if (arg === 'confirmpassword') {
+              return {
+                type: 'password',
+                name: 'confirmpassword',
+                required: true,
+                description: self.$t('label.confirmpassword.description')
+              }
+            }
             return paramFields.filter(function (param) {
               return param.name.toLowerCase() === arg.toLowerCase()
             })[0]
@@ -651,7 +644,7 @@ export default {
           this.listUuidOpts(param)
         }
       }
-      this.currentAction.loading = false
+      this.actionLoading = false
       if (action.dataView && ['copy', 'edit'].includes(action.icon)) {
         this.fillEditFormFieldValues()
       }
@@ -764,7 +757,6 @@ export default {
       this.form.validateFields((err, values) => {
         console.log(values)
         if (!err) {
-          this.currentAction.loading = true
           const params = {}
           if ('id' in this.resource && this.currentAction.params.map(i => { return i.name }).includes('id')) {
             params.id = this.resource.id
@@ -820,6 +812,7 @@ export default {
           const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username || params.ipaddress || params.virtualmachinename || this.resource.name
 
           var hasJobId = false
+          this.actionLoading = true
           api(this.currentAction.api, params).then(json => {
             for (const obj in json) {
               if (obj.includes('response')) {
@@ -830,7 +823,11 @@ export default {
                     hasJobId = true
                     break
                   } else {
-                    this.$message.success(this.$t(this.currentAction.label) + (resourceName ? ' - ' + resourceName : ''))
+                    this.$message.success({
+                      content: this.$t(this.currentAction.label) + (resourceName ? ' - ' + resourceName : ''),
+                      key: this.currentAction.label + resourceName,
+                      duration: 2
+                    })
                   }
                 }
                 break
@@ -840,20 +837,14 @@ export default {
               this.$router.go(-1)
             } else {
               if (!hasJobId) {
-                // set action data for reload tree-view
-                if (this.treeView) {
-                  this.actionData.push(json)
-                }
                 this.fetchData()
-              } else {
-                this.$set(this.resource, 'isDel', true)
-                this.actionData.push(this.resource)
               }
             }
           }).catch(error => {
             console.log(error)
             this.$notifyError(error)
           }).finally(f => {
+            this.actionLoading = false
             this.closeAction()
           })
         }
@@ -882,24 +873,6 @@ export default {
         this.selectedRowKeys = []
       }, 1000)
     },
-    generateTreeData (treeData) {
-      const result = []
-      const rootItem = treeData
-
-      rootItem[0].title = rootItem[0].title ? rootItem[0].title : rootItem[0].name
-      rootItem[0].key = rootItem[0].id ? rootItem[0].id : 0
-
-      if (!rootItem[0].haschild) {
-        rootItem[0].isLeaf = true
-      }
-
-      result.push(rootItem[0])
-      return result
-    },
-    changeResource (resource) {
-      this.treeSelected = resource
-      this.resource = this.treeSelected
-    },
     toggleLoading () {
       this.loading = !this.loading
     },
@@ -908,6 +881,40 @@ export default {
     },
     finishLoading () {
       this.loading = false
+    },
+    handleConfirmBlur (e, name) {
+      if (name !== 'confirmpassword') {
+        return
+      }
+      const value = e.target.value
+      this.confirmDirty = this.confirmDirty || !!value
+    },
+    validateTwoPassword (rule, value, callback) {
+      if (!value || value.length === 0) {
+        callback()
+      } else if (rule.field === 'confirmpassword') {
+        const form = this.form
+        const messageConfirm = this.$t('message.validate.equalto')
+        const passwordVal = form.getFieldValue('password')
+        if (passwordVal && passwordVal !== value) {
+          callback(messageConfirm)
+        } else {
+          callback()
+        }
+      } else if (rule.field === 'password') {
+        const form = this.form
+        const confirmPasswordVal = form.getFieldValue('confirmpassword')
+        if (!confirmPasswordVal || confirmPasswordVal.length === 0) {
+          callback()
+        } else if (value && this.confirmDirty) {
+          form.validateFields(['confirmpassword'], { force: true })
+          callback()
+        } else {
+          callback()
+        }
+      } else {
+        callback()
+      }
     }
   }
 }
@@ -918,7 +925,7 @@ export default {
 .breadcrumb-card {
   margin-left: -24px;
   margin-right: -24px;
-  margin-top: -18px;
+  margin-top: -16px;
   margin-bottom: 12px;
 }
 
@@ -929,9 +936,5 @@ export default {
 
 .ant-breadcrumb {
   vertical-align: text-bottom;
-}
-
-.ant-breadcrumb .anticon {
-  margin-left: 8px;
 }
 </style>
