@@ -194,7 +194,7 @@ export default {
               })
           } else if (customActiveKey === 'saml') {
             state.loginBtn = false
-            var samlUrl = $store.getters.configs.apiBase + '?command=samlSso'
+            var samlUrl = this.$store.getters.configs.apiBase + '?command=samlSso'
             if (values.idp) {
               samlUrl += ('&idpid=' + values.idp)
             }
