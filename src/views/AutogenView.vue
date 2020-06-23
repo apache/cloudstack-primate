@@ -770,7 +770,6 @@ export default {
     handleSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
-        console.log(values)
         if (!err) {
           this.currentAction.loading = true
           const params = {}
@@ -820,10 +819,6 @@ export default {
               params[key] = this.currentAction.mapping[key].value(this.resource, params)
             }
           }
-
-          console.log(this.currentAction)
-          console.log(this.resource)
-          console.log(params)
 
           const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username || params.ipaddress || params.virtualmachinename || this.resource.name
 
