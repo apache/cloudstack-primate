@@ -81,6 +81,11 @@ export default {
           dataIndex: 'type',
           title: this.$t('label.type'),
           sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
+        },
+        {
+          dataIndex: 'description',
+          title: this.$t('label.description'),
+          sorter: function (a, b) { return genericCompare(a[this.dataIndex] || '', b[this.dataIndex] || '') }
         }
       ],
       selectedRowKeys: [],
@@ -163,7 +168,7 @@ export default {
 .form {
   width: 90vw;
   @media (min-width: 800px) {
-    width: 35vw;
+    width: 45vw;
   }
 }
 
