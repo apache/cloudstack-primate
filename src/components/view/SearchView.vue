@@ -41,6 +41,7 @@
           v-model="visibleFilter">
           <template slot="content">
             <a-form
+              style="min-width: 170px"
               :form="form"
               layout="vertical"
               @submit="handleSubmit">
@@ -193,52 +194,57 @@ export default {
   },
   methods: {
     async initFormFieldData () {
-      this.fields = this.searchFilters.map(item => {
+      const arrayField = []
+      this.fields = []
+      this.searchFilters.forEach(item => {
+        let type = 'input'
+
+        if (item === 'domainid' && !('listDomains' in this.$store.getters.apis)) {
+          return true
+        }
+        if (item === 'account' && ('addAccountToProject' in this.$store.getters.apis || 'createAccount' in this.$store.getters.apis)) {
+          return true
+        }
         if (['zoneid', 'domainid', 'state', 'level'].includes(item)) {
-          return {
-            type: 'list',
-            name: item,
-            opts: [],
-            loading: false
-          }
+          type = 'list'
+        } else if (item === 'tags') {
+          type = 'tag'
         }
-        if (item === 'tags') {
-          return {
-            type: 'tag',
-            name: item
-          }
-        }
-        return {
-          type: 'input',
-          name: item
-        }
+
+        this.fields.push({
+          type: type,
+          name: item,
+          opts: [],
+          loading: false
+        })
+        arrayField.push(item)
       })
 
       const promises = []
       let zoneIndex = -1
       let domainIndex = -1
 
-      if (this.searchFilters.includes('state')) {
+      if (arrayField.includes('state')) {
         const stateIndex = this.fields.findIndex(item => item.name === 'state')
         this.fields[stateIndex].loading = true
         this.fields[stateIndex].opts = this.fetchState()
         this.fields[stateIndex].loading = false
       }
 
-      if (this.searchFilters.includes('level')) {
+      if (arrayField.includes('level')) {
         const levelIndex = this.fields.findIndex(item => item.name === 'level')
         this.fields[levelIndex].loading = true
         this.fields[levelIndex].opts = this.fetchLevel()
         this.fields[levelIndex].loading = false
       }
 
-      if (this.searchFilters.includes('zoneid')) {
+      if (arrayField.includes('zoneid')) {
         zoneIndex = this.fields.findIndex(item => item.name === 'zoneid')
         this.fields[zoneIndex].loading = true
         promises.push(await this.fetchZones())
       }
 
-      if (this.searchFilters.includes('domainid')) {
+      if (arrayField.includes('domainid')) {
         domainIndex = this.fields.findIndex(item => item.name === 'domainid')
         this.fields[domainIndex].loading = true
         promises.push(await this.fetchDomains())
@@ -409,7 +415,6 @@ export default {
 
 <style scoped lang="less">
 .input-search {
-  width: 33vw;
   margin-left: 10px;
 }
 
