@@ -123,10 +123,10 @@
                 {{ $t('label.community') }}
               </a-radio-button>
               <a-radio-button value="isolated">
-                {{ $t('label.isolated') }}
+                {{ $t('label.secondary.isolated.vlan.type.isolated') }}
               </a-radio-button>
               <a-radio-button value="promiscuous">
-                {{ $t('label.promiscuous') }}
+                {{ $t('label.secondary.isolated.vlan.type.promiscuous') }}
               </a-radio-button>
             </a-radio-group>
           </a-form-item>
