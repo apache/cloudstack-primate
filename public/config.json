@@ -10,8 +10,8 @@
     "500": "assets/500.png"
   },
   "theme": {
-    "@link-color": "#1890ff",
     "@primary-color": "#1890ff",
+    "@link-color": "#1890ff",
     "@processing-color": "#1890ff",
     "@success-color": "#52c41a",
     "@warning-color": "#faad14",
