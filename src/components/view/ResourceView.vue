@@ -43,8 +43,8 @@
             v-for="tab in tabs"
             :tab="$t('label.' + tab.name)"
             :key="tab.name"
-            v-if="showHideTab(tab)">
-            <component :is="tab.component" :resource="resourceData" :loading="loading" :tab="activeTab" />
+            v-if="showTab(tab)">
+            <component :is="tab.component" :resource="resource" :loading="loading" :tab="activeTab" />
           </a-tab-pane>
         </a-tabs>
       </a-card>
@@ -111,8 +111,12 @@ export default {
       if (newItem.id === oldItem.id) return
 
       if (this.resource.associatednetworkid) {
-        api('listNetworks', { id: this.resource.associatednetworkid }).then(response => {
-          this.networkService = response.listnetworksresponse.network[0]
+        api('listNetworks', { id: this.resource.associatednetworkid, listall: true }).then(response => {
+          if (response && response.listnetworksresponse && response.listnetworksresponse.network) {
+            this.networkService = response.listnetworksresponse.network[0]
+          } else {
+            this.networkService = {}
+          }
         })
       }
     }
@@ -126,12 +130,15 @@ export default {
     onTabChange (key) {
       this.activeTab = key
     },
-    showHideTab (tab) {
+    showTab (tab) {
       if ('networkServiceFilter' in tab) {
-        if (this.resource.virtualmachineid && tab.name !== 'Firewall') {
+        if (this.resource && this.resource.virtualmachineid && !this.resource.vpcid && tab.name !== 'firewall') {
           return false
         }
-        if (this.resource && this.resource.vpcid && tab.name !== 'Firewall') {
+        if (this.resource && this.resource.virtualmachineid && this.resource.vpcid) {
+          return false
+        }
+        if (this.resource && this.resource.vpcid && tab.name !== 'firewall') {
           return true
         }
         return this.networkService && this.networkService.service &&
