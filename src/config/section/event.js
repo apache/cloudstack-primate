@@ -35,6 +35,7 @@ export default {
       message: 'message.confirm.archive.selected.events',
       listView: false,
       dataView: true,
+      groupAction: true,
       args: ['ids'],
       mapping: {
         ids: {
@@ -49,6 +50,7 @@ export default {
       message: 'message.confirm.remove.selected.events',
       listView: false,
       dataView: true,
+      groupAction: true,
       args: ['ids'],
       mapping: {
         ids: {
