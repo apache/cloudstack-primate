@@ -296,6 +296,10 @@
         @showSizeChange="changePageSize"
         showSizeChanger
         showQuickJumper />
+      <edit-tariff-value-wizard
+        v-if="tariffAction"
+        :showAction="tariffAction"
+        :resource="tariffResource" />
     </div>
   </div>
 </template>
@@ -312,6 +316,7 @@ import Status from '@/components/widgets/Status'
 import ListView from '@/components/view/ListView'
 import ResourceView from '@/components/view/ResourceView'
 import ActionButton from '@/components/view/ActionButton'
+import EditTariffValueWizard from '@/views/plugins/quota/EditTariffValueWizard'
 
 export default {
   name: 'Resource',
@@ -321,7 +326,8 @@ export default {
     ResourceView,
     ListView,
     Status,
-    ActionButton
+    ActionButton,
+    EditTariffValueWizard
   },
   mixins: [mixinDevice],
   provide: function () {
@@ -330,7 +336,8 @@ export default {
       parentToggleLoading: this.toggleLoading,
       parentStartLoading: this.startLoading,
       parentFinishLoading: this.finishLoading,
-      parentChangeResource: this.changeResource
+      parentChangeResource: this.changeResource,
+      parentEditTariffAction: this.showTariffAction
     }
   },
   data () {
@@ -353,7 +360,9 @@ export default {
       filters: [],
       actions: [],
       formModel: {},
-      confirmDirty: false
+      confirmDirty: false,
+      tariffAction: false,
+      tariffResource: {}
     }
   },
   computed: {
@@ -918,6 +927,10 @@ export default {
       } else {
         callback()
       }
+    },
+    showTariffAction (showAction, resource) {
+      this.tariffAction = showAction
+      this.tariffResource = resource
     }
   }
 }
