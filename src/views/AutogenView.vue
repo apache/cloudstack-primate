@@ -43,13 +43,16 @@
                   {{ $t('label.filterby') }}
                 </template>
                 <a-select
-                  v-if="filters && filters.length > 0"
+                  v-if="!dataView && $route.meta.filters && $route.meta.filters.length > 0"
                   :placeholder="$t('label.filterby')"
-                  :value="$t('label.' + selectedFilter)"
+                  :value="$route.query.filter"
                   style="min-width: 100px; margin-left: 10px"
                   @change="changeFilter">
                   <a-icon slot="suffixIcon" type="filter" />
-                  <a-select-option v-for="filter in filters" :key="filter">
+                  <a-select-option v-if="['Admin'].includes($store.getters.userInfo.roletype) || $route.name === 'vm'" key="all">
+                    {{ $t('label.all') }}
+                  </a-select-option>
+                  <a-select-option v-for="filter in $route.meta.filters" :key="filter">
                     {{ $t('label.' + filter) }}
                   </a-select-option>
                 </a-select>
@@ -348,8 +351,6 @@ export default {
       currentAction: {},
       showAction: false,
       dataView: false,
-      selectedFilter: '',
-      filters: [],
       actions: [],
       formModel: {},
       confirmDirty: false
@@ -381,10 +382,19 @@ export default {
   watch: {
     '$route' (to, from) {
       if (to.fullPath !== from.fullPath && !to.fullPath.includes('action/')) {
-        this.searchQuery = ''
-        this.page = 1
+        if ('q' in to.query) {
+          this.searchQuery = to.query.q
+        } else {
+          this.searchQuery = ''
+        }
+        if ('page' in to.query) {
+          this.page = Number(to.query.page)
+          this.pageSize = Number(to.query.pagesize)
+        } else {
+          this.page = 1
+          this.pageSize = 10
+        }
         this.itemCount = 0
-        this.selectedFilter = ''
         this.fetchData()
         if ('projectid' in to.query) {
           this.switchProject(to.query.projectid)
@@ -426,7 +436,6 @@ export default {
       }
       this.apiName = ''
       this.actions = []
-      this.filters = this.$route.meta.filters || []
       this.columns = []
       this.columnKeys = []
       if (Object.keys(this.$route.query).length > 0) {
@@ -460,45 +469,6 @@ export default {
 
       if (this.apiName === '' || this.apiName === undefined) {
         return
-      }
-
-      if (['listTemplates', 'listIsos', 'listVirtualMachinesMetrics'].includes(this.apiName) && !this.dataView) {
-        if (['Admin'].includes(this.$store.getters.userInfo.roletype) || this.apiName === 'listVirtualMachinesMetrics') {
-          this.filters = ['all', ...this.filters]
-          if (this.selectedFilter === '') {
-            this.selectedFilter = 'all'
-          }
-        }
-        if (this.selectedFilter === '') {
-          this.selectedFilter = 'self'
-        }
-      }
-
-      if (this.selectedFilter && this.filters.length > 0) {
-        if (this.$route.path.startsWith('/template')) {
-          params.templatefilter = this.selectedFilter
-        } else if (this.$route.path.startsWith('/iso')) {
-          params.isofilter = this.selectedFilter
-        } else if (this.$route.path.startsWith('/vm')) {
-          if (this.selectedFilter === 'self') {
-            params.account = this.$store.getters.userInfo.account
-            params.domainid = this.$store.getters.userInfo.domainid
-          } else if (['running', 'stopped'].includes(this.selectedFilter)) {
-            params.state = this.selectedFilter
-          }
-        }
-      }
-
-      if (this.searchQuery !== '') {
-        if (this.apiName === 'listRoles') {
-          params.name = this.searchQuery
-        } else if (this.apiName === 'quotaEmailTemplateList') {
-          params.templatetype = this.searchQuery
-        } else if (this.apiName === 'listConfigurations') {
-          params.name = this.searchQuery
-        } else {
-          params.keyword = this.searchQuery
-        }
       }
 
       if (!this.columnKeys || this.columnKeys.length === 0) {
@@ -541,7 +511,6 @@ export default {
 
       params.page = this.page
       params.pagesize = this.pageSize
-
       api(this.apiName, params).then(json => {
         var responseName
         var objectName
@@ -601,11 +570,6 @@ export default {
       }).finally(f => {
         this.loading = false
       })
-    },
-    onSearch (value) {
-      this.searchQuery = value
-      this.page = 1
-      this.fetchData()
     },
     closeAction () {
       this.actionLoading = false
@@ -870,19 +834,63 @@ export default {
       })
     },
     changeFilter (filter) {
-      this.selectedFilter = filter
-      this.page = 1
-      this.fetchData()
+      const query = Object.assign({}, this.$route.query)
+      delete query.templatefilter
+      delete query.isofilter
+      delete query.account
+      delete query.domainid
+      delete query.state
+      if (this.$route.name === 'template') {
+        query.templatefilter = filter
+      } else if (this.$route.name === 'iso') {
+        query.isofilter = filter
+      } else if (this.$route.name === 'vm') {
+        if (filter === 'self') {
+          query.account = this.$store.getters.userInfo.account
+          query.domainid = this.$store.getters.userInfo.domainid
+        } else if (['running', 'stopped'].includes(filter)) {
+          query.state = filter
+        }
+      }
+      query.filter = filter
+      query.page = 1
+      query.pagesize = 10
+      this.$router.push({ query })
+    },
+    onSearch (value) {
+      const query = Object.assign({}, this.$route.query)
+      delete query.name
+      delete query.templatetype
+      delete query.keyword
+      delete query.q
+      if (value && value.length > 0) {
+        if (this.$route.name === 'role') {
+          query.name = value
+        } else if (this.$route.name === 'quotaemailtemplate') {
+          query.templatetype = value
+        } else if (this.$route.name === 'globalsetting') {
+          query.name = value
+        } else {
+          query.keyword = value
+        }
+        query.q = value
+      }
+      query.page = 1
+      query.pagesize = 10
+      this.searchQuery = value
+      this.$router.push({ query })
     },
     changePage (page, pageSize) {
-      this.page = page
-      this.pageSize = pageSize
-      this.fetchData()
+      const query = Object.assign({}, this.$route.query)
+      query.page = page
+      query.pagesize = pageSize
+      this.$router.push({ query })
     },
     changePageSize (currentPage, pageSize) {
-      this.page = currentPage
-      this.pageSize = pageSize
-      this.fetchData()
+      const query = Object.assign({}, this.$route.query)
+      query.page = currentPage
+      query.pagesize = pageSize
+      this.$router.push({ query })
     },
     start () {
       this.loading = true
