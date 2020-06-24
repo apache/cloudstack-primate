@@ -15,12 +15,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import store from '@/store'
+
 export default {
   name: 'zone',
   title: 'label.zones',
   icon: 'global',
   permission: ['listZonesMetrics'],
-  columns: ['name', 'state', 'allocationstate', 'networktype', 'clusters', 'cpuused', 'cpumaxdeviation', 'cpuallocated', 'cputotal', 'memoryused', 'memorymaxdeviation', 'memoryallocated', 'memorytotal', 'order'],
+  columns: () => {
+    const fields = ['name', 'state', 'allocationstate', 'networktype', 'clusters']
+    const metricsFields = ['cpuused', 'cpumaxdeviation', 'cpuallocated', 'cputotal', 'memoryused', 'memorymaxdeviation', 'memoryallocated', 'memorytotal']
+    if (store.getters.metrics) {
+      fields.push(...metricsFields)
+    }
+    fields.push('order')
+    return fields
+  },
   details: ['name', 'id', 'allocationstate', 'networktype', 'guestcidraddress', 'localstorageenabled', 'securitygroupsenabled', 'dns1', 'dns2', 'internaldns1', 'internaldns2'],
   related: [{
     name: 'pod',
@@ -64,6 +74,7 @@ export default {
       api: 'createZone',
       icon: 'plus',
       label: 'label.add.zone',
+      docHelp: 'installguide/configuration.html#adding-a-zone',
       listView: true,
       popup: true,
       component: () => import('@/views/infra/zone/ZoneWizard.vue')
@@ -89,6 +100,7 @@ export default {
       icon: 'pause-circle',
       label: 'label.action.disable.zone',
       message: 'message.action.disable.zone',
+      docHelp: 'adminguide/hosts.html#disabling-and-enabling-zones-pods-and-clusters',
       dataView: true,
       defaultArgs: { allocationstate: 'Disabled' },
       show: (record) => { return record.allocationstate === 'Enabled' }
@@ -98,6 +110,7 @@ export default {
       icon: 'play-circle',
       label: 'label.action.enable.zone',
       message: 'message.action.enable.zone',
+      docHelp: 'adminguide/hosts.html#disabling-and-enabling-zones-pods-and-clusters',
       dataView: true,
       defaultArgs: { allocationstate: 'Enabled' },
       show: (record) => { return record.allocationstate === 'Disabled' }
@@ -109,7 +122,7 @@ export default {
       message: 'label.outofbandmanagement.enable',
       dataView: true,
       show: (record) => {
-        return !record.resourcedetails || !record.resourcedetails.outOfBandManagementEnabled ||
+        return record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
           record.resourcedetails.outOfBandManagementEnabled === 'false'
       },
       args: ['zoneid'],
@@ -126,8 +139,8 @@ export default {
       message: 'label.outofbandmanagement.disable',
       dataView: true,
       show: (record) => {
-        return record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
-          record.resourcedetails.outOfBandManagementEnabled === 'true'
+        return !(record.resourcedetails && record.resourcedetails.outOfBandManagementEnabled &&
+          record.resourcedetails.outOfBandManagementEnabled === 'false')
       },
       args: ['zoneid'],
       mapping: {
@@ -143,7 +156,7 @@ export default {
       message: 'label.ha.enable',
       dataView: true,
       show: (record) => {
-        return !record.resourcedetails || !record.resourcedetails.resourceHAEnabled ||
+        return record.resourcedetails && record.resourcedetails.resourceHAEnabled &&
           record.resourcedetails.resourceHAEnabled === 'false'
       },
       args: ['zoneid'],
@@ -160,8 +173,8 @@ export default {
       message: 'label.ha.disable',
       dataView: true,
       show: (record) => {
-        return record.resourcedetails && record.resourcedetails.resourceHAEnabled &&
-          record.resourcedetails.resourceHAEnabled === 'true'
+        return !(record.resourcedetails && record.resourcedetails.resourceHAEnabled &&
+          record.resourcedetails.resourceHAEnabled === 'false')
       },
       args: ['zoneid'],
       mapping: {
@@ -207,6 +220,19 @@ export default {
       args: ['zoneid'],
       mapping: {
         zoneid: {
+          value: (record) => { return record.id }
+        }
+      }
+    },
+    {
+      api: 'startRollingMaintenance',
+      icon: 'setting',
+      label: 'label.start.rolling.maintenance',
+      message: 'label.start.rolling.maintenance',
+      dataView: true,
+      args: ['timeout', 'payload', 'forced', 'zoneids'],
+      mapping: {
+        zoneids: {
           value: (record) => { return record.id }
         }
       }
