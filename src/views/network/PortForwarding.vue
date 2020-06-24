@@ -18,7 +18,7 @@
 <template>
   <div>
     <div>
-      <div class="filter" v-if="'vpcid' in resource">
+      <div class="filter" v-if="'vpcid' in resource && !('associatednetworkid' in resource)">
         <div class="form">
           <div class="form__item" ref="newRuleTier">
             <div class="form__label">{{ $t('label.tiername') }}</div>
@@ -313,8 +313,9 @@ export default {
           width: 210
         },
         {
-          title: this.$t('label.instancename'),
-          dataIndex: 'instancename'
+          title: this.$t('label.state'),
+          dataIndex: 'state',
+          scopedSlots: { customRender: 'state' }
         },
         {
           title: this.$t('label.displayname'),
@@ -332,11 +333,6 @@ export default {
         {
           title: this.$t('label.zone'),
           dataIndex: 'zonename'
-        },
-        {
-          title: this.$t('label.state'),
-          dataIndex: 'state',
-          scopedSlots: { customRender: 'state' }
         },
         {
           title: this.$t('label.select'),
@@ -375,12 +371,14 @@ export default {
       this.fetchPFRules()
     },
     fetchListTiers () {
+      if ('vpcid' in this.resource && 'associatednetworkid' in this.resource) {
+        return
+      }
       this.tiers.loading = true
-
       api('listNetworks', {
         account: this.resource.account,
         domainid: this.resource.domainid,
-        supportedservices: 'Lb',
+        supportedservices: 'PortForwarding',
         vpcid: this.resource.vpcid
       }).then(json => {
         this.tiers.data = json.listnetworksresponse.network || []
@@ -427,7 +425,7 @@ export default {
     addRule () {
       this.loading = true
       this.addVmModalVisible = false
-      const networkId = 'vpcid' in this.resource ? this.newRule.tier : this.resource.associatednetworkid
+      const networkId = ('vpcid' in this.resource && !('associatednetworkid' in this.resource)) ? this.newRule.tier : this.resource.associatednetworkid
       api('createPortForwardingRule', {
         ...this.newRule,
         ipaddressid: this.resource.id,
@@ -600,7 +598,7 @@ export default {
       this.vmCount = 0
       this.vms = []
       this.addVmModalLoading = true
-      const networkId = 'vpcid' in this.resource ? this.newRule.tier : this.resource.associatednetworkid
+      const networkId = ('vpcid' in this.resource && !('associatednetworkid' in this.resource)) ? this.newRule.tier : this.resource.associatednetworkid
       api('listVirtualMachines', {
         listAll: true,
         keyword: this.searchQuery,

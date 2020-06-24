@@ -18,7 +18,7 @@
 <template>
   <div>
     <div>
-      <div class="filter" v-if="'vpcid' in resource">
+      <div class="filter" v-if="'vpcid' in resource && !('associatednetworkid' in resource)">
         <div class="form">
           <div class="form__item" ref="newRuleTier">
             <div class="form__label">{{ $t('label.tiername') }}</div>
@@ -462,8 +462,9 @@ export default {
           width: 220
         },
         {
-          title: this.$t('label.instancename'),
-          dataIndex: 'instancename'
+          title: this.$t('label.state'),
+          dataIndex: 'state',
+          scopedSlots: { customRender: 'state' }
         },
         {
           title: this.$t('label.displayname'),
@@ -476,11 +477,6 @@ export default {
         {
           title: this.$t('label.zonename'),
           dataIndex: 'zonename'
-        },
-        {
-          title: this.$t('label.state'),
-          dataIndex: 'state',
-          scopedSlots: { customRender: 'state' }
         },
         {
           title: this.$t('label.select'),
@@ -988,7 +984,7 @@ export default {
         virtualmachineid: e.target.value,
         networkid: this.resource.associatednetworkid
       }).then(response => {
-        if (!response.listnicsresponse.nic[0]) return
+        if (!response || !response.listnicsresponse || !response.listnicsresponse.nic[0]) return
         const newItem = []
         newItem.push(response.listnicsresponse.nic[0].ipaddress)
         if (response.listnicsresponse.nic[0].secondaryip) {
@@ -1006,7 +1002,7 @@ export default {
       this.vmCount = 0
       this.vms = []
       this.addVmModalLoading = true
-      const networkId = 'vpcid' in this.resource ? this.newRule.tier : this.resource.associatednetworkid
+      const networkId = ('vpcid' in this.resource && !('associatednetworkid' in this.resource)) ? this.newRule.tier : this.resource.associatednetworkid
       api('listVirtualMachines', {
         listAll: true,
         keyword: this.searchQuery,
@@ -1089,8 +1085,7 @@ export default {
         return
       }
 
-      const networkId = 'vpcid' in this.resource ? this.newRule.tier : this.resource.associatednetworkid
-
+      const networkId = ('vpcid' in this.resource && !('associatednetworkid' in this.resource)) ? this.newRule.tier : this.resource.associatednetworkid
       api('createLoadBalancerRule', {
         openfirewall: false,
         networkid: networkId,
