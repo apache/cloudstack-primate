@@ -113,9 +113,10 @@
             </a-form>
           </template>
           <a-button
-            class="filter-group-button"
-            icon="filter"
-            size="small"/>
+            class="filter-button"
+            size="small">
+            <a-icon type="filter" :theme="filtered ? 'twoTone' : 'outlined'" />
+          </a-button>
         </a-popover>
       </a-input-search>
     </span>
@@ -163,7 +164,8 @@ export default {
       fields: [],
       tags: [],
       inputKey: '',
-      inputValue: ''
+      inputValue: '',
+      filtered: false
     }
   },
   beforeCreate () {
@@ -353,6 +355,7 @@ export default {
         this.paramsFilter[item] = undefined
         this.form.setFieldsValue(field)
       })
+      this.filtered = false
       this.tags = []
       this.parentFilter(this.paramsFilter)
     },
@@ -377,6 +380,9 @@ export default {
           }
         }
 
+        if (Object.keys(this.paramsFilter).length > 0) {
+          this.filtered = true
+        }
         this.parentFilter(this.paramsFilter)
       })
     },
@@ -444,5 +450,15 @@ export default {
       right: 0;
     }
   }
+}
+
+.filter-button {
+  background: inherit;
+  border: 0;
+  padding: 0;
+  position: relative;
+  display: block;
+  min-height: 25px;
+  width: 20px;
 }
 </style>
