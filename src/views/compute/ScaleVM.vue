@@ -175,18 +175,28 @@ export default {
     },
     handleSubmit () {
       this.loading = true
-      api('scaleVirtualMachine', this.params).then(response => {
-        const jobId = response.scalevirtualmachineresponse.jobid
-        if (jobId) {
-          this.$pollJob({
-            jobId,
-            successMethod: result => {
-              this.$notification.success({
-                message: 'Successfully changed offering'
-              })
-            },
-            loadingMessage: 'Scale in progress',
-            catchMessage: 'Error encountered while fetching async job result'
+      let apiName = 'scaleVirtualMachine'
+      if (this.resource.state === 'Stopped') {
+        apiName = 'changeServiceForVirtualMachine'
+      }
+      api(apiName, this.params).then(response => {
+        if (apiName === 'scaleVirtualMachine') {
+          const jobId = response.scalevirtualmachineresponse.jobid
+          if (jobId) {
+            this.$pollJob({
+              jobId,
+              successMethod: result => {
+                this.$notification.success({
+                  message: 'Successfully changed offering'
+                })
+              },
+              loadingMessage: 'Scale in progress',
+              catchMessage: 'Error encountered while fetching async job result'
+            })
+          }
+        } else {
+          this.$notification.success({
+            message: 'Successfully changed offering'
           })
         }
         this.$parent.$parent.close()
