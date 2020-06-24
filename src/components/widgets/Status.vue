@@ -62,6 +62,7 @@ export default {
         case 'Download Complete':
         case 'Successfully Installed':
         case 'ReadWrite':
+        case 'True':
           status = 'success'
           break
         case 'Disabled':
@@ -71,6 +72,7 @@ export default {
         case 'Declined':
         case 'Disconnected':
         case 'ReadOnly':
+        case 'False':
           status = 'error'
           break
         case 'Migrating':
