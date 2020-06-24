@@ -1,0 +1,57 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+@import "~ant-design-vue/lib/style/themes/default.less";
+
+@logo-width: 256px;
+@logo-height: 64px;
+@banner-width: 450px;
+@banner-height: 110px;
+@error-width: 256px;
+@error-height: 256px;
+
+.ant-layout-sider-children .logo-image {
+  width: @logo-width;
+  height: @logo-height;
+}
+
+.user-layout {
+  &-logo {
+    width: @banner-width;
+    height: @banner-height;
+  }
+}
+
+.exception {
+  .img {
+    img {
+      width: @error-width;
+      height: @error-height;
+    }
+  }
+}
+
+a {
+  color: @link-color;
+  background-color: transparent;
+}
+a:hover {
+  color: color(~`colorPalette("@{primary-color}", 5)`);
+}
+a:active {
+  color: color(~`colorPalette("@{primary-color}", 7)`);
+}

@@ -26,7 +26,7 @@
         {{ $t(item.meta.title) }}
       </router-link>
       <span v-else-if="$route.params.id">
-        {{ resource.displayname || resource.displaytext || resource.name || resource.hostname || resource.username || resource.ipaddress || $route.params.id }}
+        {{ resource.name || resource.displayname || resource.displaytext || resource.hostname || resource.username || resource.ipaddress || $route.params.id }}
       </span>
       <span v-else>
         {{ $t(item.meta.title) }}
@@ -39,7 +39,7 @@
           <a
             v-if="item.meta.docHelp"
             style="margin-right: 12px"
-            :href="docBase + '/' + $route.meta.docHelp"
+            :href="$config.docBase + '/' + $route.meta.docHelp"
             target="_blank">
             <a-icon type="question-circle-o"></a-icon>
           </a>
@@ -52,7 +52,6 @@
 </template>
 
 <script>
-import config from '@/config/settings'
 
 export default {
   name: 'Breadcrumb',
@@ -67,8 +66,7 @@ export default {
   data () {
     return {
       name: '',
-      breadList: [],
-      docBase: config.docBase
+      breadList: []
     }
   },
   created () {
@@ -101,7 +99,6 @@ export default {
 <style>
 .ant-breadcrumb {
   vertical-align: text-bottom;
-  margin-bottom: 8px;
 }
 
 .ant-breadcrumb .anticon {

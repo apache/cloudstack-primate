@@ -19,9 +19,10 @@ export default {
   name: 'account',
   title: 'label.accounts',
   icon: 'team',
+  docHelp: 'adminguide/accounts.html',
   permission: ['listAccounts'],
-  columns: ['name', 'state', 'rolename', 'roletype', 'domain'],
-  details: ['name', 'id', 'rolename', 'roletype', 'domain', 'networkdomain', 'iptotal', 'vmtotal', 'volumetotal', 'receivedbytes', 'sentbytes', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit'],
+  columns: ['name', 'state', 'rolename', 'roletype', 'domainpath'],
+  details: ['name', 'id', 'rolename', 'roletype', 'domainpath', 'networkdomain', 'iptotal', 'vmtotal', 'volumetotal', 'receivedbytes', 'sentbytes', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit'],
   related: [{
     name: 'accountuser',
     title: 'label.users',
@@ -33,13 +34,13 @@ export default {
       component: () => import('@/components/view/DetailsTab.vue')
     },
     {
-      name: 'certificate',
-      component: () => import('@/views/iam/SSLCertificateTab.vue')
-    },
-    {
       name: 'limits',
       show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
       component: () => import('@/components/view/ResourceLimitTab.vue')
+    },
+    {
+      name: 'certificate',
+      component: () => import('@/views/iam/SSLCertificateTab.vue')
     },
     {
       name: 'settings',
@@ -53,12 +54,13 @@ export default {
       icon: 'plus',
       label: 'label.add.account',
       listView: true,
-      args: ['username', 'password', 'email', 'firstname', 'lastname', 'domainid', 'account', 'roleid', 'timezone', 'networkdomain']
+      args: ['username', 'password', 'confirmpassword', 'email', 'firstname', 'lastname', 'domainid', 'account', 'roleid', 'timezone', 'networkdomain']
     },
     {
       api: 'ldapCreateAccount',
       icon: 'user-add',
       label: 'label.add.ldap.account',
+      docHelp: 'adminguide/accounts.html#using-an-ldap-server-for-user-authentication',
       listView: true,
       popup: true,
       show: (record, store) => {
@@ -69,7 +71,7 @@ export default {
     {
       api: 'updateAccount',
       icon: 'edit',
-      label: 'Update Account',
+      label: 'label.action.edit.account',
       dataView: true,
       args: ['newname', 'account', 'domainid', 'networkdomain'],
       mapping: {
@@ -84,7 +86,8 @@ export default {
     {
       api: 'updateResourceCount',
       icon: 'sync',
-      label: 'Update Resource Count',
+      label: 'label.action.update.resource.count',
+      message: 'message.update.resource.count',
       dataView: true,
       args: ['account', 'domainid'],
       mapping: {
@@ -99,7 +102,8 @@ export default {
     {
       api: 'enableAccount',
       icon: 'play-circle',
-      label: 'Enable Account',
+      label: 'label.action.enable.account',
+      message: 'message.enable.account',
       dataView: true,
       show: (record) => { return record.state === 'disabled' || record.state === 'locked' },
       params: { lock: 'false' }
@@ -107,7 +111,8 @@ export default {
     {
       api: 'disableAccount',
       icon: 'pause-circle',
-      label: 'Disable Account',
+      label: 'label.action.disable.account',
+      message: 'message.disable.account',
       dataView: true,
       show: (record) => { return record.state === 'enabled' },
       args: ['lock'],
@@ -120,7 +125,8 @@ export default {
     {
       api: 'disableAccount',
       icon: 'lock',
-      label: 'Lock account',
+      label: 'label.action.lock.account',
+      message: 'message.lock.account',
       dataView: true,
       show: (record) => { return record.state === 'enabled' },
       args: ['lock'],
@@ -133,7 +139,7 @@ export default {
     {
       api: 'uploadSslCert',
       icon: 'safety-certificate',
-      label: 'Add certificate',
+      label: 'label.add.certificate',
       dataView: true,
       args: ['name', 'certificate', 'privatekey', 'certchain', 'password', 'account', 'domainid'],
       show: (record) => { return record.state === 'enabled' },
@@ -149,7 +155,8 @@ export default {
     {
       api: 'deleteAccount',
       icon: 'delete',
-      label: 'Delete account',
+      label: 'label.action.delete.account',
+      message: 'message.delete.account',
       dataView: true,
       hidden: (record) => { return record.name === 'admin' }
     }

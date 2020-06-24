@@ -15,12 +15,24 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import store from '@/store'
+
 export default {
   name: 'storagepool',
   title: 'label.primary.storage',
   icon: 'database',
+  docHelp: 'adminguide/storage.html#primary-storage',
   permission: ['listStoragePoolsMetrics'],
-  columns: ['name', 'state', 'ipaddress', 'type', 'path', 'scope', 'disksizeusedgb', 'disksizetotalgb', 'disksizeallocatedgb', 'disksizeunallocatedgb', 'clustername', 'zonename'],
+  columns: () => {
+    const fields = ['name', 'state', 'ipaddress', 'scope', 'type', 'path']
+    const metricsFields = ['disksizeusedgb', 'disksizetotalgb', 'disksizeallocatedgb', 'disksizeunallocatedgb']
+    if (store.getters.metrics) {
+      fields.push(...metricsFields)
+    }
+    fields.push('clustername')
+    fields.push('zonename')
+    return fields
+  },
   details: ['name', 'id', 'ipaddress', 'type', 'scope', 'tags', 'path', 'provider', 'hypervisor', 'overprovisionfactor', 'disksizetotal', 'disksizeallocated', 'disksizeused', 'clustername', 'podname', 'zonename', 'created'],
   related: [{
     name: 'volume',
@@ -54,6 +66,7 @@ export default {
       api: 'enableStorageMaintenance',
       icon: 'plus-square',
       label: 'label.action.enable.maintenance.mode',
+      message: 'message.action.primarystorage.enable.maintenance.mode',
       dataView: true,
       show: (record) => { return ['Up', 'Connecting', 'Down', 'ErrorInMaintenance'].includes(record.state) }
     },
@@ -61,6 +74,7 @@ export default {
       api: 'cancelStorageMaintenance',
       icon: 'minus-square',
       label: 'label.action.cancel.maintenance.mode',
+      message: 'message.action.cancel.maintenance.mode',
       dataView: true,
       show: (record) => { return ['Maintenance', 'PrepareForMaintenance', 'ErrorInMaintenance'].includes(record.state) }
     },

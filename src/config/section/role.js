@@ -19,6 +19,7 @@ export default {
   name: 'role',
   title: 'label.roles',
   icon: 'idcard',
+  docHelp: 'adminguide/accounts.html#roles',
   permission: ['listRoles', 'listRolePermissions'],
   columns: ['name', 'type', 'description'],
   details: ['name', 'id', 'type', 'description'],
@@ -33,7 +34,7 @@ export default {
     {
       api: 'createRole',
       icon: 'plus',
-      label: 'Create Role',
+      label: 'label.add.role',
       listView: true,
       args: ['name', 'description', 'type'],
       mapping: {
@@ -45,7 +46,7 @@ export default {
     {
       api: 'updateRole',
       icon: 'edit',
-      label: 'Edit Role',
+      label: 'label.edit.role',
       dataView: true,
       args: ['name', 'description', 'type'],
       mapping: {
@@ -58,6 +59,7 @@ export default {
       api: 'deleteRole',
       icon: 'delete',
       label: 'label.delete.role',
+      message: 'label.delete.role',
       dataView: true
     }
   ]
