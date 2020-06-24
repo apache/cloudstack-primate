@@ -36,7 +36,7 @@
         @search="onSearch">
         <a-popover
           placement="bottomRight"
-          slot="addonAfter"
+          slot="addonBefore"
           trigger="click"
           v-model="visibleFilter">
           <template slot="content">
@@ -448,6 +448,12 @@ export default {
     &-search {
       position: absolute;
       right: 0;
+    }
+  }
+
+  /deep/.ant-input-group {
+    .ant-input-affix-wrapper {
+      width: calc(100% - 10px);
     }
   }
 }
