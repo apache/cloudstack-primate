@@ -19,6 +19,7 @@ export default {
   name: 'account',
   title: 'label.accounts',
   icon: 'team',
+  docHelp: 'adminguide/accounts.html',
   permission: ['listAccounts'],
   columns: ['name', 'state', 'rolename', 'roletype', 'domainpath'],
   details: ['name', 'id', 'rolename', 'roletype', 'domainpath', 'networkdomain', 'iptotal', 'vmtotal', 'volumetotal', 'receivedbytes', 'sentbytes', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit'],
@@ -53,12 +54,13 @@ export default {
       icon: 'plus',
       label: 'label.add.account',
       listView: true,
-      args: ['username', 'password', 'email', 'firstname', 'lastname', 'domainid', 'account', 'roleid', 'timezone', 'networkdomain']
+      args: ['username', 'password', 'confirmpassword', 'email', 'firstname', 'lastname', 'domainid', 'account', 'roleid', 'timezone', 'networkdomain']
     },
     {
       api: 'ldapCreateAccount',
       icon: 'user-add',
       label: 'label.add.ldap.account',
+      docHelp: 'adminguide/accounts.html#using-an-ldap-server-for-user-authentication',
       listView: true,
       popup: true,
       show: (record, store) => {

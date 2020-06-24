@@ -25,7 +25,7 @@ import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import message from 'ant-design-vue/es/message'
 import notification from 'ant-design-vue/es/notification'
-import { setDocumentTitle, domTitle } from '@/utils/domUtil'
+import { setDocumentTitle } from '@/utils/domUtil'
 import { ACCESS_TOKEN, APIS } from '@/store/mutation-types'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
@@ -36,7 +36,7 @@ router.beforeEach((to, from, next) => {
   // start progress bar
   NProgress.start()
   if (to.meta && typeof to.meta.title !== 'undefined') {
-    const title = i18n.t(to.meta.title) + ' - ' + domTitle
+    const title = i18n.t(to.meta.title) + ' - ' + Vue.prototype.$config.appTitle
     setDocumentTitle(title)
   }
   const validLogin = Vue.ls.get(ACCESS_TOKEN) || Cookies.get('userid') || Cookies.get('userid', { path: '/client' })
@@ -69,7 +69,7 @@ router.beforeEach((to, from, next) => {
               description: 'Exception caught while discoverying features'
             })
             store.dispatch('Logout').then(() => {
-              next({ path: '/user/login', query: { redirect: to.fullPath } })
+              next({ path: '/user/login' })
             })
           })
       } else {
@@ -80,7 +80,7 @@ router.beforeEach((to, from, next) => {
     if (whiteList.includes(to.name)) {
       next()
     } else {
-      next({ path: '/user/login', query: { redirect: to.fullPath } })
+      next({ path: '/user/login' })
       NProgress.done()
     }
   }

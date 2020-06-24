@@ -19,6 +19,7 @@ export default {
   name: 'accountuser',
   title: 'label.users',
   icon: 'user',
+  docHelp: 'adminguide/accounts.html#users',
   hidden: true,
   permission: ['listUsers'],
   columns: ['username', 'state', 'firstname', 'lastname', 'email', 'account', 'domain'],
@@ -29,7 +30,7 @@ export default {
       icon: 'plus',
       label: 'label.add.user',
       listView: true,
-      args: ['username', 'password', 'email', 'firstname', 'lastname', 'timezone', 'account', 'domainid']
+      args: ['username', 'password', 'confirmpassword', 'email', 'firstname', 'lastname', 'timezone', 'account', 'domainid']
     },
     {
       api: 'updateUser',
