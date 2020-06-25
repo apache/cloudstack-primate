@@ -21,11 +21,12 @@ export default {
   name: 'network',
   title: 'label.network',
   icon: 'wifi',
+  docHelp: 'adminguide/networking_and_traffic.html#advanced-zone-physical-network-configuration',
   children: [
     {
       name: 'guestnetwork',
       title: 'label.guest.networks',
-      icon: 'gateway',
+      icon: 'apartment',
       permission: ['listNetworks'],
       resourceType: 'Network',
       columns: ['name', 'state', 'type', 'cidr', 'ip6cidr', 'broadcasturi', 'account', 'zonename'],
@@ -56,6 +57,7 @@ export default {
           api: 'createNetwork',
           icon: 'plus',
           label: 'label.add.network',
+          docHelp: 'adminguide/networking_and_traffic.html#configure-guest-traffic-in-an-advanced-zone',
           listView: true,
           popup: true,
           component: () => import('@/views/network/CreateNetwork.vue')
@@ -79,6 +81,7 @@ export default {
           icon: 'swap',
           label: 'label.replace.acl.list',
           message: 'message.confirm.replace.acl.new.one',
+          docHelp: 'adminguide/networking_and_traffic.html#configuring-network-access-control-list',
           dataView: true,
           show: (record) => { return record.vpcid },
           args: ['aclid', 'networkid'],
@@ -105,6 +108,7 @@ export default {
       name: 'vpc',
       title: 'label.vpc',
       icon: 'deployment-unit',
+      docHelp: 'adminguide/networking_and_traffic.html#configuring-a-virtual-private-cloud',
       permission: ['listVPCs'],
       resourceType: 'Vpc',
       columns: ['name', 'state', 'displaytext', 'cidr', 'account', 'zonename'],
@@ -131,6 +135,7 @@ export default {
           api: 'createVPC',
           icon: 'plus',
           label: 'label.add.vpc',
+          docHelp: 'adminguide/networking_and_traffic.html#adding-a-virtual-private-cloud',
           listView: true,
           args: ['name', 'displaytext', 'zoneid', 'cidr', 'networkdomain', 'vpcofferingid', 'start']
         },
@@ -162,6 +167,7 @@ export default {
       name: 'securitygroups',
       title: 'label.security.groups',
       icon: 'fire',
+      docHelp: 'adminguide/networking_and_traffic.html#security-groups',
       permission: ['listSecurityGroups'],
       resourceType: 'SecurityGroup',
       columns: ['name', 'description', 'account', 'domain'],
@@ -181,8 +187,17 @@ export default {
           api: 'createSecurityGroup',
           icon: 'plus',
           label: 'label.add.security.group',
+          docHelp: 'adminguide/networking_and_traffic.html#adding-a-security-group',
           listView: true,
           args: ['name', 'description']
+        },
+        {
+          api: 'updateSecurityGroup',
+          icon: 'edit',
+          label: 'label.edit',
+          dataView: true,
+          args: ['name'],
+          show: (record) => { return record.name !== 'default' }
         },
         {
           api: 'deleteSecurityGroup',
@@ -198,6 +213,7 @@ export default {
       name: 'publicip',
       title: 'label.public.ip.addresses',
       icon: 'environment',
+      docHelp: 'adminguide/networking_and_traffic.html#reserving-public-ip-addresses-and-vlans-for-accounts',
       permission: ['listPublicIpAddresses'],
       resourceType: 'PublicIpAddress',
       columns: ['ipaddress', 'state', 'associatednetworkname', 'virtualmachinename', 'allocated', 'account', 'zonename'],
@@ -224,16 +240,10 @@ export default {
       }],
       actions: [
         {
-          api: 'associateIpAddress',
-          icon: 'plus',
-          label: 'label.acquire.new.ip',
-          listView: true,
-          args: ['networkid']
-        },
-        {
           api: 'enableStaticNat',
           icon: 'plus-circle',
           label: 'label.action.enable.static.nat',
+          docHelp: 'adminguide/networking_and_traffic.html#enabling-or-disabling-static-nat',
           dataView: true,
           show: (record) => { return !record.virtualmachineid && !record.issourcenat },
           popup: true,
@@ -244,6 +254,7 @@ export default {
           icon: 'minus-circle',
           label: 'label.action.disable.static.nat',
           message: 'message.action.disable.static.nat',
+          docHelp: 'adminguide/networking_and_traffic.html#enabling-or-disabling-static-nat',
           dataView: true,
           show: (record) => { return record.virtualmachineid },
           args: ['ipaddressid'],
@@ -258,6 +269,7 @@ export default {
           icon: 'delete',
           label: 'label.action.release.ip',
           message: 'message.action.release.ip',
+          docHelp: 'adminguide/networking_and_traffic.html#releasing-an-ip-address-alloted-to-a-vpc',
           dataView: true,
           show: (record) => { return !record.issourcenat }
         }
@@ -266,7 +278,7 @@ export default {
     {
       name: 'privategw',
       title: 'label.private.gateway',
-      icon: 'branches',
+      icon: 'gateway',
       hidden: true,
       permission: ['listPrivateGateways'],
       columns: ['ipaddress', 'state', 'gateway', 'netmask', 'account', 'domain'],
@@ -284,8 +296,15 @@ export default {
           api: 'createPrivateGateway',
           icon: 'plus',
           label: 'label.add.private.gateway',
+          docHelp: 'adminguide/networking_and_traffic.html#adding-a-private-gateway-to-a-vpc',
           listView: true,
-          args: ['physicalnetworkid', 'vlan', 'ipaddress', 'gateway', 'netmask', 'sourcenatsupported', 'aclid'],
+          args: (record, store) => {
+            var fields = ['vpcid', 'physicalnetworkid', 'vlan', 'ipaddress', 'gateway', 'netmask', 'sourcenatsupported', 'aclid']
+            if (store.apis.createPrivateGateway.params.filter(x => x.name === 'bypassvlanoverlapcheck').length > 0) {
+              fields.push('bypassvlanoverlapcheck')
+            }
+            return fields
+          },
           mapping: {
             aclid: {
               api: 'listNetworkACLLists'
@@ -297,6 +316,7 @@ export default {
           icon: 'swap',
           label: 'label.replace.acl.list',
           message: 'message.confirm.replace.acl.new.one',
+          docHelp: 'adminguide/networking_and_traffic.html#acl-on-private-gateway',
           dataView: true,
           args: ['aclid', 'gatewayid'],
           mapping: {
@@ -331,6 +351,7 @@ export default {
           api: 'createVpnGateway',
           icon: 'plus',
           label: 'label.add.vpn.gateway',
+          docHelp: 'adminguide/networking_and_traffic.html#creating-a-vpn-gateway-for-the-vpc',
           listView: true,
           args: ['vpcid']
         },
@@ -339,6 +360,7 @@ export default {
           icon: 'delete',
           label: 'label.delete.vpn.gateway',
           message: 'message.delete.vpn.gateway',
+          docHelp: 'adminguide/networking_and_traffic.html#restarting-and-removing-a-vpn-connection',
           dataView: true
         }
       ]
@@ -346,6 +368,7 @@ export default {
     {
       name: 's2svpnconn',
       title: 'label.site.to.site.vpn.connections',
+      docHelp: 'adminguide/networking_and_traffic.html#setting-up-a-site-to-site-vpn-connection',
       icon: 'sync',
       hidden: true,
       permission: ['listVpnConnections'],
@@ -356,6 +379,7 @@ export default {
           api: 'createVpnConnection',
           icon: 'plus',
           label: 'label.create.vpn.connection',
+          docHelp: 'adminguide/networking_and_traffic.html#creating-a-vpn-connection',
           listView: true,
           args: ['s2scustomergatewayid', 's2svpngatewayid', 'passive'],
           mapping: {
@@ -372,6 +396,7 @@ export default {
           icon: 'reload',
           label: 'label.reset.vpn.connection',
           message: 'message.reset.vpn.connection',
+          docHelp: 'adminguide/networking_and_traffic.html#restarting-and-removing-a-vpn-connection',
           dataView: true
         },
         {
@@ -379,6 +404,7 @@ export default {
           icon: 'delete',
           label: 'label.delete.vpn.connection',
           message: 'message.delete.vpn.connection',
+          docHelp: 'adminguide/networking_and_traffic.html#restarting-and-removing-a-vpn-connection',
           dataView: true
         }
       ]
@@ -387,6 +413,7 @@ export default {
       name: 'acllist',
       title: 'label.network.acl.lists',
       icon: 'bars',
+      docHelp: 'adminguide/networking_and_traffic.html#configuring-network-access-control-list',
       hidden: true,
       permission: ['listNetworkACLLists'],
       columns: ['name', 'description', 'id'],
@@ -404,6 +431,7 @@ export default {
           api: 'createNetworkACLList',
           icon: 'plus',
           label: 'label.add.acl.list',
+          docHelp: 'adminguide/networking_and_traffic.html#creating-acl-lists',
           listView: true,
           args: ['name', 'description', 'vpcid']
         },
@@ -426,6 +454,7 @@ export default {
     {
       name: 'ilb',
       title: 'label.internal.lb',
+      docHelp: 'adminguide/networking_and_traffic.html#load-balancing-across-tiers',
       icon: 'share-alt',
       hidden: true,
       permission: ['listLoadBalancers'],
@@ -444,6 +473,7 @@ export default {
           api: 'createLoadBalancer',
           icon: 'plus',
           label: 'label.add.internal.lb',
+          docHelp: 'adminguide/networking_and_traffic.html#creating-an-internal-lb-rule',
           listView: true,
           args: ['name', 'description', 'sourceipaddress', 'sourceport', 'instanceport', 'algorithm', 'networkid', 'sourceipaddressnetworkid', 'scheme'],
           mapping: {
@@ -528,6 +558,7 @@ export default {
           api: 'createVpnCustomerGateway',
           icon: 'plus',
           label: 'label.add.vpn.customer.gateway',
+          docHelp: 'adminguide/networking_and_traffic.html#creating-and-updating-a-vpn-customer-gateway',
           listView: true,
           popup: true,
           component: () => import('@/views/network/CreateVpnCustomerGateway.vue')
@@ -536,6 +567,7 @@ export default {
           api: 'updateVpnCustomerGateway',
           icon: 'edit',
           label: 'label.edit',
+          docHelp: 'adminguide/networking_and_traffic.html#updating-and-removing-a-vpn-customer-gateway',
           dataView: true,
           args: ['name', 'gateway', 'cidrlist', 'ipsecpsk', 'ikepolicy', 'ikelifetime', 'esppolicy', 'esplifetime', 'dpd', 'forceencap']
         },
@@ -544,6 +576,7 @@ export default {
           icon: 'delete',
           label: 'label.delete.vpn.customer.gateway',
           message: 'message.delete.vpn.customer.gateway',
+          docHelp: 'adminguide/networking_and_traffic.html#updating-and-removing-a-vpn-customer-gateway',
           dataView: true
         }
       ]

@@ -17,14 +17,13 @@
 
 import Vue from 'vue'
 import axios from 'axios'
-import config from '@/config/settings'
+import router from '@/router'
 import store from '@/store'
 import { VueAxios } from './axios'
 import notification from 'ant-design-vue/es/notification'
 import { CURRENT_PROJECT } from '@/store/mutation-types'
 
 const service = axios.create({
-  baseURL: config.apiBase,
   timeout: 600000
 })
 
@@ -53,7 +52,7 @@ const err = (error) => {
     }
     if (response.status === 404) {
       notification.error({ message: 'Not Found', description: 'Resource not found' })
-      this.$router.push({ path: '/exception/404' })
+      router.push({ path: '/exception/404' })
     }
   }
   if (error.isAxiosError && !error.response) {

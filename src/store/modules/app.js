@@ -31,6 +31,7 @@ import {
 
 const app = {
   state: {
+    version: process.env.PACKAGE_VERSION || 'master',
     sidebar: true,
     device: 'desktop',
     theme: '',
@@ -41,7 +42,8 @@ const app = {
     autoHideHeader: false,
     color: null,
     inverted: true,
-    multiTab: true
+    multiTab: true,
+    metrics: false
   },
   mutations: {
     SET_SIDEBAR_TYPE: (state, type) => {
@@ -90,6 +92,9 @@ const app = {
     TOGGLE_MULTI_TAB: (state, bool) => {
       Vue.ls.set(DEFAULT_MULTI_TAB, bool)
       state.multiTab = bool
+    },
+    SET_METRICS: (state, bool) => {
+      state.metrics = bool
     }
   },
   actions: {
@@ -131,6 +136,9 @@ const app = {
     },
     ToggleMultiTab ({ commit }, bool) {
       commit('TOGGLE_MULTI_TAB', bool)
+    },
+    SetMetrics ({ commit }, bool) {
+      commit('SET_METRICS', bool)
     }
   }
 }

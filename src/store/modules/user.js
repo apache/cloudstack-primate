@@ -89,7 +89,6 @@ const user = {
           Cookies.set('account', result.account, { expires: 1 })
           Cookies.set('domainid', result.domainid, { expires: 1 })
           Cookies.set('role', result.type, { expires: 1 })
-          Cookies.set('sessionkey', result.sessionkey, { expires: 1 })
           Cookies.set('timezone', result.timezone, { expires: 1 })
           Cookies.set('timezoneoffset', result.timezoneoffset, { expires: 1 })
           Cookies.set('userfullname', result.firstname + ' ' + result.lastname, { expires: 1 })
@@ -128,10 +127,6 @@ const user = {
           // This will show the dashboard and some common navigation sections
           // to most users/roles, while we complete API autodiscovery
           const apis = {}
-          apis.listVirtualMachinesMetrics = {}
-          apis.listVolumesMetrics = {}
-          apis.listNetworks = {}
-          apis.listTemplates = {}
           apis.listUsers = {}
           apis.listAccounts = {}
           commit('SET_APIS', apis)
@@ -160,7 +155,7 @@ const user = {
           })
         }
 
-        api('listUsers').then(response => {
+        api('listUsers', { username: Cookies.get('username'), listall: true }).then(response => {
           const result = response.listusersresponse.user[0]
           commit('SET_INFO', result)
           commit('SET_NAME', result.firstname + ' ' + result.lastname)
