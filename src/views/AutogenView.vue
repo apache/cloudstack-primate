@@ -898,6 +898,9 @@ export default {
       this.pageSize = pageSize
       this.fetchData()
     },
+    changeResource (resource) {
+      this.resource = resource
+    },
     start () {
       this.loading = true
       this.fetchData()
