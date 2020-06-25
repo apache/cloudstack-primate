@@ -14,6 +14,7 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
+import store from '@/store'
 
 export default {
   name: 'imagestore',
@@ -21,8 +22,20 @@ export default {
   icon: 'picture',
   docHelp: 'adminguide/storage.html#secondary-storage',
   permission: ['listImageStores'],
-  columns: ['name', 'url', 'protocol', 'scope', 'zonename', 'readonly'],
-  details: ['name', 'id', 'url', 'protocol', 'provider', 'scope', 'zonename', 'readonly'],
+  columns: () => {
+    var fields = ['name', 'url', 'protocol', 'scope', 'zonename']
+    if (store.getters.apis.listImageStores.params.filter(x => x.name === 'readonly').length > 0) {
+      fields.push('readonly')
+    }
+    return fields
+  },
+  details: () => {
+    var fields = ['name', 'id', 'url', 'protocol', 'provider', 'scope', 'zonename']
+    if (store.getters.apis.listImageStores.params.filter(x => x.name === 'readonly').length > 0) {
+      fields.push('readonly')
+    }
+    return fields
+  },
   tabs: [{
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')

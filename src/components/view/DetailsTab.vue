@@ -18,7 +18,7 @@
 <template>
   <a-list
     size="small"
-    :dataSource="$route.meta.details">
+    :dataSource="fetchDetails()">
     <a-list-item slot="renderItem" slot-scope="item" v-if="item in resource">
       <div>
         <strong>{{ item === 'service' ? $t('label.supportedservices') : $t('label.' + String(item).toLowerCase()) }}</strong>
@@ -81,6 +81,15 @@ export default {
   watch: {
     $route () {
       this.dedicatedSectionActive = this.dedicatedRoutes.includes(this.$route.meta.name)
+    }
+  },
+  methods: {
+    fetchDetails () {
+      var details = this.$route.meta.details
+      if (typeof details === 'function') {
+        details = details()
+      }
+      return details
     }
   }
 }

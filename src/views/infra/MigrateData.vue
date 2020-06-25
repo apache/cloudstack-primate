@@ -27,7 +27,7 @@
               rules: [
                 {
                   required: true,
-                  message: 'Please select option',
+                  message: $t('message.error.select'),
                 }]
             }]"
             :loading="loading"
@@ -46,7 +46,7 @@
               rules: [
                 {
                   required: true,
-                  message: 'Please select Image Store(s) to which data is to be migrated to',
+                  message: $t('message.select.destination.image.stores'),
                 }]
             }]"
             mode="multiple"
@@ -66,7 +66,7 @@
               rules: [
                 {
                   required: true,
-                  message: 'Please select a migration Policy',
+                  message: $t('message.select.migration.policy'),
                 }]
             }]"
             :loading="loading"
@@ -107,6 +107,7 @@ export default {
       api('listImageStores').then(json => {
         this.imageStores = json.listimagestoresresponse.imagestore || null
         this.selectedStore = this.imageStores[0].id || ''
+      }).finally(() => {
         this.loading = false
       })
     },
@@ -130,18 +131,17 @@ export default {
         }
 
         const title = 'Data Migration'
+        this.loading = true
         api('migrateSecondaryStorageData', params).then(response => {
-          const hasJobId = this.checkForAddAsyncJob(response, title)
-          if (hasJobId) {
-            this.fetchImageStores()
-          }
+          this.checkForAddAsyncJob(response, title)
         }).catch(error => {
-          // show error
           this.$notification.error({
             message: 'Request Failed',
             description: error.response.headers['x-description']
           })
         }).finally(() => {
+          this.parentFetchData()
+          this.loading = false
           this.closeAction()
         })
       })
