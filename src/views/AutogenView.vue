@@ -623,6 +623,9 @@ export default {
 
       if (filters && Object.keys(filters).length > 0) {
         this.paramsFilters = filters
+        if ('searchQuery' in this.paramsFilters) {
+          this.searchQuery = this.paramsFilters.searchQuery
+        }
         this.page = 1
       }
 

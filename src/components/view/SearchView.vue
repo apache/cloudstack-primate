@@ -34,6 +34,7 @@
         :disabled="activeFilter"
         class="input-search"
         placeholder="Search"
+        v-model="searchQuery"
         @search="onSearch">
         <a-popover
           placement="bottomRight"
@@ -212,7 +213,13 @@ export default {
         if (item === 'account' && !('addAccountToProject' in this.$store.getters.apis || 'createAccount' in this.$store.getters.apis)) {
           return true
         }
-        if (['zoneid', 'domainid', 'state', 'level'].includes(item)) {
+        if (item === 'podid' && !('listPods' in this.$store.getters.apis)) {
+          return true
+        }
+        if (item === 'clusterid' && !('listClusters' in this.$store.getters.apis)) {
+          return true
+        }
+        if (['zoneid', 'domainid', 'state', 'level', 'clusterid', 'podid'].includes(item)) {
           type = 'list'
         } else if (item === 'tags') {
           type = 'tag'
@@ -230,6 +237,8 @@ export default {
       const promises = []
       let zoneIndex = -1
       let domainIndex = -1
+      let podIndex = -1
+      let clusterIndex = -1
 
       if (arrayField.includes('state')) {
         const stateIndex = this.fields.findIndex(item => item.name === 'state')
@@ -257,6 +266,18 @@ export default {
         promises.push(await this.fetchDomains())
       }
 
+      if (arrayField.includes('podid')) {
+        podIndex = this.fields.findIndex(item => item.name === 'podid')
+        this.fields[podIndex].loading = true
+        promises.push(await this.fetchPods())
+      }
+
+      if (arrayField.includes('clusterid')) {
+        clusterIndex = this.fields.findIndex(item => item.name === 'clusterid')
+        this.fields[clusterIndex].loading = true
+        promises.push(await this.fetchClusters())
+      }
+
       Promise.all(promises).then(response => {
         if (zoneIndex > -1) {
           const zones = response.filter(item => item.type === 'zoneid')
@@ -270,6 +291,19 @@ export default {
             this.fields[domainIndex].opts = domain[0].data
           }
         }
+        if (podIndex > -1) {
+          const pod = response.filter(item => item.type === 'podid')
+          if (pod && pod.length > 0) {
+            this.fields[podIndex].opts = pod[0].data
+          }
+        }
+        if (clusterIndex > -1) {
+          const cluster = response.filter(item => item.type === 'clusterid')
+          console.log(cluster)
+          if (cluster && cluster.length > 0) {
+            this.fields[clusterIndex].opts = cluster[0].data
+          }
+        }
         this.$forceUpdate()
       }).finally(() => {
         if (zoneIndex > -1) {
@@ -277,6 +311,12 @@ export default {
         }
         if (domainIndex > -1) {
           this.fields[domainIndex].loading = false
+        }
+        if (podIndex > -1) {
+          this.fields[podIndex].loading = false
+        }
+        if (clusterIndex > -1) {
+          this.fields[clusterIndex].loading = false
         }
       })
     },
@@ -306,28 +346,54 @@ export default {
         })
       })
     },
+    fetchPods () {
+      return new Promise((resolve, reject) => {
+        api('listPods', { listAll: true }).then(json => {
+          const pods = json.listpodsresponse.pod
+          resolve({
+            type: 'podid',
+            data: pods
+          })
+        }).catch(error => {
+          reject(error.response.headers['x-description'])
+        })
+      })
+    },
+    fetchClusters () {
+      return new Promise((resolve, reject) => {
+        api('listClusters', { listAll: true }).then(json => {
+          const clusters = json.listclustersresponse.cluster
+          resolve({
+            type: 'clusterid',
+            data: clusters
+          })
+        }).catch(error => {
+          reject(error.response.headers['x-description'])
+        })
+      })
+    },
     fetchState () {
       const state = []
       if (this.apiName.indexOf('listVolumes') > -1) {
         state.push({
           id: 'Allocated',
-          name: 'Allocated'
+          name: 'label.allocated'
         })
         state.push({
           id: 'Ready',
-          name: 'Ready'
+          name: 'label.ready'
         })
         state.push({
           id: 'Destroy',
-          name: 'Destroy'
+          name: 'label.destroy'
         })
         state.push({
           id: 'Expunging',
-          name: 'Expunging'
+          name: 'label.expunging'
         })
         state.push({
           id: 'Expunged',
-          name: 'Expunged'
+          name: 'label.expunged'
         })
       }
       return state
@@ -336,15 +402,15 @@ export default {
       const levels = []
       levels.push({
         id: 'INFO',
-        name: 'INFO'
+        name: 'label.info.upper'
       })
       levels.push({
         id: 'WARN',
-        name: 'WARN'
+        name: 'label.warn.upper'
       })
       levels.push({
         id: 'ERROR',
-        name: 'ERROR'
+        name: 'label.error.upper'
       })
       return levels
     },
@@ -361,6 +427,8 @@ export default {
       })
       this.filtered = false
       this.tags = []
+      this.searchQuery = null
+      this.paramsFilter.searchQuery = null
       this.parentFilter(this.paramsFilter)
     },
     onClickOutSide () {
