@@ -24,6 +24,7 @@ export default {
     {
       name: 'computeoffering',
       title: 'label.compute.offerings',
+      docHelp: 'adminguide/service_offerings.html#compute-and-disk-service-offerings',
       icon: 'cloud',
       permission: ['listServiceOfferings', 'listDomains'],
       params: { isrecursive: 'true' },
@@ -37,27 +38,32 @@ export default {
       actions: [{
         api: 'createServiceOffering',
         icon: 'plus',
-        label: 'Add Offering',
+        label: 'label.add.compute.offering',
+        docHelp: 'adminguide/service_offerings.html#creating-a-new-compute-offering',
         listView: true,
         popup: true,
         component: () => import('@/views/offering/AddComputeOffering.vue')
       }, {
         api: 'updateServiceOffering',
         icon: 'edit',
-        label: 'Edit Offering',
+        label: 'label.edit',
+        docHelp: 'adminguide/service_offerings.html#modifying-or-deleting-a-service-offering',
         dataView: true,
         args: ['name', 'displaytext']
       }, {
         api: 'updateServiceOffering',
         icon: 'lock',
-        label: 'Update Offering Access',
+        label: 'label.action.update.offering.access',
+        docHelp: 'adminguide/service_offerings.html#modifying-or-deleting-a-service-offering',
         dataView: true,
         popup: true,
         component: () => import('@/views/offering/UpdateOfferingAccess.vue')
       }, {
         api: 'deleteServiceOffering',
         icon: 'delete',
-        label: 'Delete Offering',
+        label: 'label.action.delete.service.offering',
+        message: 'message.action.delete.service.offering',
+        docHelp: 'adminguide/service_offerings.html#modifying-or-deleting-a-service-offering',
         dataView: true
       }]
     },
@@ -65,6 +71,7 @@ export default {
       name: 'systemoffering',
       title: 'label.system.offerings',
       icon: 'setting',
+      docHelp: 'adminguide/service_offerings.html#system-service-offerings',
       permission: ['listServiceOfferings', 'listInfrastructure'],
       params: { issystem: 'true', isrecursive: 'true' },
       columns: ['name', 'systemvmtype', 'cpunumber', 'cpuspeed', 'memory', 'storagetype', 'tags', 'order'],
@@ -72,7 +79,8 @@ export default {
       actions: [{
         api: 'createServiceOffering',
         icon: 'plus',
-        label: 'Add Offering',
+        label: 'label.add.system.service.offering',
+        docHelp: 'adminguide/service_offerings.html#creating-a-new-system-service-offering',
         listView: true,
         params: { issystem: 'true' },
         popup: true,
@@ -80,14 +88,17 @@ export default {
       }, {
         api: 'updateServiceOffering',
         icon: 'edit',
-        label: 'Edit Offering',
+        label: 'label.edit',
         dataView: true,
         params: { issystem: 'true' },
+        docHelp: 'adminguide/service_offerings.html#modifying-or-deleting-a-service-offering',
         args: ['name', 'displaytext']
       }, {
         api: 'deleteServiceOffering',
         icon: 'delete',
-        label: 'Delete Offering',
+        label: 'label.action.delete.system.service.offering',
+        message: 'message.action.delete.system.service.offering',
+        docHelp: 'adminguide/service_offerings.html#modifying-or-deleting-a-service-offering',
         dataView: true,
         params: { issystem: 'true' }
       }]
@@ -96,6 +107,7 @@ export default {
       name: 'diskoffering',
       title: 'label.disk.offerings',
       icon: 'hdd',
+      docHelp: 'adminguide/service_offerings.html#compute-and-disk-service-offerings',
       permission: ['listDiskOfferings', 'listDomains'],
       params: { isrecursive: 'true' },
       columns: ['name', 'displaytext', 'disksize', 'tags', 'domain', 'zone', 'order'],
@@ -108,27 +120,32 @@ export default {
       actions: [{
         api: 'createDiskOffering',
         icon: 'plus',
-        label: 'Add Offering',
+        label: 'label.add.disk.offering',
+        docHelp: 'adminguide/service_offerings.html#creating-a-new-disk-offering',
         listView: true,
         popup: true,
         component: () => import('@/views/offering/AddDiskOffering.vue')
       }, {
         api: 'updateDiskOffering',
         icon: 'edit',
-        label: 'Edit Offering',
+        label: 'label.edit',
+        docHelp: 'adminguide/service_offerings.html#modifying-or-deleting-a-service-offering',
         dataView: true,
         args: ['name', 'displaytext']
       }, {
         api: 'updateDiskOffering',
         icon: 'lock',
-        label: 'Update Offering Access',
+        label: 'label.action.update.offering.access',
+        docHelp: 'adminguide/service_offerings.html#modifying-or-deleting-a-service-offering',
         dataView: true,
         popup: true,
         component: () => import('@/views/offering/UpdateOfferingAccess.vue')
       }, {
         api: 'deleteDiskOffering',
         icon: 'delete',
-        label: 'Delete Offering',
+        label: 'label.action.delete.disk.offering',
+        message: 'message.action.delete.disk.offering',
+        docHelp: 'adminguide/service_offerings.html#modifying-or-deleting-a-service-offering',
         dataView: true
       }]
     },
@@ -136,20 +153,24 @@ export default {
       name: 'backupoffering',
       title: 'label.backup.offerings',
       icon: 'cloud-upload',
+      docHelp: 'adminguide/virtual_machines.html#backup-offerings',
       permission: ['listBackupOfferings', 'listInfrastructure'],
       columns: ['name', 'description', 'zoneid'],
       details: ['name', 'id', 'description', 'externalid', 'zone', 'created'],
       actions: [{
         api: 'importBackupOffering',
         icon: 'plus',
-        label: 'Import Offering',
+        label: 'label.import.backup.offering',
+        docHelp: 'adminguide/virtual_machines.html#importing-backup-offerings',
         listView: true,
         popup: true,
         component: () => import('@/views/offering/ImportBackupOffering.vue')
       }, {
         api: 'deleteBackupOffering',
         icon: 'delete',
-        label: 'Delete Offering',
+        label: 'label.action.delete.backup.offering',
+        message: 'message.action.delete.backup.offering',
+        docHelp: 'adminguide/service_offerings.html#modifying-or-deleting-a-service-offering',
         dataView: true
       }]
     },
@@ -157,6 +178,7 @@ export default {
       name: 'networkoffering',
       title: 'label.network.offerings',
       icon: 'wifi',
+      docHelp: 'adminguide/networking.html#network-offerings',
       permission: ['listNetworkOfferings', 'listInfrastructure'],
       params: { isrecursive: 'true' },
       columns: ['name', 'state', 'guestiptype', 'traffictype', 'networkrate', 'tags', 'domain', 'zone', 'order'],
@@ -164,14 +186,16 @@ export default {
       actions: [{
         api: 'createNetworkOffering',
         icon: 'plus',
-        label: 'Add Offering',
+        label: 'label.add.network.offering',
+        docHelp: 'adminguide/networking.html#creating-a-new-network-offering',
         listView: true,
         popup: true,
         component: () => import('@/views/offering/AddNetworkOffering.vue')
       }, {
         api: 'updateNetworkOffering',
         icon: 'edit',
-        label: 'Edit Offering',
+        label: 'label.edit',
+        docHelp: 'adminguide/service_offerings.html#modifying-or-deleting-a-service-offering',
         dataView: true,
         args: ['name', 'displaytext', 'availability'],
         mapping: {
@@ -182,7 +206,8 @@ export default {
       }, {
         api: 'updateNetworkOffering',
         icon: 'play-circle',
-        label: 'Enable Offering',
+        label: 'label.enable.network.offering',
+        message: 'message.confirm.enable.network.offering',
         dataView: true,
         show: (record) => { return record.state === 'Disabled' },
         args: ['state'],
@@ -194,7 +219,8 @@ export default {
       }, {
         api: 'updateNetworkOffering',
         icon: 'pause-circle',
-        label: 'Disable Offering',
+        label: 'label.disable.network.offering',
+        message: 'message.confirm.disable.network.offering',
         dataView: true,
         show: (record) => { return record.state === 'Enabled' },
         args: ['state'],
@@ -206,14 +232,17 @@ export default {
       }, {
         api: 'updateNetworkOffering',
         icon: 'lock',
-        label: 'Update Offering Access',
+        label: 'label.action.update.offering.access',
+        docHelp: 'adminguide/service_offerings.html#modifying-or-deleting-a-service-offering',
         dataView: true,
         popup: true,
         component: () => import('@/views/offering/UpdateOfferingAccess.vue')
       }, {
         api: 'deleteNetworkOffering',
         icon: 'delete',
-        label: 'Delete Offering',
+        label: 'label.remove.network.offering',
+        message: 'message.confirm.remove.network.offering',
+        docHelp: 'adminguide/service_offerings.html#modifying-or-deleting-a-service-offering',
         dataView: true
       }]
     },
@@ -234,20 +263,21 @@ export default {
       actions: [{
         api: 'createVPCOffering',
         icon: 'plus',
-        label: 'Add Offering',
+        label: 'label.add.vpc.offering',
         listView: true,
         popup: true,
         component: () => import('@/views/offering/AddVpcOffering.vue')
       }, {
         api: 'updateVPCOffering',
         icon: 'edit',
-        label: 'Edit Offering',
+        label: 'label.edit',
         dataView: true,
         args: ['name', 'displaytext']
       }, {
         api: 'updateVPCOffering',
         icon: 'play-circle',
-        label: 'Enable Offering',
+        label: 'label.enable.vpc.offering',
+        message: 'message.confirm.enable.vpc.offering',
         dataView: true,
         show: (record) => { return record.state === 'Disabled' },
         args: ['state'],
@@ -259,7 +289,8 @@ export default {
       }, {
         api: 'updateVPCOffering',
         icon: 'pause-circle',
-        label: 'Disable Offering',
+        label: 'label.disable.vpc.offering',
+        message: 'message.confirm.disable.vpc.offering',
         dataView: true,
         show: (record) => { return record.state === 'Enabled' },
         args: ['state'],
@@ -271,14 +302,15 @@ export default {
       }, {
         api: 'updateVPCOffering',
         icon: 'lock',
-        label: 'Update Offering Access',
+        label: 'label.action.update.offering.access',
         dataView: true,
         popup: true,
         component: () => import('@/views/offering/UpdateOfferingAccess.vue')
       }, {
         api: 'deleteVPCOffering',
         icon: 'delete',
-        label: 'Delete Offering',
+        label: 'label.remove.vpc.offering',
+        message: 'message.confirm.remove.vpc.offering',
         dataView: true
       }]
     }

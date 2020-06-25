@@ -43,7 +43,7 @@
                 rules: [
                   {
                     required: true,
-                    message: 'Please select option'
+                    message: `${this.$t('message.error.select')}`
                   }
                 ]
               }]"
@@ -86,7 +86,7 @@
           <a-form-item :label="$t('label.bypassvlanoverlapcheck')">
             <a-switch v-decorator="['bypassvlanoverlapcheck']" />
           </a-form-item>
-          <a-form-item :label="$t('label.isolatedpvlantype')">
+          <a-form-item :label="$t('label.isolatedpvlantype')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
             <a-radio-group
               v-decorator="['isolatedpvlantype', {
                 initialValue: this.isolatePvlanType
@@ -100,17 +100,17 @@
                 {{ $t('label.community') }}
               </a-radio-button>
               <a-radio-button value="isolated">
-                {{ $t('label.isolated') }}
+                {{ $t('label.secondary.isolated.vlan.type.isolated') }}
               </a-radio-button>
               <a-radio-button value="promiscuous">
-                {{ $t('label.promiscuous') }}
+                {{ $t('label.secondary.isolated.vlan.type.promiscuous') }}
               </a-radio-button>
             </a-radio-group>
           </a-form-item>
-          <a-form-item :label="$t('label.isolatedpvlan')" v-if="this.isolatePvlanType=='community' || this.isolatePvlanType=='isolated'">
+          <a-form-item :label="$t('label.isolatedpvlanid')" v-if="this.isolatePvlanType=='community' || this.isolatePvlanType=='isolated'">
             <a-input
               v-decorator="['isolatedpvlan', {}]"
-              :placeholder="this.$t('label.isolatedpvlan')"/>
+              :placeholder="this.$t('label.isolatedpvlanid')"/>
           </a-form-item>
           <a-form-item :label="$t('label.scope')">
             <a-radio-group
@@ -139,7 +139,7 @@
                 rules: [
                   {
                     required: true,
-                    message: 'Please select option'
+                    message: `${this.$t('message.error.select')}`
                   }
                 ]
               }]"
@@ -170,7 +170,7 @@
                 rules: [
                   {
                     required: true,
-                    message: 'Please select option'
+                    message: `${this.$t('message.error.select')}`
                   }
                 ]
               }]"
@@ -193,7 +193,7 @@
                 rules: [
                   {
                     required: true,
-                    message: 'Please select option'
+                    message: `${this.$t('message.error.select')}`
                   }
                 ]
               }]"
@@ -589,11 +589,11 @@ export default {
         if (this.isValidValueForKey(values, 'bypassvlanoverlapcheck')) {
           params.bypassvlanoverlapcheck = values.bypassvlanoverlapcheck
         }
-        if (this.isValidValueForKey(values, 'isolatedpvlantype')) {
+        if (this.isValidValueForKey(values, 'isolatedpvlantype') && values.isolatedpvlantype !== 'none') {
           params.isolatedpvlantype = values.isolatedpvlantype
-        }
-        if (this.isValidValueForKey(values, 'isolatedpvlan')) {
-          params.isolatedpvlan = values.isolatedpvlan
+          if (this.isValidValueForKey(values, 'isolatedpvlan')) {
+            params.isolatedpvlan = values.isolatedpvlan
+          }
         }
         if (this.scopeType !== 'all') {
           params.domainid = this.selectedDomain.id

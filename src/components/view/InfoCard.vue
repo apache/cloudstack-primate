@@ -43,6 +43,9 @@
               <a-tag v-if="resource.type">
                 {{ resource.type }}
               </a-tag>
+              <a-tag v-if="resource.issourcenat">
+                {{ $t('label.issourcenat') }}
+              </a-tag>
               <a-tag v-if="resource.broadcasturi">
                 {{ resource.broadcasturi }}
               </a-tag>
@@ -102,6 +105,7 @@
                 icon="barcode"
                 type="dashed"
                 size="small"
+                @click="$message.success('Copied to clipboard')"
                 v-clipboard:copy="resource.id" />
             </a-tooltip>
             <span style="margin-left: 10px;">{{ resource.id }}</span>
@@ -495,13 +499,13 @@
               <template slot="title">
                 <span>Copy {{ $t('label.apikey') }}</span>
               </template>
-              <a-button shape="circle" type="dashed" size="small" v-clipboard:copy="resource.apikey">
+              <a-button shape="circle" type="dashed" size="small" @click="$message.success('Copied to clipboard')" v-clipboard:copy="resource.apikey">
                 <a-icon type="copy"/>
               </a-button>
             </a-tooltip>
           </strong>
           <div>
-            {{ resource.apikey }}
+            {{ resource.apikey.substring(0, 20) }}...
           </div>
         </div> <br/>
         <div class="user-keys">
@@ -512,13 +516,13 @@
               <template slot="title">
                 <span>Copy {{ $t('label.secretkey') }}</span>
               </template>
-              <a-button shape="circle" type="dashed" size="small" v-clipboard:copy="resource.secretkey">
+              <a-button shape="circle" type="dashed" size="small" @click="$message.success('Copied to clipboard')" v-clipboard:copy="resource.secretkey">
                 <a-icon type="copy"/>
               </a-button>
             </a-tooltip>
           </strong>
           <div>
-            {{ resource.secretkey }}
+            {{ resource.secretkey.substring(0, 20) }}...
           </div>
         </div>
       </div>
@@ -528,7 +532,7 @@
         <div class="title">{{ $t('label.tags') }}</div>
         <div>
           <template v-for="(tag, index) in tags">
-            <a-tag :key="index" :closable="true" :afterClose="() => handleDeleteTag(tag)">
+            <a-tag :key="index" :closable="'deleteTags' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
               {{ tag.key }} = {{ tag.value }}
             </a-tag>
           </template>
@@ -540,9 +544,9 @@
               @blur="handleInputConfirm"
               @keyup.enter="handleInputConfirm"
               compact>
-              <a-input ref="input" :value="inputKey" @change="handleKeyChange" style="width: 100px; text-align: center" placeholder="Key" />
+              <a-input ref="input" :value="inputKey" @change="handleKeyChange" style="width: 30%; text-align: center" placeholder="Key" />
               <a-input style=" width: 30px; border-left: 0; pointer-events: none; backgroundColor: #fff" placeholder="=" disabled />
-              <a-input :value="inputValue" @change="handleValueChange" style="width: 100px; text-align: center; border-left: 0" placeholder="Value" />
+              <a-input :value="inputValue" @change="handleValueChange" style="width: 30%; text-align: center; border-left: 0" placeholder="Value" />
               <a-button shape="circle" size="small" @click="handleInputConfirm">
                 <a-icon type="check"/>
               </a-button>
@@ -551,7 +555,7 @@
               </a-button>
             </a-input-group>
           </div>
-          <a-tag v-else @click="showInput" style="background: #fff; borderStyle: dashed;">
+          <a-tag @click="showInput" style="background: #fff; borderStyle: dashed;" v-else-if="'createTags' in $store.getters.apis">
             <a-icon type="plus" /> New Tag
           </a-tag>
         </div>

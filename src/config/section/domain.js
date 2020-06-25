@@ -19,10 +19,12 @@ export default {
   name: 'domain',
   title: 'label.domains',
   icon: 'block',
+  docHelp: 'adminguide/accounts.html#domains',
   permission: ['listDomains', 'listDomainChildren'],
   resourceType: 'Domain',
   columns: ['name', 'state', 'path', 'parentdomainname', 'level'],
   details: ['name', 'id', 'path', 'parentdomainname', 'level', 'networkdomain', 'iptotal', 'vmtotal', 'volumetotal', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit'],
+  component: () => import('@/views/iam/DomainView.vue'),
   related: [{
     name: 'account',
     title: 'label.accounts',
@@ -56,7 +58,7 @@ export default {
       icon: 'plus',
       label: 'label.add.domain',
       listView: true,
-      dataView: true,
+      dataView: false,
       args: ['parentdomainid', 'name', 'networkdomain', 'domainid'],
       mapping: {
         parentdomainid: {
@@ -76,6 +78,7 @@ export default {
       api: 'updateResourceCount',
       icon: 'sync',
       label: 'label.action.update.resource.count',
+      message: 'message.update.resource.count',
       listView: true,
       dataView: true,
       args: ['domainid'],
@@ -88,7 +91,8 @@ export default {
     {
       api: 'linkDomainToLdap',
       icon: 'link',
-      label: 'Link Domain to LDAP Group/OU',
+      label: 'label.link.domain.to.ldap',
+      docHelp: 'adminguide/accounts.html#using-an-ldap-server-for-user-authentication',
       listView: true,
       dataView: true,
       args: ['type', 'domainid', 'name', 'accounttype', 'admin'],
@@ -107,7 +111,7 @@ export default {
     {
       api: 'deleteDomain',
       icon: 'delete',
-      label: 'label.delete.domain',
+      label: 'label.action.delete.domain',
       listView: true,
       dataView: true,
       show: (record) => { return record.level !== 0 },

@@ -28,14 +28,15 @@
       <a-tab-pane :tab="$t('label.networks')" key="tier">
         <VpcTiersTab :resource="resource" :loading="loading" />
       </a-tab-pane>
-      <a-tab-pane tab="Public IP Addresses" key="ip" v-if="'listPublicIpAddresses' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.public.ips')" key="ip" v-if="'listPublicIpAddresses' in $store.getters.apis">
         <IpAddressesTab :resource="resource" :loading="loading" />
       </a-tab-pane>
-      <a-tab-pane tab="Network ACL Lists" key="acl" v-if="'listNetworkACLLists' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.network.acl.lists')" key="acl" v-if="'listNetworkACLLists' in $store.getters.apis">
         <a-button
           type="dashed"
           icon="plus"
           style="width: 100%"
+          :disabled="!('createNetworkACLList' in $store.getters.apis)"
           @click="() => handleOpenModals('networkAcl')">
           Add Network ACL List
         </a-button>
@@ -70,19 +71,20 @@
           @ok="handleNetworkAclFormSubmit">
           <a-form @submit.prevent="handleNetworkAclFormSubmit" :form="networkAclForm">
             <a-form-item :label="$t('label.add.list.name')">
-              <a-input v-decorator="['name', {rules: [{ required: true, message: 'Required' }]}]"></a-input>
+              <a-input v-decorator="['name', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"></a-input>
             </a-form-item>
             <a-form-item :label="$t('label.description')">
-              <a-input v-decorator="['description', {rules: [{ required: true, message: 'Required' }]}]"></a-input>
+              <a-input v-decorator="['description', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"></a-input>
             </a-form-item>
           </a-form>
         </a-modal>
       </a-tab-pane>
-      <a-tab-pane tab="Private Gateways" key="pgw" v-if="'listPrivateGateways' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.private.gateway')" key="pgw" v-if="'listPrivateGateways' in $store.getters.apis">
         <a-button
           type="dashed"
           icon="plus"
           style="width: 100%"
+          :disabled="!('createPrivateGateway' in $store.getters.apis)"
           @click="() => handleOpenModals('privateGateways')">Add Private Gateway</a-button>
         <a-table
           class="table"
@@ -125,25 +127,32 @@
               <a-form-item :label="$t('label.vlan')" :required="true">
                 <a-input
                   :placeholder="placeholders.vlan"
-                  v-decorator="['vlan', {rules: [{ required: true, message: 'Required' }]}]"
+                  v-decorator="['vlan', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"
                 ></a-input>
+              </a-form-item>
+              <a-form-item
+                :label="$t('label.bypassvlanoverlapcheck')"
+                v-if="$store.getters.apis.createPrivateGateway && $store.getters.apis.createPrivateGateway.params.filter(x => x.name === 'bypassvlanoverlapcheck').length > 0" >
+                <a-checkbox
+                  v-decorator="['bypassvlanoverlapcheck']"
+                ></a-checkbox>
               </a-form-item>
               <a-form-item :label="$t('label.publicip')" :required="true">
                 <a-input
                   :placeholder="placeholders.ipaddress"
-                  v-decorator="['ipaddress', {rules: [{ required: true, message: 'Required' }]}]"
+                  v-decorator="['ipaddress', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"
                 ></a-input>
               </a-form-item>
               <a-form-item :label="$t('label.gateway')" :required="true">
                 <a-input
                   :placeholder="placeholders.gateway"
-                  v-decorator="['gateway', {rules: [{ required: true, message: 'Required' }]}]"
+                  v-decorator="['gateway', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"
                 ></a-input>
               </a-form-item>
               <a-form-item :label="$t('label.netmask')" :required="true">
                 <a-input
                   :placeholder="placeholders.netmask"
-                  v-decorator="['netmask', {rules: [{ required: true, message: 'Required' }]}]"
+                  v-decorator="['netmask', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"
                 ></a-input>
               </a-form-item>
               <a-form-item :label="$t('label.sourcenat')">
@@ -160,12 +169,13 @@
           </a-spin>
         </a-modal>
       </a-tab-pane>
-      <a-tab-pane tab="VPN Gateway" key="vpngw" v-if="'listVpnGateways' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.vpn.gateway')" key="vpngw" v-if="'listVpnGateways' in $store.getters.apis">
         <a-button
           v-if="vpnGateways.length === 0"
           type="dashed"
           icon="plus"
           style="width: 100%"
+          :disabled="!('createVpnGateway' in $store.getters.apis)"
           @click="handleCreateVpnGateway">
           Create Site-to-Site VPN Gateway
         </a-button>
@@ -184,11 +194,12 @@
           </a-list-item>
         </a-list>
       </a-tab-pane>
-      <a-tab-pane tab="VPN Connections" key="vpnc" v-if="'listVpnConnections' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.vpn.connection')" key="vpnc" v-if="'listVpnConnections' in $store.getters.apis">
         <a-button
           type="dashed"
           icon="plus"
           style="width: 100%"
+          :disabled="!('createVpnConnection' in $store.getters.apis)"
           @click="handleOpenModals('vpnConnection')">
           Create Site-to-Site VPN Connection
         </a-button>
@@ -236,7 +247,7 @@
           </a-spin>
         </a-modal>
       </a-tab-pane>
-      <a-tab-pane tab="Virtual Routers" key="vr" v-if="'listRouters' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.virtual.routers')" key="vr" v-if="'listRouters' in $store.getters.apis">
         <RoutersTab :resource="resource" :loading="loading" />
       </a-tab-pane>
     </a-tabs>
@@ -523,8 +534,7 @@ export default {
         }
 
         const data = this.gatewayForm.getFieldsValue()
-
-        api('createPrivateGateway', {
+        const params = {
           sourcenatsupported: data.nat,
           physicalnetworkid: data.physicalnetwork,
           vpcid: this.resource.id,
@@ -533,7 +543,12 @@ export default {
           netmask: data.netmask,
           vlan: data.vlan,
           aclid: data.acl
-        }).then(response => {
+        }
+        if (data.bypassvlanoverlapcheck) {
+          params.bypassvlanoverlapcheck = data.bypassvlanoverlapcheck
+        }
+
+        api('createPrivateGateway', params).then(response => {
           this.$store.dispatch('AddAsyncJob', {
             title: `Successfully added Private Gateway`,
             jobid: response.createprivategatewayresponse.jobid,

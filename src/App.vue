@@ -16,11 +16,11 @@
 // under the License.
 
 <template>
-  <a-locale-provider :locale="locale">
+  <a-config-provider :locale="locale">
     <div id="app">
       <router-view/>
     </div>
-  </a-locale-provider>
+  </a-config-provider>
 </template>
 
 <script>
@@ -31,11 +31,13 @@ export default {
   mixins: [AppDeviceEnquire],
   data () {
     return {
-      locale: enUS
+      locale: enUS,
+      configs: {}
     }
   },
-  mounted () {
-
+  created () {
+    window.less.modifyVars(this.$config.theme)
+    console.log('config and theme applied')
   }
 }
 </script>

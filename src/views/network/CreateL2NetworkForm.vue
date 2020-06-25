@@ -43,7 +43,7 @@
                 rules: [
                   {
                     required: true,
-                    message: 'Please select option'
+                    message: `${this.$t('message.error.select')}`
                   }
                 ]
               }]"
@@ -82,7 +82,7 @@
                 rules: [
                   {
                     required: true,
-                    message: 'Please select option'
+                    message: `${this.$t('message.error.select')}`
                   }
                 ]
               }]"
@@ -108,6 +108,32 @@
           </a-form-item>
           <a-form-item :label="$t('label.bypassvlanoverlapcheck')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
             <a-switch v-decorator="['bypassvlanoverlapcheck']" />
+          </a-form-item>
+          <a-form-item :label="$t('label.isolatedpvlantype')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
+            <a-radio-group
+              v-decorator="['isolatedpvlantype', {
+                initialValue: this.isolatePvlanType
+              }]"
+              buttonStyle="solid"
+              @change="selected => { this.isolatePvlanType = selected.target.value }">
+              <a-radio-button value="none">
+                {{ $t('label.none') }}
+              </a-radio-button>
+              <a-radio-button value="community">
+                {{ $t('label.community') }}
+              </a-radio-button>
+              <a-radio-button value="isolated">
+                {{ $t('label.secondary.isolated.vlan.type.isolated') }}
+              </a-radio-button>
+              <a-radio-button value="promiscuous">
+                {{ $t('label.secondary.isolated.vlan.type.promiscuous') }}
+              </a-radio-button>
+            </a-radio-group>
+          </a-form-item>
+          <a-form-item :label="$t('label.isolatedpvlanid')" v-if="this.isolatePvlanType=='community' || this.isolatePvlanType=='isolated'">
+            <a-input
+              v-decorator="['isolatedpvlan', {}]"
+              :placeholder="this.$t('label.isolatedpvlanid')"/>
           </a-form-item>
           <a-form-item :label="$t('label.account')" v-if="this.accountVisible">
             <a-input
@@ -164,7 +190,8 @@ export default {
       networkOfferings: [],
       networkOfferingLoading: false,
       selectedNetworkOffering: {},
-      accountVisible: this.isAdminOrDomainAdmin()
+      accountVisible: this.isAdminOrDomainAdmin(),
+      isolatePvlanType: 'none'
     }
   },
   beforeCreate () {
@@ -321,6 +348,12 @@ export default {
           params.domainid = this.selectedDomain.id
           if (this.isValidTextValueForKey(values, 'account')) {
             params.account = values.account
+          }
+        }
+        if (this.isValidValueForKey(values, 'isolatedpvlantype') && values.isolatedpvlantype !== 'none') {
+          params.isolatedpvlantype = values.isolatedpvlantype
+          if (this.isValidValueForKey(values, 'isolatedpvlan')) {
+            params.isolatedpvlan = values.isolatedpvlan
           }
         }
         api('createNetwork', params).then(json => {
