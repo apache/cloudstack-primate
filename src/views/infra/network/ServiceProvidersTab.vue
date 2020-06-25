@@ -1038,7 +1038,7 @@ export default {
                   value: (record) => { return false }
                 }
               },
-              columns: ['hostname', 'zonename', 'state']
+              columns: ['name', 'hostname', 'zonename', 'state']
             }
           ]
         },
@@ -1088,7 +1088,7 @@ export default {
                   value: () => { return true }
                 }
               },
-              columns: ['hostname', 'zonename', 'state']
+              columns: ['name', 'hostname', 'zonename', 'state']
             }
           ]
         }

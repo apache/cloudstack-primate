@@ -28,6 +28,13 @@
       :rowKey="record => record.id || record.name || record.nvpdeviceid || record.resourceid"
       :pagination="false"
       :scroll="scrollable">
+      <template slot="name" slot-scope="text, record">
+        <span v-if="record.role==='VIRTUAL_ROUTER'">
+          <router-link :to="{ path: '/router' + '/' + record.id }" v-if="record.id">{{ text }}</router-link>
+          <label v-else>{{ text }}</label>
+        </span>
+        <span v-else>{{ text }}</span>
+      </template>
       <template slot="action" slot-scope="text, record">
         <a-tooltip placement="top">
           <template slot="title">
@@ -64,6 +71,12 @@
             @click="onDelete(record)"/>
         </a-tooltip>
       </template>
+      <template slot="status" slot-scope="text">
+        <status :text="text ? text : ''" displayText />
+      </template>
+      <template slot="state" slot-scope="text">
+        <status :text="text ? text : ''" displayText />
+      </template>
     </a-table>
     <a-pagination
       size="small"
@@ -82,9 +95,11 @@
 
 <script>
 import { api } from '@/api'
+import Status from '@/components/widgets/Status'
 
 export default {
   name: 'ProviderListView',
+  components: { Status },
   props: {
     title: {
       type: String,
