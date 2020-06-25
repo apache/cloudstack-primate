@@ -292,6 +292,7 @@
         :loading="loading"
         :columns="columns"
         :items="items"
+        :actions="actions"
         @refresh="this.fetchData" />
       <a-pagination
         class="row-element"
@@ -786,10 +787,11 @@ export default {
       e.preventDefault()
       this.form.validateFields((err, values) => {
         console.log(values)
+        const resource = this.currentAction.resource ? this.currentAction.resource : this.resource
         if (!err) {
           const params = {}
-          if ('id' in this.resource && this.currentAction.params.map(i => { return i.name }).includes('id')) {
-            params.id = this.resource.id
+          if ('id' in resource && this.currentAction.params.map(i => { return i.name }).includes('id')) {
+            params.id = resource.id
           }
           for (const key in values) {
             const input = values[key]
@@ -831,15 +833,15 @@ export default {
               if (!this.currentAction.mapping[key].value) {
                 continue
               }
-              params[key] = this.currentAction.mapping[key].value(this.resource, params)
+              params[key] = this.currentAction.mapping[key].value(resource, params)
             }
           }
 
           console.log(this.currentAction)
-          console.log(this.resource)
+          console.log(resource)
           console.log(params)
 
-          const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username || params.ipaddress || params.virtualmachinename || this.resource.name
+          const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username || params.ipaddress || params.virtualmachinename || resource.name
 
           var hasJobId = false
           this.actionLoading = true

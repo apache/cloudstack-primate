@@ -17,7 +17,7 @@
 
 <template>
   <a-table
-    size="small"
+    size="middle"
     :loading="loading"
     :columns="fetchColumns()"
     :dataSource="items"
@@ -60,13 +60,22 @@
     </div>
     -->
 
+    <p v-if="actions.length > 0" :slot="actions.length > 0 ? 'expandedRowRender' : ''" slot-scope="record">
+      {{ record.id }}
+      <action-button
+        size="default"
+        :actions="$route.meta.actions"
+        :dataView="true"
+        :resource="record"
+        @exec-action="$parent.execAction"/>
+    </p>
+
     <span slot="name" slot-scope="text, record">
       <div style="min-width: 120px">
         <span v-if="$route.path.startsWith('/project')" style="margin-right: 5px">
           <a-button type="dashed" size="small" shape="circle" icon="login" @click="changeProject(record)" />
         </span>
         <os-logo v-if="record.ostypename" :osName="record.ostypename" size="1x" style="margin-right: 5px" />
-        <console :resource="record" size="small" style="margin-right: 5px" />
 
         <span v-if="$route.path.startsWith('/globalsetting')">{{ text }}</span>
         <span v-else>
@@ -238,6 +247,7 @@ import Console from '@/components/widgets/Console'
 import OsLogo from '@/components/widgets/OsLogo'
 import Status from '@/components/widgets/Status'
 import InfoCard from '@/components/view/InfoCard'
+import ActionButton from '@/components/view/ActionButton'
 
 export default {
   name: 'ListView',
@@ -245,7 +255,8 @@ export default {
     Console,
     OsLogo,
     Status,
-    InfoCard
+    InfoCard,
+    ActionButton
   },
   props: {
     columns: {
@@ -259,6 +270,10 @@ export default {
     loading: {
       type: Boolean,
       default: false
+    },
+    actions: {
+      type: Array,
+      default: () => []
     }
   },
   inject: ['parentFetchData', 'parentToggleLoading'],

@@ -17,7 +17,7 @@
 
 <template>
   <span class="row-action-button">
-    <console :resource="resource" size="default" v-if="resource && resource.id && dataView" />
+    <console :resource="resource" :size="size" v-if="resource && resource.id && dataView" />
     <a-tooltip
       v-for="(action, actionIndex) in actions"
       :key="actionIndex"
@@ -39,6 +39,7 @@
           :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
           :shape="!dataView && action.icon === 'plus' ? 'round' : 'circle'"
           style="margin-left: 5px"
+          :size="size"
           @click="execAction(action)">
           <span v-if="!dataView && action.icon === 'plus'">
             {{ $t(action.label) }}
@@ -54,6 +55,7 @@
         :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
         :shape="!dataView && action.icon === 'plus' ? 'round' : 'circle'"
         style="margin-left: 5px"
+        :size="size"
         @click="execAction(action)">
         <span v-if="!dataView && action.icon === 'plus'">
           {{ $t(action.label) }}
@@ -106,6 +108,10 @@ export default {
     loading: {
       type: Boolean,
       default: false
+    },
+    size: {
+      type: String,
+      default: 'default'
     }
   },
   watch: {
