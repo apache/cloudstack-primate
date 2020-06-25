@@ -72,14 +72,14 @@
           <a-form-item
             v-for="(field, index) in currentAction.fieldParams"
             :key="index"
-            :label="$t(field.name)">
+            :label="$t('label.' + field.name)">
             <span v-if="field.name==='password'">
               <a-input-password
                 v-decorator="[field.name, {
                   rules: [
                     {
                       required: field.required,
-                      message: 'Please enter password'
+                      message: $t('message.error.required.input')
                     }
                   ]
                 }]"
@@ -90,7 +90,7 @@
                 v-decorator="[field.name, {
                   rules: [{
                     required: field.required,
-                    message: 'Please provide input'
+                    message: $t('message.error.required.input')
                   }]
                 }]"
                 :placeholder="field.description"
@@ -101,7 +101,7 @@
                 v-decorator="[field.name, {
                   rules: [{
                     required: field.required,
-                    message: 'Please select option'
+                    message: $t('message.error.select')
                   }]
                 }]"
                 :loading="field.loading"
@@ -117,7 +117,7 @@
                   rules: [
                     {
                       required: field.required,
-                      message: 'Please enter input'
+                      message: $t('message.error.required.input')
                     }
                   ]
                 }]"
@@ -221,7 +221,7 @@ export default {
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'listdevice',
+              title: 'label.list.device',
               api: 'listBaremetalDhcp',
               mapping: {
                 physicalnetworkid: {
@@ -285,7 +285,7 @@ export default {
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'listdevice',
+              title: 'label.list.device',
               api: 'listBaremetalPxeServers',
               mapping: {
                 physicalnetworkid: {
@@ -303,7 +303,7 @@ export default {
               api: 'addBigSwitchBcfDevice',
               listView: true,
               icon: 'plus',
-              label: 'label.add.BigSwitchBcf.device',
+              label: 'label.add.bigswitchbcf.device',
               args: ['hostname', 'username', 'password', 'nat']
             },
             {
@@ -344,7 +344,7 @@ export default {
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'listdevice',
+              title: 'label.list.device',
               api: 'listBigSwitchBcfDevices',
               mapping: {
                 physicalnetworkid: {
@@ -362,7 +362,7 @@ export default {
               api: 'addBrocadeVcsDevice',
               listView: true,
               icon: 'plus',
-              label: 'label.add.BigSwitchBcf.device',
+              label: 'label.add.bigswitchbcf.device',
               args: ['hostname', 'username', 'password']
             },
             {
@@ -403,7 +403,7 @@ export default {
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'listdevice',
+              title: 'label.list.device',
               api: 'listBrocadeVcsDevices',
               mapping: {
                 physicalnetworkid: {
@@ -534,7 +534,7 @@ export default {
               api: 'addF5LoadBalancer',
               listView: true,
               icon: 'plus',
-              label: 'label.add.F5.device',
+              label: 'label.add.f5.device',
               component: () => import('@/views/infra/network/providers/AddF5LoadBalancer.vue')
             },
             {
@@ -575,7 +575,7 @@ export default {
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'listdevice',
+              title: 'label.list.device',
               api: 'listF5LoadBalancers',
               mapping: {
                 physicalnetworkid: {
@@ -684,7 +684,7 @@ export default {
               api: 'addSrxFirewall',
               listView: true,
               icon: 'plus',
-              label: 'label.add.SRX.device',
+              label: 'label.add.srx.device',
               component: () => import('@/views/infra/network/providers/AddSrxFirewall.vue')
             },
             {
@@ -725,7 +725,7 @@ export default {
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'listdevice',
+              title: 'label.list.device',
               api: 'listSrxFirewalls',
               mapping: {
                 physicalnetworkid: {
@@ -743,7 +743,7 @@ export default {
               api: 'addNetscalerLoadBalancer',
               icon: 'plus',
               listView: true,
-              label: 'label.add.netScaler.device',
+              label: 'label.add.netscaler.device',
               component: () => import('@/views/infra/network/providers/AddNetscalerLoadBalancer.vue')
             },
             {
@@ -784,7 +784,7 @@ export default {
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'listdevice',
+              title: 'label.list.device',
               api: 'listNetscalerLoadBalancers',
               mapping: {
                 physicalnetworkid: {
@@ -802,7 +802,7 @@ export default {
               api: 'addNiciraNvpDevice',
               icon: 'plus',
               listView: true,
-              label: 'label.add.NiciraNvp.device',
+              label: 'label.add.niciranvp.device',
               component: () => import('@/views/infra/network/providers/AddNiciraNvpDevice.vue')
             },
             {
@@ -843,7 +843,7 @@ export default {
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'listdevice',
+              title: 'label.list.device',
               api: 'listNiciraNvpDevices',
               mapping: {
                 physicalnetworkid: {
@@ -861,7 +861,7 @@ export default {
               api: 'addOpenDaylightController',
               listView: true,
               icon: 'plus',
-              label: 'label.add.OpenDaylight.device',
+              label: 'label.add.opendaylight.device',
               args: ['url', 'username', 'password']
             },
             {
@@ -936,7 +936,7 @@ export default {
               api: 'addPaloAltoFirewall',
               listView: true,
               icon: 'plus',
-              label: 'label.add.PA.device',
+              label: 'label.add.pa.device',
               component: () => import('@/views/infra/network/providers/AddPaloAltoFirewall.vue')
             },
             {
@@ -977,7 +977,7 @@ export default {
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'listdevice',
+              title: 'label.list.device',
               api: 'listPaloAltoFirewalls',
               mapping: {
                 physicalnetworkid: {

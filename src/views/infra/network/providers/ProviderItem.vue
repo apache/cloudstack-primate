@@ -18,7 +18,7 @@
 <template>
   <div>
     <a-row :gutter="12">
-      <a-col :md="24" :lg="24" style="text-align: right">
+      <a-col :md="24" :lg="24" style="text-align: left">
         <action-button
           :actions="provider.actions"
           :resource="resource"
@@ -158,20 +158,23 @@ export default {
       params.pageSize = this.pageSize
 
       const columns = args.columns.map(col => {
+        let length = args.columns.length
         if (col === 'action') {
+          length--
           return {
-            title: this.$t(col),
+            title: this.$t('label.' + col),
             dataIndex: col,
             width: 80,
             fixed: 'right',
             scopedSlots: { customRender: col }
           }
         }
-        const width = 100 / (args.columns.length - 1) + '%'
+        const width = 100 / (length) + '%'
         return {
-          title: this.$t(col),
+          title: this.$t('label.' + col),
           width: width,
-          dataIndex: col
+          dataIndex: col,
+          scopedSlots: { customRender: col }
         }
       })
 

@@ -23,40 +23,40 @@
       @submit="handleSubmit">
       <a-row :gutter="12">
         <a-col :md="24" :lg="24">
-          <a-form-item :label="$t('ip')">
+          <a-form-item :label="$t('label.ip')">
             <a-input
               v-decorator="['ip', {
-                rules: [{ required: true, message: 'Please enter input' }]
+                rules: [{ required: true, message: $t('message.error.required.input') }]
               }]" />
           </a-form-item>
         </a-col>
       </a-row>
       <a-row :gutter="12">
         <a-col :md="24" :lg="24">
-          <a-form-item :label="$t('username')">
+          <a-form-item :label="$t('label.label.username')">
             <a-input
               v-decorator="['username', {
-                rules: [{ required: true, message: 'Please enter input' }]
+                rules: [{ required: true, message: $t('message.error.required.input') }]
               }]" />
           </a-form-item>
         </a-col>
       </a-row>
       <a-row :gutter="12">
         <a-col :md="24" :lg="24">
-          <a-form-item :label="$t('password')">
+          <a-form-item :label="$t('label.password')">
             <a-input-password
               v-decorator="['password', {
-                rules: [{ required: true, message: 'Please enter input' }]
+                rules: [{ required: true, message: $t('message.error.required.input') }]
               }]" />
           </a-form-item>
         </a-col>
       </a-row>
       <a-row :gutter="12">
         <a-col :md="24" :lg="24">
-          <a-form-item :label="$t('networkdevicetype')">
+          <a-form-item :label="$t('label.networkdevicetype')">
             <a-select
               v-decorator="['networkdevicetype', {
-                rules: [{ required: true, message: 'Please select option' }]
+                rules: [{ required: true, message: $t('message.error.select') }]
               }]">
               <a-select-option
                 v-for="opt in networkDeviceType"
@@ -67,7 +67,7 @@
       </a-row>
       <a-row :gutter="12">
         <a-col :md="24" :lg="24">
-          <a-form-item :label="$t('publicinterface')">
+          <a-form-item :label="$t('label.publicinterface')">
             <a-input
               v-decorator="['publicinterface']" />
           </a-form-item>
@@ -75,7 +75,7 @@
       </a-row>
       <a-row :gutter="12">
         <a-col :md="24" :lg="24">
-          <a-form-item :label="$t('privateinterface')">
+          <a-form-item :label="$t('label.privateinterface')">
             <a-input
               v-decorator="['privateinterface']" />
           </a-form-item>
@@ -83,14 +83,14 @@
       </a-row>
       <a-row :gutter="12">
         <a-col :md="12" :lg="12">
-          <a-form-item :label="$t('numretries')">
+          <a-form-item :label="$t('label.numretries')">
             <a-input-number
               style="width: 100%"
               v-decorator="['numretries', { initialValue: 2 }]" />
           </a-form-item>
         </a-col>
         <a-col :md="12" :lg="12">
-          <a-form-item :label="$t('dedicated')">
+          <a-form-item :label="$t('label.dedicated')">
             <a-switch
               v-decorator="['dedicated', { initialValue: false }]" />
           </a-form-item>
@@ -98,7 +98,7 @@
       </a-row>
       <a-row :gutter="12">
         <a-col :md="24" :lg="24">
-          <a-form-item :label="$t('capacity')">
+          <a-form-item :label="$t('label.capacity')">
             <a-input
               v-decorator="['capacity']" />
           </a-form-item>

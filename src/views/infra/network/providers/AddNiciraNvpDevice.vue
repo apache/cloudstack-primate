@@ -23,37 +23,37 @@
       @submit="handleSubmit">
       <a-row :gutter="12">
         <a-col :md="24" :lg="24">
-          <a-form-item :label="$t('ip')">
+          <a-form-item :label="$t('label.ip')">
             <a-input
               v-decorator="['ip', {
-                rules: [{ required: true, message: 'Please enter input' }]
+                rules: [{ required: true, message: $t('message.error.required.input') }]
               }]" />
           </a-form-item>
         </a-col>
       </a-row>
       <a-row :gutter="12">
         <a-col :md="24" :lg="24">
-          <a-form-item :label="$t('username')">
+          <a-form-item :label="$t('label.username')">
             <a-input
               v-decorator="['username', {
-                rules: [{ required: true, message: 'Please enter input' }]
+                rules: [{ required: true, message: $t('message.error.required.input') }]
               }]" />
           </a-form-item>
         </a-col>
       </a-row>
       <a-row :gutter="12">
         <a-col :md="24" :lg="24">
-          <a-form-item :label="$t('password')">
+          <a-form-item :label="$t('label.password')">
             <a-input-password
               v-decorator="['password', {
-                rules: [{ required: true, message: 'Please enter input' }]
+                rules: [{ required: true, message: $t('message.error.required.input') }]
               }]" />
           </a-form-item>
         </a-col>
       </a-row>
       <a-row :gutter="12">
         <a-col :md="24" :lg="24">
-          <a-form-item :label="$t('numretries')">
+          <a-form-item :label="$t('label.numretries')">
             <a-input-number
               style="width: 100%"
               v-decorator="['numretries', { initialValue: 2 }]" />
@@ -62,7 +62,7 @@
       </a-row>
       <a-row :gutter="12">
         <a-col :md="24" :lg="24">
-          <a-form-item :label="$t('transportzoneuuid')">
+          <a-form-item :label="$t('label.transportzoneuuid')">
             <a-input
               v-decorator="['transportzoneuuid']" />
           </a-form-item>
@@ -70,7 +70,7 @@
       </a-row>
       <a-row :gutter="12">
         <a-col :md="24" :lg="24">
-          <a-form-item :label="$t('l3gatewayserviceuuid')">
+          <a-form-item :label="$t('label.l3gatewayserviceuuid')">
             <a-input
               v-decorator="['l3gatewayserviceuuid']" />
           </a-form-item>
@@ -78,7 +78,7 @@
       </a-row>
       <a-row :gutter="12">
         <a-col :md="24" :lg="24">
-          <a-form-item :label="$t('l2gatewayserviceuuid')">
+          <a-form-item :label="$t('label.l2gatewayserviceuuid')">
             <a-input
               v-decorator="['l2gatewayserviceuuid']" />
           </a-form-item>

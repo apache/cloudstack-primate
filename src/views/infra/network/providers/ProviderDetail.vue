@@ -20,7 +20,7 @@
     <a-list size="small" :dataSource="details">
       <a-list-item slot="renderItem" slot-scope="item">
         <div>
-          <strong>{{ $t(item) }}</strong>
+          <strong>{{ $t(`label.${item}`) }}</strong>
           <br />
           <div v-if="item === 'servicelist'">
             {{ nsp[item] ? nsp[item].join(', ') : '' }}
