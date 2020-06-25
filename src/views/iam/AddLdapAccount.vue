@@ -107,9 +107,9 @@
             </a-form-item>
             <div v-if="'authorizeSamlSso' in $store.getters.apis">
               <a-form-item>
-                <a-checkbox v-decorator="['samlEnable']"> {{ $t('samlEnable') }} </a-checkbox>
+                <a-checkbox v-decorator="['samlEnable']"> {{ $t('label.samlenable') }} </a-checkbox>
               </a-form-item>
-              <a-form-item :label="$t('samlEntity')">
+              <a-form-item :label="$t('label.samlentity')">
                 <a-select
                   v-decorator="['samlEntity', {
                     initialValue: selectedIdp,
