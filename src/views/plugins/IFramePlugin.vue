@@ -15,13 +15,16 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import cloudian from '@/assets/icons/cloudian.svg?inline'
+<template>
+  <div>
+    <iframe :src="$route.meta.path" width="100%" frameBorder="0" style="height: 90vh">
+    </iframe>
+  </div>
+</template>
+
+<script>
 
 export default {
-  name: 'cloudian',
-  title: 'label.cloudian.storage',
-  docHelp: 'plugins/cloudian-connector.html',
-  icon: cloudian,
-  permission: ['cloudianSsoLogin'],
-  component: () => import('@/views/plugins/CloudianPlugin.vue')
+  name: 'IFramePlugin'
 }
+</script>

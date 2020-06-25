@@ -117,7 +117,7 @@
           <a
             v-if="currentAction.docHelp || $route.meta.docHelp"
             style="margin-left: 5px"
-            :href="docBase + '/' + (currentAction.docHelp || $route.meta.docHelp)"
+            :href="$config.docBase + '/' + (currentAction.docHelp || $route.meta.docHelp)"
             target="_blank">
             <a-icon type="question-circle-o"></a-icon>
           </a>
@@ -303,7 +303,6 @@
 import { api } from '@/api'
 import { mixinDevice } from '@/utils/mixin.js'
 import { genericCompare } from '@/utils/sort.js'
-import config from '@/config/settings'
 import store from '@/store'
 
 import Breadcrumb from '@/components/widgets/Breadcrumb'
@@ -340,7 +339,6 @@ export default {
   data () {
     return {
       apiName: '',
-      docBase: config.docBase,
       loading: false,
       actionLoading: false,
       columns: [],
@@ -374,6 +372,9 @@ export default {
   mounted () {
     this.currentPath = this.$route.fullPath
     this.fetchData()
+    if ('projectid' in this.$route.query) {
+      this.switchProject(this.$route.query.projectid)
+    }
   },
   beforeRouteUpdate (to, from, next) {
     this.currentPath = this.$route.fullPath
@@ -391,6 +392,9 @@ export default {
         this.itemCount = 0
         this.selectedFilter = ''
         this.fetchData()
+        if ('projectid' in to.query) {
+          this.switchProject(to.query.projectid)
+        }
       }
     },
     '$i18n.locale' (to, from) {
@@ -403,6 +407,21 @@ export default {
     }
   },
   methods: {
+    switchProject (projectId) {
+      if (!projectId || !projectId.length || projectId.length !== 36) {
+        return
+      }
+      api('listProjects', { id: projectId, listall: true, details: 'min' }).then(json => {
+        if (!json || !json.listprojectsresponse || !json.listprojectsresponse.project) return
+        const project = json.listprojectsresponse.project[0]
+        this.$store.dispatch('SetProject', project)
+        this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
+        this.$message.success(`Switched to "${project.name}"`)
+        const query = Object.assign({}, this.$route.query)
+        delete query.projectid
+        this.$router.replace({ query })
+      })
+    },
     fetchData (params = { listall: true }) {
       if (this.routeName !== this.$route.name) {
         this.routeName = this.$route.name
@@ -761,7 +780,7 @@ export default {
       this.currentAction.paramFields.map(field => {
         let fieldValue = null
         let fieldName = null
-        if (field.type === 'list' || field.name === 'account' || (this.currentAction.mapping && field.name in this.currentAction.mapping)) {
+        if (field.type === 'list' || field.name === 'account') {
           fieldName = field.name.replace('ids', 'name').replace('id', 'name')
         } else {
           fieldName = field.name

@@ -15,13 +15,43 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import cloudian from '@/assets/icons/cloudian.svg?inline'
+@import "~ant-design-vue/lib/style/themes/default.less";
 
-export default {
-  name: 'cloudian',
-  title: 'label.cloudian.storage',
-  docHelp: 'plugins/cloudian-connector.html',
-  icon: cloudian,
-  permission: ['cloudianSsoLogin'],
-  component: () => import('@/views/plugins/CloudianPlugin.vue')
+@logo-width: 256px;
+@logo-height: 64px;
+@banner-width: 450px;
+@banner-height: 110px;
+@error-width: 256px;
+@error-height: 256px;
+
+.ant-layout-sider-children .logo-image {
+  width: @logo-width;
+  height: @logo-height;
+}
+
+.user-layout {
+  &-logo {
+    width: @banner-width;
+    height: @banner-height;
+  }
+}
+
+.exception {
+  .img {
+    img {
+      width: @error-width;
+      height: @error-height;
+    }
+  }
+}
+
+a {
+  color: @link-color;
+  background-color: transparent;
+}
+a:hover {
+  color: color(~`colorPalette("@{primary-color}", 5)`);
+}
+a:active {
+  color: color(~`colorPalette("@{primary-color}", 7)`);
 }
