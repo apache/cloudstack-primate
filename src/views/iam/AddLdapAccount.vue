@@ -106,13 +106,14 @@
               />
             </a-form-item>
             <div v-if="'authorizeSamlSso' in $store.getters.apis">
-              <a-form-item>
-                <a-checkbox v-decorator="['samlEnable']"> {{ $t('label.samlenable') }} </a-checkbox>
+              <a-form-item :label="$t('label.samlenable')">
+                <a-switch v-decorator="['samlEnable']" @change="checked => { this.samlEnable = checked }" />
               </a-form-item>
-              <a-form-item :label="$t('label.samlentity')">
+              <a-form-item v-if="samlEnable" :label="$t('label.samlentity')">
                 <a-select
                   v-decorator="['samlEntity', {
                     initialValue: selectedIdp,
+                    rules: [{ required: samlEnable, message: `${this.$t('message.error.select')}` }]
                   }]"
                   placeholder="Choose SAML identity provider"
                   :loading="loading">
@@ -156,7 +157,8 @@ export default {
       domainLoading: false,
       roleLoading: false,
       loading: false,
-      searchQuery: undefined
+      searchQuery: undefined,
+      samlEnable: false
     }
   },
   beforeCreate () {
@@ -234,7 +236,6 @@ export default {
       this.listIdps = listIdps && listIdps.length > 0 ? listIdps : []
       this.dataSource = listLdapUsers
       this.oldDataSource = listLdapUsers
-      console.log('idp = ', this.listIdps)
     },
     fetchTimeZone (value) {
       return new Promise((resolve, reject) => {
@@ -288,7 +289,10 @@ export default {
     fetchIdps () {
       return new Promise((resolve, reject) => {
         api('listIdps').then(json => {
-          const listIdps = json.listidpsresponse.idp
+          const listIdps = json.listidpsresponse.idp || []
+          if (listIdps.length !== 0) {
+            this.selectedIdp = listIdps[0].id
+          }
           resolve(listIdps)
         }).catch(error => {
           reject(error)
@@ -325,13 +329,13 @@ export default {
           }))
         })
         this.loading = true
-        Promise.all(promises).then(response => {
-          for (let i = 0; i < response.length; i++) {
+        Promise.all(promises).then(responses => {
+          for (const response of responses) {
             if (apiName === 'ldapCreateAccount' && values.samlEnable) {
               const users = response.createaccountresponse.account.user
-              const entity = values.samlEntity
-              if (users && entity) {
-                this.authorizeUsersForSamlSSO(users, entity)
+              const entityId = values.samlEntity
+              if (users && entityId) {
+                this.authorizeUsersForSamlSSO(users, entityId)
               }
             } else if (apiName === 'importLdapUsers' && response.ldapuserresponse && values.samlEnable) {
               this.$notification.error({
@@ -342,12 +346,11 @@ export default {
               if (apiName === 'ldapCreateAccount') {
                 this.$notification.success({
                   message: this.$t('label.add.ldap.account'),
-                  description: response[i].createaccountresponse.account.name
+                  description: response.createaccountresponse.account.name
                 })
               }
             }
           }
-
           this.$emit('refresh-data')
           this.handleClose()
         }).catch(error => {
@@ -380,13 +383,13 @@ export default {
     handleClose () {
       this.$emit('close-action')
     },
-    authorizeUsersForSamlSSO (users, entity) {
+    authorizeUsersForSamlSSO (users, entityId) {
       const promises = []
       for (var i = 0; i < users.length; i++) {
         const params = {}
         params.enable = true
         params.userid = users[i].id
-        params.entityid = entity
+        params.entityid = entityId
         promises.push(new Promise((resolve, reject) => {
           api('authorizeSamlSso', params).catch(error => {
             reject(error)
