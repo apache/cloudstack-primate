@@ -31,6 +31,7 @@
       class="filter-group">
       <a-input-search
         allowClear
+        :disabled="activeFilter"
         class="input-search"
         placeholder="Search"
         @search="onSearch">
@@ -40,81 +41,84 @@
           trigger="click"
           v-model="visibleFilter">
           <template slot="content">
-            <a-form
-              style="min-width: 170px"
-              :form="form"
-              layout="vertical"
-              @submit="handleSubmit">
-              <a-form-item
-                v-for="(field, index) in fields"
-                :key="index"
-                :label="field.name==='keyword' ? $t('label.name') : $t('label.' + field.name)">
-                <a-select
-                  allowClear
-                  v-if="field.type==='list'"
-                  v-decorator="[field.name]"
-                  :loading="field.loading">
-                  <a-select-option
-                    v-for="(opt, idx) in field.opts"
-                    :key="idx"
-                    :value="opt.id">{{ $t(opt.name) }}</a-select-option>
-                </a-select>
-                <a-input
-                  v-else-if="field.type==='input'"
-                  v-decorator="[field.name]" />
-                <div v-else-if="field.type==='tag'">
-                  <a-tag
-                    v-if="!inputVisible && tags.length === 0"
-                    @click="showInput"
-                    style="background: #fff; borderStyle: dashed;">
-                    <a-icon type="plus" /> {{ $t('label.new.tag') }}
-                  </a-tag>
-                  <template
-                    v-if="tags.length > 0"
-                    v-for="(tag, tagIdx) in tags">
-                    <a-tag :key="tagIdx" :closable="true" :afterClose="handleDeleteTag">
-                      {{ tag.key }} = {{ tag.value }}
+            <div v-click-outside="onClickOutSide">
+              <a-form
+                style="min-width: 170px"
+                :form="form"
+                layout="vertical"
+                @submit="handleSubmit">
+                <a-form-item
+                  v-for="(field, index) in fields"
+                  :key="index"
+                  :label="field.name==='keyword' ? $t('label.name') : $t('label.' + field.name)">
+                  <a-select
+                    allowClear
+                    v-if="field.type==='list'"
+                    v-decorator="[field.name]"
+                    :loading="field.loading">
+                    <a-select-option
+                      v-for="(opt, idx) in field.opts"
+                      :key="idx"
+                      :value="opt.id">{{ $t(opt.name) }}</a-select-option>
+                  </a-select>
+                  <a-input
+                    v-else-if="field.type==='input'"
+                    v-decorator="[field.name]" />
+                  <div v-else-if="field.type==='tag'">
+                    <a-tag
+                      v-if="!inputVisible && tags.length === 0"
+                      @click="showInput"
+                      style="background: #fff; borderStyle: dashed;">
+                      <a-icon type="plus" /> {{ $t('label.new.tag') }}
                     </a-tag>
-                  </template>
-                  <div v-if="inputVisible">
-                    <a-input-group
-                      type="text"
-                      size="small"
-                      @blur="handleInputConfirm"
-                      @keyup.enter="handleInputConfirm"
-                      compact>
-                      <a-input ref="input" :value="inputKey" @change="handleKeyChange" style="width: 50px; text-align: center" :placeholder="$t('label.key')" />
-                      <a-input style=" width: 20px; border-left: 0; pointer-events: none; backgroundColor: #fff" placeholder="=" disabled />
-                      <a-input :value="inputValue" @change="handleValueChange" style="width: 50px; text-align: center; border-left: 0" :placeholder="$t('label.value')" />
-                      <a-button shape="circle" size="small" @click="handleInputConfirm">
-                        <a-icon type="check"/>
-                      </a-button>
-                      <a-button shape="circle" size="small" @click="inputVisible=false">
-                        <a-icon type="close"/>
-                      </a-button>
-                    </a-input-group>
+                    <template
+                      v-if="tags.length > 0"
+                      v-for="(tag, tagIdx) in tags">
+                      <a-tag :key="tagIdx" :closable="true" :afterClose="handleDeleteTag">
+                        {{ tag.key }} = {{ tag.value }}
+                      </a-tag>
+                    </template>
+                    <div v-if="inputVisible">
+                      <a-input-group
+                        type="text"
+                        size="small"
+                        @blur="handleInputConfirm"
+                        @keyup.enter="handleInputConfirm"
+                        compact>
+                        <a-input ref="input" :value="inputKey" @change="handleKeyChange" style="width: 50px; text-align: center" :placeholder="$t('label.key')" />
+                        <a-input style=" width: 20px; border-left: 0; pointer-events: none; backgroundColor: #fff" placeholder="=" disabled />
+                        <a-input :value="inputValue" @change="handleValueChange" style="width: 50px; text-align: center; border-left: 0" :placeholder="$t('label.value')" />
+                        <a-button shape="circle" size="small" @click="handleInputConfirm">
+                          <a-icon type="check"/>
+                        </a-button>
+                        <a-button shape="circle" size="small" @click="inputVisible=false">
+                          <a-icon type="close"/>
+                        </a-button>
+                      </a-input-group>
+                    </div>
                   </div>
+                </a-form-item>
+                <div class="filter-group-button">
+                  <a-button
+                    class="filter-group-button-clear"
+                    type="default"
+                    size="small"
+                    icon="stop"
+                    @click="onClear">{{ $t('label.reset') }}</a-button>
+                  <a-button
+                    class="filter-group-button-search"
+                    type="primary"
+                    size="small"
+                    icon="search"
+                    @click="handleSubmit">{{ $t('label.search') }}</a-button>
                 </div>
-              </a-form-item>
-              <div class="filter-group-button">
-                <a-button
-                  class="filter-group-button-clear"
-                  type="default"
-                  size="small"
-                  icon="stop"
-                  @click="onClear">{{ $t('label.clear') }}</a-button>
-                <a-button
-                  class="filter-group-button-search"
-                  type="primary"
-                  size="small"
-                  icon="search"
-                  @click="handleSubmit">{{ $t('label.search') }}</a-button>
-              </div>
-            </a-form>
+              </a-form>
+            </div>
           </template>
           <a-button
             class="filter-button"
-            size="small">
+            size="small"
+            @click="() => { activeFilter = true }">
             <a-icon type="filter" :theme="filtered ? 'twoTone' : 'outlined'" />
           </a-button>
         </a-popover>
@@ -165,7 +169,8 @@ export default {
       tags: [],
       inputKey: '',
       inputValue: '',
-      filtered: false
+      filtered: false,
+      activeFilter: false
     }
   },
   beforeCreate () {
@@ -204,7 +209,7 @@ export default {
         if (item === 'domainid' && !('listDomains' in this.$store.getters.apis)) {
           return true
         }
-        if (item === 'account' && ('addAccountToProject' in this.$store.getters.apis || 'createAccount' in this.$store.getters.apis)) {
+        if (item === 'account' && !('addAccountToProject' in this.$store.getters.apis || 'createAccount' in this.$store.getters.apis)) {
           return true
         }
         if (['zoneid', 'domainid', 'state', 'level'].includes(item)) {
@@ -302,7 +307,6 @@ export default {
       })
     },
     fetchState () {
-      console.log(this.apiName)
       const state = []
       if (this.apiName.indexOf('listVolumes') > -1) {
         state.push({
@@ -358,6 +362,10 @@ export default {
       this.filtered = false
       this.tags = []
       this.parentFilter(this.paramsFilter)
+    },
+    onClickOutSide () {
+      if (this.visibleFilter) return
+      this.activeFilter = false
     },
     handleSubmit (e) {
       e.preventDefault()
