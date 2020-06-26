@@ -72,7 +72,7 @@ export default {
     },
     {
       api: 'authorizeSamlSso',
-      icon: 'check-circle',
+      icon: 'form',
       label: 'Configure SAML SSO Authorization',
       dataView: true,
       popup: true,

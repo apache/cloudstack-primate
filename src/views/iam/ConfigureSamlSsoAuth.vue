@@ -18,10 +18,16 @@
 <template>
   <div class="form-layout">
     <a-form :form="form" @submit="handleSubmit" layout="vertical" :loading="loading">
-      <a-form-item>
-        <a-checkbox v-decorator="['samlEnable']"> {{ $t('samlEnable') }} </a-checkbox>
+      <a-form-item :label="$t('label.samlenable')">
+        <a-switch
+          v-decorator="['samlEnable', {
+            initialValue: isSamlEnabled
+          }]"
+          :checked="isSamlEnabled"
+          @change="val => { isSamlEnabled = val }"
+        />
       </a-form-item>
-      <a-form-item :label="$t('samlEntity')">
+      <a-form-item :label="$t('label.samlentity')">
         <a-select
           v-decorator="['samlEntity', {
             initialValue: selectedIdp,
@@ -33,7 +39,7 @@
       </a-form-item>
       <div class="card-footer">
         <a-button @click="handleClose">{{ $t('Close') }}</a-button>
-        <a-button :loading="loading" type="primary" @click="handleSubmit">{{ $t('add') }}</a-button>
+        <a-button :loading="loading" type="primary" @click="handleSubmit">{{ $t('label.ok') }}</a-button>
       </div>
     </a-form>
   </div>
@@ -52,6 +58,7 @@ export default {
     return {
       selectedIdp: '',
       idps: [],
+      isSamlEnabled: false,
       loading: false
     }
   },
@@ -63,12 +70,20 @@ export default {
   },
   methods: {
     fetchData () {
+      this.IsUserSamlAuthorized()
       this.loading = true
       api('listIdps').then(response => {
         this.idps = response.listidpsresponse.idp || []
-        this.selectedIdp = this.idps[0].id || ''
       }).finally(() => {
         this.loading = false
+      })
+    },
+    IsUserSamlAuthorized () {
+      api('listSamlAuthorization', {
+        userid: this.resource.id
+      }).then(response => {
+        this.isSamlEnabled = response.listsamlauthorizationsresponse.samlauthorization[0].status || false
+        this.selectedIdp = response.listsamlauthorizationsresponse.samlauthorization[0].idpid || ''
       })
     },
     handleClose () {
@@ -86,8 +101,9 @@ export default {
           entityid: values.samlEntity
         }).then(response => {
           this.$notification.success({
-            message: this.$t('samlEnable'),
-            description: `Successfully enabled SAML Authorization for ${this.resource.username}`
+            message: values.samlEnable ? this.$t('label.saml.enable') : this.$t('label.saml.disable'),
+            description: values.samlEnable ? `Successfully enabled SAML Authorization for ${this.resource.username}`
+              : `Successfully disabled SAML Authorization for ${this.resource.username}`
           })
         }).catch(error => {
           this.$notification.error({
