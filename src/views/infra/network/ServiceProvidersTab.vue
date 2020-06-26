@@ -582,7 +582,7 @@ export default {
                   value: (record) => { return record.physicalnetworkid }
                 }
               },
-              columns: ['ipaddress', 'status', 'action']
+              columns: ['ipaddress', 'lbdevicestate', 'action']
             }
           ]
         },
@@ -669,11 +669,11 @@ export default {
               title: 'label.instances',
               api: 'listInternalLoadBalancerVMs',
               mapping: {
-                physicalnetworkid: {
-                  value: (record) => { return record.physicalnetworkid }
+                zoneid: {
+                  value: (record) => { return record.zoneid }
                 }
               },
-              columns: ['name', 'zone', 'type', 'status']
+              columns: ['name', 'zonename', 'type', 'state']
             }
           ]
         },
@@ -1038,7 +1038,7 @@ export default {
                   value: (record) => { return false }
                 }
               },
-              columns: ['name', 'hostname', 'zonename', 'state']
+              columns: ['name', 'state', 'hostname', 'zonename']
             }
           ]
         },
@@ -1088,7 +1088,7 @@ export default {
                   value: () => { return true }
                 }
               },
-              columns: ['name', 'hostname', 'zonename', 'state']
+              columns: ['name', 'state', 'hostname', 'zonename']
             }
           ]
         }
@@ -1188,7 +1188,7 @@ export default {
             this.nsp = { ...this.nsp, ...networkServiceProvider }
           }
           params.id = this.nsp.id
-          const hasJobId = await this.executeApi(this.currentAction.api, params)
+          const hasJobId = await this.executeApi(this.currentAction.api, params, this.currentAction.method)
           if (!hasJobId) {
             await this.$message.success('Success')
             await this.fetchData()
@@ -1262,7 +1262,9 @@ export default {
             }
             return field
           }) || []
-          console.log(this.currentAction.fieldParams)
+          if (this.currentAction.api === 'addCiscoVnmcResource') {
+            this.currentAction.method = 'POST'
+          }
         }
       }
     },
@@ -1337,11 +1339,12 @@ export default {
         })
       }
     },
-    executeApi (apiName, args) {
+    executeApi (apiName, args, method) {
       return new Promise((resolve, reject) => {
         let hasJobId = false
         let message = ''
-        api(apiName, args).then(json => {
+        const promise = (method === 'POST') ? api(apiName, {}, method, args) : api(apiName, args)
+        promise.then(json => {
           for (const obj in json) {
             if (obj.includes('response') || obj.includes(apiName)) {
               for (const res in json[obj]) {

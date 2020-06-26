@@ -23,7 +23,7 @@
       size="small"
       class="row-list-data"
       :loading="loading"
-      :columns="columns"
+      :columns="listCols"
       :dataSource="dataSource"
       :rowKey="record => record.id || record.name || record.nvpdeviceid || record.resourceid"
       :pagination="false"
@@ -31,6 +31,20 @@
       <template slot="name" slot-scope="text, record">
         <span v-if="record.role==='VIRTUAL_ROUTER'">
           <router-link :to="{ path: '/router' + '/' + record.id }" v-if="record.id">{{ text }}</router-link>
+          <label v-else>{{ text }}</label>
+        </span>
+        <span v-else>{{ text }}</span>
+      </template>
+      <template slot="hostname" slot-scope="text, record">
+        <span v-if="record.role==='VIRTUAL_ROUTER'">
+          <router-link :to="{ path: '/host' + '/' + record.hostid }" v-if="record.hostid">{{ text }}</router-link>
+          <label v-else>{{ text }}</label>
+        </span>
+        <span v-else>{{ text }}</span>
+      </template>
+      <template slot="zonename" slot-scope="text, record">
+        <span v-if="record.role==='VIRTUAL_ROUTER'">
+          <router-link :to="{ path: '/zone' + '/' + record.zoneid }" v-if="record.zoneid">{{ text }}</router-link>
           <label v-else>{{ text }}</label>
         </span>
         <span v-else>{{ text }}</span>
@@ -70,6 +84,9 @@
             :loading="actionLoading"
             @click="onDelete(record)"/>
         </a-tooltip>
+      </template>
+      <template slot="lbdevicestate" slot-scope="text">
+        <status :text="text ? text : ''" displayText />
       </template>
       <template slot="status" slot-scope="text">
         <status :text="text ? text : ''" displayText />
@@ -152,6 +169,19 @@ export default {
       }
 
       return { y: '60vh' }
+    },
+    listCols () {
+      const columns = []
+      this.columns.forEach(col => {
+        if (col.dataIndex === 'hostname' && this.resource.name === 'BigSwitchBcf') {
+          col.title = this.$t('label.bigswitch.controller.address')
+        }
+        if (col.dataIndex === 'hostname' && this.resource.name === 'BrocadeVcs') {
+          col.title = this.$t('label.brocade.vcs.address')
+        }
+        columns.push(col)
+      })
+      return columns
     }
   },
   inject: ['providerChangePage', 'provideReload', 'parentPollActionCompletion'],
@@ -163,7 +193,6 @@ export default {
       this.providerChangePage(this.title, currentPage, pageSize)
     },
     onDelete (record) {
-      console.log(record)
       let apiName
       let confirmation
       let label

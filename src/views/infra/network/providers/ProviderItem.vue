@@ -157,10 +157,12 @@ export default {
       params.page = this.page
       params.pageSize = this.pageSize
 
+      let length = args.columns.length
+      if (args.columns.includes('action')) {
+        length--
+      }
       const columns = args.columns.map(col => {
-        let length = args.columns.length
         if (col === 'action') {
-          length--
           return {
             title: this.$t('label.' + col),
             dataIndex: col,
