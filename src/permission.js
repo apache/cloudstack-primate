@@ -51,7 +51,7 @@ router.beforeEach((to, from, next) => {
           message.loading('Loading...', 1.5)
         }
         store
-          .dispatch('GetInfo')
+          .dispatch('GetInfo', from.query.redirect && from.query.redirect !== '/dashboard')
           .then(apis => {
             store.dispatch('GenerateRoutes', { apis }).then(() => {
               router.addRoutes(store.getters.addRouters)
@@ -80,7 +80,7 @@ router.beforeEach((to, from, next) => {
     if (whiteList.includes(to.name)) {
       next()
     } else {
-      next({ path: '/user/login' })
+      next({ path: '/user/login?redirect=' + to.path })
       NProgress.done()
     }
   }

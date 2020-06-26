@@ -115,7 +115,7 @@ const user = {
       })
     },
 
-    GetInfo ({ commit }) {
+    GetInfo ({ commit }, redirect) {
       return new Promise((resolve, reject) => {
         const cachedApis = Vue.ls.get(APIS, {})
         const hasAuth = Object.keys(cachedApis).length > 0
@@ -130,7 +130,9 @@ const user = {
           apis.listUsers = {}
           apis.listAccounts = {}
           commit('SET_APIS', apis)
-          resolve(apis)
+          if (!redirect) {
+            resolve(apis)
+          }
 
           const hide = message.loading('Discovering features...', 0)
           api('listApis').then(response => {
@@ -150,6 +152,9 @@ const user = {
             })
             hide()
             message.success('Discovered all available features!')
+            if (redirect) {
+              resolve(apis)
+            }
           }).catch(error => {
             reject(error)
           })
