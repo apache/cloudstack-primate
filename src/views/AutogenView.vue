@@ -684,6 +684,7 @@ export default {
       if (this.currentAction.mapping && param.name in this.currentAction.mapping && !this.currentAction.mapping[param.name].api) {
         return
       }
+      const resource = this.currentAction.resource ? this.currentAction.resource : this.resource
       var paramName = param.name
       var extractedParamName = paramName.replace('ids', '').replace('id', '').toLowerCase()
       var params = { listall: true }
@@ -692,7 +693,7 @@ export default {
       if (this.currentAction.mapping && param.name in this.currentAction.mapping && this.currentAction.mapping[param.name].api) {
         possibleApi = this.currentAction.mapping[param.name].api
         if (this.currentAction.mapping[param.name].params) {
-          const customParams = this.currentAction.mapping[param.name].params(this.resource)
+          const customParams = this.currentAction.mapping[param.name].params(resource)
           if (customParams) {
             params = { ...params, ...customParams }
           }
@@ -768,6 +769,7 @@ export default {
     },
     fillEditFormFieldValues () {
       const form = this.form
+      const resource = this.currentAction.resource ? this.currentAction.resource : this.resource
       this.currentAction.paramFields.map(field => {
         let fieldValue = null
         let fieldName = null
@@ -776,7 +778,7 @@ export default {
         } else {
           fieldName = field.name
         }
-        fieldValue = this.resource[fieldName] ? this.resource[fieldName] : null
+        fieldValue = resource[fieldName] ? resource[fieldName] : null
         if (fieldValue) {
           form.getFieldDecorator(field.name, { initialValue: fieldValue })
           this.formModel[field.name] = fieldValue
