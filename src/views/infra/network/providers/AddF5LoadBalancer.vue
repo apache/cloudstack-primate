@@ -33,7 +33,7 @@
       </a-row>
       <a-row :gutter="12">
         <a-col :md="24" :lg="24">
-          <a-form-item :label="$t('label.label.username')">
+          <a-form-item :label="$t('label.username')">
             <a-input
               v-decorator="['username', {
                 rules: [{ required: true, message: $t('message.error.required.input') }]
@@ -60,7 +60,7 @@
               }]">
               <a-select-option
                 v-for="opt in networkDeviceType"
-                :key="opt.id">{{ opt.description }}</a-select-option>
+                :key="opt.id">{{ $t(opt.description) }}</a-select-option>
             </a-select>
           </a-form-item>
         </a-col>
@@ -138,7 +138,7 @@ export default {
       const items = []
       items.push({
         id: 'F5BigIpLoadBalancer',
-        description: 'F5 Big Ip Load Balancer'
+        description: 'label.f5.ip.loadbalancer'
       })
 
       return items

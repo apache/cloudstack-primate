@@ -60,7 +60,7 @@
               }]">
               <a-select-option
                 v-for="opt in networkDeviceType"
-                :key="opt.id">{{ opt.description }}</a-select-option>
+                :key="opt.id">{{ $t(opt.description) }}</a-select-option>
             </a-select>
           </a-form-item>
         </a-col>
@@ -162,15 +162,15 @@ export default {
       const items = []
       items.push({
         id: 'NetscalerMPXLoadBalancer',
-        description: 'NetScaler MPX LoadBalancer'
+        description: 'label.netscaler.mpx'
       })
       items.push({
         id: 'NetscalerVPXLoadBalancer',
-        description: 'NetScaler VPX LoadBalancer'
+        description: 'label.netscaler.vpx'
       })
       items.push({
         id: 'NetscalerSDXLoadBalancer',
-        description: 'NetScaler SDX LoadBalancer'
+        description: 'label.netscaler.sdx'
       })
 
       return items

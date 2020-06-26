@@ -60,7 +60,7 @@
               }]">
               <a-select-option
                 v-for="opt in networkDeviceType"
-                :key="opt.id">{{ opt.description }}</a-select-option>
+                :key="opt.id">{{ $t(opt.description) }}</a-select-option>
             </a-select>
           </a-form-item>
         </a-col>
@@ -185,7 +185,7 @@ export default {
       const items = []
       items.push({
         id: 'PaloAltoFirewall',
-        description: 'Palo Alto Firewall'
+        description: 'label.palo.alto.firewall'
       })
 
       return items

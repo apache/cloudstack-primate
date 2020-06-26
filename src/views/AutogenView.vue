@@ -329,7 +329,8 @@ export default {
       parentFetchData: this.fetchData,
       parentToggleLoading: this.toggleLoading,
       parentStartLoading: this.startLoading,
-      parentFinishLoading: this.finishLoading
+      parentFinishLoading: this.finishLoading,
+      parentPollActionCompletion: this.pollActionCompletion
     }
   },
   data () {
@@ -883,6 +884,9 @@ export default {
       this.page = currentPage
       this.pageSize = pageSize
       this.fetchData()
+    },
+    changeResource (resource) {
+      this.resource = resource
     },
     start () {
       this.loading = true

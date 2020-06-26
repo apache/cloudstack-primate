@@ -188,7 +188,7 @@ export default {
               icon: 'stop',
               listView: true,
               label: 'label.disable.provider',
-              confirm: 'Please confirm that you would like to disable this provider?',
+              confirm: 'message.confirm.disable.provider',
               show: (record) => { return (record && record.id && record.state === 'Enabled') },
               mapping: {
                 state: {
@@ -201,7 +201,7 @@ export default {
               icon: 'play-circle',
               listView: true,
               label: 'label.enable.provider',
-              confirm: 'Please confirm that you would like to enable this provider?',
+              confirm: 'message.confirm.enable.provider',
               show: (record) => { return (record && record.id && record.state === 'Disabled') },
               mapping: {
                 state: {
@@ -214,14 +214,14 @@ export default {
               listView: true,
               icon: 'poweroff',
               label: 'label.shutdown.provider',
-              confirm: 'Please confirm that you would like to delete this provider?',
+              confirm: 'message.confirm.delete.provider',
               show: (record) => { return record && record.id }
             }
           ],
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'label.list.device',
+              title: 'label.baremetal.dhcp.devices',
               api: 'listBaremetalDhcp',
               mapping: {
                 physicalnetworkid: {
@@ -252,7 +252,7 @@ export default {
               icon: 'stop',
               listView: true,
               label: 'label.disable.provider',
-              confirm: 'Please confirm that you would like to disable this provider?',
+              confirm: 'message.confirm.disable.provider',
               show: (record) => { return (record && record.id && record.state === 'Enabled') },
               mapping: {
                 state: {
@@ -265,7 +265,7 @@ export default {
               icon: 'play-circle',
               listView: true,
               label: 'label.enable.provider',
-              confirm: 'Please confirm that you would like to enable this provider?',
+              confirm: 'message.confirm.enable.provider',
               show: (record) => { return (record && record.id && record.state === 'Disabled') },
               mapping: {
                 state: {
@@ -278,14 +278,14 @@ export default {
               listView: true,
               icon: 'poweroff',
               label: 'label.shutdown.provider',
-              confirm: 'Please confirm that you would like to delete this provider?',
+              confirm: 'message.confirm.delete.provider',
               show: (record) => { return record && record.id }
             }
           ],
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'label.list.device',
+              title: 'label.baremetal.pxe.devices',
               api: 'listBaremetalPxeServers',
               mapping: {
                 physicalnetworkid: {
@@ -311,7 +311,7 @@ export default {
               icon: 'stop',
               listView: true,
               label: 'label.disable.provider',
-              confirm: 'Please confirm that you would like to disable this provider?',
+              confirm: 'message.confirm.disable.provider',
               show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
@@ -324,7 +324,7 @@ export default {
               icon: 'play-circle',
               listView: true,
               label: 'label.enable.provider',
-              confirm: 'Please confirm that you would like to enable this provider?',
+              confirm: 'message.confirm.enable.provider',
               show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
@@ -337,14 +337,14 @@ export default {
               listView: true,
               icon: 'poweroff',
               label: 'label.shutdown.provider',
-              confirm: 'Please confirm that you would like to delete this provider?',
+              confirm: 'message.confirm.delete.provider',
               show: (record) => { return record && record.id }
             }
           ],
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'label.list.device',
+              title: 'label.devices',
               api: 'listBigSwitchBcfDevices',
               mapping: {
                 physicalnetworkid: {
@@ -370,7 +370,7 @@ export default {
               icon: 'stop',
               listView: true,
               label: 'label.disable.provider',
-              confirm: 'Please confirm that you would like to disable this provider?',
+              confirm: 'message.confirm.disable.provider',
               show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
@@ -383,7 +383,7 @@ export default {
               icon: 'play-circle',
               listView: true,
               label: 'label.enable.provider',
-              confirm: 'Please confirm that you would like to enable this provider?',
+              confirm: 'message.confirm.enable.provider',
               show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
@@ -396,14 +396,14 @@ export default {
               listView: true,
               icon: 'poweroff',
               label: 'label.shutdown.provider',
-              confirm: 'Please confirm that you would like to delete this provider?',
+              confirm: 'message.confirm.delete.provider',
               show: (record) => { return record && record.id }
             }
           ],
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'label.list.device',
+              title: 'label.devices',
               api: 'listBrocadeVcsDevices',
               mapping: {
                 physicalnetworkid: {
@@ -428,7 +428,7 @@ export default {
               api: 'addCiscoAsa1000vResource',
               listView: true,
               icon: 'plus-circle',
-              label: 'label.add.ciscoASA1000v',
+              label: 'label.add.ciscoasa1000v',
               args: ['hostname', 'insideportprofile', 'clusterid'],
               mapping: {
                 zoneid: {
@@ -441,7 +441,7 @@ export default {
               icon: 'stop',
               listView: true,
               label: 'label.disable.provider',
-              confirm: 'Please confirm that you would like to disable this provider?',
+              confirm: 'message.confirm.disable.provider',
               show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
@@ -454,7 +454,7 @@ export default {
               icon: 'play-circle',
               listView: true,
               label: 'label.enable.provider',
-              confirm: 'Please confirm that you would like to enable this provider?',
+              confirm: 'message.confirm.enable.provider',
               show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
@@ -467,14 +467,14 @@ export default {
               listView: true,
               icon: 'poweroff',
               label: 'label.shutdown.provider',
-              confirm: 'Please confirm that you would like to delete this provider?',
+              confirm: 'message.confirm.delete.provider',
               show: (record) => { return record && record.id }
             }
           ],
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'listCiscoVnmcResources',
+              title: 'label.list.ciscovnmc',
               api: 'listCiscoVnmcResources',
               mapping: {
                 physicalnetworkid: {
@@ -484,7 +484,7 @@ export default {
               columns: ['resource', 'provider']
             },
             {
-              title: 'listCiscoAsa1000vResources',
+              title: 'label.list.ciscoasa1000v',
               api: 'listCiscoAsa1000vResources',
               mapping: {
                 physicalnetworkid: {
@@ -503,7 +503,7 @@ export default {
               icon: 'stop',
               listView: true,
               label: 'label.disable.provider',
-              confirm: 'Please confirm that you would like to disable this provider?',
+              confirm: 'message.confirm.disable.provider',
               show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
@@ -516,7 +516,7 @@ export default {
               icon: 'play-circle',
               listView: true,
               label: 'label.enable.provider',
-              confirm: 'Please confirm that you would like to enable this provider?',
+              confirm: 'message.confirm.enable.provider',
               show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
@@ -542,7 +542,7 @@ export default {
               icon: 'stop',
               listView: true,
               label: 'label.disable.provider',
-              confirm: 'Please confirm that you would like to disable this provider?',
+              confirm: 'message.confirm.disable.provider',
               show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
@@ -555,7 +555,7 @@ export default {
               icon: 'play-circle',
               listView: true,
               label: 'label.enable.provider',
-              confirm: 'Please confirm that you would like to enable this provider?',
+              confirm: 'message.confirm.enable.provider',
               show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
@@ -568,14 +568,14 @@ export default {
               listView: true,
               icon: 'poweroff',
               label: 'label.shutdown.provider',
-              confirm: 'Please confirm that you would like to delete this provider?',
+              confirm: 'message.confirm.delete.provider',
               show: (record) => { return record && record.id }
             }
           ],
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'label.list.device',
+              title: 'label.devices',
               api: 'listF5LoadBalancers',
               mapping: {
                 physicalnetworkid: {
@@ -601,7 +601,7 @@ export default {
               icon: 'stop',
               listView: true,
               label: 'label.disable.provider',
-              confirm: 'Please confirm that you would like to disable this provider?',
+              confirm: 'message.confirm.disable.provider',
               show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
@@ -614,7 +614,7 @@ export default {
               icon: 'play-circle',
               listView: true,
               label: 'label.enable.provider',
-              confirm: 'Please confirm that you would like to enable this provider?',
+              confirm: 'message.confirm.enable.provider',
               show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
@@ -627,7 +627,7 @@ export default {
               listView: true,
               icon: 'poweroff',
               label: 'label.shutdown.provider',
-              confirm: 'Please confirm that you would like to delete this provider?',
+              confirm: 'message.confirm.delete.provider',
               show: (record) => { return record && record.id }
             }
           ],
@@ -641,7 +641,7 @@ export default {
               icon: 'stop',
               listView: true,
               label: 'label.disable.provider',
-              confirm: 'Please confirm that you would like to disable this provider?',
+              confirm: 'message.confirm.disable.provider',
               show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
@@ -654,7 +654,7 @@ export default {
               icon: 'play-circle',
               listView: true,
               label: 'label.enable.provider',
-              confirm: 'Please confirm that you would like to enable this provider?',
+              confirm: 'message.confirm.enable.provider',
               show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
@@ -666,7 +666,7 @@ export default {
           details: ['name', 'state', 'id', 'physicalnetworkid', 'destinationphysicalnetworkid', 'servicelist'],
           lists: [
             {
-              title: 'instances',
+              title: 'label.instances',
               api: 'listInternalLoadBalancerVMs',
               mapping: {
                 physicalnetworkid: {
@@ -692,7 +692,7 @@ export default {
               icon: 'stop',
               listView: true,
               label: 'label.disable.provider',
-              confirm: 'Please confirm that you would like to disable this provider?',
+              confirm: 'message.confirm.disable.provider',
               show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
@@ -705,7 +705,7 @@ export default {
               icon: 'play-circle',
               listView: true,
               label: 'label.enable.provider',
-              confirm: 'Please confirm that you would like to enable this provider?',
+              confirm: 'message.confirm.enable.provider',
               show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
@@ -718,14 +718,14 @@ export default {
               listView: true,
               icon: 'poweroff',
               label: 'label.shutdown.provider',
-              confirm: 'Please confirm that you would like to delete this provider?',
+              confirm: 'message.confirm.delete.provider',
               show: (record) => { return record && record.id }
             }
           ],
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'label.list.device',
+              title: 'label.devices',
               api: 'listSrxFirewalls',
               mapping: {
                 physicalnetworkid: {
@@ -751,7 +751,7 @@ export default {
               icon: 'stop',
               listView: true,
               label: 'label.disable.provider',
-              confirm: 'Please confirm that you would like to disable this provider?',
+              confirm: 'message.confirm.disable.provider',
               show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
@@ -764,7 +764,7 @@ export default {
               icon: 'play-circle',
               listView: true,
               label: 'label.enable.provider',
-              confirm: 'Please confirm that you would like to enable this provider?',
+              confirm: 'message.confirm.enable.provider',
               show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
@@ -777,14 +777,14 @@ export default {
               listView: true,
               icon: 'poweroff',
               label: 'label.shutdown.provider',
-              confirm: 'Please confirm that you would like to delete this provider?',
+              confirm: 'message.confirm.delete.provider',
               show: (record) => { return record && record.id }
             }
           ],
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'label.list.device',
+              title: 'label.devices',
               api: 'listNetscalerLoadBalancers',
               mapping: {
                 physicalnetworkid: {
@@ -810,7 +810,7 @@ export default {
               icon: 'stop',
               listView: true,
               label: 'label.disable.provider',
-              confirm: 'Please confirm that you would like to disable this provider?',
+              confirm: 'message.confirm.disable.provider',
               show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
@@ -823,7 +823,7 @@ export default {
               icon: 'play-circle',
               listView: true,
               label: 'label.enable.provider',
-              confirm: 'Please confirm that you would like to enable this provider?',
+              confirm: 'message.confirm.enable.provider',
               show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
@@ -836,14 +836,14 @@ export default {
               listView: true,
               icon: 'poweroff',
               label: 'label.shutdown.provider',
-              confirm: 'Please confirm that you would like to delete this provider?',
+              confirm: 'message.confirm.delete.provider',
               show: (record) => { return record && record.id }
             }
           ],
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'label.list.device',
+              title: 'label.devices',
               api: 'listNiciraNvpDevices',
               mapping: {
                 physicalnetworkid: {
@@ -869,7 +869,7 @@ export default {
               icon: 'stop',
               listView: true,
               label: 'label.disable.provider',
-              confirm: 'Please confirm that you would like to disable this provider?',
+              confirm: 'message.confirm.disable.provider',
               show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
@@ -882,7 +882,7 @@ export default {
               icon: 'play-circle',
               listView: true,
               label: 'label.enable.provider',
-              confirm: 'Please confirm that you would like to enable this provider?',
+              confirm: 'message.confirm.enable.provider',
               show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
@@ -895,7 +895,7 @@ export default {
               listView: true,
               icon: 'poweroff',
               label: 'label.shutdown.provider',
-              confirm: 'Please confirm that you would like to delete this provider?',
+              confirm: 'message.confirm.delete.provider',
               show: (record) => { return record && record.id }
             }
           ],
@@ -944,7 +944,7 @@ export default {
               icon: 'stop',
               listView: true,
               label: 'label.disable.provider',
-              confirm: 'Please confirm that you would like to disable this provider?',
+              confirm: 'message.confirm.disable.provider',
               show: (record) => { return (record && record.id && record.state === 'Enabled') },
               mapping: {
                 state: {
@@ -957,7 +957,7 @@ export default {
               icon: 'play-circle',
               listView: true,
               label: 'label.enable.provider',
-              confirm: 'Please confirm that you would like to enable this provider?',
+              confirm: 'message.confirm.enable.provider',
               show: (record) => { return (record && record.id && record.state === 'Disabled') },
               mapping: {
                 state: {
@@ -970,14 +970,14 @@ export default {
               listView: true,
               icon: 'poweroff',
               label: 'label.shutdown.provider',
-              confirm: 'Please confirm that you would like to delete this provider?',
+              confirm: 'message.confirm.delete.provider',
               show: (record) => { return record && record.id }
             }
           ],
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'label.list.device',
+              title: 'label.devices',
               api: 'listPaloAltoFirewalls',
               mapping: {
                 physicalnetworkid: {
@@ -1000,7 +1000,7 @@ export default {
               icon: 'stop',
               listView: true,
               label: 'label.disable.provider',
-              confirm: 'Please confirm that you would like to disable this provider?',
+              confirm: 'message.confirm.disable.provider',
               show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
@@ -1013,7 +1013,7 @@ export default {
               icon: 'play-circle',
               listView: true,
               label: 'label.enable.provider',
-              confirm: 'Please confirm that you would like to enable this provider?',
+              confirm: 'message.confirm.enable.provider',
               show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
@@ -1025,7 +1025,7 @@ export default {
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'instances',
+              title: 'label.instances',
               api: 'listRouters',
               mapping: {
                 listAll: {
@@ -1050,7 +1050,7 @@ export default {
               icon: 'stop',
               listView: true,
               label: 'label.disable.provider',
-              confirm: 'Please confirm that you would like to disable this provider?',
+              confirm: 'message.confirm.disable.provider',
               show: (record) => { return record && record.id && record.state === 'Enabled' },
               mapping: {
                 state: {
@@ -1063,7 +1063,7 @@ export default {
               icon: 'play-circle',
               listView: true,
               label: 'label.enable.provider',
-              confirm: 'Please confirm that you would like to enable this provider?',
+              confirm: 'message.confirm.enable.provider',
               show: (record) => { return record && record.id && record.state === 'Disabled' },
               mapping: {
                 state: {
@@ -1075,7 +1075,7 @@ export default {
           details: ['name', 'state', 'id', 'servicelist'],
           lists: [
             {
-              title: 'instances',
+              title: 'label.instances',
               api: 'listRouters',
               mapping: {
                 forvpc: {
@@ -1248,7 +1248,7 @@ export default {
       if (this.currentAction.confirm) {
         this.$confirm({
           title: this.$t('label.confirmation'),
-          content: action.confirm,
+          content: this.$t(action.confirm),
           onOk: this.handleSubmit
         })
       } else {

@@ -246,7 +246,7 @@ export default {
 
       this.$confirm({
         title: this.$t('label.confirmation'),
-        content: confirmation,
+        content: this.$t(confirmation),
         onOk: async () => {
           if (apiName) {
             this.actionLoading = true
