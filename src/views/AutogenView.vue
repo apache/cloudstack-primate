@@ -82,7 +82,6 @@
     <div v-show="showAction">
       <keep-alive v-if="currentAction.component">
         <a-modal
-          :title="$t(currentAction.label)"
           :visible="showAction"
           :closable="true"
           style="top: 20px;"
@@ -92,6 +91,16 @@
           centered
           width="auto"
         >
+          <span slot="title">
+            {{ $t(currentAction.label) }}
+            <a
+              v-if="currentAction.docHelp || $route.meta.docHelp"
+              style="margin-left: 5px"
+              :href="$config.docBase + '/' + (currentAction.docHelp || $route.meta.docHelp)"
+              target="_blank">
+              <a-icon type="question-circle-o"></a-icon>
+            </a>
+          </span>
           <component
             :is="currentAction.component"
             :resource="resource"
@@ -535,6 +544,8 @@ export default {
         params.id = this.$route.params.id
         if (this.$route.path.startsWith('/ssh/')) {
           params.name = this.$route.params.id
+        } else if (this.$route.path.startsWith('/vmsnapshot/')) {
+          params.vmsnapshotid = this.$route.params.id
         } else if (this.$route.path.startsWith('/ldapsetting/')) {
           params.hostname = this.$route.params.id
         }

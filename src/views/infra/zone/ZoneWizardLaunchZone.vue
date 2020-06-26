@@ -1566,7 +1566,7 @@ export default {
     stepComplete () {
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
-      this.addStep('message.Zone.creation.complete', 'stepComplete')
+      this.addStep('message.zone.creation.complete', 'stepComplete')
       this.setStepStatus(STATUS_FINISH)
       this.currentStep++
       this.processStatus = STATUS_FINISH
