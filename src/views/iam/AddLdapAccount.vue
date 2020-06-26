@@ -48,8 +48,14 @@
           <a-form
             :form="form"
             @submit="handleSubmit"
-            layout="vertical"
-          >
+            layout="vertical" >
+            <a-form-item :label="$t('label.filterby')">
+              <a-select @change="fetchListLdapUsers" v-model="selectedFilter" >
+                <a-select-option v-for="opt in filters" :key="opt.id" >
+                  {{ opt.name }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
             <a-form-item :label="$t('label.domain')">
               <a-select
                 showSearch
@@ -57,7 +63,8 @@
                   rules: [{ required: true, memessage: `${this.$t('message.error.select')}` }]
                 }]"
                 :placeholder="apiParams.domainid.description"
-                :loading="domainLoading">
+                :loading="domainLoading"
+                @change="fetchListLdapUsers($event)" >
                 <a-select-option v-for="opt in listDomains" :key="opt.name">
                   {{ opt.name }}
                 </a-select-option>
@@ -99,7 +106,7 @@
                 :placeholder="apiParams.networkdomain.description"
               />
             </a-form-item>
-            <a-form-item :label="$t('label.group')">
+            <a-form-item :label="$t('label.ldap.group.name')">
               <a-input
                 v-decorator="['group']"
                 :placeholder="apiParams.group.description"
@@ -138,6 +145,7 @@
 <script>
 import { api } from '@/api'
 import { timeZone } from '@/utils/timezone'
+import store from '@/store'
 
 export default {
   name: 'AddLdapAccount',
@@ -152,6 +160,8 @@ export default {
       timeZoneMap: [],
       listIdps: [],
       selectedIdp: '',
+      filters: [],
+      selectedFilter: '',
       listLoading: false,
       timeZoneLoading: false,
       domainLoading: false,
@@ -198,34 +208,55 @@ export default {
         title: this.$t('label.email'),
         dataIndex: 'email',
         scopedSlots: { customRender: 'email' }
+      },
+      {
+        title: this.$t('Conflict'),
+        dataIndex: 'conflictingusersource',
+        scopedSlots: { customRender: 'conflictingusersource' }
       }
     ]
+    this.filters = [
+      {
+        id: 'NoFilter',
+        name: 'No filter'
+      },
+      {
+        id: 'LocalDomain',
+        name: 'Local domain'
+      },
+      {
+        id: 'AnyDomain',
+        name: 'Any domain'
+      },
+      {
+        id: 'PotentialImport',
+        name: 'Potential import'
+      }
+    ]
+    this.selectedFilter = this.filters[0].id
   },
   mounted () {
     this.fetchData()
   },
   methods: {
     async fetchData () {
-      this.listLoading = true
       this.timeZoneLoading = true
       this.domainLoading = true
       this.roleLoading = true
+      this.fetchListLdapUsers()
       const [
         listTimeZone,
-        listLdapUsers,
         listDomains,
         listRoles,
         listIdps
       ] = await Promise.all([
         this.fetchTimeZone(),
-        this.fetchListLdapUsers(),
         this.fetchListDomains(),
         this.fetchListRoles(),
         ('listIdps' in this.$store.getters.apis) ? this.fetchIdps() : []
       ]).catch(error => {
         this.$notifyError(error)
       }).finally(() => {
-        this.listLoading = false
         this.timeZoneLoading = false
         this.domainLoading = false
         this.roleLoading = false
@@ -234,8 +265,6 @@ export default {
       this.listDomains = listDomains && listDomains.length > 0 ? listDomains : []
       this.listRoles = listRoles && listRoles.length > 0 ? listRoles : []
       this.listIdps = listIdps && listIdps.length > 0 ? listIdps : []
-      this.dataSource = listLdapUsers
-      this.oldDataSource = listLdapUsers
     },
     fetchTimeZone (value) {
       return new Promise((resolve, reject) => {
@@ -246,22 +275,32 @@ export default {
         })
       })
     },
-    fetchListLdapUsers () {
-      return new Promise((resolve, reject) => {
-        const params = {}
-        params.listtype = 'new'
-        api('listLdapUsers', params).then(json => {
-          const listLdapUsers = json.ldapuserresponse.LdapUser
-          if (listLdapUsers) {
-            const ldapUserLength = listLdapUsers.length
-            for (let i = 0; i < ldapUserLength; i++) {
-              listLdapUsers[i].name = [listLdapUsers[i].firstname, listLdapUsers[i].lastname].join(' ')
-            }
+    fetchListLdapUsers (domain) {
+      this.listLoading = true
+      const params = {}
+      params.listtype = 'new'
+      params.userfilter = this.selectedFilter
+      params.domainid = store.getters.userInfo.domainid
+      if (domain) {
+        const result = this.listDomains.filter(item => item.name === domain)
+        if (result) {
+          params.domainid = result[0].id
+        }
+      }
+      api('listLdapUsers', params).then(json => {
+        const listLdapUsers = json.ldapuserresponse.LdapUser
+        if (listLdapUsers) {
+          const ldapUserLength = listLdapUsers.length
+          for (let i = 0; i < ldapUserLength; i++) {
+            listLdapUsers[i].name = [listLdapUsers[i].firstname, listLdapUsers[i].lastname].join(' ')
           }
-          resolve(listLdapUsers)
-        }).catch(error => {
-          reject(error)
-        })
+        }
+        this.dataSource = listLdapUsers
+        this.oldDataSource = listLdapUsers
+      }).catch(error => {
+        this.$notifyError(error)
+      }).finally(() => {
+        this.listLoading = false
       })
     },
     fetchListDomains () {
@@ -302,7 +341,7 @@ export default {
     handleSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
-        if (err || this.selectedRowKeys.length === 0) {
+        if (err) {
           return
         }
         let apiName = 'ldapCreateAccount'
@@ -312,14 +351,12 @@ export default {
         const params = {}
         params.domainid = domain[0].id
         params.roleid = role[0].id
+        params.account = values.account
         params.timezone = values.timezone
         params.networkdomain = values.networkdomain
-        params.group = values.group
-        if (params.group && params.group.trim().length > 0) {
+        if (values.group && values.group.trim().length > 0) {
+          params.group = values.group
           apiName = 'importLdapUsers'
-        }
-        this.selectedRowKeys.forEach(username => {
-          params.username = username
           promises.push(new Promise((resolve, reject) => {
             api(apiName, params).then(json => {
               resolve(json)
@@ -327,7 +364,18 @@ export default {
               reject(error)
             })
           }))
-        })
+        } else {
+          this.selectedRowKeys.forEach(username => {
+            params.username = username
+            promises.push(new Promise((resolve, reject) => {
+              api(apiName, params).then(json => {
+                resolve(json)
+              }).catch(error => {
+                reject(error)
+              })
+            }))
+          })
+        }
         this.loading = true
         Promise.all(promises).then(responses => {
           for (const response of responses) {
