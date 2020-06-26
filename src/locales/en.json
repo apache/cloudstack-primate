@@ -795,6 +795,8 @@
 "label.example": "Example",
 "label.existingnetworks": "Existing networks",
 "label.expunge": "Expunge",
+"label.expunged": "Expunged",
+"label.expunging": "Expunging",
 "label.external.link": "External link",
 "label.externalid": "External Id",
 "label.externalloadbalanceripaddress": "External load balancer IP address",
