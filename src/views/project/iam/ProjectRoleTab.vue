@@ -14,7 +14,6 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-
 <template>
   <div>
     <a-button type="dashed" icon="plus" style="width: 100%; margin-bottom: 15px" @click="openCreateModal">
@@ -27,16 +26,16 @@
           :loading="loading"
           :columns="columns"
           :dataSource="dataSource"
-          :rowKey="record => record.projectid"
+          :rowKey="(record,idx) => record.projectid + '-' + idx"
           :pagination="false">
           <template slot="expandedRowRender" slot-scope="record">
-            <ProjectRolePermissionTab class="table" style="margin-top:30px; margin-left: -40px; margin-right: 10px" :resource="resource" :role="record"/>
+            <ProjectRolePermissionTab class="table" :resource="resource" :role="record"/>
           </template>
           <template slot="name" slot-scope="record"> {{ record }} </template>
           <template slot="description" slot-scope="record">
             {{ record }}
           </template>
-          <span slot="action" slot-scope="text, record" class="account-button-action">
+          <span slot="action" slot-scope="text, record">
             <a-tooltip placement="top">
               <template slot="title">
                 {{ $t('label.update.project.role') }}
@@ -62,7 +61,6 @@
             </a-tooltip>
           </span>
         </a-table>
-
         <a-modal title="Edit Project Role" v-model="editModalVisible" :footer="null" :afterClose="closeAction">
           <a-form
             :form="form"
@@ -78,7 +76,7 @@
               <a-button @click="closeAction">{{ this.$t('label.cancel') }}</a-button>
               <a-button type="primary" @click="updateProjectRole" :loading="loading">{{ $t('label.ok') }}</a-button>
             </div>
-            <span slot="action" slot-scope="text, record" class="account-button-action">
+            <span slot="action" slot-scope="text, record">
               <a-tooltip placement="top">
                 <template slot="title">
                   {{ $t('label.update.project.role') }}
@@ -105,7 +103,6 @@
             </span>
           </a-form>
         </a-modal>
-
         <a-modal title="Create Project Role" v-model="createModalVisible" :footer="null" :afterClose="closeAction">
           <a-form
             :form="form"
@@ -123,7 +120,6 @@
             </div>
           </a-form>
         </a-modal>
-
       </a-col>
     </a-row>
   </div>
@@ -172,7 +168,6 @@ export default {
       {
         title: this.$t('label.action'),
         dataIndex: 'action',
-        fixed: 'right',
         width: 100,
         scopedSlots: { customRender: 'action' }
       }
@@ -305,45 +300,8 @@ export default {
 <style lang="scss" scoped>
 .action-button {
     text-align: right;
-
     button {
       margin-right: 5px;
     }
   }
-.list {
-
-  &__label {
-    font-weight: bold;
-  }
-
-  &__col {
-    flex: 1;
-
-    @media (min-width: 480px) {
-      &:not(:last-child) {
-        margin-right: 20px;
-      }
-    }
-  }
-
-  &__item {
-    margin-right: -8px;
-    align-items: flex-start;
-
-    &-outer-container {
-      width: 100%;
-    }
-
-    &-container {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-
-      @media (min-width: 480px) {
-        flex-direction: row;
-        margin-bottom: 10px;
-      }
-    }
-  }
-}
 </style>

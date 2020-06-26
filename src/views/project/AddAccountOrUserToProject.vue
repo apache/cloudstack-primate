@@ -94,6 +94,7 @@
           :form="form"
           @submit="addUserToProject"
           layout="vertical">
+          <p v-html="$t('message.add.user.to.project')"></p>
           <a-form-item>
             <span slot="label">
               {{ $t('label.user') }}
