@@ -133,22 +133,7 @@ export default {
         FAILED: STATUS_FAILED,
         FINISH: STATUS_FINISH
       },
-      loading: false,
-      hardcodedNsps: [
-        'BaremetalDhcpProvider',
-        'BaremetalPxeProvider',
-        'BigSwitchBcf',
-        'BrocadeVcs',
-        'CiscoVnmc',
-        'ConfigDrive',
-        'F5BigIp',
-        'GloboDns',
-        'JuniperSRX',
-        'Netscaler',
-        'NiciraNvp',
-        'Opendaylight',
-        'PaloAlto'
-      ]
+      loading: false
     }
   },
   updated () {
@@ -579,14 +564,14 @@ export default {
         for (let index = 0; index < this.stepData.physicalNetworksReturned.length; index++) {
           const physicalNetwork = this.stepData.physicalNetworksReturned[index]
 
-          if (!this.stepData.stepMove.includes('advUpdatePhysicalNetwork' + index)) {
+          if (!this.stepData.stepMove.includes('advUpdatePhysicalNetwork' + physicalNetwork.id)) {
             const updPhysicalParams = {}
             updPhysicalParams.state = 'Enabled'
             updPhysicalParams.id = physicalNetwork.id
 
             try {
               await this.updatePhysicalNetwork(updPhysicalParams)
-              this.stepData.stepMove.push('advUpdatePhysicalNetwork' + index)
+              this.stepData.stepMove.push('advUpdatePhysicalNetwork' + physicalNetwork.id)
             } catch (e) {
               this.messageError = e
               this.processStatus = STATUS_FAILED
@@ -595,10 +580,53 @@ export default {
             }
           }
 
-          const configResult = await this.configNetworkServiceProvider(physicalNetwork)
-          if (!configResult) break
+          // ***** Virtual Router ***** (begin) *****
+          if (!this.stepData.stepMove.includes('advVirtualRouter' + physicalNetwork.id)) {
+            const listParams = {}
+            listParams.name = 'VirtualRouter'
+            listParams.physicalNetworkId = physicalNetwork.id
+
+            try {
+              const providerId = await this.listNetworkServiceProviders(listParams)
+              const elementId = await this.listVirtualRouterElements(providerId)
+              await this.configureVirtualRouterElement(elementId)
+              await this.updateNetworkServiceProvider(providerId)
+              this.stepData.stepMove.push('advVirtualRouter' + physicalNetwork.id)
+            } catch (e) {
+              this.messageError = e
+              this.processStatus = STATUS_FAILED
+              this.setStepStatus(STATUS_FAILED)
+              break
+            }
+          }
 
           this.advZoneConfiguredVirtualRouterCount++
+
+          // ***** Virtual Router ***** (end) *****
+
+          // ***** Ovs ***** (begin) *****
+          this.configOvs(physicalNetwork)
+          // ***** Ovs ***** (end) *****
+          // ***** Internal LB ***** (begin) *****
+          this.configInternalLBVM(physicalNetwork)
+          // ***** Internal LB ***** (end) *****
+
+          try {
+            // Advanced SG-disabled zone
+            if (!this.sgEnabled) {
+              // ***** VPC Virtual Router ***** (begin) *****
+              await this.configVpcVirtualRouter(physicalNetwork)
+              // ***** VPC Virtual Router ***** (end) *****
+            } else {
+              this.stepData.physicalNetworkReturned = physicalNetwork
+              await this.stepEnableSecurityGroupProvider()
+            }
+          } catch (e) {
+            this.messageError = e
+            this.processStatus = STATUS_FAILED
+            this.setStepStatus(STATUS_FAILED)
+            break
+          }
 
           if (this.advZoneConfiguredVirtualRouterCount === this.stepData.physicalNetworksReturned.length) {
             if (!this.sgEnabled) {
@@ -609,88 +637,6 @@ export default {
           }
         }
       }
-    },
-    async configNetworkServiceProvider (physicalNetwork) {
-      // ***** Virtual Router ***** (begin) *****
-      if (!this.stepData.stepMove.includes('virtualRouter' + physicalNetwork.id)) {
-        const listParams = {}
-        listParams.name = 'VirtualRouter'
-        listParams.physicalNetworkId = physicalNetwork.id
-
-        try {
-          const providerId = await this.listNetworkServiceProviders(listParams)
-          const elementId = await this.listVirtualRouterElements(providerId)
-          await this.configureVirtualRouterElement(elementId)
-          await this.updateNetworkServiceProvider(providerId)
-
-          this.stepData.stepMove.push('virtualRouter' + physicalNetwork.id)
-        } catch (e) {
-          this.messageError = e
-          this.processStatus = STATUS_FAILED
-          this.setStepStatus(STATUS_FAILED)
-          return false
-        }
-      }
-      // ***** Virtual Router ***** (end) *****
-
-      // ***** Ovs ***** (begin) *****
-      this.configOvs(physicalNetwork)
-      // ***** Ovs ***** (end) *****
-
-      // ***** Internal LB ***** (begin) *****
-      this.configInternalLBVM(physicalNetwork)
-      // ***** Internal LB ***** (end) *****
-
-      try {
-        // ***** VPC Virtual Router ***** (begin) *****
-        await this.configVpcVirtualRouter(physicalNetwork)
-        this.stepData.stepMove.push('configInternalLBVM' + physicalNetwork.id)
-        // ***** VPC Virtual Router ***** (end) *****
-      } catch (e) {
-        this.messageError = e
-        this.processStatus = STATUS_FAILED
-        this.setStepStatus(STATUS_FAILED)
-        return false
-      }
-
-      // ***** Security Group ***** (begin) *****
-      this.stepData.physicalNetworkReturned = physicalNetwork
-      await this.stepEnableSecurityGroupProvider()
-      // ***** Security Group ***** (end) *****
-
-      if (!this.stepData.stepMove.includes('configureAnotherService' + physicalNetwork.id)) {
-        const listNsp = await this.listAllNetworkServiceProviders({ physicalNetworkId: physicalNetwork.id })
-
-        for (let i = 0; i < this.hardcodedNsps.length; i++) {
-          let nsp = {}
-          const nspName = this.hardcodedNsps[i]
-          const nspIndex = listNsp.findIndex(item => item.name === nspName)
-
-          try {
-            if (nspIndex > -1) {
-              nsp = listNsp[nspIndex]
-            } else {
-              const params = {}
-              params.name = nspName
-              params.physicalNetworkId = physicalNetwork.id
-              const addResult = await this.addNetworkServiceProvider(params)
-              nsp = addResult.jobresult.networkserviceprovider
-            }
-
-            if (nsp.state === 'Disabled') {
-              const elementId = await this.listVirtualRouterElements(nsp.id, true)
-              if (elementId !== null) {
-                await this.configureVirtualRouterElement(elementId)
-              }
-              await this.updateNetworkServiceProvider(nsp.id)
-            }
-          } catch (e) {}
-        }
-
-        this.stepData.stepMove.push('configureAnotherService' + physicalNetwork.id)
-      }
-
-      return true
     },
     async configOvs (physicalNetwork) {
       if (this.stepData.stepMove.includes('configOvs' + physicalNetwork.id)) {
@@ -1556,7 +1502,7 @@ export default {
           this.stepData.stepMove.push('enableSecurityGroupProvider' + this.stepData.physicalNetworkReturned.id)
         }
 
-        // await this.stepAddNetscalerProvider()
+        await this.stepAddNetscalerProvider()
       } catch (e) {
         this.messageError = e
         this.processStatus = STATUS_FAILED
@@ -1725,20 +1671,7 @@ export default {
         })
       })
     },
-    listAllNetworkServiceProviders (params) {
-      return new Promise((resolve, reject) => {
-        let message = ''
-
-        api('listNetworkServiceProviders', params).then(json => {
-          const providers = json.listnetworkserviceprovidersresponse.networkserviceprovider || []
-          resolve(providers)
-        }).catch(error => {
-          message = error.response.headers['x-description']
-          reject(message)
-        })
-      })
-    },
-    listVirtualRouterElements (virtualRouterProviderId, notReject) {
+    listVirtualRouterElements (virtualRouterProviderId) {
       return new Promise((resolve, reject) => {
         let virtualRouterElementId = null
         let message = ''
@@ -1748,7 +1681,7 @@ export default {
           if (items != null && items.length > 0) {
             virtualRouterElementId = items[0].id
           }
-          if (virtualRouterElementId === null && !notReject) {
+          if (virtualRouterElementId === null) {
             message = 'error: listVirtualRouterElements API doesn\'t return Virtual Router Element Id'
             reject(message)
             return
