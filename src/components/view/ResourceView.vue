@@ -19,10 +19,10 @@
   <resource-layout>
     <div slot="left">
       <slot name="info-card">
-        <info-card :resource="resourceData" :loading="loading || fetchLoading" />
+        <info-card :resource="resource" :loading="loading" />
       </slot>
     </div>
-    <a-spin :spinning="loading || fetchLoading" slot="right">
+    <a-spin :spinning="loading" slot="right">
       <a-card
         class="spin-content"
         :bordered="true"
@@ -30,7 +30,7 @@
         <component
           v-if="tabs.length === 1"
           :is="tabs[0].component"
-          :resource="resourceData"
+          :resource="resource"
           :loading="loading"
           :tab="tabs[0].name" />
         <a-tabs
@@ -57,7 +57,6 @@ import DetailsTab from '@/components/view/DetailsTab'
 import InfoCard from '@/components/view/InfoCard'
 import ResourceLayout from '@/layouts/ResourceLayout'
 import { api } from '@/api'
-import moment from 'moment'
 import { mixinDevice } from '@/utils/mixin.js'
 
 export default {
@@ -89,25 +88,12 @@ export default {
   data () {
     return {
       activeTab: '',
-      networkService: null,
-      fetchLoading: false,
-      resourceData: {},
-      pattern: 'YYYY-MM-DD'
+      networkService: null
     }
   },
-  inject: ['parentChangeResource'],
   watch: {
     resource: function (newItem, oldItem) {
       this.resource = newItem
-
-      if (Object.keys(this.$route.query).length > 0 && this.$route.query.quota) {
-        if (newItem.account !== this.resourceData.account) {
-          this.fetchResourceQuota()
-        }
-      }
-
-      this.resourceData = Object.assign({}, this.resource)
-
       if (newItem.id === oldItem.id) return
 
       if (this.resource.associatednetworkid) {
@@ -119,11 +105,6 @@ export default {
           }
         })
       }
-    }
-  },
-  mounted () {
-    if (Object.keys(this.$route.query).length > 0 && this.$route.query.quota) {
-      this.fetchResourceQuota()
     }
   },
   methods: {
@@ -148,26 +129,6 @@ export default {
       } else {
         return true
       }
-    },
-    fetchResourceQuota () {
-      this.fetchLoading = true
-      const params = {}
-      if (Object.keys(this.$route.query).length > 0) {
-        Object.assign(params, this.$route.query)
-      }
-      api('quotaBalance', params).then(json => {
-        const quotaBalance = json.quotabalanceresponse.balance || {}
-        if (Object.keys(quotaBalance).length > 0) {
-          quotaBalance.currency = `${quotaBalance.currency} ${quotaBalance.startquota}`
-          quotaBalance.startdate = moment(quotaBalance.startdate).format(this.pattern)
-          quotaBalance.account = this.$route.params.id ? this.$route.params.id : null
-          quotaBalance.domainid = this.$route.query.domainid ? this.$route.query.domainid : null
-        }
-        this.resourceData = Object.assign({}, this.resourceData, quotaBalance)
-        this.parentChangeResource(this.resourceData)
-      }).finally(() => {
-        this.fetchLoading = false
-      })
     }
   }
 }

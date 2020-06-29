@@ -283,7 +283,12 @@
     </div>
 
     <div v-if="dataView">
+      <quota-summary-resource
+        v-if="$route.path.startsWith('/quotasummary')"
+        :resource="resource"
+        :tabs="$route.meta.tabs" />
       <resource-view
+        v-else
         :resource="resource"
         :loading="loading"
         :tabs="$route.meta.tabs" />
@@ -329,6 +334,7 @@ import ListView from '@/components/view/ListView'
 import ResourceView from '@/components/view/ResourceView'
 import ActionButton from '@/components/view/ActionButton'
 import EditTariffValueWizard from '@/views/plugins/quota/EditTariffValueWizard'
+import QuotaSummaryResource from '@/views/plugins/quota/QuotaSummaryResource'
 
 export default {
   name: 'Resource',
@@ -339,7 +345,8 @@ export default {
     ListView,
     Status,
     ActionButton,
-    EditTariffValueWizard
+    EditTariffValueWizard,
+    QuotaSummaryResource
   },
   mixins: [mixinDevice],
   provide: function () {
@@ -479,7 +486,7 @@ export default {
         }
       }
 
-      if (Object.keys(this.$route.query).length > 0 && this.$route.query.quota) {
+      if (Object.keys(this.$route.query).length > 0 && 'quota' in this.$route.query) {
         return
       }
 
