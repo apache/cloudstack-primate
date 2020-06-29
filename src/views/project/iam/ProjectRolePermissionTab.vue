@@ -203,17 +203,16 @@ export default {
     onPermissionChange (record, value) {
       this.newRulePermission = value
       if (!record) return
-
       this.updateTable = true
       api('updateProjectRolePermission', {
         projectid: this.resource.id,
         projectroleid: this.role.id,
-        ruleid: record.id,
+        projectruleid: record.id,
         permission: value
       }).then(() => {
         this.fetchData()
       }).catch(error => {
-        console.error(error)
+        this.$notifyError(error)
       })
     },
     onRuleSelect (value) {
@@ -224,7 +223,6 @@ export default {
         this.newRuleSelectError = true
         return
       }
-
       this.updateTable = true
       api('createProjectRolePermission', {
         rule: this.newRule,
@@ -235,6 +233,7 @@ export default {
       }).then(() => {
       }).catch(error => {
         console.error(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.resetNewFields()
         this.fetchData()
