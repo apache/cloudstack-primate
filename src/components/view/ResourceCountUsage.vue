@@ -29,10 +29,10 @@
           <br/>
           <br/>
           <div>
-            Current Usage: {{ domainData[item + 'total'] }} / {{ domainData[item + 'limit'] < 0 ? 'Unlimited' : domainData[item + 'limit'] }}
+            Current Usage: {{ resourceData[item + 'total'] }} / {{ resourceData[item + 'limit'] < 0 ? 'Unlimited' : resourceData[item + 'limit'] }}
           </div>
           <div>
-            Available: {{ domainData[item + 'available'] < 0 ? 'Unlimited' : domainData[item + 'available'] }}
+            Available: {{ resourceData[item + 'available'] < 0 ? 'Unlimited' : resourceData[item + 'available'] }}
           </div>
         </div>
       </a-list-item>
@@ -58,7 +58,7 @@ export default {
   data () {
     return {
       formLoading: false,
-      domainData: {
+      resourceData: {
         type: Object,
         required: false
       },
@@ -80,23 +80,25 @@ export default {
     }
   },
   methods: {
-    getParams () {
+    getResourceData () {
       const params = {}
       if (this.$route.meta.name === 'account') {
         params.account = this.resource.name
-        params.id = this.resource.domainid
+        params.domainid = this.resource.domainid
+        this.listAccounts(params)
       } else if (this.$route.meta.name === 'domain') {
         params.id = this.resource.id
+        this.listDomains(params)
       } else { // project
-        params.projectid = this.resource.id
+        params.id = this.resource.id
+        params.listall = true
+        this.listProjects(params)
       }
-      return params
     },
     fetchData () {
-      const params = this.getParams()
       try {
         this.formLoading = true
-        this.listDomains(params)
+        this.getResourceData()
         this.formLoading = false
       } catch (e) {
         this.$notification.error({
@@ -109,28 +111,51 @@ export default {
     listDomains (params) {
       api('listDomains', params).then(json => {
         const domains = json.listdomainsresponse.domain || []
-        this.domainData = domains[0] || {}
+        this.resourceData = domains[0] || {}
       }).catch(error => {
-        this.$notification.error({
-          message: 'Request Failed',
-          description: error.response.headers['x-description'],
-          duration: 0
-        })
-
-        if ([401, 405].includes(error.response.status)) {
-          this.$router.push({ path: '/exception/403' })
-        }
-
-        if ([430, 431, 432].includes(error.response.status)) {
-          this.$router.push({ path: '/exception/404' })
-        }
-
-        if ([530, 531, 532, 533, 534, 535, 536, 537].includes(error.response.status)) {
-          this.$router.push({ path: '/exception/500' })
-        }
+        this.handleErrors(error)
       }).finally(f => {
         this.loading = false
       })
+    },
+    listAccounts (params) {
+      api('listAccounts', params).then(json => {
+        const accounts = json.listaccountsresponse.account || []
+        this.resourceData = accounts[0] || {}
+      }).catch(error => {
+        this.handleErrors(error)
+      }).finally(f => {
+        this.loading = false
+      })
+    },
+    listProjects (params) {
+      api('listProjects', params).then(json => {
+        const projects = json.listprojectsresponse.project || []
+        this.resourceData = projects[0] || {}
+      }).catch(error => {
+        this.handleErrors(error)
+      }).finally(f => {
+        this.loading = false
+      })
+    },
+    handleErrors (error) {
+      this.$notification.error({
+        message: 'Request Failed',
+        description: error.response.headers['x-description'],
+        duration: 0
+      })
+
+      if ([401, 405].includes(error.response.status)) {
+        this.$router.push({ path: '/exception/403' })
+      }
+
+      if ([430, 431, 432].includes(error.response.status)) {
+        this.$router.push({ path: '/exception/404' })
+      }
+
+      if ([530, 531, 532, 533, 534, 535, 536, 537].includes(error.response.status)) {
+        this.$router.push({ path: '/exception/500' })
+      }
     }
   }
 }
