@@ -190,10 +190,13 @@ export default {
       const lineDelimiter = '\n'
       var lines = rulesCsv.split(lineDelimiter)
       var result = []
+      if (lines.length === 0) {
+        return result
+      }
       var headers = lines[0].split(columnDelimiter)
+      lines = lines.slice(1) // Remove header
 
       lines.map((line, indexLine) => {
-        if (indexLine < 1) return // Skip header
         if (line.trim() === '') return // Empty line
         var obj = {}
         var currentline = line.trim().split(columnDelimiter)
@@ -212,7 +215,6 @@ export default {
         })
         result.push(obj)
       })
-
       return result
     },
     checkCsvRulesFile (rule, value, callback) {
