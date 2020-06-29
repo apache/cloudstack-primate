@@ -19,11 +19,11 @@
   <a-table
     size="small"
     :loading="loading"
-    :columns="columns"
+    :columns="fetchColumns()"
     :dataSource="items"
     :rowKey="record => record.id || record.name || record.usageType"
     :pagination="false"
-    :rowSelection="['vm-tbd', 'event-tbd', 'alert-tbd'].includes($route.name) ? {selectedRowKeys: selectedRowKeys, onChange: onSelectChange} : null"
+    :rowSelection="['vm', 'event', 'alert'].includes($route.name) ? {selectedRowKeys: selectedRowKeys, onChange: onSelectChange} : null"
     :rowClassName="getRowClassName"
     style="overflow-y: auto"
   >
@@ -100,6 +100,9 @@
     <a slot="vmname" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: '/vm/' + record.virtualmachineid }">{{ text }}</router-link>
     </a>
+    <a slot="virtualmachinename" slot-scope="text, record" href="javascript:;">
+      <router-link :to="{ path: '/vm/' + record.virtualmachineid }">{{ text }}</router-link>
+    </a>
     <span slot="hypervisor" slot-scope="text, record">
       <span v-if="$route.name === 'hypervisorcapability'">
         <router-link :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
@@ -123,6 +126,9 @@
     </template>
     <a slot="guestnetworkname" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: '/guestnetwork/' + record.guestnetworkid }">{{ text }}</router-link>
+    </a>
+    <a slot="associatednetworkname" slot-scope="text, record" href="javascript:;">
+      <router-link :to="{ path: '/guestnetwork/' + record.associatednetworkid }">{{ text }}</router-link>
     </a>
     <a slot="vpcname" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: '/vpc/' + record.vpcid }">{{ text }}</router-link>
@@ -290,15 +296,27 @@ export default {
     }
   },
   methods: {
+    fetchColumns () {
+      if (this.isOrderUpdatable()) {
+        return this.columns
+      }
+      return this.columns.filter(x => x.dataIndex !== 'order')
+    },
     getRowClassName (record, index) {
       if (index % 2 === 0) {
         return 'light-row'
       }
       return 'dark-row'
     },
-    onSelectChange (selectedRowKeys) {
-      console.log('selectedRowKeys changed: ', selectedRowKeys)
-      this.selectedRowKeys = selectedRowKeys
+    setSelection (selection) {
+      this.selectedRowKeys = selection
+      this.$emit('selection-change', this.selectedRowKeys)
+    },
+    resetSelection () {
+      this.setSelection([])
+    },
+    onSelectChange (selectedRowKeys, selectedRows) {
+      this.setSelection(selectedRowKeys)
     },
     changeProject (project) {
       this.$store.dispatch('SetProject', project)
@@ -334,8 +352,7 @@ export default {
       this.editableValueKey = record.key
       this.editableValue = record.value
     },
-    handleUpdateOrder (id, index) {
-      this.parentToggleLoading()
+    getUpdateApi () {
       let apiString = ''
       switch (this.$route.name) {
         case 'template':
@@ -363,6 +380,14 @@ export default {
         default:
           apiString = 'updateTemplate'
       }
+      return apiString
+    },
+    isOrderUpdatable () {
+      return this.getUpdateApi() in this.$store.getters.apis
+    },
+    handleUpdateOrder (id, index) {
+      this.parentToggleLoading()
+      const apiString = this.getUpdateApi()
 
       api(apiString, {
         id,

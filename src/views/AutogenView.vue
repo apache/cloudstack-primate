@@ -82,7 +82,6 @@
     <div v-show="showAction">
       <keep-alive v-if="currentAction.component">
         <a-modal
-          :title="$t(currentAction.label)"
           :visible="showAction"
           :closable="true"
           style="top: 20px;"
@@ -92,6 +91,16 @@
           centered
           width="auto"
         >
+          <span slot="title">
+            {{ $t(currentAction.label) }}
+            <a
+              v-if="currentAction.docHelp || $route.meta.docHelp"
+              style="margin-left: 5px"
+              :href="$config.docBase + '/' + (currentAction.docHelp || $route.meta.docHelp)"
+              target="_blank">
+              <a-icon type="question-circle-o"></a-icon>
+            </a>
+          </span>
           <component
             :is="currentAction.component"
             :resource="resource"
@@ -133,6 +142,7 @@
           <a-form
             :form="form"
             @submit="handleSubmit"
+            v-show="dataView || !currentAction.groupAction || this.selectedRowKeys.length === 0"
             layout="vertical" >
             <a-form-item
               v-for="(field, fieldIndex) in currentAction.paramFields"
@@ -283,6 +293,8 @@
         :loading="loading"
         :columns="columns"
         :items="items"
+        ref="listview"
+        @selection-change="onRowSelectionChange"
         @refresh="this.fetchData" />
       <a-pagination
         class="row-element"
@@ -365,11 +377,6 @@ export default {
       tariffResource: {}
     }
   },
-  computed: {
-    hasSelected () {
-      return this.selectedRowKeys.length > 0
-    }
-  },
   beforeCreate () {
     this.form = this.$form.createForm(this)
   },
@@ -450,6 +457,10 @@ export default {
         this.dataView = true
       } else {
         this.dataView = false
+      }
+
+      if ('listview' in this.$refs && this.$refs.listview) {
+        this.$refs.listview.resetSelection()
       }
 
       if (this.$route && this.$route.meta && this.$route.meta.permission) {
@@ -548,6 +559,8 @@ export default {
         params.id = this.$route.params.id
         if (this.$route.path.startsWith('/ssh/')) {
           params.name = this.$route.params.id
+        } else if (this.$route.path.startsWith('/vmsnapshot/')) {
+          params.vmsnapshotid = this.$route.params.id
         } else if (this.$route.path.startsWith('/ldapsetting/')) {
           params.hostname = this.$route.params.id
         }
@@ -625,6 +638,9 @@ export default {
       this.actionLoading = false
       this.showAction = false
       this.currentAction = {}
+    },
+    onRowSelectionChange (selection) {
+      this.selectedRowKeys = selection
     },
     execAction (action) {
       const self = this
@@ -786,6 +802,30 @@ export default {
       })
     },
     handleSubmit (e) {
+      if (!this.dataView && this.currentAction.groupAction && this.selectedRowKeys.length > 0) {
+        const paramsList = this.currentAction.groupMap(this.selectedRowKeys)
+        this.actionLoading = true
+        for (const params of paramsList) {
+          api(this.currentAction.api, params).then(json => {
+          }).catch(error => {
+            this.$notifyError(error)
+          })
+        }
+        this.$message.info({
+          content: this.$t(this.currentAction.label),
+          key: this.currentAction.label,
+          duration: 3
+        })
+        setTimeout(() => {
+          this.actionLoading = false
+          this.closeAction()
+          this.fetchData()
+        }, 2000)
+      } else {
+        this.execSubmit(e)
+      }
+    },
+    execSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
         console.log(values)
