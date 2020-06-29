@@ -132,23 +132,25 @@ export default {
   .radio-group {
     display: block;
 
+    /deep/.ant-radio {
+      width: 35px;
+    }
+
     &__radio {
       margin: 0.5rem 0;
 
-      /deep/span {
+      /deep/span:last-child {
         display: inline-block;
       }
     }
 
     &__os-logo {
-      float: left;
-      margin-top: 1px;
-      margin-right: 5px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      margin-top: 2px;
+      margin-left: 23px;
     }
-  }
-
-  .ant-tag {
-    margin-left: 0.4rem;
   }
 
   /deep/.ant-spin-container {

@@ -17,56 +17,12 @@
 
 <template>
   <div>
-    <span class="filter-group">
-      <a-input-search
-        class="search-input"
-        :placeholder="$t('label.search')"
-        v-model="filter"
-        @search="filterDataSource">
-        <a-popover
-          placement="bottomRight"
-          slot="addonAfter"
-          trigger="click"
-          v-model="visibleFilter">
-          <template slot="content">
-            <a-form
-              style="width: 170px"
-              :form="form"
-              layout="vertical"
-              @submit="handleSubmit">
-              <a-form-item :label="$t('label.filter')">
-                <a-select
-                  allowClear
-                  mode="multiple"
-                  v-decorator="['filter']">
-                  <a-select-option
-                    v-for="(opt) in filterOpts"
-                    :key="opt.id">{{ $t(opt.name) }}</a-select-option>
-                </a-select>
-              </a-form-item>
-              <div class="filter-group-button">
-                <a-button
-                  class="filter-group-button-clear"
-                  type="default"
-                  size="small"
-                  icon="stop"
-                  @click="onClear">Clear</a-button>
-                <a-button
-                  class="filter-group-button-search"
-                  type="primary"
-                  size="small"
-                  icon="search"
-                  @click="handleSubmit">Search</a-button>
-              </div>
-            </a-form>
-          </template>
-          <a-button
-            class="filter-group-button"
-            icon="filter"
-            size="small"/>
-        </a-popover>
-      </a-input-search>
-    </span>
+    <a-input-search
+      class="search-input"
+      :placeholder="$t('label.search')"
+      v-model="filter"
+      @search="filterDataSource">
+    </a-input-search>
     <a-spin :spinning="loading">
       <a-tabs
         :animated="false"
@@ -299,52 +255,5 @@ export default {
 
   /deep/.ant-tabs-nav-scroll {
     min-height: 45px;
-  }
-
-  .filter-group {
-    /deep/.ant-input-affix-wrapper {
-      float: right;
-      width: calc(100% - 32px);
-
-      .ant-input {
-        border-radius: 4px;
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-      }
-    }
-
-    /deep/.ant-input-group-addon {
-      float: left;
-      width: 32px;
-      height: 32px;
-      border-radius: 4px;
-      border-right: 0;
-      border-left: 1px solid #d9d9d9;
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-      padding: 0 0 0 1px;
-    }
-
-    &-button {
-      background: inherit;
-      border: 0;
-      padding: 0;
-    }
-
-    &-button {
-      position: relative;
-      display: block;
-      min-height: 30px;
-
-      &-clear {
-        position: absolute;
-        left: 0;
-      }
-
-      &-search {
-        position: absolute;
-        right: 0;
-      }
-    }
   }
 </style>
