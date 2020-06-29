@@ -45,7 +45,7 @@
             </p>
           </a-upload-dragger>
         </a-form-item>
-        <a-form-item :label="$t('name')">
+        <a-form-item :label="$t('label.name')">
           <a-input
             v-decorator="['name', {
               rules: [{ required: true, message: $t('message.error.required.input') }]
@@ -53,26 +53,25 @@
             :placeholder="importRoleApiParams.name.description" />
         </a-form-item>
 
-        <a-form-item :label="$t('description')">
+        <a-form-item :label="$t('label.description')">
           <a-input
             v-decorator="['description']"
             :placeholder="importRoleApiParams.description.description" />
         </a-form-item>
 
-        <a-form-item :label="$t('type')">
+        <a-form-item :label="$t('label.type')">
           <a-select
             v-decorator="['type', {
               rules: [{ required: true, message: $t('message.error.select') }]
             }]"
             :placeholder="importRoleApiParams.type.description">
-            <a-select-option value="Admin">Admin</a-select-option>
-            <a-select-option value="DomainAdmin">DomainAdmin</a-select-option>
-            <a-select-option value="ResourceAdmin">ResourceAdmin</a-select-option>
-            <a-select-option value="User">User</a-select-option>
+            <a-select-option v-for="role in defaultRoles" :key="role">
+              {{ role }}
+            </a-select-option>
           </a-select>
         </a-form-item>
 
-        <a-form-item :label="$t('forced')">
+        <a-form-item :label="$t('label.forced')">
           <a-switch
             v-decorator="['forced', {
               initialValue: false
@@ -80,8 +79,8 @@
         </a-form-item>
 
         <div :span="24" class="action-button">
-          <a-button @click="closeAction">{{ this.$t('Cancel') }}</a-button>
-          <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('OK') }}</a-button>
+          <a-button @click="closeAction">{{ this.$t('label.cancel') }}</a-button>
+          <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('label.ok') }}</a-button>
         </div>
       </a-form>
     </a-spin>
@@ -96,6 +95,7 @@ export default {
   data () {
     return {
       fileList: [],
+      defaultRoles: ['Admin', 'DomainAdmin', 'ResourceAdmin', 'User'],
       rulesCsv: '',
       loading: false
     }

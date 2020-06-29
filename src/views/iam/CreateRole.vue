@@ -22,7 +22,7 @@
         :form="form"
         @submit="handleSubmit"
         layout="vertical">
-        <a-form-item :label="$t('name')">
+        <a-form-item :label="$t('label.name')">
           <a-input
             v-decorator="['name', {
               rules: [{ required: true, message: $t('message.error.required.input') }]
@@ -30,13 +30,13 @@
             :placeholder="createRoleApiParams.name.description" />
         </a-form-item>
 
-        <a-form-item :label="$t('description')">
+        <a-form-item :label="$t('label.description')">
           <a-input
             v-decorator="['description']"
             :placeholder="createRoleApiParams.description.description" />
         </a-form-item>
 
-        <a-form-item :label="$t('select')">
+        <a-form-item :label="$t('label.select')" v-if="'roleid' in createRoleApiParams">
           <a-radio-group
             v-decorator="['using', {
               initialValue: this.createRoleUsing
@@ -44,28 +44,27 @@
             buttonStyle="solid"
             @change="selected => { this.handleChangeCreateRole(selected.target.value) }">
             <a-radio-button value="type">
-              {{ $t('type') }}
+              {{ $t('label.type') }}
             </a-radio-button>
             <a-radio-button value="role">
-              {{ $t('role') }}
+              {{ $t('label.role') }}
             </a-radio-button>
           </a-radio-group>
         </a-form-item>
 
-        <a-form-item :label="$t('type')" v-if="this.createRoleUsing === 'type'">
+        <a-form-item :label="$t('label.type')" v-if="this.createRoleUsing === 'type'">
           <a-select
             v-decorator="['type', {
               rules: [{ required: true, message: $t('message.error.select') }]
             }]"
             :placeholder="createRoleApiParams.type.description">
-            <a-select-option value="Admin">Admin</a-select-option>
-            <a-select-option value="DomainAdmin">DomainAdmin</a-select-option>
-            <a-select-option value="ResourceAdmin">ResourceAdmin</a-select-option>
-            <a-select-option value="User">User</a-select-option>
+            <a-select-option v-for="role in defaultRoles" :key="role">
+              {{ role }}
+            </a-select-option>
           </a-select>
         </a-form-item>
 
-        <a-form-item :label="$t('role')" v-if="this.createRoleUsing === 'role'">
+        <a-form-item :label="$t('label.role')" v-if="this.createRoleUsing === 'role'">
           <a-select
             v-decorator="['roleid', {
               rules: [{ required: true, message: $t('message.error.select') }]
@@ -81,8 +80,8 @@
         </a-form-item>
 
         <div :span="24" class="action-button">
-          <a-button @click="closeAction">{{ this.$t('Cancel') }}</a-button>
-          <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('OK') }}</a-button>
+          <a-button @click="closeAction">{{ this.$t('label.cancel') }}</a-button>
+          <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('label.ok') }}</a-button>
         </div>
       </a-form>
     </a-spin>
@@ -97,6 +96,7 @@ export default {
   data () {
     return {
       roles: [],
+      defaultRoles: ['Admin', 'DomainAdmin', 'ResourceAdmin', 'User'],
       createRoleUsing: 'type',
       loading: false
     }

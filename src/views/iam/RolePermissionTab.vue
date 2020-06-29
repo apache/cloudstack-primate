@@ -275,6 +275,7 @@ export default {
       hiddenElement.target = '_blank'
       hiddenElement.download = this.resource.name + '_' + this.resource.type + '.csv'
       hiddenElement.click()
+      hiddenElement.delete()
     }
   }
 }
