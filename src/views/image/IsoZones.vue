@@ -166,15 +166,17 @@ export default {
         title: this.$t('label.isready'),
         dataIndex: 'isready',
         scopedSlots: { customRender: 'isready' }
-      },
-      {
+      }
+    ]
+    if (this.isActionPermitted()) {
+      this.columns.push({
         title: '',
         dataIndex: 'action',
         fixed: 'right',
         width: 100,
         scopedSlots: { customRender: 'action' }
-      }
-    ]
+      })
+    }
   },
   mounted () {
     this.fetchData()
@@ -216,6 +218,13 @@ export default {
       this.page = currentPage
       this.pageSize = pageSize
       this.fetchData()
+    },
+    isActionPermitted () {
+      return (['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype) ||
+        (this.resource.domainid === this.$store.getters.userInfo.domainid && this.resource.account === this.$store.getters.userInfo.account)) &&
+        !(this.resource.account !== 'SYSTEM' && this.resource.domainid === 1) &&
+        this.resource.isready
+        // TODO : allow delete only if already downloaded
     },
     deleteIso (record) {
       const params = {

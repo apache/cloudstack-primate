@@ -251,6 +251,7 @@ export default {
       default: false
     }
   },
+  inject: ['parentFetchData'],
   data () {
     return {
       networks: [],
@@ -487,10 +488,10 @@ export default {
           this.$notification.success({
             message: 'Successfully added VPC Network'
           })
-          this.fetchData()
         }).catch(error => {
           this.$notifyError(error)
         }).finally(() => {
+          this.parentFetchData()
           this.fetchData()
         })
       })

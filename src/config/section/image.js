@@ -72,7 +72,19 @@ export default {
           icon: 'edit',
           label: 'label.edit',
           dataView: true,
-          args: ['name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable', 'isrouting']
+          show: (record, store) => {
+            return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+              record.templatetype !== 'SYSTEM' &&
+              record.isready // Add for projects too ??
+          },
+          args: (store) => {
+            var fields = ['name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable']
+            if (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) {
+              fields.push('isrouting')
+            }
+            return fields
+          }
         },
         {
           api: 'extractTemplate',
@@ -81,7 +93,13 @@ export default {
           message: 'message.action.download.template',
           docHelp: 'adminguide/templates.html#exporting-templates',
           dataView: true,
-          show: (record) => { return record && record.isextractable },
+          show: (record, store) => {
+            return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+              record.templatetype !== 'SYSTEM' &&
+              record.isready && // Add for projects too ??
+              record.isextractable
+          },
           args: ['zoneid', 'mode'],
           mapping: {
             zoneid: {
@@ -100,7 +118,12 @@ export default {
           docHelp: 'adminguide/templates.html#sharing-templates-with-other-accounts-projects',
           dataView: true,
           popup: true,
-          show: (record, store) => { return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) || record.templatetype !== 'BUILTIN') },
+          show: (record, store) => {
+            return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+              record.templatetype !== 'SYSTEM' &&
+              record.isready // Add for projects too ??
+          },
           component: () => import('@/views/image/UpdateTemplateIsoPermissions')
         }
       ]
@@ -152,7 +175,19 @@ export default {
           icon: 'edit',
           label: 'label.edit',
           dataView: true,
-          args: ['name', 'displaytext', 'bootable', 'ostypeid', 'isdynamicallyscalable', 'isrouting']
+          show: (record, store) => {
+            return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+              !(record.account === 'SYSTEM' && record.domainid === 1) &&
+              record.isready // Add for projects too ??
+          },
+          args: (store) => {
+            var fields = ['name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable']
+            if (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) {
+              fields.push('isrouting')
+            }
+            return fields
+          }
         },
         {
           api: 'extractIso',
@@ -161,7 +196,12 @@ export default {
           message: 'message.action.download.iso',
           docHelp: 'adminguide/templates.html#exporting-templates',
           dataView: true,
-          show: (record) => { return record && record.isextractable },
+          show: (record, store) => {
+            return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+              !(record.account === 'SYSTEM' && record.domainid === 1) &&
+              record.isready // Add for projects too ??
+          },
           args: ['zoneid', 'mode'],
           mapping: {
             zoneid: {
@@ -181,7 +221,12 @@ export default {
           dataView: true,
           args: ['op', 'accounts', 'projectids'],
           popup: true,
-          show: (record, store) => { return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) || record.templatetype !== 'BUILTIN') },
+          show: (record, store) => {
+            return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+              !(record.account === 'SYSTEM' && record.domainid === 1) &&
+              record.isready // Add for projects too ??
+          },
           component: () => import('@/views/image/UpdateTemplateIsoPermissions')
         }
       ]
