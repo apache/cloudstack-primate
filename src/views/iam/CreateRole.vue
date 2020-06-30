@@ -36,7 +36,7 @@
             :placeholder="createRoleApiParams.description.description" />
         </a-form-item>
 
-        <a-form-item :label="$t('label.select')" v-if="'roleid' in createRoleApiParams">
+        <a-form-item :label="$t('label.based.on')" v-if="'roleid' in createRoleApiParams">
           <a-radio-group
             v-decorator="['using', {
               initialValue: this.createRoleUsing

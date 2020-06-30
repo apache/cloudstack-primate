@@ -449,6 +449,7 @@
 "label.baremetalcpucores": "# of CPU Cores",
 "label.baremetalmac": "Host MAC",
 "label.baremetalmemory": "Memory (in MB)",
+"label.based.on": "Based on",
 "label.basic": "Basic",
 "label.basic.mode": "Basic Mode",
 "label.basicsetup": "Basic setup",

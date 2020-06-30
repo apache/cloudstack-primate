@@ -203,12 +203,22 @@ export default {
 
         headers.map((header, indexHeader) => {
           if (indexHeader === 2 && currentline.length > 3) {
-            obj[header.trim()] = currentline[indexHeader].substr(1)
+            if (currentline[indexHeader].startsWith('"')) {
+              obj[header.trim()] = currentline[indexHeader].substr(1)
+            } else {
+              obj[header.trim()] = currentline[indexHeader]
+            }
+
             for (let i = 3; i < currentline.length - 1; i++) {
               obj[header.trim()] += columnDelimiter + currentline[i]
             }
+
             var lastColumn = currentline[currentline.length - 1]
-            obj[header.trim()] += columnDelimiter + lastColumn.substr(0, lastColumn.length - 1)
+            if (lastColumn.endsWith('"')) {
+              obj[header.trim()] += columnDelimiter + lastColumn.substr(0, lastColumn.length - 1)
+            } else {
+              obj[header.trim()] += columnDelimiter + lastColumn
+            }
           } else {
             obj[header.trim()] = currentline[indexHeader]
           }

@@ -171,7 +171,7 @@ export default {
       api('listRolePermissions', { roleid: this.resource.id }).then(response => {
         this.rules = response.listrolepermissionsresponse.rolepermission
       }).catch(error => {
-        console.error(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.loadingTable = false
         this.updateTable = false
@@ -183,7 +183,7 @@ export default {
         roleid: this.resource.id,
         ruleorder: this.rules.map(rule => rule.id)
       }).catch(error => {
-        console.error(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchData()
       })
@@ -191,7 +191,7 @@ export default {
     onRuleDelete (key) {
       this.updateTable = true
       api('deleteRolePermission', { id: key }).catch(error => {
-        console.error(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.fetchData()
       })
@@ -209,7 +209,7 @@ export default {
       }).then(() => {
         this.fetchData()
       }).catch(error => {
-        console.error(error)
+        this.$notifyError(error)
       })
     },
     onRuleSelect (value) {
@@ -229,7 +229,7 @@ export default {
         roleid: this.resource.id
       }).then(() => {
       }).catch(error => {
-        console.error(error)
+        this.$notifyError(error)
       }).finally(() => {
         this.resetNewFields()
         this.fetchData()
