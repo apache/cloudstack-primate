@@ -16,6 +16,7 @@
 // under the License.
 
 import kubernetes from '@/assets/icons/kubernetes.svg?inline'
+import store from '@/store'
 
 export default {
   name: 'image',
@@ -30,8 +31,14 @@ export default {
       permission: ['listTemplates'],
       params: { templatefilter: 'self', showunique: 'true' },
       resourceType: 'Template',
-      columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain', 'order'],
       filters: ['self', 'shared', 'featured', 'community'],
+      columns: () => {
+        var fields = ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain']
+        if (['Admin'].includes(store.getters.userInfo.roletype)) {
+          fields.push('order')
+        }
+        return fields
+      },
       details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'directdownload', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created'],
       related: [{
         name: 'vm',
