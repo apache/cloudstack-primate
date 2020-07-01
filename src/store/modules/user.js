@@ -89,7 +89,6 @@ const user = {
           Cookies.set('account', result.account, { expires: 1 })
           Cookies.set('domainid', result.domainid, { expires: 1 })
           Cookies.set('role', result.type, { expires: 1 })
-          Cookies.set('sessionkey', result.sessionkey, { expires: 1 })
           Cookies.set('timezone', result.timezone, { expires: 1 })
           Cookies.set('timezoneoffset', result.timezoneoffset, { expires: 1 })
           Cookies.set('userfullname', result.firstname + ' ' + result.lastname, { expires: 1 })
@@ -125,15 +124,7 @@ const user = {
           commit('SET_APIS', cachedApis)
           resolve(cachedApis)
         } else {
-          // This will show the dashboard and some common navigation sections
-          // to most users/roles, while we complete API autodiscovery
-          const apis = {}
-          apis.listUsers = {}
-          apis.listAccounts = {}
-          commit('SET_APIS', apis)
-          resolve(apis)
-
-          const hide = message.loading('Discovering features...', 0)
+          const hide = message.loading('Discovering features, please wait...', 0)
           api('listApis').then(response => {
             const apis = {}
             const apiList = response.listapisresponse.api
@@ -146,6 +137,7 @@ const user = {
               }
             }
             commit('SET_APIS', apis)
+            resolve(apis)
             store.dispatch('GenerateRoutes', { apis }).then(() => {
               router.addRoutes(store.getters.addRouters)
             })

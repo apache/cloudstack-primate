@@ -22,7 +22,7 @@
       icon="plus"
       style="width: 100%;margin-bottom: 20px;"
       :disabled="!('createNetwork' in $store.getters.apis)"
-      @click="handleOpenModal">Add Network</a-button>
+      @click="handleOpenModal">{{ $t('label.add.network') }}</a-button>
     <a-list class="list">
       <a-list-item v-for="(network, idx) in networks" :key="idx" class="list__item">
         <div class="list__item-outer-container">
@@ -83,9 +83,12 @@
                     :to="{ path: '/vm/'+item.id}">{{ item.name }}
                   </router-link>
                 </template>
+                <template slot="state" slot-scope="text, item">
+                  <status :text="item.state" displayText></status>
+                </template>
                 <template slot="ip" slot-scope="text, item">
                   <div v-for="nic in item.nic" :key="nic.id">
-                    {{ nic.isdefault === true ? nic.ipaddress : '' }}
+                    {{ nic.networkid === network.id ? nic.ipaddress : '' }}
                   </div>
                 </template>
               </a-table>
@@ -331,6 +334,11 @@ export default {
           scopedSlots: { customRender: 'name' }
         },
         {
+          title: this.$t('label.state'),
+          dataIndex: 'state',
+          scopedSlots: { customRender: 'state' }
+        },
+        {
           title: this.$t('label.ip'),
           scopedSlots: { customRender: 'ip' }
         }
@@ -531,6 +539,7 @@ export default {
           this.$message.error('Failed to create Internal LB')
         }).finally(() => {
           this.modalLoading = false
+          this.fetchLoading = false
           this.showAddInternalLB = false
           this.fetchData()
         })
