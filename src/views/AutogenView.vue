@@ -356,7 +356,8 @@ export default {
       parentStartLoading: this.startLoading,
       parentFinishLoading: this.finishLoading,
       parentChangeResource: this.changeResource,
-      parentEditTariffAction: this.showTariffAction
+      parentEditTariffAction: this.showTariffAction,
+      parentPollActionCompletion: this.pollActionCompletion
     }
   },
   data () {
