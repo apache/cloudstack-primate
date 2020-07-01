@@ -107,7 +107,8 @@ export default {
         api('listProjectAccounts', { projectid: this.resource.id }).then(response => {
           projectAccountList = response.listprojectaccountsresponse.projectaccount
           for (var pa in projectAccountList) {
-            if ((projectAccountList[pa].userid && 'fetchUser(projectAccountList[pa].userid)'.username === this.$store.getters.userInfo.username) ||
+            // TODO
+            if ((projectAccountList[pa].userid && projectAccountList[pa].userid === this.$store.getters.userInfo.id) ||
               projectAccountList[pa].account === this.$store.getters.userInfo.account) {
               this.projectAccount = projectAccountList[pa]
               break
@@ -138,15 +139,6 @@ export default {
       } else {
         return true
       }
-    },
-    fetchUser (userId) {
-      var user = null
-      api('listUsers', { listall: true }).then(response => {
-        var users = response.listusersresponse.user
-        users = users.filter(user => user.id === userId)
-        user = users[0]
-      })
-      return user
     }
   }
 }

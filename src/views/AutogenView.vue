@@ -540,14 +540,10 @@ export default {
               role: 'Admin'
             }).then(response => {
               const projAccounts = response.listprojectaccountsresponse.projectaccount || []
-              var pA = projAccounts.map(a => {
-                if (a.userid) {
-                  return a.account + '(' + this.getUserName(a) + ')'
-                } else {
-                  return a.account
-                }
+              var pa = projAccounts.map(a => {
+                return a.userid ? a.account + '(' + (a.user[0].username || a.userid) + ')' : a.account
               })
-              this.items[index].account = pA.join()
+              this.items[index].account = pa.join()
             })
           }
           this.columns.map(col => {
@@ -591,12 +587,6 @@ export default {
       }).finally(f => {
         this.loading = false
       })
-    },
-    getUserName (record) {
-      if (record.userid && record.userid !== null) {
-        return record.user ? record.user[0].username : record.userid
-      }
-      return null
     },
     onSearch (value) {
       this.searchQuery = value
