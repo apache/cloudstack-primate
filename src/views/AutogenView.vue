@@ -453,6 +453,10 @@ export default {
         }
       }
 
+      if (!['Admin'].includes(this.$store.getters.userInfo.roletype) && this.apiName === 'listTemplates' && this.selectedFilter !== 'self') {
+        this.columnKeys = this.columnKeys.filter(key => { return key !== 'order' })
+      }
+
       if (this.selectedFilter && this.filters.length > 0) {
         if (this.$route.path.startsWith('/template')) {
           params.templatefilter = this.selectedFilter
