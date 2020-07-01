@@ -29,6 +29,7 @@ export default {
       permission: ['quotaSummary'],
       columns: ['account', 'domain', 'state', 'currency', 'balance', 'quota'],
       details: ['account', 'domain', 'state', 'currency', 'balance', 'quota', 'startdate', 'enddate'],
+      component: () => import('@/views/plugins/quota/QuotaSummary.vue'),
       tabs: [
         {
           name: 'details',
@@ -68,7 +69,8 @@ export default {
       docHelp: 'plugins/quota.html#quota-tariff',
       permission: ['quotaTariffList'],
       columns: ['usageName', 'description', 'usageUnit', 'tariffValue', 'tariffActions'],
-      details: ['usageName', 'description', 'usageUnit', 'tariffValue']
+      details: ['usageName', 'description', 'usageUnit', 'tariffValue'],
+      component: () => import('@/views/plugins/quota/QuotaTariff.vue')
     },
     {
       name: 'quotaemailtemplate',

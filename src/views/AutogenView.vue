@@ -283,10 +283,7 @@
     </div>
 
     <div v-if="dataView">
-      <quota-summary-resource
-        v-if="$route.path.startsWith('/quotasummary')"
-        :resource="resource"
-        :tabs="$route.meta.tabs" />
+      <slot v-if="$route.path.startsWith('/quotasummary')"></slot>
       <resource-view
         v-else
         :resource="resource"
@@ -313,10 +310,6 @@
         @showSizeChange="changePageSize"
         showSizeChanger
         showQuickJumper />
-      <edit-tariff-value-wizard
-        v-if="tariffAction"
-        :showAction="tariffAction"
-        :resource="tariffResource" />
     </div>
   </div>
 </template>
@@ -333,8 +326,6 @@ import Status from '@/components/widgets/Status'
 import ListView from '@/components/view/ListView'
 import ResourceView from '@/components/view/ResourceView'
 import ActionButton from '@/components/view/ActionButton'
-import EditTariffValueWizard from '@/views/plugins/quota/EditTariffValueWizard'
-import QuotaSummaryResource from '@/views/plugins/quota/QuotaSummaryResource'
 
 export default {
   name: 'Resource',
@@ -344,9 +335,7 @@ export default {
     ResourceView,
     ListView,
     Status,
-    ActionButton,
-    EditTariffValueWizard,
-    QuotaSummaryResource
+    ActionButton
   },
   mixins: [mixinDevice],
   provide: function () {
@@ -356,7 +345,6 @@ export default {
       parentStartLoading: this.startLoading,
       parentFinishLoading: this.finishLoading,
       parentChangeResource: this.changeResource,
-      parentEditTariffAction: this.showTariffAction,
       parentPollActionCompletion: this.pollActionCompletion
     }
   },
@@ -380,9 +368,7 @@ export default {
       filters: [],
       actions: [],
       formModel: {},
-      confirmDirty: false,
-      tariffAction: false,
-      tariffResource: {}
+      confirmDirty: false
     }
   },
   beforeCreate () {
@@ -463,6 +449,7 @@ export default {
       if (this.$route && this.$route.params && this.$route.params.id) {
         this.resource = {}
         this.dataView = true
+        this.$emit('change-resource', this.resource)
       } else {
         this.dataView = false
       }
@@ -485,10 +472,6 @@ export default {
         if (this.$route.meta.actions) {
           this.actions = this.$route.meta.actions
         }
-      }
-
-      if (Object.keys(this.$route.query).length > 0 && 'quota' in this.$route.query) {
-        return
       }
 
       if (this.apiName === '' || this.apiName === undefined) {
@@ -618,6 +601,7 @@ export default {
         }
         if (this.items.length > 0) {
           this.resource = this.items[0]
+          this.$emit('change-resource', this.resource)
         }
       }).catch(error => {
         this.$notifyError(error)
@@ -999,10 +983,6 @@ export default {
       } else {
         callback()
       }
-    },
-    showTariffAction (showAction, resource) {
-      this.tariffAction = showAction
-      this.tariffResource = resource
     }
   }
 }
