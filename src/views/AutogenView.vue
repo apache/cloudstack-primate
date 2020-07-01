@@ -485,6 +485,14 @@ export default {
         }
       }
 
+      const userInfo = this.$store.getters.userInfo
+      if (!['Admin'].includes(userInfo.roletype) && this.selectedFilter !== 'self' && ['listTemplates'].includes(this.apiName)) {
+        var colIndex = this.columnKeys.indexOf('status')
+        if (colIndex > -1) {
+          this.columnKeys.splice(colIndex, 1)
+        }
+      }
+
       if (this.selectedFilter && this.filters.length > 0) {
         if (this.$route.path.startsWith('/template')) {
           params.templatefilter = this.selectedFilter
@@ -577,9 +585,11 @@ export default {
         if (!this.items || this.items.length === 0) {
           this.items = []
         }
+
         if (['listTemplates', 'listIsos'].includes(this.apiName) && this.items.length > 1) {
           this.items = [...new Map(this.items.map(x => [x.id, x])).values()]
         }
+
         for (let idx = 0; idx < this.items.length; idx++) {
           this.items[idx].key = idx
           for (const key in customRender) {
