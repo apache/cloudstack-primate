@@ -64,20 +64,12 @@ export default {
       searchFilters: ['name', 'zoneid', 'domainid', 'account', 'tags'],
       details: ['displayname', 'name', 'id', 'state', 'ipaddress', 'templatename', 'ostypename', 'serviceofferingname', 'isdynamicallyscalable', 'haenable', 'hypervisor', 'boottype', 'bootmode', 'account', 'domain', 'zonename'],
       related: [{
-        name: 'volume',
-        title: 'label.volumes',
-        param: 'virtualmachineid'
-      }, {
         name: 'vmsnapshot',
         title: 'label.vm.snapshots',
         param: 'virtualmachineid'
       }, {
         name: 'backup',
         title: 'label.backup',
-        param: 'virtualmachineid'
-      }, {
-        name: 'affinitygroup',
-        title: 'label.affinity.groups',
         param: 'virtualmachineid'
       }],
       tabs: [{
@@ -109,6 +101,7 @@ export default {
           docHelp: 'adminguide/virtual_machines.html#stopping-and-starting-vms',
           dataView: true,
           groupAction: true,
+          groupMap: (selection) => { return selection.map(x => { return { id: x } }) },
           show: (record) => { return ['Stopped'].includes(record.state) },
           args: (record, store) => {
             var fields = []
@@ -132,6 +125,7 @@ export default {
           docHelp: 'adminguide/virtual_machines.html#stopping-and-starting-vms',
           dataView: true,
           groupAction: true,
+          groupMap: (selection) => { return selection.map(x => { return { id: x } }) },
           args: ['forced'],
           show: (record) => { return ['Running'].includes(record.state) }
         },
@@ -341,7 +335,7 @@ export default {
           label: 'label.action.reset.password',
           message: 'message.action.instance.reset.password',
           dataView: true,
-          show: (record) => { return ['Running', 'Stopped'].includes(record.state) },
+          show: (record) => { return ['Running', 'Stopped'].includes(record.state) && record.passwordenabled },
           response: (result) => { return result.virtualmachine && result.virtualmachine.password ? `Password of the VM is ${result.virtualmachine.password}` : null }
         },
         {
@@ -388,7 +382,6 @@ export default {
           icon: 'disconnect',
           label: 'label.action.unmanage.virtualmachine',
           dataView: true,
-          groupAction: true,
           show: (record) => { return ['Running', 'Stopped'].includes(record.state) && record.hypervisor === 'VMware' }
         },
         {
@@ -415,6 +408,7 @@ export default {
           },
           dataView: true,
           groupAction: true,
+          groupMap: (selection) => { return selection.map(x => { return { id: x, expunge: true } }) },
           show: (record) => { return ['Running', 'Stopped', 'Error'].includes(record.state) }
         }
       ]

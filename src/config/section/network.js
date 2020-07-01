@@ -517,6 +517,7 @@ export default {
       title: 'label.vpn.users',
       icon: 'user',
       permission: ['listVpnUsers'],
+      hidden: true,
       columns: ['username', 'state', 'account', 'domain'],
       details: ['username', 'state', 'account', 'domain'],
       actions: [

@@ -141,6 +141,7 @@
           <a-form
             :form="form"
             @submit="handleSubmit"
+            v-show="dataView || !currentAction.groupAction || this.selectedRowKeys.length === 0"
             layout="vertical" >
             <a-form-item
               v-for="(field, fieldIndex) in currentAction.paramFields"
@@ -291,6 +292,8 @@
         :loading="loading"
         :columns="columns"
         :items="items"
+        ref="listview"
+        @selection-change="onRowSelectionChange"
         @refresh="this.fetchData" />
       <a-pagination
         class="row-element"
@@ -342,7 +345,8 @@ export default {
       parentFinishLoading: this.finishLoading,
       parentSearch: this.onSearch,
       parentChangeFilter: this.changeFilter,
-      parentFilter: this.onFilter
+      parentFilter: this.onFilter,
+      parentPollActionCompletion: this.pollActionCompletion
     }
   },
   data () {
@@ -368,11 +372,6 @@ export default {
       actions: [],
       formModel: {},
       confirmDirty: false
-    }
-  },
-  computed: {
-    hasSelected () {
-      return this.selectedRowKeys.length > 0
     }
   },
   beforeCreate () {
@@ -460,6 +459,10 @@ export default {
         this.dataView = true
       } else {
         this.dataView = false
+      }
+
+      if ('listview' in this.$refs && this.$refs.listview) {
+        this.$refs.listview.resetSelection()
       }
 
       if (this.$route && this.$route.meta && this.$route.meta.permission) {
@@ -647,6 +650,9 @@ export default {
       this.showAction = false
       this.currentAction = {}
     },
+    onRowSelectionChange (selection) {
+      this.selectedRowKeys = selection
+    },
     execAction (action) {
       const self = this
       this.form = this.$form.createForm(this)
@@ -807,6 +813,30 @@ export default {
       })
     },
     handleSubmit (e) {
+      if (!this.dataView && this.currentAction.groupAction && this.selectedRowKeys.length > 0) {
+        const paramsList = this.currentAction.groupMap(this.selectedRowKeys)
+        this.actionLoading = true
+        for (const params of paramsList) {
+          api(this.currentAction.api, params).then(json => {
+          }).catch(error => {
+            this.$notifyError(error)
+          })
+        }
+        this.$message.info({
+          content: this.$t(this.currentAction.label),
+          key: this.currentAction.label,
+          duration: 3
+        })
+        setTimeout(() => {
+          this.actionLoading = false
+          this.closeAction()
+          this.fetchData()
+        }, 2000)
+      } else {
+        this.execSubmit(e)
+      }
+    },
+    execSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
         console.log(values)
@@ -918,6 +948,9 @@ export default {
       this.page = currentPage
       this.pageSize = pageSize
       this.fetchData()
+    },
+    changeResource (resource) {
+      this.resource = resource
     },
     start () {
       this.loading = true
