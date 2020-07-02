@@ -16,7 +16,7 @@
 // under the License.
 
 <template>
-  <a-tooltip placement="bottom" :title="getHelperText(text)">
+  <a-tooltip placement="bottom" :title="$t(getTooltip(text))">
     <a-badge style="display: inline-flex" :title="text" :status="getBadgeStatus(text)" :text="getText()" />
   </a-tooltip>
 </template>
@@ -95,95 +95,24 @@ export default {
       }
       return status
     },
-    getHelperText (state) {
+    getTooltip (state) {
       if (this.$route.path.includes('/vmsnapshot')) {
-        return this.getVMSnapshotHelperText(state)
+        return 'message.vmsnapshot.state.' + state.toLowerCase()
       }
       if (this.$route.path.includes('/vm')) {
-        return this.getVMHelperText(state)
+        return 'message.vm.state.' + state.toLowerCase()
       }
       if (this.$route.path.includes('/volume')) {
-        return this.getVolumeHelperText(state)
+        return 'message.volume.state.' + state.toLowerCase()
       }
       if (this.$route.path.includes('/guestnetwork')) {
-        return this.getGuestNetworkHelperText(state)
+        return 'message.guestnetwork.state.' + state.toLowerCase()
       }
       if (this.$route.path.includes('/publicip')) {
-        return this.getPublicIPHelperText(state)
+        return 'message.publicip.state.' + state.toLowerCase()
       }
       // Nothing for snapshots, vpcs, gateways, vnpnconn, vpnuser, kubectl, event, project, account, infra. They're all self explanatory
       return state
-    },
-    getVMHelperText (state) {
-      switch (state) {
-        case 'Starting': return 'VM is being started.  At this state, you should find host id filled which means it\'s being started on that host.'
-        case 'Running': return 'VM is running.  host id has the host that it is running on.'
-        case 'Stopping': return 'VM is being stopped.  host id has the host that it is being stopped on.'
-        case 'Stopped': return 'VM is stopped.  host id should be null.'
-        case 'Destroyed': return 'VM is marked for destroy.'
-        case 'Expunging': return 'VM is being   expunged.'
-        case 'Migrating': return 'VM is being migrated.  host id holds to from host'
-        case 'Error': return 'VM is in error'
-        case 'Unknown': return 'VM state is unknown.'
-        case 'Shutdown': return 'VM state is shutdown from inside'
-        default: return state
-      }
-    },
-    getVolumeHelperText (state) {
-      switch (state) {
-        case 'Allocated': return 'The volume is allocated but has not been created yet.'
-        case 'Creating': return 'The volume is being created.  getPoolId() should reflect the pool where it is being created.'
-        case 'Ready': return 'The volume is ready to be used.'
-        case 'Migrating': return 'The volume is migrating to other storage pool'
-        case 'Snapshotting': return 'There is a snapshot created on this volume, not backed up to secondary storage yet'
-        case 'RevertSnapshotting': return 'There is a snapshot created on this volume, the volume is being reverting from snapshot'
-        case 'Resizing': return 'The volume is being resized'
-        case 'Expunging': return 'The volume is being expunging'
-        case 'Expunged': return 'The volume has been expunged'
-        case 'Destroy': return 'The volume is destroyed, and can\'t be recovered.'
-        case 'Destroying': return 'The volume is destroying, and can\'t be recovered.'
-        case 'UploadOp': return 'The volume upload operation is in progress or in short the volume is on secondary storage'
-        case 'Copying': return 'Volume is copying from image store to primary, in case it\'s an uploaded volume'
-        case 'Uploaded': return 'Volume is uploaded'
-        case 'NotUploaded': return 'The volume entry is just created in DB, not yet uploaded'
-        case 'UploadInProgress': return 'Volume upload is in progress'
-        case 'UploadError': return 'Volume upload encountered some error'
-        case 'UploadAbandoned': return 'Volume upload is abandoned since the upload was never initiated within a specificed time'
-        case 'Attaching': return 'The volume is attaching to a VM from Ready state.'
-        default: return state
-      }
-    },
-    getVMSnapshotHelperText (state) {
-      switch (state) {
-        case 'Allocated': return 'The VM snapshot is allocated but has not been created yet.'
-        case 'Creating': return 'The VM snapshot is being created.'
-        case 'Ready': return 'The VM snapshot is ready to be used.'
-        case 'Reverting': return 'The VM snapshot is being used to revert'
-        case 'Expunging': return 'The volume is being expunging'
-        case 'Removed': return 'The volume is destroyed, and can\'t be recovered'
-        case 'Error': return 'The volume is in error state, and can\'t be recovered'
-        default: return state
-      }
-    },
-    getGuestNetworkHelperText (state) {
-      switch (state) {
-        case 'Allocated': return 'Indicates the network configuration is in allocated but not setup'
-        case 'Setup': return 'Indicates the network configuration is setup'
-        case 'Implementing': return 'Indicates the network configuration is being implemented'
-        case 'Implemented': return 'Indicates the network configuration is in use'
-        case 'Shutdown': return 'Indicates the network configuration is being destroyed'
-        case 'Destroy': return 'Indicates that the network is destroyed'
-        default: return state
-      }
-    },
-    getPublicIPHelperText (state) {
-      switch (state) {
-        case 'Allocating': return 'The IP Address is being propagated to other network elements and is not ready for use yet.'
-        case 'Allocated': return 'The IP address is in used.'
-        case 'Releasing': return 'The IP address is being released for other network elements and is not ready for allocation.'
-        case 'Free': return 'The IP address is ready to be allocated.'
-        default: return state
-      }
     }
   }
 }
