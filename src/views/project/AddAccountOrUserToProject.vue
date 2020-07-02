@@ -25,7 +25,7 @@
           <a-form-item>
             <span slot="label">
               {{ $t('label.account') }}
-              <a-tooltip :title="fetchApiParams('addAccountToProject').account.description">
+              <a-tooltip :title="apiParams.addAccountToProject.account.description">
                 <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
               </a-tooltip>
             </span>
@@ -44,7 +44,7 @@
           <a-form-item>
             <span slot="label">
               {{ $t('label.email') }}
-              <a-tooltip :title="fetchApiParams('addAccountToProject').email.description">
+              <a-tooltip :title="apiParams.addAccountToProject.email.description">
                 <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
               </a-tooltip>
             </span>
@@ -53,7 +53,7 @@
           <a-form-item>
             <span slot="label">
               {{ $t('label.project.role') }}
-              <a-tooltip :title="fetchApiParams('addAccountToProject').projectroleid.description">
+              <a-tooltip :title="apiParams.addAccountToProject.projectroleid.description">
                 <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
               </a-tooltip>
             </span>
@@ -71,7 +71,7 @@
           <a-form-item>
             <span slot="label">
               {{ $t('label.roletype') }}
-              <a-tooltip :title="fetchApiParams('addAccountToProject').roletype.description">
+              <a-tooltip :title="apiParams.addAccountToProject.roletype.description">
                 <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
               </a-tooltip>
             </span>
@@ -98,7 +98,7 @@
           <a-form-item>
             <span slot="label">
               {{ $t('label.user') }}
-              <a-tooltip :title="fetchApiParams('addUserToProject').userid.description">
+              <a-tooltip :title="apiParams.addUserToProject.userid.description">
                 <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
               </a-tooltip>
             </span>
@@ -119,7 +119,7 @@
           <a-form-item>
             <span slot="label">
               {{ $t('label.email') }}
-              <a-tooltip :title="fetchApiParams('addUserToProject').email.description">
+              <a-tooltip :title="apiParams.addUserToProject.email.description">
                 <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
               </a-tooltip>
             </span>
@@ -128,7 +128,7 @@
           <a-form-item>
             <span slot="label">
               {{ $t('label.project.role') }}
-              <a-tooltip :title="fetchApiParams('addUserToProject').roletype.description">
+              <a-tooltip :title="apiParams.addUserToProject.roletype.description">
                 <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
               </a-tooltip>
             </span>
@@ -146,7 +146,7 @@
           <a-form-item>
             <span slot="label">
               {{ $t('label.roletype') }}
-              <a-tooltip :title="fetchApiParams('addUserToProject').roletype.description">
+              <a-tooltip :title="apiParams.addUserToProject.roletype.description">
                 <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
               </a-tooltip>
             </span>
@@ -184,7 +184,12 @@ export default {
       projectRoles: [],
       selectedUser: null,
       selectedAccount: null,
-      loading: false
+      loading: false,
+      load: {
+        users: false,
+        accounts: false,
+        projectRoles: false
+      }
     }
   },
   mounted () {
@@ -192,6 +197,16 @@ export default {
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
+    const apis = ['addAccountToProject', 'addUserToProject']
+    this.apiParams = {}
+    for (var api of apis) {
+      const details = {}
+      var apiConfig = this.$store.getters.apis[api]
+      apiConfig.params.forEach(param => {
+        details[param.name] = param
+      })
+      this.apiParams[api] = details
+    }
   },
   methods: {
     fetchData () {
@@ -200,42 +215,38 @@ export default {
       this.fetchProjectRoles()
     },
     fetchUsers () {
-      this.loading = true
+      this.load.users = true
       api('listUsers', { listall: true }).then(response => {
         this.users = response.listusersresponse.user ? response.listusersresponse.user : []
       }).catch(error => {
         this.$notifyError(error)
       }).finally(() => {
-        this.loading = false
+        this.load.users = false
       })
     },
     fetchAccounts () {
-      this.loading = true
+      this.load.accounts = true
       api('listAccounts', {
         domainid: this.resource.domainid
       }).then(response => {
         this.accounts = response.listaccountsresponse.account || []
       }).catch(error => {
         this.$notifyError(error)
+      }).finally(() => {
+        this.load.accounts = false
       })
     },
     fetchProjectRoles () {
-      this.loading = true
+      this.load.projectRoles = true
       api('listProjectRoles', {
         projectid: this.resource.id
       }).then(response => {
         this.projectRoles = response.listprojectrolesresponse.projectrole || []
       }).catch(error => {
         this.$notifyError(error)
+      }).finally(() => {
+        this.load.projectRoles = false
       })
-    },
-    fetchApiParams (apiCommand) {
-      const apiConfig = this.$store.getters.apis[apiCommand]
-      const apiParams = {}
-      apiConfig.params.forEach(param => {
-        apiParams[param.name] = param
-      })
-      return apiParams
     },
     addAccountToProject (e) {
       e.preventDefault()
@@ -243,7 +254,7 @@ export default {
         if (err) {
           return
         }
-
+        this.loading = true
         var params = {}
         params.projectid = this.resource.id
         for (const key in values) {
@@ -278,6 +289,7 @@ export default {
         }
 
         var params = {}
+        this.loading = true
         params.projectid = this.resource.id
         for (const key in values) {
           const input = values[key]

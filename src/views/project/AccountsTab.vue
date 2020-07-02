@@ -21,7 +21,7 @@
       <a-col :md="24" :lg="24">
         <a-table
           size="small"
-          :loading="loading"
+          :loading="loadingTable"
           :columns="columns"
           :dataSource="dataSource"
           :pagination="false"
@@ -114,7 +114,12 @@ export default {
       columns: [],
       dataSource: [],
       isProjAdmin: false,
-      loading: false,
+      loadingTable: false,
+      loading: {
+        user: false,
+        projectAccount: false,
+        roles: false
+      },
       page: 1,
       pageSize: 10,
       itemCount: 0,
@@ -181,7 +186,6 @@ export default {
       params.page = this.page
       params.pageSize = this.pageSize
 
-      this.loading = true
       this.fetchUsers()
       this.fetchProjectRoles()
       this.fetchProjectAccounts(params)
@@ -218,7 +222,7 @@ export default {
       return status
     },
     getUserName (record) {
-      if (record.userid && record.userid !== null) {
+      if (record.userid) {
         return record.user ? record.user[0].username : record.userid
       }
       return null
@@ -228,16 +232,27 @@ export default {
       return projectRole[0].name || projectRole[0].id || null
     },
     fetchUsers () {
+      this.loading.user = true
       api('listUsers', { listall: true }).then(response => {
         this.users = response.listusersresponse.user || []
+      }).catch(error => {
+        this.$notifyError(error)
+      }).finally(() => {
+        this.loading.user = false
       })
     },
     fetchProjectRoles () {
+      this.loading.roles = true
       api('listProjectRoles', { projectId: this.resource.id }).then(response => {
         this.projectRoles = response.listprojectrolesresponse.projectrole || []
+      }).catch(error => {
+        this.$notifyError(error)
+      }).finally(() => {
+        this.loading.roles = false
       })
     },
     fetchProjectAccounts (params) {
+      this.loading.projectAccount = true
       api('listProjectAccounts', params).then(json => {
         const listProjectAccount = json.listprojectaccountsresponse.projectaccount
         const itemCount = json.listprojectaccountsresponse.count
@@ -245,10 +260,9 @@ export default {
           this.dataSource = []
           return
         }
-        for (const pa in listProjectAccount) {
-          if ((listProjectAccount[pa].userid && listProjectAccount[pa].userid === this.$store.getters.userInfo.username) ||
-            listProjectAccount[pa].account === this.$store.getters.userInfo.account) {
-            this.isProjAdmin = this.isProjectAdmin(listProjectAccount[pa])
+        for (const pa of listProjectAccount) {
+          if ((pa.userid && pa.userid === this.$store.getters.userInfo.username) || pa.account === this.$store.getters.userInfo.account) {
+            this.isProjAdmin = this.isProjectAdmin(pa)
           }
         }
 
@@ -257,7 +271,7 @@ export default {
       }).catch(error => {
         this.$notifyError(error)
       }).finally(() => {
-        this.loading = false
+        this.loading.projectAccount = false
       })
     },
     onMakeProjectOwner (record) {
@@ -274,7 +288,7 @@ export default {
       const params = {}
 
       params.id = this.resource.id
-      if (record.userid && record.userid !== null) {
+      if (record.userid) {
         params.userid = record.userid
         params.accountid = (record.user && record.user[0].accountid) || record.accountid
         title = this.$t('label.make.user.project.owner')
@@ -289,7 +303,7 @@ export default {
       var title = this.$t('label.demote.project.owner')
       const loading = this.$message.loading(title + ' in progress for ' + record.account, 0)
       const params = {}
-      if (record.userid && record.userid !== null) {
+      if (record.userid) {
         params.userid = record.userid
         params.accountid = (record.user && record.user[0].accountid) || record.accountid
         title = this.$t('label.demote.project.owner.user')
@@ -334,7 +348,7 @@ export default {
       const loading = this.$message.loading(title + ' in progress for ' + record.account, 0)
       const params = {}
       params.projectid = this.resource.id
-      if (record.userid && record.userid != null) {
+      if (record.userid) {
         params.userid = record.userid
         this.deleteOperation('deleteUserFromProject', params, record, title, loading)
       } else {

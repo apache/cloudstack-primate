@@ -106,11 +106,10 @@ export default {
         var projectAccountList = []
         api('listProjectAccounts', { projectid: this.resource.id }).then(response => {
           projectAccountList = response.listprojectaccountsresponse.projectaccount
-          for (var pa in projectAccountList) {
+          for (var pa of projectAccountList) {
             // TODO
-            if ((projectAccountList[pa].userid && projectAccountList[pa].userid === this.$store.getters.userInfo.id) ||
-              projectAccountList[pa].account === this.$store.getters.userInfo.account) {
-              this.projectAccount = projectAccountList[pa]
+            if ((pa.userid && pa.userid === this.$store.getters.userInfo.id) || pa.account === this.$store.getters.userInfo.account) {
+              this.projectAccount = pa
               break
             }
           }
