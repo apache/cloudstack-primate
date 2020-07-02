@@ -31,6 +31,13 @@
                 @click="fetchData()">
                 {{ $t('label.refresh') }}
               </a-button>
+              <a-switch
+                v-if="!dataView && ['vm', 'volume', 'zone', 'cluster', 'host', 'storagepool'].includes($route.name)"
+                style="margin-left: 8px"
+                :checked-children="$t('label.metrics')"
+                :un-checked-children="$t('label.metrics')"
+                :checked="$store.getters.metrics"
+                @change="(checked, event) => { $store.dispatch('SetMetrics', checked) }"/>
               <a-tooltip placement="right">
                 <template slot="title">
                   {{ $t('label.filterby') }}
@@ -62,9 +69,9 @@
             :resource="resource"
             @exec-action="execAction"/>
           <a-input-search
+            v-if="!dataView"
             style="width: 100%; display: table-cell"
             :placeholder="$t('label.search')"
-            v-if="!dataView"
             v-model="searchQuery"
             allowClear
             @search="onSearch" />
@@ -75,16 +82,25 @@
     <div v-show="showAction">
       <keep-alive v-if="currentAction.component">
         <a-modal
-          :title="$t(currentAction.label)"
           :visible="showAction"
           :closable="true"
           style="top: 20px;"
           @cancel="closeAction"
-          :confirmLoading="currentAction.loading"
+          :confirmLoading="actionLoading"
           :footer="null"
           centered
           width="auto"
         >
+          <span slot="title">
+            {{ $t(currentAction.label) }}
+            <a
+              v-if="currentAction.docHelp || $route.meta.docHelp"
+              style="margin-left: 5px"
+              :href="$config.docBase + '/' + (currentAction.docHelp || $route.meta.docHelp)"
+              target="_blank">
+              <a-icon type="question-circle-o"></a-icon>
+            </a>
+          </span>
           <component
             :is="currentAction.component"
             :resource="resource"
@@ -103,7 +119,7 @@
         style="top: 20px;"
         @ok="handleSubmit"
         @cancel="closeAction"
-        :confirmLoading="currentAction.loading"
+        :confirmLoading="actionLoading"
         centered
       >
         <span slot="title">
@@ -111,12 +127,12 @@
           <a
             v-if="currentAction.docHelp || $route.meta.docHelp"
             style="margin-left: 5px"
-            :href="docBase + '/' + (currentAction.docHelp || $route.meta.docHelp)"
+            :href="$config.docBase + '/' + (currentAction.docHelp || $route.meta.docHelp)"
             target="_blank">
             <a-icon type="question-circle-o"></a-icon>
           </a>
         </span>
-        <a-spin :spinning="currentAction.loading">
+        <a-spin :spinning="actionLoading">
           <span v-if="currentAction.message">
             <a-alert type="warning">
               <span slot="message" v-html="$t(currentAction.message)" />
@@ -126,6 +142,7 @@
           <a-form
             :form="form"
             @submit="handleSubmit"
+            v-show="dataView || !currentAction.groupAction || this.selectedRowKeys.length === 0"
             layout="vertical" >
             <a-form-item
               v-for="(field, fieldIndex) in currentAction.paramFields"
@@ -276,6 +293,8 @@
         :loading="loading"
         :columns="columns"
         :items="items"
+        ref="listview"
+        @selection-change="onRowSelectionChange"
         @refresh="this.fetchData" />
       <a-pagination
         class="row-element"
@@ -297,7 +316,6 @@
 import { api } from '@/api'
 import { mixinDevice } from '@/utils/mixin.js'
 import { genericCompare } from '@/utils/sort.js'
-import config from '@/config/settings'
 import store from '@/store'
 
 import Breadcrumb from '@/components/widgets/Breadcrumb'
@@ -329,8 +347,8 @@ export default {
   data () {
     return {
       apiName: '',
-      docBase: config.docBase,
       loading: false,
+      actionLoading: false,
       columns: [],
       items: [],
       itemCount: 0,
@@ -349,17 +367,15 @@ export default {
       confirmDirty: false
     }
   },
-  computed: {
-    hasSelected () {
-      return this.selectedRowKeys.length > 0
-    }
-  },
   beforeCreate () {
     this.form = this.$form.createForm(this)
   },
   mounted () {
     this.currentPath = this.$route.fullPath
     this.fetchData()
+    if ('projectid' in this.$route.query) {
+      this.switchProject(this.$route.query.projectid)
+    }
   },
   beforeRouteUpdate (to, from, next) {
     this.currentPath = this.$route.fullPath
@@ -377,15 +393,36 @@ export default {
         this.itemCount = 0
         this.selectedFilter = ''
         this.fetchData()
+        if ('projectid' in to.query) {
+          this.switchProject(to.query.projectid)
+        }
       }
     },
     '$i18n.locale' (to, from) {
       if (to !== from) {
         this.fetchData()
       }
+    },
+    '$store.getters.metrics' (oldVal, newVal) {
+      this.fetchData()
     }
   },
   methods: {
+    switchProject (projectId) {
+      if (!projectId || !projectId.length || projectId.length !== 36) {
+        return
+      }
+      api('listProjects', { id: projectId, listall: true, details: 'min' }).then(json => {
+        if (!json || !json.listprojectsresponse || !json.listprojectsresponse.project) return
+        const project = json.listprojectsresponse.project[0]
+        this.$store.dispatch('SetProject', project)
+        this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
+        this.$message.success(`Switched to "${project.name}"`)
+        const query = Object.assign({}, this.$route.query)
+        delete query.projectid
+        this.$router.replace({ query })
+      })
+    },
     fetchData (params = { listall: true }) {
       if (this.routeName !== this.$route.name) {
         this.routeName = this.$route.name
@@ -412,10 +449,19 @@ export default {
         this.dataView = false
       }
 
+      if ('listview' in this.$refs && this.$refs.listview) {
+        this.$refs.listview.resetSelection()
+      }
+
       if (this.$route && this.$route.meta && this.$route.meta.permission) {
         this.apiName = this.$route.meta.permission[0]
         if (this.$route.meta.columns) {
-          this.columnKeys = this.$route.meta.columns
+          const columns = this.$route.meta.columns
+          if (columns && typeof columns === 'function') {
+            this.columnKeys = columns()
+          } else {
+            this.columnKeys = columns
+          }
         }
 
         if (this.$route.meta.actions) {
@@ -499,6 +545,8 @@ export default {
         params.id = this.$route.params.id
         if (this.$route.path.startsWith('/ssh/')) {
           params.name = this.$route.params.id
+        } else if (this.$route.path.startsWith('/vmsnapshot/')) {
+          params.vmsnapshotid = this.$route.params.id
         } else if (this.$route.path.startsWith('/ldapsetting/')) {
           params.hostname = this.$route.params.id
         }
@@ -534,16 +582,16 @@ export default {
         }
 
         if (this.apiName === 'listProjects' && this.items.length > 0) {
-          for (var index in this.items) {
+          for (const item of this.items) {
             api('listProjectAccounts', {
-              projectid: this.items[index].id,
+              projectid: item.id,
               role: 'Admin'
             }).then(response => {
               const projAccounts = response.listprojectaccountsresponse.projectaccount || []
-              var pa = projAccounts.map(a => {
+              var projectAccount = projAccounts.map(a => {
                 return a.userid ? a.account + '(' + (a.user[0].username || a.userid) + ')' : a.account
               })
-              this.items[index].account = pa.join()
+              item.account = projectAccount.join()
             })
           }
           this.columns.map(col => {
@@ -594,9 +642,12 @@ export default {
       this.fetchData()
     },
     closeAction () {
-      this.currentAction.loading = false
+      this.actionLoading = false
       this.showAction = false
       this.currentAction = {}
+    },
+    onRowSelectionChange (selection) {
+      this.selectedRowKeys = selection
     },
     execAction (action) {
       const self = this
@@ -649,7 +700,7 @@ export default {
           this.listUuidOpts(param)
         }
       }
-      this.currentAction.loading = false
+      this.actionLoading = false
       if (action.dataView && ['copy', 'edit'].includes(action.icon)) {
         this.fillEditFormFieldValues()
       }
@@ -745,7 +796,7 @@ export default {
       this.currentAction.paramFields.map(field => {
         let fieldValue = null
         let fieldName = null
-        if (field.type === 'list' || field.name === 'account' || (this.currentAction.mapping && field.name in this.currentAction.mapping)) {
+        if (field.type === 'list' || field.name === 'account') {
           fieldName = field.name.replace('ids', 'name').replace('id', 'name')
         } else {
           fieldName = field.name
@@ -758,10 +809,33 @@ export default {
       })
     },
     handleSubmit (e) {
+      if (!this.dataView && this.currentAction.groupAction && this.selectedRowKeys.length > 0) {
+        const paramsList = this.currentAction.groupMap(this.selectedRowKeys)
+        this.actionLoading = true
+        for (const params of paramsList) {
+          api(this.currentAction.api, params).then(json => {
+          }).catch(error => {
+            this.$notifyError(error)
+          })
+        }
+        this.$message.info({
+          content: this.$t(this.currentAction.label),
+          key: this.currentAction.label,
+          duration: 3
+        })
+        setTimeout(() => {
+          this.actionLoading = false
+          this.closeAction()
+          this.fetchData()
+        }, 2000)
+      } else {
+        this.execSubmit(e)
+      }
+    },
+    execSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
         if (!err) {
-          this.currentAction.loading = true
           const params = {}
           if ('id' in this.resource && this.currentAction.params.map(i => { return i.name }).includes('id')) {
             params.id = this.resource.id
@@ -813,6 +887,7 @@ export default {
           const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username || params.ipaddress || params.virtualmachinename || this.resource.name
 
           var hasJobId = false
+          this.actionLoading = true
           api(this.currentAction.api, params).then(json => {
             for (const obj in json) {
               if (obj.includes('response')) {
@@ -823,7 +898,11 @@ export default {
                     hasJobId = true
                     break
                   } else {
-                    this.$message.success(this.$t(this.currentAction.label) + (resourceName ? ' - ' + resourceName : ''))
+                    this.$message.success({
+                      content: this.$t(this.currentAction.label) + (resourceName ? ' - ' + resourceName : ''),
+                      key: this.currentAction.label + resourceName,
+                      duration: 2
+                    })
                   }
                 }
                 break
@@ -840,6 +919,7 @@ export default {
             console.log(error)
             this.$notifyError(error)
           }).finally(f => {
+            this.actionLoading = false
             this.closeAction()
           })
         }

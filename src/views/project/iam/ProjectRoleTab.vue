@@ -187,10 +187,8 @@ export default {
   },
   methods: {
     fetchData () {
-      const params = {}
-      params.projectid = this.resource.id
       this.loading = true
-      api('listProjectRoles', params).then(json => {
+      api('listProjectRoles', { projectid: this.resource.id }).then(json => {
         const projectRoles = json.listprojectrolesresponse.projectrole
         if (!projectRoles || projectRoles.length === 0) {
           this.dataSource = []
@@ -217,6 +215,7 @@ export default {
           return
         }
         var params = {}
+        this.loading = true
         params.projectid = this.resource.id
         params.id = this.selectedRole.id
         for (const key in values) {
@@ -254,6 +253,7 @@ export default {
         if (err) {
           return
         }
+        this.loading = true
         var params = {}
         params.projectid = this.resource.id
         for (const key in values) {
@@ -278,6 +278,7 @@ export default {
       })
     },
     deleteProjectRole (role) {
+      this.loading = true
       api('deleteProjectRole', {
         projectid: this.resource.id,
         id: role.id

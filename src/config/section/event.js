@@ -19,6 +19,7 @@ export default {
   name: 'event',
   title: 'label.events',
   icon: 'schedule',
+  docHelp: 'adminguide/events.html',
   permission: ['listEvents'],
   columns: ['username', 'description', 'state', 'level', 'type', 'account', 'domain', 'created'],
   details: ['username', 'id', 'description', 'state', 'level', 'type', 'account', 'domain', 'created'],
@@ -33,8 +34,10 @@ export default {
       icon: 'book',
       label: 'label.archive.events',
       message: 'message.confirm.archive.selected.events',
-      listView: false,
+      docHelp: 'adminguide/events.html#deleting-and-archiving-events-and-alerts',
       dataView: true,
+      groupAction: true,
+      groupMap: (selection) => { return [{ ids: selection.join(',') }] },
       args: ['ids'],
       mapping: {
         ids: {
@@ -47,8 +50,10 @@ export default {
       icon: 'delete',
       label: 'label.delete.events',
       message: 'message.confirm.remove.selected.events',
-      listView: false,
+      docHelp: 'adminguide/events.html#deleting-and-archiving-events-and-alerts',
       dataView: true,
+      groupAction: true,
+      groupMap: (selection) => { return [{ ids: selection.join(',') }] },
       args: ['ids'],
       mapping: {
         ids: {

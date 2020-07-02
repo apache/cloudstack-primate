@@ -43,7 +43,7 @@
             v-for="tab in tabs"
             :tab="$t('label.' + tab.name)"
             :key="tab.name"
-            v-if="showHideTab(tab)">
+            v-if="showTab(tab)">
             <component :is="tab.component" :resource="resource" :loading="loading" :tab="activeTab" />
           </a-tab-pane>
         </a-tabs>
@@ -98,18 +98,22 @@ export default {
       if (newItem.id === oldItem.id) return
 
       if (this.resource.associatednetworkid) {
-        api('listNetworks', { id: this.resource.associatednetworkid }).then(response => {
-          this.networkService = response.listnetworksresponse.network[0]
+        api('listNetworks', { id: this.resource.associatednetworkid, listall: true }).then(response => {
+          if (response && response.listnetworksresponse && response.listnetworksresponse.network) {
+            this.networkService = response.listnetworksresponse.network[0]
+          } else {
+            this.networkService = {}
+          }
         })
       }
       if (this.resource.projectaccountname) {
         var projectAccountList = []
         api('listProjectAccounts', { projectid: this.resource.id }).then(response => {
           projectAccountList = response.listprojectaccountsresponse.projectaccount
-          for (var pa of projectAccountList) {
-            // TODO
-            if ((pa.userid && pa.userid === this.$store.getters.userInfo.id) || pa.account === this.$store.getters.userInfo.account) {
-              this.projectAccount = pa
+          for (var projectAccount of projectAccountList) {
+            if ((projectAccount.userid && projectAccount.userid === this.$store.getters.userInfo.id) ||
+              projectAccount.account === this.$store.getters.userInfo.account) {
+              this.projectAccount = projectAccount
               break
             }
           }
@@ -121,12 +125,15 @@ export default {
     onTabChange (key) {
       this.activeTab = key
     },
-    showHideTab (tab) {
+    showTab (tab) {
       if ('networkServiceFilter' in tab) {
-        if (this.resource.virtualmachineid && tab.name !== 'Firewall') {
+        if (this.resource && this.resource.virtualmachineid && !this.resource.vpcid && tab.name !== 'firewall') {
           return false
         }
-        if (this.resource && this.resource.vpcid && tab.name !== 'Firewall') {
+        if (this.resource && this.resource.virtualmachineid && this.resource.vpcid) {
+          return false
+        }
+        if (this.resource && this.resource.vpcid && tab.name !== 'firewall') {
           return true
         }
         return this.networkService && this.networkService.service &&

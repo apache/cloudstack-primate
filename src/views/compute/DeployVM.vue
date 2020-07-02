@@ -137,6 +137,8 @@
                   <div v-if="zoneSelected">
                     <compute-offering-selection
                       :compute-items="options.serviceOfferings"
+                      :row-count="rowCount.serviceOfferings"
+                      :zoneId="zoneId"
                       :value="serviceOffering ? serviceOffering.id : ''"
                       :loading="loading.serviceOfferings"
                       :preFillContent="dataPreFill"
@@ -181,9 +183,12 @@
                   <div v-if="zoneSelected">
                     <disk-offering-selection
                       :items="options.diskOfferings"
+                      :row-count="rowCount.diskOfferings"
+                      :zoneId="zoneId"
                       :value="diskOffering ? diskOffering.id : ''"
                       :loading="loading.diskOfferings"
                       :preFillContent="dataPreFill"
+                      :isIsoSelected="tabKey==='isoid'"
                       @select-disk-offering-item="($event) => updateDiskOffering($event)"
                       @handle-search-filter="($event) => handleSearchFilter('diskOfferings', $event)"
                     ></disk-offering-selection>
@@ -205,6 +210,8 @@
                   <div v-if="zoneSelected">
                     <affinity-group-selection
                       :items="options.affinityGroups"
+                      :row-count="rowCount.affinityGroups"
+                      :zoneId="zoneId"
                       :value="affinityGroupIds"
                       :loading="loading.affinityGroups"
                       :preFillContent="dataPreFill"
@@ -221,6 +228,7 @@
                   <div v-if="zoneSelected">
                     <network-selection
                       :items="options.networks"
+                      :row-count="rowCount.networks"
                       :value="networkOfferingIds"
                       :loading="loading.networks"
                       :zoneId="zoneId"
@@ -245,6 +253,8 @@
                   <div v-if="zoneSelected">
                     <ssh-key-pair-selection
                       :items="options.sshKeyPairs"
+                      :row-count="rowCount.sshKeyPairs"
+                      :zoneId="zoneId"
                       :value="sshKeyPair ? sshKeyPair.name : ''"
                       :loading="loading.sshKeyPairs"
                       :preFillContent="dataPreFill"
@@ -393,7 +403,25 @@ export default {
       podId: null,
       clusterId: null,
       zoneSelected: false,
-      vm: {},
+      vm: {
+        name: null,
+        zoneid: null,
+        zonename: null,
+        hypervisor: null,
+        templateid: null,
+        templatename: null,
+        keyboard: null,
+        keypair: null,
+        group: null,
+        affinitygroupids: [],
+        affinitygroup: [],
+        serviceofferingid: null,
+        serviceofferingname: null,
+        ostypeid: null,
+        ostypename: null,
+        rootdisksize: null,
+        disksize: null
+      },
       options: {
         templates: [],
         isos: [],
@@ -412,6 +440,7 @@ export default {
         bootTypes: [],
         bootModes: []
       },
+      rowCount: {},
       loading: {
         deploy: false,
         templates: false,
@@ -654,10 +683,11 @@ export default {
       return options
     },
     keyboardSelectOptions () {
-      return this.options.keyboards.map((keyboard) => {
+      const keyboardOpts = this.$config.keyboardOptions || {}
+      return Object.keys(keyboardOpts).map((keyboard) => {
         return {
-          label: this.$t(keyboard.description),
-          value: keyboard.id
+          label: this.$t(keyboardOpts[keyboard]),
+          value: keyboard
         }
       })
     }
@@ -709,9 +739,6 @@ export default {
       if (this.serviceOffering) {
         this.vm.serviceofferingid = this.serviceOffering.id
         this.vm.serviceofferingname = this.serviceOffering.displaytext
-        this.vm.cpunumber = this.serviceOffering.cpunumber
-        this.vm.cpuspeed = this.serviceOffering.cpuspeed
-        this.vm.memory = this.serviceOffering.memory
       }
 
       if (this.diskOffering) {
@@ -737,7 +764,11 @@ export default {
           this.form.setFieldsValue({ isoid: null })
         }
         this.instanceConfig = { ...this.form.getFieldsValue(), ...fields }
-        this.vm = Object.assign({}, this.instanceConfig)
+        Object.keys(fields).forEach(field => {
+          if (field in this.vm) {
+            this.vm[field] = this.instanceConfig[field]
+          }
+        })
       }
     })
     this.form.getFieldDecorator('computeofferingid', { initialValue: undefined, preserve: true })
@@ -775,10 +806,8 @@ export default {
         })
       }
 
-      this.fetchKeyboard()
       this.fetchBootTypes()
       this.fetchBootModes()
-
       Vue.nextTick().then(() => {
         ['name', 'keyboard', 'boottype', 'bootmode', 'userdata'].forEach(this.fillValue)
         this.instanceConfig = this.form.getFieldsValue() // ToDo: maybe initialize with some other defaults
@@ -796,35 +825,6 @@ export default {
         }
       })
       await this.fetchAllTemplates()
-    },
-    fetchKeyboard () {
-      const keyboardType = []
-      keyboardType.push({
-        id: '',
-        description: ''
-      })
-      keyboardType.push({
-        id: 'us',
-        description: 'label.standard.us.keyboard'
-      })
-      keyboardType.push({
-        id: 'uk',
-        description: 'label.uk.keyboard'
-      })
-      keyboardType.push({
-        id: 'fr',
-        description: 'label.french.azerty.keyboard'
-      })
-      keyboardType.push({
-        id: 'jp',
-        description: 'label.japanese.keyboard'
-      })
-      keyboardType.push({
-        id: 'sc',
-        description: 'label.simplified.chinese.keyboard'
-      })
-
-      this.$set(this.options, 'keyboards', keyboardType)
     },
     fetchBootTypes () {
       const bootTypes = []
@@ -950,6 +950,12 @@ export default {
           this.$notification.error({
             message: 'Request Failed',
             description: this.$t('message.template.iso')
+          })
+          return
+        } else if (values.isoid && (!values.diskofferingid || values.diskofferingid === '0')) {
+          this.$notification.error({
+            message: 'Request Failed',
+            description: this.$t('Please select a Disk Offering to continue')
           })
           return
         }
@@ -1107,6 +1113,7 @@ export default {
         param.loading = false
         _.map(response, (responseItem, responseKey) => {
           if (Object.keys(responseItem).length === 0) {
+            this.rowCount[name] = 0
             this.options[name] = []
             this.$forceUpdate()
             return
@@ -1116,6 +1123,7 @@ export default {
           }
           _.map(responseItem, (response, key) => {
             if (key === 'count') {
+              this.rowCount[name] = response
               return
             }
             param.opts = response

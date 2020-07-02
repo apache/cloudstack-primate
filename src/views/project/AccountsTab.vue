@@ -21,11 +21,11 @@
       <a-col :md="24" :lg="24">
         <a-table
           size="small"
-          :loading="loadingTable"
+          :loading="loading.table"
           :columns="columns"
           :dataSource="dataSource"
           :pagination="false"
-          :rowKey="record => record.userid ? record.userid: (record.accountid || record.account)"
+          :rowKey="record => record.userid ? record.userid : (record.accountid || record.account)"
         >
           <span slot="user" slot-scope="text, record" v-if="record.userid">
             {{ getUserName(record) }}
@@ -34,28 +34,22 @@
             {{ getProjectRole(record) }}
           </span>
           <span v-if="isProjAdmin" slot="action" slot-scope="text, record" class="account-button-action">
-            <a-tooltip placement="top">
-              <template v-if="record.userid" slot="title">
-                {{ $t('label.make.user.project.owner') }}
-              </template>
-              <template v-else slot="title">
-                {{ $t('label.make.project.owner') }}
-              </template>
+            <a-tooltip
+              slot="title"
+              placement="top"
+              :title="record.userid ? $t('label.make.user.project.owner') : $t('label.make.project.owner')">
               <a-button
-                v-if="record.role!==owner"
+                v-if="record.role !== owner"
                 type="default"
                 shape="circle"
                 icon="arrow-up"
                 size="small"
                 @click="promoteAccount(record)" />
             </a-tooltip>
-            <a-tooltip placement="top">
-              <template v-if="record.userid" slot="title">
-                {{ $t('label.demote.project.owner.user') }}
-              </template>
-              <template v-else slot="title">
-                {{ $t('label.demote.project.owner') }}
-              </template>
+            <a-tooltip
+              slot="title"
+              placement="top"
+              :title="record.userid ? $t('label.demote.project.owner.user') : $t('label.demote.project.owner')">
               <a-button
                 v-if="record.role === owner"
                 type="default"
@@ -64,13 +58,10 @@
                 size="small"
                 @click="demoteAccount(record)" />
             </a-tooltip>
-            <a-tooltip placement="top">
-              <template v-if="record.userid" slot="title">
-                {{ $t('label.remove.project.user') }}
-              </template>
-              <template v-else slot="title">
-                {{ $t('label.remove.project.account') }}
-              </template>
+            <a-tooltip
+              slot="title"
+              placement="top"
+              :title="record.userid ? $t('label.remove.project.user') : $t('label.remove.project.account')">
               <a-button
                 v-if="!isLoggedInUser(record)"
                 type="danger"
@@ -114,11 +105,11 @@ export default {
       columns: [],
       dataSource: [],
       isProjAdmin: false,
-      loadingTable: false,
       loading: {
         user: false,
         projectAccount: false,
-        roles: false
+        roles: false,
+        table: false
       },
       page: 1,
       pageSize: 10,
@@ -196,7 +187,7 @@ export default {
       this.fetchData()
     },
     changePageSize (currentPage, pageSize) {
-      this.page = currentPage
+      this.page = 0
       this.pageSize = pageSize
       this.fetchData()
     },
@@ -213,13 +204,13 @@ export default {
       return status
     },
     isProjectAdmin (loggedInUser) {
-      var status = false
       if (['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype)) {
-        status = true
-      } else if ((loggedInUser.role === this.owner)) {
-        status = true
+        return true
       }
-      return status
+      if ((loggedInUser.role === this.owner)) {
+        return true
+      }
+      return false
     },
     getUserName (record) {
       if (record.userid) {
@@ -260,9 +251,10 @@ export default {
           this.dataSource = []
           return
         }
-        for (const pa of listProjectAccount) {
-          if ((pa.userid && pa.userid === this.$store.getters.userInfo.username) || pa.account === this.$store.getters.userInfo.account) {
-            this.isProjAdmin = this.isProjectAdmin(pa)
+        for (const projectAccount of listProjectAccount) {
+          if ((projectAccount.userid && projectAccount.userid === this.$store.getters.userInfo.username) ||
+            projectAccount.account === this.$store.getters.userInfo.account) {
+            this.isProjAdmin = this.isProjectAdmin(projectAccount)
           }
         }
 
@@ -356,8 +348,8 @@ export default {
         this.deleteOperation('deleteAccountFromProject', params, record, title, loading)
       }
     },
-    deleteOperation (cmdName, params, record, title, loading) {
-      api(cmdName, params).then(json => {
+    deleteOperation (apiName, params, record, title, loading) {
+      api(apiName, params).then(json => {
         const hasJobId = this.checkForAddAsyncJob(json, title, record.account)
         if (hasJobId) {
           this.fetchData()
