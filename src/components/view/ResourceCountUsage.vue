@@ -21,18 +21,24 @@
       size="small"
       :dataSource="resourceCountData"
     >
-      <a-list-item slot="renderItem" slot-scope="item">
-        <div>
+      <a-list-item slot="renderItem" slot-scope="item" class="list-item">
+        <div class="list-item__container">
           <strong>
             {{ $t('label.' + String(item).toLowerCase() + '.count') }}
           </strong>
           <br/>
           <br/>
-          <div>
-            Current Usage: {{ resourceData[item + 'total'] }} / {{ resourceData[item + 'limit'] < 0 ? 'Unlimited' : resourceData[item + 'limit'] }}
-          </div>
-          <div>
-            Available: {{ resourceData[item + 'available'] < 0 ? 'Unlimited' : resourceData[item + 'available'] }}
+          <div class="list-item__vals">
+            <div class="list-item__data">
+              Current Usage: {{ resourceData[item + 'total'] }} / {{ resourceData[item + 'limit'] }}
+            </div>
+            <div class="list-item__data">
+              Available: {{ resourceData[item + 'available'] }}
+            </div>
+            <a-progress
+              status="normal"
+              :percent="parseFloat(getPercentUsed(resourceData[item + 'total'], resourceData[item + 'limit']))"
+              :format="p => parseFloat(getPercentUsed(resourceData[item + 'total'], resourceData[item + 'limit'])).toFixed(2) + '%'" />
           </div>
         </div>
       </a-list-item>
@@ -156,7 +162,39 @@ export default {
       if ([530, 531, 532, 533, 534, 535, 536, 537].includes(error.response.status)) {
         this.$router.push({ path: '/exception/500' })
       }
+    },
+    getPercentUsed (total, limit) {
+      return (limit === 'Unlimited') ? 0 : (total / limit) * 100
     }
   }
 }
 </script>
+
+<style scoped lang="scss">
+  .list-item {
+
+    &__container {
+      max-width: 90%;
+      width: 100%;
+
+      @media (min-width: 760px) {
+        max-width: 95%;
+      }
+    }
+
+    &__title {
+      font-weight: bold;
+    }
+
+    &__data {
+      margin-right: 20px;
+      white-space: nowrap;
+    }
+
+    &__vals {
+      @media (min-width: 760px) {
+        display: flex;
+      }
+    }
+  }
+</style>
