@@ -96,19 +96,19 @@ export default {
       return status
     },
     getTooltip (state) {
-      if (this.$route.path.includes('/vmsnapshot')) {
+      if (this.$route.path === '/vmsnapshot' || this.$route.path.includes('/vmsnapshot/')) {
         return 'message.vmsnapshot.state.' + state.toLowerCase()
       }
-      if (this.$route.path.includes('/vm')) {
+      if (this.$route.path === '/vm' || this.$route.path.includes('/vm/')) {
         return 'message.vm.state.' + state.toLowerCase()
       }
-      if (this.$route.path.includes('/volume')) {
+      if (this.$route.path === '/volume' || this.$route.path.includes('/volume/')) {
         return 'message.volume.state.' + state.toLowerCase()
       }
-      if (this.$route.path.includes('/guestnetwork')) {
+      if (this.$route.path === '/guestnetwork' || this.$route.path.includes('/guestnetwork/')) {
         return 'message.guestnetwork.state.' + state.toLowerCase()
       }
-      if (this.$route.path.includes('/publicip')) {
+      if (this.$route.path === '/publicip' || this.$route.path.includes('/publicip/')) {
         return 'message.publicip.state.' + state.toLowerCase()
       }
       // Nothing for snapshots, vpcs, gateways, vnpnconn, vpnuser, kubectl, event, project, account, infra. They're all self explanatory
