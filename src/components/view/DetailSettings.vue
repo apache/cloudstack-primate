@@ -178,7 +178,7 @@ export default {
       }
       if (!(apiName in this.$store.getters.apis)) {
         this.$notification.error({
-          message: this.$t('error.execute.api.failed', { apiName: apiName }),
+          message: this.$t('error.execute.api.failed') + ' ' + apiName,
           description: this.$t('message.user.not.permitted.api')
         })
         return

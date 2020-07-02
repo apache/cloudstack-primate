@@ -149,7 +149,7 @@
         <div class="resource-detail-item" v-if="resource.memory">
           <div class="resource-detail-item__label">{{ $t('label.memory') }}</div>
           <div class="resource-detail-item__details">
-            <a-icon type="bulb" />{{ $t('label.number.mb.memory', { number: resource.memory }) }}
+            <a-icon type="bulb" />{{ resource.memory + ' ' + $t('label.mb.memory') }}
           </div>
           <div>
             <span v-if="resource.memorykbs && resource.memoryintfreekbs">
@@ -166,7 +166,7 @@
         <div class="resource-detail-item" v-else-if="resource.memorytotalgb">
           <div class="resource-detail-item__label">{{ $t('label.memory') }}</div>
           <div class="resource-detail-item__details">
-            <a-icon type="bulb" />{{ $t('label.number.of.memory', { number: resource.memorytotalgb }) }}
+            <a-icon type="bulb" />{{ resource.memorytotalgb + ' ' + $t('label.memory') }}
           </div>
           <div>
             <span v-if="resource.memoryusedgb">
@@ -194,7 +194,7 @@
 
             <div style="display: flex; flex-direction: column; width: 100%;">
               <div>
-                <a-icon type="bulb" />{{ $t('label.number.of.memory', { number: resource.memorytotal }) }}
+                <a-icon type="bulb" />{{ resource.memorytotal + ' ' + $t('label.memory') }}
               </div>
               <div>
                 <span
@@ -227,10 +227,10 @@
             <span style="width: 100%;" v-else-if="resource.sizegb || resource.size">{{ resource.sizegb || (resource.size/1024.0) }}</span>
           </div>
           <div style="margin-left: 25px; margin-top: 5px" v-if="resource.diskkbsread && resource.diskkbswrite && resource.diskioread && resource.diskiowrite">
-            <a-tag style="margin-bottom: 5px;">{{ $t('label.read.number', { number: toSize(resource.diskkbsread) }) }}</a-tag>
-            <a-tag style="margin-bottom: 5px;">{{ $t('label.write.number', { number: toSize(resource.diskkbswrite) }) }}</a-tag><br/>
-            <a-tag style="margin-bottom: 5px;">{{ $t('label.readio.number', { number: resource.diskioread }) }}</a-tag>
-            <a-tag>{{ $t('label.writeio.number', { number: resource.diskiowrite }) }}</a-tag>
+            <a-tag style="margin-bottom: 5px;">{{ $t('label.read') + ' ' + toSize(resource.diskkbsread) }}</a-tag>
+            <a-tag style="margin-bottom: 5px;">{{ $t('label.write') + ' ' + toSize(resource.diskkbswrite) }}</a-tag><br/>
+            <a-tag style="margin-bottom: 5px;">{{ $t('label.read.io') + ' ' + resource.diskioread }}</a-tag>
+            <a-tag>{{ $t('label.writeio') + ' ' + resource.diskiowrite }}</a-tag>
           </div>
         </div>
         <div class="resource-detail-item" v-else-if="resource.disksizetotalgb">
@@ -262,10 +262,10 @@
             <a-icon type="wifi" />
             <div>
               <div v-if="'networkkbsread' in resource && 'networkkbswrite' in resource">
-                <a-tag><a-icon type="arrow-down" />{{ $t('label.rx.size', { number: toSize(resource.networkkbsread) }) }}</a-tag>
-                <a-tag><a-icon type="arrow-up" />{{ $t('label.tx.size', { number: toSize(resource.networkkbswrite) }) }}</a-tag>
+                <a-tag><a-icon type="arrow-down" />RX {{ toSize(resource.networkkbsread) }}</a-tag>
+                <a-tag><a-icon type="arrow-up" />TX {{ toSize(resource.networkkbswrite) }}</a-tag>
               </div>
-              <div v-else>{{ $t('label.number.nic', { number: resource.nic.length }) }}</div>
+              <div v-else>{{ resource.nic.length }} NIC(s)</div>
               <div
                 v-if="resource.nic"
                 v-for="(eth, index) in resource.nic"
@@ -500,7 +500,7 @@
             v-if="$router.resolve('/' + item.name).route.name !== '404'"
             :to="{ path: '/' + item.name + '?' + item.param + '=' + (item.param === 'account' ? resource.name + '&domainid=' + resource.domainid : resource.id) }">
             <a-button style="margin-right: 10px" :icon="$router.resolve('/' + item.name).route.meta.icon" >
-              {{ $t('label.view.title', { title: $t(item.title) }) }}
+              {{ $t('label.view') + ' ' + $t(item.title) }}
             </a-button>
           </router-link>
         </div>
@@ -514,7 +514,7 @@
             {{ $t('label.apikey') }}
             <a-tooltip placement="right" >
               <template slot="title">
-                <span>{{ $t('label.copy.key', { key: $t('label.apikey') }) }}</span>
+                <span>{{ $t('label.copy') + ' ' + $t('label.apikey') }}</span>
               </template>
               <a-button shape="circle" type="dashed" size="small" @click="$message.success($t('label.copied.clipboard'))" v-clipboard:copy="resource.apikey">
                 <a-icon type="copy"/>
@@ -531,7 +531,7 @@
             {{ $t('label.secretkey') }}
             <a-tooltip placement="right" >
               <template slot="title">
-                <span>{{ $t('label.copy.key', { key: $t('label.secretkey') }) }}</span>
+                <span>{{ $t('label.copy') + ' ' + $t('label.secretkey') }}</span>
               </template>
               <a-button shape="circle" type="dashed" size="small" @click="$message.success($t('label.copied.clipboard'))" v-clipboard:copy="resource.secretkey">
                 <a-icon type="copy"/>
@@ -581,7 +581,7 @@
       <div class="account-center-team" v-if="annotationType && 'listAnnotations' in $store.getters.apis">
         <a-divider :dashed="true"/>
         <div class="title">
-          {{ $t('label.comments', { number: notes.length }) }}
+          {{ $t('label.comments') + ' ' + `(${notes.length})` }}
         </div>
         <a-list
           v-if="notes.length"

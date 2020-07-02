@@ -306,7 +306,7 @@ export default {
     changeProject (project) {
       this.$store.dispatch('SetProject', project)
       this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
-      this.$message.success(this.$t('message.switch.project', { project: project.name }))
+      this.$message.success(this.$t('message.switch.to') + ' ' + project.name)
       this.$router.push({ name: 'dashboard' })
     },
     saveValue (record) {
