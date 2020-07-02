@@ -224,7 +224,6 @@ export default {
         (this.resource.domainid === this.$store.getters.userInfo.domainid && this.resource.account === this.$store.getters.userInfo.account)) &&
         !(this.resource.account !== 'SYSTEM' && this.resource.domainid === 1) &&
         this.resource.isready
-        // TODO : allow delete only if already downloaded
     },
     deleteIso (record) {
       const params = {

@@ -76,9 +76,9 @@ export default {
             return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
               (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
               record.templatetype !== 'SYSTEM' &&
-              record.isready // Add for projects too ??
+              record.isready
           },
-          args: (store) => {
+          args: (record, store) => {
             var fields = ['name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable']
             if (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) {
               fields.push('isrouting')
@@ -97,7 +97,7 @@ export default {
             return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
               (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
               record.templatetype !== 'SYSTEM' &&
-              record.isready && // Add for projects too ??
+              record.isready &&
               record.isextractable
           },
           args: ['zoneid', 'mode'],
@@ -122,7 +122,7 @@ export default {
             return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
               (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
               record.templatetype !== 'SYSTEM' &&
-              record.isready // Add for projects too ??
+              record.isready
           },
           component: () => import('@/views/image/UpdateTemplateIsoPermissions')
         }
@@ -179,9 +179,9 @@ export default {
             return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
               (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
               !(record.account === 'SYSTEM' && record.domainid === 1) &&
-              record.isready // Add for projects too ??
+              record.isready
           },
-          args: (store) => {
+          args: (record, store) => {
             var fields = ['name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable']
             if (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) {
               fields.push('isrouting')
@@ -200,7 +200,7 @@ export default {
             return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
               (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
               !(record.account === 'SYSTEM' && record.domainid === 1) &&
-              record.isready // Add for projects too ??
+              record.isready
           },
           args: ['zoneid', 'mode'],
           mapping: {
@@ -225,7 +225,7 @@ export default {
             return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
               (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
               !(record.account === 'SYSTEM' && record.domainid === 1) &&
-              record.isready // Add for projects too ??
+              record.isready
           },
           component: () => import('@/views/image/UpdateTemplateIsoPermissions')
         }
