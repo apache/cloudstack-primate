@@ -96,6 +96,9 @@ export default {
       return status
     },
     getTooltip (state) {
+      if (!(state && this.displayText)) {
+        return
+      }
       if (this.$route.path === '/vmsnapshot' || this.$route.path.includes('/vmsnapshot/')) {
         return 'message.vmsnapshot.state.' + state.toLowerCase()
       }
