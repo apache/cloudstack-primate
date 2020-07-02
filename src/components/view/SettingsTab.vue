@@ -113,7 +113,7 @@ export default {
         this.items = response.listconfigurationsresponse.configuration
       }).catch(error => {
         console.error(error)
-        this.$message.error('There was an error loading these settings.')
+        this.$message.error(this.$t('message.error.loading.setting'))
       }).finally(() => {
         this.tabLoading = false
         if (!callback) return
@@ -127,13 +127,13 @@ export default {
         name: item.name,
         value: this.editableValue
       }).then(() => {
-        this.$message.success('Setting ' + item.name + ' updated to ' + this.editableValue)
+        this.$message.success(this.$t('message.setting.name.to.value', { name: item.name, value: this.editableValue }))
       }).catch(error => {
         console.error(error)
-        this.$message.error('There was an error saving this setting.')
+        this.$message.error(this.$t('message.error.save.setting'))
         this.$notification.error({
           message: this.$t('label.error'),
-          description: 'There was an error saving this setting. Please try again later.'
+          description: this.$t('message.error.try.save.setting')
         })
       }).finally(() => {
         this.tabLoading = false

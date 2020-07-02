@@ -169,7 +169,7 @@
 
     <div slot="order" slot-scope="text, record" class="shift-btns">
       <a-tooltip placement="top">
-        <template slot="title">Move to top</template>
+        <template slot="title">{{ $t('label.move.to.top') }}</template>
         <a-button
           shape="round"
           @click="moveItemTop(record)"
@@ -178,7 +178,7 @@
         </a-button>
       </a-tooltip>
       <a-tooltip placement="top">
-        <template slot="title">Move to bottom</template>
+        <template slot="title">{{ $t('label.move.to.bottom') }}</template>
         <a-button
           shape="round"
           @click="moveItemBottom(record)"
@@ -187,13 +187,13 @@
         </a-button>
       </a-tooltip>
       <a-tooltip placement="top">
-        <template slot="title">Move up one row</template>
+        <template slot="title">{{ $t('label.move.up.row') }}</template>
         <a-button shape="round" @click="moveItemUp(record)" class="shift-btn">
           <a-icon type="caret-up" class="shift-btn" />
         </a-button>
       </a-tooltip>
       <a-tooltip placement="top">
-        <template slot="title">Move down one row</template>
+        <template slot="title">{{ $t('label.move.down.row') }}</template>
         <a-button shape="round" @click="moveItemDown(record)" class="shift-btn">
           <a-icon type="caret-down" class="shift-btn" />
         </a-button>
@@ -306,7 +306,7 @@ export default {
     changeProject (project) {
       this.$store.dispatch('SetProject', project)
       this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
-      this.$message.success(`Switched to "${project.name}"`)
+      this.$message.success(this.$t('message.switch.project', { project: project.name }))
       this.$router.push({ name: 'dashboard' })
     },
     saveValue (record) {
@@ -316,7 +316,7 @@ export default {
       }).then(json => {
         this.editableValueKey = null
 
-        this.$message.success('Setting Updated: ' + record.name)
+        this.$message.success(this.$t('message.setting.updated', { name: record.name }))
         if (json.updateconfigurationresponse &&
           json.updateconfigurationresponse.configuration &&
           !json.updateconfigurationresponse.configuration.isdynamic &&
@@ -328,7 +328,9 @@ export default {
         }
       }).catch(error => {
         console.error(error)
-        this.$message.error('There was an error saving this setting.')
+        this.$message.error(this.$t('message.error.save.setting'))
+      }).finally(() => {
+        this.$emit('refresh')
       })
         .finally(() => {
           this.$emit('refresh')
