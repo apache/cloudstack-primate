@@ -61,10 +61,9 @@
     -->
 
     <p v-if="actions.length > 0" :slot="actions.length > 0 ? 'expandedRowRender' : ''" slot-scope="record">
-      {{ record.id }}
       <action-button
         size="default"
-        :actions="$route.meta.actions"
+        :actions="actions"
         :dataView="true"
         :resource="record"
         @exec-action="$parent.execAction"/>
