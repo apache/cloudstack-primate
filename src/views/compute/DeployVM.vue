@@ -948,14 +948,14 @@ export default {
 
         if (!values.templateid && !values.isoid) {
           this.$notification.error({
-            message: 'Request Failed',
+            message: this.$t('message.request.failed'),
             description: this.$t('message.template.iso')
           })
           return
         } else if (values.isoid && (!values.diskofferingid || values.diskofferingid === '0')) {
           this.$notification.error({
-            message: 'Request Failed',
-            description: this.$t('Please select a Disk Offering to continue')
+            message: this.$t('message.request.failed'),
+            description: this.$t('message.step.3.continue')
           })
           return
         }
@@ -1065,7 +1065,7 @@ export default {
                 }
               },
               loadingMessage: `${title} in progress`,
-              catchMessage: 'Error encountered while fetching async job result'
+              catchMessage: this.$t('error.fetching.async.job.result')
             })
             this.$store.dispatch('AddAsyncJob', {
               title: title,

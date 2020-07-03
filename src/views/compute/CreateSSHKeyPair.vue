@@ -26,7 +26,7 @@
         <a-form-item :label="$t('label.name')">
           <a-input
             v-decorator="['name', {
-              rules: [{ required: true, message: 'Please enter name' }]
+              rules: [{ required: true, message: $t('message.error.input.name') }]
             }]"
             :placeholder="apiParams.name.description"/>
         </a-form-item>
@@ -164,7 +164,7 @@ export default {
         if (this.isValidValueForKey(values, 'publickey') && values.publickey.length > 0) {
           params.publickey = values.publickey
           api('registerSSHKeyPair', params).then(json => {
-            this.$message.success('Successfully registered SSH key pair: ' + values.name)
+            this.$message.success(this.$t('message.success.register.keypair') + ' ' + values.name)
           }).catch(error => {
             this.$notifyError(error)
           }).finally(() => {
@@ -174,7 +174,7 @@ export default {
           })
         } else {
           api('createSSHKeyPair', params).then(json => {
-            this.$message.success('Successfully created SSH key pair: ' + values.name)
+            this.$message.success(this.$t('message.success.create.keypair') + ' ' + values.name)
             if (json.createsshkeypairresponse && json.createsshkeypairresponse.keypair && json.createsshkeypairresponse.keypair.privatekey) {
               this.$notification.info({
                 message: this.$t('label.create.ssh.key.pair'),

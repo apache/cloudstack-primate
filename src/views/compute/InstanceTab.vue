@@ -81,7 +81,7 @@
             </a-popconfirm>
             <a-tooltip placement="bottom" v-if="record.nic.type !== 'L2'">
               <template slot="title">
-                {{ "Change IP Address" }}
+                {{ $t('label.change.ip.addess') }}
               </template>
               <a-button
                 icon="swap"
@@ -91,7 +91,7 @@
             </a-tooltip>
             <a-tooltip placement="bottom" v-if="record.nic.type !== 'L2'">
               <template slot="title">
-                {{ "Manage Secondary IP Addresses" }}
+                {{ $t('label.manage.secondary.ipaddress') }}
               </template>
               <a-button
                 icon="environment"
@@ -176,7 +176,7 @@
       <a-list itemLayout="vertical">
         <a-list-item v-for="(ip, index) in secondaryIPs" :key="index">
           <a-popconfirm
-            title="Release IP?"
+            :title="`${$t('label.action.release.ip')}?`"
             @confirm="removeSecondaryIP(ip.id)"
             okText="Yes"
             cancelText="No"
@@ -343,20 +343,20 @@ export default {
       api('addNicToVirtualMachine', params).then(response => {
         this.$pollJob({
           jobId: response.addnictovirtualmachineresponse.jobid,
-          successMessage: `Successfully added network`,
+          successMessage: this.$t('message.success.add.network'),
           successMethod: () => {
             this.loadingNic = false
             this.closeModals()
             this.parentFetchData()
           },
-          errorMessage: 'Adding network failed',
+          errorMessage: this.$t('message.add.network.failed'),
           errorMethod: () => {
             this.loadingNic = false
             this.closeModals()
             this.parentFetchData()
           },
-          loadingMessage: `Adding network...`,
-          catchMessage: 'Error encountered while fetching async job result',
+          loadingMessage: this.$t('message.add.network.processing'),
+          catchMessage: this.$t('error.fetching.async.job.result'),
           catchMethod: () => {
             this.loadingNic = false
             this.closeModals()
@@ -387,7 +387,7 @@ export default {
             this.parentFetchData()
           },
           loadingMessage: `Setting ${item.networkname} to default...`,
-          catchMessage: 'Error encountered while fetching async job result',
+          catchMessage: this.$t('error.fetching.async.job.result'),
           catchMethod: () => {
             this.loadingNic = false
             this.parentFetchData()
@@ -407,20 +407,20 @@ export default {
       }).then(response => {
         this.$pollJob({
           jobId: response.updatevmnicipresponse.jobid,
-          successMessage: `Successfully updated IP Address`,
+          successMessage: this.$t('message.success.update.ipaddress'),
           successMethod: () => {
             this.loadingNic = false
             this.closeModals()
             this.parentFetchData()
           },
-          errorMessage: `Error`,
+          errorMessage: this.$t('label.error'),
           errorMethod: () => {
             this.loadingNic = false
             this.closeModals()
             this.parentFetchData()
           },
-          loadingMessage: `Updating IP Address...`,
-          catchMessage: 'Error encountered while fetching async job result',
+          loadingMessage: this.$t('message.update.ipaddress.processing'),
+          catchMessage: this.$t('error.fetching.async.job.result'),
           catchMethod: () => {
             this.loadingNic = false
             this.closeModals()
@@ -442,18 +442,18 @@ export default {
       }).then(response => {
         this.$pollJob({
           jobId: response.removenicfromvirtualmachineresponse.jobid,
-          successMessage: `Successfully removed`,
+          successMessage: this.$t('message.success.remove.nic'),
           successMethod: () => {
             this.loadingNic = false
             this.parentFetchData()
           },
-          errorMessage: `There was an error`,
+          errorMessage: this.$t('message.error.remove.nic'),
           errorMethod: () => {
             this.loadingNic = false
             this.parentFetchData()
           },
-          loadingMessage: `Removing NIC...`,
-          catchMessage: 'Error encountered while fetching async job result',
+          loadingMessage: this.$t('message.remove.nic.processing'),
+          catchMessage: this.$t('error.fetching.async.job.result'),
           catchMethod: () => {
             this.loadingNic = false
             this.parentFetchData()
@@ -477,20 +477,20 @@ export default {
       api('addIpToNic', params).then(response => {
         this.$pollJob({
           jobId: response.addiptovmnicresponse.jobid,
-          successMessage: `Successfully added secondary IP Address`,
+          successMessage: this.$t('message.success.add.secondary.ipaddress'),
           successMethod: () => {
             this.loadingNic = false
             this.fetchSecondaryIPs(this.selectedNicId)
             this.parentFetchData()
           },
-          errorMessage: `There was an error adding the secondary IP Address`,
+          errorMessage: this.$t('message.error.add.secondary.ipaddress'),
           errorMethod: () => {
             this.loadingNic = false
             this.fetchSecondaryIPs(this.selectedNicId)
             this.parentFetchData()
           },
-          loadingMessage: `Add Secondary IP address...`,
-          catchMessage: 'Error encountered while fetching async job result',
+          loadingMessage: this.$t('message.add.secondary.ipaddress.processing'),
+          catchMessage: this.$t('error.fetching.async.job.result'),
           catchMethod: () => {
             this.loadingNic = false
             this.fetchSecondaryIPs(this.selectedNicId)
@@ -508,20 +508,20 @@ export default {
       api('removeIpFromNic', { id }).then(response => {
         this.$pollJob({
           jobId: response.removeipfromnicresponse.jobid,
-          successMessage: `Successfully removed secondary IP Address`,
+          successMessage: this.$t('message.success.remove.secondary.ipaddress'),
           successMethod: () => {
             this.loadingNic = false
             this.fetchSecondaryIPs(this.selectedNicId)
             this.parentFetchData()
           },
-          errorMessage: `There was an error removing the secondary IP Address`,
+          errorMessage: this.$t('message.error.remove.secondary.ipaddress'),
           errorMethod: () => {
             this.loadingNic = false
             this.fetchSecondaryIPs(this.selectedNicId)
             this.parentFetchData()
           },
-          loadingMessage: `Removing Secondary IP address...`,
-          catchMessage: 'Error encountered while fetching async job result',
+          loadingMessage: this.$t('message.remove.secondary.ipaddress.processing'),
+          catchMessage: this.$t('error.fetching.async.job.result'),
           catchMethod: () => {
             this.loadingNic = false
             this.fetchSecondaryIPs(this.selectedNicId)
