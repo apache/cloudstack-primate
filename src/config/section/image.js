@@ -73,14 +73,14 @@ export default {
           label: 'label.edit',
           dataView: true,
           show: (record, store) => {
-            return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
+            return (['Admin'].includes(store.userInfo.roletype) ||
               (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
               record.templatetype !== 'SYSTEM' &&
               record.isready
           },
           args: (record, store) => {
             var fields = ['name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable']
-            if (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) {
+            if (['Admin'].includes(store.userInfo.roletype)) {
               fields.push('isrouting')
             }
             return fields
@@ -94,7 +94,7 @@ export default {
           docHelp: 'adminguide/templates.html#exporting-templates',
           dataView: true,
           show: (record, store) => {
-            return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
+            return (['Admin'].includes(store.userInfo.roletype) ||
               (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
               record.templatetype !== 'SYSTEM' &&
               record.isready &&
@@ -119,7 +119,7 @@ export default {
           dataView: true,
           popup: true,
           show: (record, store) => {
-            return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
+            return (['Admin'].includes(store.userInfo.roletype) ||
               (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
               record.templatetype !== 'SYSTEM' &&
               record.isready
@@ -176,14 +176,14 @@ export default {
           label: 'label.edit',
           dataView: true,
           show: (record, store) => {
-            return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
+            return (['Admin'].includes(store.userInfo.roletype) ||
               (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
               !(record.account === 'SYSTEM' && record.domainid === 1) &&
               record.isready
           },
           args: (record, store) => {
             var fields = ['name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable']
-            if (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) {
+            if (['Admin'].includes(store.userInfo.roletype)) {
               fields.push('isrouting')
             }
             return fields
@@ -197,7 +197,7 @@ export default {
           docHelp: 'adminguide/templates.html#exporting-templates',
           dataView: true,
           show: (record, store) => {
-            return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
+            return (['Admin'].includes(store.userInfo.roletype) ||
               (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
               !(record.account === 'SYSTEM' && record.domainid === 1) &&
               record.isready
@@ -222,7 +222,7 @@ export default {
           args: ['op', 'accounts', 'projectids'],
           popup: true,
           show: (record, store) => {
-            return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) ||
+            return (['Admin'].includes(store.userInfo.roletype) ||
               (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
               !(record.account === 'SYSTEM' && record.domainid === 1) &&
               record.isready

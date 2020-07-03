@@ -220,7 +220,7 @@ export default {
       this.fetchData()
     },
     isActionPermitted () {
-      return (['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype) ||
+      return (['Admin'].includes(this.$store.getters.userInfo.roletype) ||
         (this.resource.domainid === this.$store.getters.userInfo.domainid && this.resource.account === this.$store.getters.userInfo.account)) &&
         !(this.resource.account !== 'SYSTEM' && this.resource.domainid === 1) &&
         this.resource.isready
