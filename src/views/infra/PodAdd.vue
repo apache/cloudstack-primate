@@ -194,7 +194,7 @@ export default {
           this.$parent.$parent.close()
         }).catch(error => {
           this.$notification.error({
-            message: `Error ${error.response.status}`,
+            message: `${this.$t('label.error')} ${error.response.status}`,
             description: error.response.data.createpodresponse.errortext,
             duration: 0
           })
@@ -219,23 +219,23 @@ export default {
             this.$store.dispatch('AddAsyncJob', {
               title: this.$t('message.pod.dedicated'),
               jobid: response.dedicatepodresponse.jobid,
-              description: `Domain ID: ${this.dedicatedDomainId}`,
+              description: `${this.$t('label.domainid')} : ${this.dedicatedDomainId}`,
               status: 'progress'
             })
           },
-          errorMessage: 'Failed to dedicate pod',
+          errorMessage: this.$t('error.dedicate.pod.failed'),
           errorMethod: () => {
             this.loading = false
           },
           loadingMessage: this.$t('message.dedicate.pod'),
-          catchMessage: 'Error encountered while fetching async job result',
+          catchMessage: this.$t('error.fetching.async.job.result'),
           catchMethod: () => {
             this.loading = false
           }
         })
       }).catch(error => {
         this.$notification.error({
-          message: `Error ${error.response.status}`,
+          message: `${this.$t('label.error')} ${error.response.status}`,
           description: error.response.data.errorresponse.errortext,
           duration: 0
         })
