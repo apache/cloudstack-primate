@@ -25,14 +25,14 @@
         <a-form-item :label="$t('label.semanticversion')">
           <a-input
             v-decorator="['semanticversion', {
-              rules: [{ required: true, message: 'Please enter Kubernetes semantic version' }]
+              rules: [{ required: true, message: $t('message.error.kuberversion') }]
             }]"
             :placeholder="apiParams.semanticversion.description"/>
         </a-form-item>
         <a-form-item :label="$t('label.name')">
           <a-input
             v-decorator="['name', {
-              rules: [{ message: 'Please enter name' }]
+              rules: [{ message: $t('message.error.name') }]
             }]"
             :placeholder="$t('label.name')"/>
         </a-form-item>
@@ -44,7 +44,7 @@
                 {
                   validator: (rule, value, callback) => {
                     if (value && value.length > 1 && value.indexOf(0) !== -1) {
-                      callback('All Zones cannot be combined with any other zone')
+                      callback(this.$t('message.error.zone.combined'))
                     }
                     callback()
                   }
@@ -66,25 +66,25 @@
         <a-form-item :label="$t('label.url')">
           <a-input
             v-decorator="['url', {
-              rules: [{ required: true, message: 'Please enter binaries ISO URL' }]
+              rules: [{ required: true, message: $t('message.error.binaries.iso.url"') }]
             }]"
             :placeholder="apiParams.url.description" />
         </a-form-item>
         <a-form-item :label="$t('label.checksum')">
           <a-input
             v-decorator="['checksum', {
-              rules: [{ required: false, message: 'Please enter input' }]
+              rules: [{ required: false, message: $t('message.error.required.input') }]
             }]"
             :placeholder="apiParams.checksum.description" />
         </a-form-item>
         <a-form-item :label="$t('label.mincpunumber')">
           <a-input
             v-decorator="['mincpunumber', {
-              rules: [{ required: true, message: 'Please enter value' },
+              rules: [{ required: true, message: $t('message.please.enter.value') },
                       {
                         validator: (rule, value, callback) => {
                           if (value && (isNaN(value) || value <= 0)) {
-                            callback('Please enter a valid number')
+                            callback(this.$t('message.validate.number'))
                           }
                           callback()
                         }
@@ -96,11 +96,11 @@
         <a-form-item :label="$t('label.minmemory')">
           <a-input
             v-decorator="['minmemory', {
-              rules: [{ required: true, message: 'Please enter value' },
+              rules: [{ required: true, message: $t('message.please.enter.value') },
                       {
                         validator: (rule, value, callback) => {
                           if (value && (isNaN(value) || value <= 0)) {
-                            callback('Please enter a valid number')
+                            callback(this.$t('message.validate.number'))
                           }
                           callback()
                         }
@@ -204,7 +204,7 @@ export default {
           params.minmemory = values.minmemory
         }
         api('addKubernetesSupportedVersion', params).then(json => {
-          this.$message.success('Successfully added Kubernetes version: ' + values.semanticversion)
+          this.$message.success(`${this.$t('message.success.add.kuberversion')}: ${values.semanticversion}`)
         }).catch(error => {
           this.$notifyError(error)
         }).finally(() => {
