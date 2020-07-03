@@ -18,7 +18,7 @@
 <template>
   <a-tooltip placement="bottom">
     <template slot="title">
-      Delete rule
+      {{ $t('label.delete.rule') }}
     </template>
     <a-popconfirm
       title="Delete Rule?"

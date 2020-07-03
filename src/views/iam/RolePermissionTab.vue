@@ -49,7 +49,7 @@
           <a-tooltip
             placement="bottom">
             <template slot="title">
-              Save new Rule
+              {{ $t('label.save.new.rule') }}
             </template>
             <a-button
               :disabled="!('createRolePermission' in $store.getters.apis)"
@@ -90,7 +90,7 @@
                 {{ record.description }}
               </template>
               <div v-else class="no-description">
-                No description entered.
+                {{ $t('message.no.description') }}
               </div>
             </div>
             <div class="rules-table__col rules-table__col--actions">
