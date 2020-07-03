@@ -35,8 +35,8 @@
         <a-popconfirm
           :title="`${$t('label.delete')}?`"
           @confirm="handleDelete(record)"
-          okText="Yes"
-          cancelText="No"
+          :okText="$t('label.yes')"
+          :cancelText="$t('label.no')"
           placement="top"
         >
           <a-button :disabled="!('releaseDedicatedGuestVlanRange' in $store.getters.apis)" icon="delete" type="danger" shape="circle"></a-button>
@@ -49,7 +49,7 @@
       :current="page"
       :pageSize="pageSize"
       :total="totalCount"
-      :showTotal="total => `Total ${total} items`"
+      :showTotal="total => `${this.$t('label.total')} ${total} ${this.$t('label.items')}`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="handleChangePage"
       @showSizeChange="handleChangePageSize"
@@ -198,7 +198,7 @@ export default {
         this.totalCount = response.listdedicatedguestvlanrangesresponse.count || 0
       }).catch(error => {
         this.$notification.error({
-          message: `Error ${error.response.status}`,
+          message: `${this.$t('label.error')} ${error.response.status}`,
           description: error.response.data.errorresponse.errortext,
           duration: 0
         })
@@ -282,7 +282,7 @@ export default {
         id: item.id
       }).then(response => {
         this.$store.dispatch('AddAsyncJob', {
-          title: `Deleted dedicated VLAN/VNI range ${item.guestvlanrange} for ${item.account}`,
+          title: `${this.$t('label.delete.dedicated.vlan.range')} ${item.guestvlanrange} ${this.$t('label.for')} ${item.account}`,
           jobid: response.releasededicatedguestvlanrangeresponse.jobid,
           status: 'progress'
         })
@@ -292,13 +292,13 @@ export default {
             this.fetchData()
             this.parentFinishLoading()
           },
-          errorMessage: 'Deleting failed',
+          errorMessage: this.$t('label.deleting.failed'),
           errorMethod: () => {
             this.fetchData()
             this.parentFinishLoading()
           },
-          loadingMessage: `Deleting ${item.id}`,
-          catchMessage: 'Error encountered while fetching async job result',
+          loadingMessage: `${this.$t('label.deleting')} ${item.id}`,
+          catchMessage: this.$t('error.fetching.async.job.result'),
           catchMethod: () => {
             this.fetchData()
             this.parentFinishLoading()
@@ -306,7 +306,7 @@ export default {
         })
       }).catch(error => {
         console.log(error)
-        this.$message.error('Failed to delete.')
+        this.$message.error(this.$t('message.fail.to.delete'))
         this.fetchData()
         this.parentFinishLoading()
       })

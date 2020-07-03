@@ -58,7 +58,7 @@
       :current="page"
       :pageSize="pageSize"
       :total="items.length"
-      :showTotal="total => `Total ${total} items`"
+      :showTotal="total => `${this.$t('label.total')} ${total} ${this.$t('label.items')}`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="changePage"
       @showSizeChange="changePageSize"
@@ -245,7 +245,7 @@ export default {
         vlan: record.vlanid
       }).then(response => {
         this.$store.dispatch('AddAsyncJob', {
-          title: `Successfully removed IP Range`,
+          title: this.$t('message.success.remove.iprange'),
           jobid: response.deletemanagementnetworkiprangeresponse.jobid,
           status: 'progress'
         })
@@ -255,13 +255,13 @@ export default {
             this.componentLoading = false
             this.fetchData()
           },
-          errorMessage: 'Removing failed',
+          errorMessage: this.$t('message.remove.failed'),
           errorMethod: () => {
             this.componentLoading = false
             this.fetchData()
           },
-          loadingMessage: `Removing IP Range...`,
-          catchMessage: 'Error encountered while fetching async job result',
+          loadingMessage: this.$t('message.remove.iprange.processing'),
+          catchMessage: this.$t('error.fetching.async.job.result'),
           catchMethod: () => {
             this.componentLoading = false
             this.fetchData()
@@ -289,7 +289,7 @@ export default {
           vlan: values.vlan || null
         }).then(response => {
           this.$store.dispatch('AddAsyncJob', {
-            title: `Successfully added IP Range`,
+            title: this.$t('message.success.add.iprange'),
             jobid: response.createmanagementnetworkiprangeresponse.jobid,
             status: 'progress'
           })
@@ -299,13 +299,13 @@ export default {
               this.componentLoading = false
               this.fetchData()
             },
-            errorMessage: 'Adding failed',
+            errorMessage: this.$t('message.add.failed'),
             errorMethod: () => {
               this.componentLoading = false
               this.fetchData()
             },
-            loadingMessage: `Adding IP Range...`,
-            catchMessage: 'Error encountered while fetching async job result',
+            loadingMessage: this.$t('message.add.iprange.processing'),
+            catchMessage: this.$t('error.fetching.async.job.result'),
             catchMethod: () => {
               this.componentLoading = false
               this.fetchData()

@@ -69,7 +69,7 @@
       :current="page"
       :pageSize="pageSize"
       :total="items.length"
-      :showTotal="total => `Total ${total} items`"
+      :showTotal="total => `${this.$t('label.total')} ${total} ${this.$t('label.items')}`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="changePage"
       @showSizeChange="changePageSize"
@@ -148,8 +148,7 @@
           <a-switch @change="handleShowAccountFields"></a-switch>
         </div>
         <div v-if="showAccountFields" style="margin-top: 20px;">
-          <p>(optional) Please specify an account to be associated with this IP range.</p>
-          <p>System VMs: Enable dedication of public IP range for SSVM and CPVM, account field disabled. Reservation strictness defined on 'system.vm.public.ip.reservation.mode.strictness'.</p>
+          <div v-html="$t('label.set.reservation.desc')"></div>
           <a-form-item :label="$t('label.system.vms')" class="form__item">
             <a-switch v-decorator="['forsystemvms']"></a-switch>
           </a-form-item>
@@ -372,11 +371,11 @@ export default {
           forvirtualnetwork: true
         }).then(() => {
           this.$notification.success({
-            message: 'Successfully added IP Range'
+            message: this.$t('message.success.add.iprange')
           })
         }).catch(error => {
           this.$notification.error({
-            message: `Error ${error.response.status}`,
+            message: `${this.$t('label.error')} ${error.response.status}`,
             description: error.response.data.createvlaniprangeresponse
               ? error.response.data.createvlaniprangeresponse.errortext : error.response.data.errorresponse.errortext,
             duration: 0
