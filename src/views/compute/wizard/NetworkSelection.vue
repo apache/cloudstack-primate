@@ -57,7 +57,7 @@
         :current="options.page"
         :pageSize="options.pageSize"
         :total="rowCount"
-        :showTotal="total => `Total ${total} items`"
+        :showTotal="total => `${this.$t('label.total')} ${total} ${this.$t('label.items')}`"
         :pageSizeOptions="['10', '20', '40', '80', '100', '500']"
         @change="onChangePage"
         @showSizeChange="onChangePageSize"
