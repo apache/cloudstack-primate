@@ -589,7 +589,7 @@ export default {
             }).then(response => {
               const projAccounts = response.listprojectaccountsresponse.projectaccount || []
               var projectAccount = projAccounts.map(a => {
-                return a.userid ? a.account + '(' + (a.user[0].username || a.userid) + ')' : a.account
+                return a.userid ? a.account + '(' + (a.user && a.user[0].username || a.userid) + ')' : a.account
               })
               item.account = projectAccount.join()
             })

@@ -50,7 +50,7 @@
             </span>
             <a-input v-decorator="[ 'email']"></a-input>
           </a-form-item>
-          <a-form-item>
+          <a-form-item v-if="apiParams.addAccountToProject.projectroleid">
             <span slot="label">
               {{ $t('label.project.role') }}
               <a-tooltip :title="apiParams.addAccountToProject.projectroleid.description">
@@ -68,7 +68,7 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item>
+          <a-form-item v-if="apiParams.addAccountToProject.roletype">
             <span slot="label">
               {{ $t('label.roletype') }}
               <a-tooltip :title="apiParams.addAccountToProject.roletype.description">
@@ -89,7 +89,7 @@
           </div>
         </a-form>
       </a-tab-pane>
-      <a-tab-pane key="2" :tab="$t('label.action.project.add.user')">
+      <a-tab-pane key="2" :tab="$t('label.action.project.add.user')" v-if="apiParams.addUserToProject">
         <a-form
           :form="form"
           @submit="addUserToProject"
@@ -197,11 +197,14 @@ export default {
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
-    const apis = ['addAccountToProject', 'addUserToProject']
+    const apis = ['addAccountToProject']
+    if ('addUserToProject' in this.$store.getters.apis) {
+      apis.push('addUserToProject')
+    }
     this.apiParams = {}
     for (var api of apis) {
       const details = {}
-      var apiConfig = this.$store.getters.apis[api]
+      const apiConfig = this.$store.getters.apis[api]
       apiConfig.params.forEach(param => {
         details[param.name] = param
       })
@@ -212,7 +215,9 @@ export default {
     fetchData () {
       this.fetchUsers()
       this.fetchAccounts()
-      this.fetchProjectRoles()
+      if (this.isProjectRolesSupported()) {
+        this.fetchProjectRoles()
+      }
     },
     fetchUsers () {
       this.load.users = true
@@ -248,6 +253,9 @@ export default {
         this.load.projectRoles = false
       })
     },
+    isProjectRolesSupported () {
+      return ('listProjectRoles' in this.$store.getters.apis)
+    },
     addAccountToProject (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
@@ -255,8 +263,9 @@ export default {
           return
         }
         this.loading = true
-        var params = {}
-        params.projectid = this.resource.id
+        var params = {
+          projectid: this.resource.id
+        }
         for (const key in values) {
           const input = values[key]
           if (input === undefined) {
@@ -288,9 +297,10 @@ export default {
           return
         }
 
-        var params = {}
         this.loading = true
-        params.projectid = this.resource.id
+        var params = {
+          projectid: this.resource.id
+        }
         for (const key in values) {
           const input = values[key]
           if (input === undefined) {

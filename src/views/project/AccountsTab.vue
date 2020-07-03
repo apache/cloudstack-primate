@@ -25,15 +25,14 @@
           :columns="columns"
           :dataSource="dataSource"
           :pagination="false"
-          :rowKey="record => record.userid ? record.userid : (record.accountid || record.account)"
-        >
+          :rowKey="record => record.userid ? record.userid : (record.accountid || record.account)">
           <span slot="user" slot-scope="text, record" v-if="record.userid">
             {{ getUserName(record) }}
           </span>
           <span slot="projectrole" slot-scope="text, record" v-if="record.projectroleid">
             {{ getProjectRole(record) }}
           </span>
-          <span v-if="isProjAdmin" slot="action" slot-scope="text, record" class="account-button-action">
+          <span v-if="imProjectAdmin && dataSource.length > 1" slot="action" slot-scope="text, record" class="account-button-action">
             <a-tooltip
               slot="title"
               placement="top"
@@ -49,7 +48,8 @@
             <a-tooltip
               slot="title"
               placement="top"
-              :title="record.userid ? $t('label.demote.project.owner.user') : $t('label.demote.project.owner')">
+              :title="record.userid ? $t('label.demote.project.owner.user') : $t('label.demote.project.owner')"
+              v-if="updateProjectApi.params.filter(x => x.name === 'swapowner').length > 0">
               <a-button
                 v-if="record.role === owner"
                 type="default"
@@ -63,7 +63,6 @@
               placement="top"
               :title="record.userid ? $t('label.remove.project.user') : $t('label.remove.project.account')">
               <a-button
-                v-if="!isLoggedInUser(record)"
                 type="danger"
                 shape="circle"
                 icon="delete"
@@ -104,7 +103,7 @@ export default {
     return {
       columns: [],
       dataSource: [],
-      isProjAdmin: false,
+      imProjectAdmin: false,
       loading: {
         user: false,
         projectAccount: false,
@@ -125,35 +124,31 @@ export default {
       {
         title: this.$t('label.account'),
         dataIndex: 'account',
-        width: '20%',
         scopedSlots: { customRender: 'account' }
-      },
-      {
-        title: this.$t('label.user'),
-        dataIndex: 'userid',
-        width: '20%',
-        scopedSlots: { customRender: 'user' }
       },
       {
         title: this.$t('label.roletype'),
         dataIndex: 'role',
-        width: '20%',
         scopedSlots: { customRender: 'role' }
-      },
-      {
-        title: this.$t('label.project.role'),
-        dataIndex: 'projectroleid',
-        width: '20%',
-        scopedSlots: { customRender: 'projectrole' }
       },
       {
         title: this.$t('label.action'),
         dataIndex: 'action',
-        fixed: 'right',
-        width: '20%',
         scopedSlots: { customRender: 'action' }
       }
     ]
+    if (this.isProjectRolesSupported()) {
+      this.columns.splice(1, 0, {
+        title: this.$t('label.user'),
+        dataIndex: 'userid',
+        scopedSlots: { customRender: 'user' }
+      })
+      this.columns.splice(this.columns.length - 1, 0, {
+        title: this.$t('label.project.role'),
+        dataIndex: 'projectroleid',
+        scopedSlots: { customRender: 'projectrole' }
+      })
+    }
     this.page = 1
     this.pageSize = 10
     this.itemCount = 0
@@ -176,10 +171,12 @@ export default {
       params.projectId = this.resource.id
       params.page = this.page
       params.pageSize = this.pageSize
-
+      this.updateProjectApi = this.$store.getters.apis.updateProject
       this.fetchUsers()
-      this.fetchProjectRoles()
       this.fetchProjectAccounts(params)
+      if (this.isProjectRolesSupported()) {
+        this.fetchProjectRoles()
+      }
     },
     changePage (page, pageSize) {
       this.page = page
@@ -191,26 +188,20 @@ export default {
       this.pageSize = pageSize
       this.fetchData()
     },
-    isLoggedInUser (record) {
-      const uname = this.getUserName(record)
-      var status = false
-      if (record.userid) {
-        const user = this.users.filter(user => user.id === uname)
-        status = uname && uname === this.$store.getters.userInfo.username ||
-          (user[0] && user[0].username === this.$store.getters.userInfo.username)
-      } else {
-        status = record.account === this.$store.getters.userInfo.account
-      }
-      return status
-    },
-    isProjectAdmin (loggedInUser) {
+    isLoggedInUserProjectAdmin (user) {
       if (['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype)) {
         return true
       }
-      if ((loggedInUser.role === this.owner)) {
+      // If I'm the logged in user Or if I'm the logged in account And I'm the owner
+      if (((user.userid && user.userid === this.$store.getters.userInfo.id) ||
+        user.account === this.$store.getters.userInfo.account) &&
+        user.role === this.owner) {
         return true
       }
       return false
+    },
+    isProjectRolesSupported () {
+      return ('listProjectRoles' in this.$store.getters.apis)
     },
     getUserName (record) {
       if (record.userid) {
@@ -252,9 +243,9 @@ export default {
           return
         }
         for (const projectAccount of listProjectAccount) {
-          if ((projectAccount.userid && projectAccount.userid === this.$store.getters.userInfo.username) ||
-            projectAccount.account === this.$store.getters.userInfo.account) {
-            this.isProjAdmin = this.isProjectAdmin(projectAccount)
+          this.imProjectAdmin = this.isLoggedInUserProjectAdmin(projectAccount)
+          if (this.imProjectAdmin) {
+            break
           }
         }
 

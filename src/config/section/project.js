@@ -43,8 +43,8 @@ export default {
       name: 'project.roles',
       component: () => import('@/views/project/iam/ProjectRoleTab.vue'),
       projectAccountFilter: projectAccount => {
-        return (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype) ||
-        projectAccount && projectAccount.role === 'Admin')
+        return (('listProjectRoles' in store.getters.apis) && (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype) ||
+        projectAccount && projectAccount.role === 'Admin'))
       }
     },
     {
