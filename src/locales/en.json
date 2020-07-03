@@ -862,6 +862,7 @@
 "label.events": "Events",
 "label.every": "Every",
 "label.example": "Example",
+"label.example.plugin": "ExamplePlugin",
 "label.existingnetworks": "Existing networks",
 "label.expunge": "Expunge",
 "label.expunged": "Expunged",
