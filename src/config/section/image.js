@@ -94,6 +94,13 @@ export default {
           }
         },
         {
+          api: 'updateTemplatePermissions',
+          icon: 'share-alt',
+          label: 'label.action.template.share',
+          dataView: true,
+          args: ['ispublic', 'isfeatured', 'isextractable']
+        },
+        {
           api: 'extractTemplate',
           icon: 'cloud-download',
           label: 'label.action.download.template',
@@ -121,7 +128,7 @@ export default {
         {
           api: 'updateTemplatePermissions',
           icon: 'reconciliation',
-          label: 'label.action.share.template',
+          label: 'label.action.template.permission',
           docHelp: 'adminguide/templates.html#sharing-templates-with-other-accounts-projects',
           dataView: true,
           popup: true,
@@ -180,7 +187,7 @@ export default {
         {
           api: 'updateIso',
           icon: 'edit',
-          label: 'label.edit',
+          label: 'label.action.edit.iso',
           dataView: true,
           show: (record, store) => {
             return (['Admin'].includes(store.userInfo.roletype) ||
@@ -188,13 +195,14 @@ export default {
               !(record.account === 'SYSTEM' && record.domainid === 1) &&
               record.isready
           },
-          args: (record, store) => {
-            var fields = ['name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable']
-            if (['Admin'].includes(store.userInfo.roletype)) {
-              fields.push('isrouting')
-            }
-            return fields
-          }
+          args: ['name', 'displaytext', 'bootable', 'ostypeid']
+        },
+        {
+          api: 'updateIsoPermissions',
+          icon: 'share-alt',
+          label: 'label.action.iso.share',
+          dataView: true,
+          args: ['ispublic', 'isfeatured', 'isextractable']
         },
         {
           api: 'extractIso',
@@ -223,7 +231,7 @@ export default {
         {
           api: 'updateIsoPermissions',
           icon: 'reconciliation',
-          label: 'label.action.edit.iso',
+          label: 'label.action.iso.permission',
           docHelp: 'adminguide/templates.html#sharing-templates-with-other-accounts-projects',
           dataView: true,
           args: ['op', 'accounts', 'projectids'],
