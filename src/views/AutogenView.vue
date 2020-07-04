@@ -485,14 +485,6 @@ export default {
         }
       }
 
-      const userInfo = this.$store.getters.userInfo
-      if (!['Admin'].includes(userInfo.roletype) && this.selectedFilter !== 'self' && ['listTemplates'].includes(this.apiName)) {
-        var colIndex = this.columnKeys.indexOf('status')
-        if (colIndex > -1) {
-          this.columnKeys.splice(colIndex, 1)
-        }
-      }
-
       if (this.selectedFilter && this.filters.length > 0) {
         if (this.$route.path.startsWith('/template')) {
           params.templatefilter = this.selectedFilter
