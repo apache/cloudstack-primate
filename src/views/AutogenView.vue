@@ -282,7 +282,9 @@
     </div>
 
     <div v-if="dataView">
+      <slot v-if="$route.path.startsWith('/quotasummary')"></slot>
       <resource-view
+        v-else
         :resource="resource"
         :loading="loading"
         :tabs="$route.meta.tabs" />
@@ -346,6 +348,7 @@ export default {
       parentSearch: this.onSearch,
       parentChangeFilter: this.changeFilter,
       parentFilter: this.onFilter,
+      parentChangeResource: this.changeResource,
       parentPollActionCompletion: this.pollActionCompletion
     }
   },
@@ -457,6 +460,7 @@ export default {
       if (this.$route && this.$route.params && this.$route.params.id) {
         this.resource = {}
         this.dataView = true
+        this.$emit('change-resource', this.resource)
       } else {
         this.dataView = false
       }
@@ -608,6 +612,7 @@ export default {
         }
         if (this.items.length > 0) {
           this.resource = this.items[0]
+          this.$emit('change-resource', this.resource)
         }
       }).catch(error => {
         this.$notifyError(error)
