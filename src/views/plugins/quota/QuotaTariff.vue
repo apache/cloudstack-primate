@@ -16,27 +16,44 @@
 // under the License.
 
 <template>
-  <a
-    v-if="['vm', 'systemvm', 'router', 'ilbvm'].includes($route.meta.name) && 'updateVirtualMachine' in $store.getters.apis"
-    :href="'/client/console?cmd=access&vm=' + resource.id"
-    target="_blank">
-    <a-button style="margin-left: 5px" shape="circle" type="dashed" :size="size" :disabled="['Stopped', 'Error', 'Destroyed'].includes(resource.state)" >
-      <a-icon type="code" />
-    </a-button>
-  </a>
+  <div>
+    <autogen-view ref="autogenview" />
+    <edit-tariff-value-wizard
+      v-if="tariffAction"
+      :showAction="tariffAction"
+      :resource="tariffResource" />
+  </div>
 </template>
 
 <script>
+import AutogenView from '@/views/AutogenView.vue'
+import EditTariffValueWizard from '@/views/plugins/quota/EditTariffValueWizard'
+
 export default {
-  name: 'Console',
-  props: {
-    resource: {
-      type: Object,
-      required: true
+  name: 'QuotaTariff',
+  components: {
+    AutogenView,
+    EditTariffValueWizard
+  },
+  data () {
+    return {
+      tariffAction: false,
+      tariffResource: {}
+    }
+  },
+  provide: function () {
+    return {
+      parentFetchData: this.fetchData,
+      parentEditTariffAction: this.showTariffAction
+    }
+  },
+  methods: {
+    fetchData () {
+      this.$refs.autogenview.fetchData()
     },
-    size: {
-      type: String,
-      default: 'small'
+    showTariffAction (showAction, resource) {
+      this.tariffAction = showAction
+      this.tariffResource = resource
     }
   }
 }

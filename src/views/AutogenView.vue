@@ -283,7 +283,9 @@
     </div>
 
     <div v-if="dataView">
+      <slot v-if="$route.path.startsWith('/quotasummary')"></slot>
       <resource-view
+        v-else
         :resource="resource"
         :loading="loading"
         :tabs="$route.meta.tabs" />
@@ -341,7 +343,9 @@ export default {
       parentFetchData: this.fetchData,
       parentToggleLoading: this.toggleLoading,
       parentStartLoading: this.startLoading,
-      parentFinishLoading: this.finishLoading
+      parentFinishLoading: this.finishLoading,
+      parentChangeResource: this.changeResource,
+      parentPollActionCompletion: this.pollActionCompletion
     }
   },
   data () {
@@ -445,6 +449,7 @@ export default {
       if (this.$route && this.$route.params && this.$route.params.id) {
         this.resource = {}
         this.dataView = true
+        this.$emit('change-resource', this.resource)
       } else {
         this.dataView = false
       }
@@ -577,9 +582,11 @@ export default {
         if (!this.items || this.items.length === 0) {
           this.items = []
         }
+
         if (['listTemplates', 'listIsos'].includes(this.apiName) && this.items.length > 1) {
           this.items = [...new Map(this.items.map(x => [x.id, x])).values()]
         }
+
         for (let idx = 0; idx < this.items.length; idx++) {
           this.items[idx].key = idx
           for (const key in customRender) {
@@ -596,6 +603,7 @@ export default {
         }
         if (this.items.length > 0) {
           this.resource = this.items[0]
+          this.$emit('change-resource', this.resource)
         }
       }).catch(error => {
         this.$notifyError(error)
@@ -923,6 +931,9 @@ export default {
       this.page = currentPage
       this.pageSize = pageSize
       this.fetchData()
+    },
+    changeResource (resource) {
+      this.resource = resource
     },
     start () {
       this.loading = true
