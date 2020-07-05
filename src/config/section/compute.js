@@ -493,7 +493,7 @@ export default {
         {
           api: 'createInstanceGroup',
           icon: 'plus',
-          label: 'label.new.instance.group',
+          label: 'New Instance Group',
           listView: true,
           args: ['name']
         },
