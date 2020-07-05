@@ -1829,6 +1829,7 @@
 "label.save.changes": "Save changes",
 "label.save.new.rule": "Save new Rule",
 "label.saving.processing": "Saving....",
+"label.scale.vm": "Scale VM",
 "label.scale.up.policy": "SCALE UP POLICY",
 "label.scaledown.policy": "ScaleDown Policy",
 "label.scaleup.policy": "ScaleUp Policy",
