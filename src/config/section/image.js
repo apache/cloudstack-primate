@@ -33,7 +33,7 @@ export default {
       resourceType: 'Template',
       filters: ['self', 'shared', 'featured', 'community'],
       columns: () => {
-        var fields = ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain']
+        var fields = ['name', 'ostypename', 'hypervisor', 'account', 'domain']
         if (['Admin'].includes(store.getters.userInfo.roletype)) {
           fields.push('order')
         }
@@ -80,7 +80,14 @@ export default {
           icon: 'edit',
           label: 'label.edit',
           dataView: true,
-          args: ['name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable', 'isrouting']
+          args: ['name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable']
+        },
+        {
+          api: 'updateTemplatePermissions',
+          icon: 'share-alt',
+          label: 'label.action.template.share',
+          dataView: true,
+          args: ['ispublic', 'isfeatured', 'isextractable']
         },
         {
           api: 'extractTemplate',
@@ -104,7 +111,7 @@ export default {
         {
           api: 'updateTemplatePermissions',
           icon: 'reconciliation',
-          label: 'label.action.share.template',
+          label: 'label.action.template.permission',
           docHelp: 'adminguide/templates.html#sharing-templates-with-other-accounts-projects',
           dataView: true,
           popup: true,
@@ -159,9 +166,16 @@ export default {
         {
           api: 'updateIso',
           icon: 'edit',
-          label: 'label.edit',
+          label: 'label.action.edit.iso',
           dataView: true,
-          args: ['name', 'displaytext', 'bootable', 'ostypeid', 'isdynamicallyscalable', 'isrouting']
+          args: ['name', 'displaytext', 'bootable', 'ostypeid']
+        },
+        {
+          api: 'updateIsoPermissions',
+          icon: 'share-alt',
+          label: 'label.action.iso.share',
+          dataView: true,
+          args: ['ispublic', 'isfeatured', 'isextractable']
         },
         {
           api: 'extractIso',
@@ -185,7 +199,7 @@ export default {
         {
           api: 'updateIsoPermissions',
           icon: 'reconciliation',
-          label: 'label.action.edit.iso',
+          label: 'label.action.iso.permission',
           docHelp: 'adminguide/templates.html#sharing-templates-with-other-accounts-projects',
           dataView: true,
           args: ['op', 'accounts', 'projectids'],

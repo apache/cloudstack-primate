@@ -28,7 +28,7 @@
                 shape="round"
                 size="small"
                 icon="reload"
-                @click="fetchData()">
+                @click="fetchData({ listall: true, irefresh: true })">
                 {{ $t('label.refresh') }}
               </a-button>
               <a-switch
@@ -79,7 +79,7 @@
     </a-card>
 
     <div v-show="showAction">
-      <keep-alive v-if="currentAction.component">
+      <keep-alive v-if="currentAction.component && (!currentAction.groupAction || this.selectedRowKeys.length === 0)">
         <a-modal
           :visible="showAction"
           :closable="true"
@@ -303,8 +303,8 @@
         :current="page"
         :pageSize="pageSize"
         :total="itemCount"
-        :showTotal="total => `Total ${total} items`"
-        :pageSizeOptions="['10', '20', '40', '80', '100', '500']"
+        :showTotal="total => `Showing ${1+((page-1)*pageSize)}-${Math.min(page*pageSize, total)} of ${total} items`"
+        :pageSizeOptions="device === 'desktop' ? ['20', '50', '100', '500'] : ['10', '20', '50', '100', '500']"
         @change="changePage"
         @showSizeChange="changePageSize"
         showSizeChanger
@@ -349,7 +349,8 @@ export default {
       parentChangeFilter: this.changeFilter,
       parentFilter: this.onFilter,
       parentChangeResource: this.changeResource,
-      parentPollActionCompletion: this.pollActionCompletion
+      parentPollActionCompletion: this.pollActionCompletion,
+      parentEditTariffAction: () => {}
     }
   },
   data () {
@@ -381,6 +382,9 @@ export default {
     this.form = this.$form.createForm(this)
   },
   mounted () {
+    if (this.device === 'desktop') {
+      this.pageSize = 20
+    }
     this.currentPath = this.$route.fullPath
     this.fetchData()
     if ('projectid' in this.$route.query) {
@@ -458,11 +462,17 @@ export default {
       this.searchFilters = this.$route && this.$route.meta && this.$route.meta.searchFilters
 
       if (this.$route && this.$route.params && this.$route.params.id) {
-        this.resource = {}
         this.dataView = true
-        this.$emit('change-resource', this.resource)
+        if (!('irefresh' in params)) {
+          this.resource = {}
+          this.$emit('change-resource', this.resource)
+        }
       } else {
         this.dataView = false
+      }
+
+      if ('irefresh' in params) {
+        delete params.irefresh
       }
 
       if ('listview' in this.$refs && this.$refs.listview) {
@@ -593,9 +603,11 @@ export default {
         if (!this.items || this.items.length === 0) {
           this.items = []
         }
+
         if (['listTemplates', 'listIsos'].includes(this.apiName) && this.items.length > 1) {
           this.items = [...new Map(this.items.map(x => [x.id, x])).values()]
         }
+
         for (let idx = 0; idx < this.items.length; idx++) {
           this.items[idx].key = idx
           for (const key in customRender) {
@@ -710,7 +722,7 @@ export default {
         }
       }
       this.actionLoading = false
-      if (action.dataView && ['copy', 'edit'].includes(action.icon)) {
+      if (action.dataView && ['copy', 'edit', 'share-alt'].includes(action.icon)) {
         this.fillEditFormFieldValues()
       }
     },
