@@ -69,7 +69,7 @@
             :resource="resource"
             @exec-action="execAction"/>
           <search-view
-            :dataView="dataView"
+            v-if="!dataView"
             :searchFilters="searchFilters"
             :selectedFilters="paramsFilters"
             :apiName="apiName"/>

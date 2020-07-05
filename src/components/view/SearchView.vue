@@ -16,7 +16,7 @@
 // under the License.
 
 <template>
-  <span v-if="!dataView" :style="styleSearch">
+  <span :style="styleSearch">
     <span v-if="!searchFilters || searchFilters.length === 0" style="display: flex;">
       <a-input-search
         style="width: 100%; display: table-cell"
@@ -113,10 +113,6 @@ import { api } from '@/api'
 export default {
   name: 'SearchView',
   props: {
-    dataView: {
-      type: Boolean,
-      default: false
-    },
     searchFilters: {
       type: Array,
       default: () => []
