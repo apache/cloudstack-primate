@@ -26,14 +26,13 @@ import './core/use'
 import './core/ext'
 import './permission' // permission control
 import './utils/filter' // global filter
-import { pollJobPlugin, notifierPlugin, clickOutSidePlugin } from './utils/plugins'
+import { pollJobPlugin, notifierPlugin } from './utils/plugins'
 import { VueAxios } from './utils/request'
 
 Vue.config.productionTip = false
 Vue.use(VueAxios, router)
 Vue.use(pollJobPlugin)
 Vue.use(notifierPlugin)
-Vue.use(clickOutSidePlugin)
 
 fetch('config.json').then(response => response.json()).then(config => {
   Vue.prototype.$config = config

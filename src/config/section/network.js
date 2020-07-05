@@ -31,7 +31,7 @@ export default {
       resourceType: 'Network',
       columns: ['name', 'state', 'type', 'cidr', 'ip6cidr', 'broadcasturi', 'account', 'zonename'],
       details: ['name', 'id', 'description', 'type', 'traffictype', 'vpcid', 'vlan', 'broadcasturi', 'cidr', 'ip6cidr', 'netmask', 'gateway', 'ispersistent', 'restartrequired', 'reservediprange', 'redundantrouter', 'networkdomain', 'zonename', 'account', 'domain'],
-      searchFilters: ['zoneid', 'domainid', 'account', 'tags'],
+      searchFilters: ['keyword', 'zoneid', 'domainid', 'account', 'tags'],
       related: [{
         name: 'vm',
         title: 'label.instances',

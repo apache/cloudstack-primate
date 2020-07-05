@@ -724,7 +724,7 @@
 "label.domain.name": "Domain Name",
 "label.domain.router": "Domain router",
 "label.domain.suffix": "DNS Domain Suffix (i.e., xyz.com)",
-"label.domainid": "Domain ID",
+"label.domainid": "Domain",
 "label.domainname": "Domain",
 "label.domainpath": "Domain",
 "label.domains": "Domains",

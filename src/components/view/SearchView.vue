@@ -31,7 +31,6 @@
       class="filter-group">
       <a-input-search
         allowClear
-        :disabled="activeFilter"
         class="input-search"
         placeholder="Search"
         v-model="searchQuery"
@@ -42,85 +41,65 @@
           trigger="click"
           v-model="visibleFilter">
           <template slot="content">
-            <div v-click-outside="onClickOutSide">
-              <a-form
-                style="min-width: 170px"
-                :form="form"
-                layout="vertical"
-                @submit="handleSubmit">
-                <a-form-item
-                  v-for="(field, index) in fields"
-                  :key="index"
-                  :label="field.name==='keyword' ? $t('label.name') : $t('label.' + field.name)">
-                  <a-select
-                    allowClear
-                    v-if="field.type==='list'"
-                    v-decorator="[field.name]"
-                    :loading="field.loading">
-                    <a-select-option
-                      v-for="(opt, idx) in field.opts"
-                      :key="idx"
-                      :value="opt.id">{{ $t(opt.name) }}</a-select-option>
-                  </a-select>
-                  <a-input
-                    v-else-if="field.type==='input'"
-                    v-decorator="[field.name]" />
-                  <div v-else-if="field.type==='tag'">
-                    <a-tag
-                      v-if="!inputVisible && tags.length === 0"
-                      @click="showInput"
-                      style="background: #fff; borderStyle: dashed;">
-                      <a-icon type="plus" /> {{ $t('label.new.tag') }}
-                    </a-tag>
-                    <template
-                      v-if="tags.length > 0"
-                      v-for="(tag, tagIdx) in tags">
-                      <a-tag :key="tagIdx" :closable="true" :afterClose="handleDeleteTag">
-                        {{ tag.key }} = {{ tag.value }}
-                      </a-tag>
-                    </template>
-                    <div v-if="inputVisible">
-                      <a-input-group
-                        type="text"
-                        size="small"
-                        @blur="handleInputConfirm"
-                        @keyup.enter="handleInputConfirm"
-                        compact>
-                        <a-input ref="input" :value="inputKey" @change="handleKeyChange" style="width: 50px; text-align: center" :placeholder="$t('label.key')" />
-                        <a-input style=" width: 20px; border-left: 0; pointer-events: none; backgroundColor: #fff" placeholder="=" disabled />
-                        <a-input :value="inputValue" @change="handleValueChange" style="width: 50px; text-align: center; border-left: 0" :placeholder="$t('label.value')" />
-                        <a-button shape="circle" size="small" @click="handleInputConfirm">
-                          <a-icon type="check"/>
-                        </a-button>
-                        <a-button shape="circle" size="small" @click="inputVisible=false">
-                          <a-icon type="close"/>
-                        </a-button>
-                      </a-input-group>
-                    </div>
+            <a-form
+              style="min-width: 170px"
+              :form="form"
+              layout="vertical"
+              @submit="handleSubmit">
+              <a-form-item
+                v-for="(field, index) in fields"
+                :key="index"
+                :label="field.name==='keyword' ? $t('label.name') : $t('label.' + field.name)">
+                <a-select
+                  allowClear
+                  v-if="field.type==='list'"
+                  v-decorator="[field.name]"
+                  :loading="field.loading">
+                  <a-select-option
+                    v-for="(opt, idx) in field.opts"
+                    :key="idx"
+                    :value="opt.id">{{ $t(opt.name) }}</a-select-option>
+                </a-select>
+                <a-input
+                  v-else-if="field.type==='input'"
+                  v-decorator="[field.name]" />
+                <div v-else-if="field.type==='tag'">
+                  <div>
+                    <a-input-group
+                      type="text"
+                      size="small"
+                      compact>
+                      <a-input ref="input" :value="inputKey" @change="e => inputKey = e.target.value" style="width: 50px; text-align: center" :placeholder="$t('label.key')" />
+                      <a-input style=" width: 20px; border-left: 0; pointer-events: none; backgroundColor: #fff" placeholder="=" disabled />
+                      <a-input :value="inputValue" @change="handleValueChange" style="width: 50px; text-align: center; border-left: 0" :placeholder="$t('label.value')" />
+                      <a-button shape="circle" size="small" @click="inputKey = inputValue = ''">
+                        <a-icon type="close"/>
+                      </a-button>
+                    </a-input-group>
                   </div>
-                </a-form-item>
-                <div class="filter-group-button">
-                  <a-button
-                    class="filter-group-button-clear"
-                    type="default"
-                    size="small"
-                    icon="stop"
-                    @click="onClear">{{ $t('label.reset') }}</a-button>
-                  <a-button
-                    class="filter-group-button-search"
-                    type="primary"
-                    size="small"
-                    icon="search"
-                    @click="handleSubmit">{{ $t('label.search') }}</a-button>
                 </div>
-              </a-form>
-            </div>
+              </a-form-item>
+              <div class="filter-group-button">
+                <a-button
+                  class="filter-group-button-clear"
+                  type="default"
+                  size="small"
+                  icon="stop"
+                  @click="onClear">{{ $t('label.reset') }}</a-button>
+                <a-button
+                  class="filter-group-button-search"
+                  type="primary"
+                  size="small"
+                  icon="search"
+                  @click="handleSubmit">{{ $t('label.search') }}</a-button>
+              </div>
+            </a-form>
           </template>
           <a-button
             class="filter-button"
             size="small"
-            @click="() => { activeFilter = true }">
-            <a-icon type="filter" :theme="filtered ? 'twoTone' : 'outlined'" />
+            @click="() => { searchQuery = null }">
+            <a-icon type="filter" :theme="Object.keys(selectedFilters).length > 0 ? 'twoTone' : 'outlined'" />
           </a-button>
         </a-popover>
       </a-input-search>
@@ -138,14 +117,6 @@ export default {
       type: Boolean,
       default: false
     },
-    treeView: {
-      type: Boolean,
-      default: false
-    },
-    filters: {
-      type: Array,
-      default: () => []
-    },
     searchFilters: {
       type: Array,
       default: () => []
@@ -154,9 +125,9 @@ export default {
       type: String,
       default: () => ''
     },
-    selectedFilter: {
-      type: String,
-      default: () => ''
+    selectedFilters: {
+      type: Object,
+      default: () => {}
     }
   },
   inject: ['parentSearch', 'parentFilter', 'parentChangeFilter'],
@@ -165,13 +136,9 @@ export default {
       searchQuery: null,
       paramsFilter: {},
       visibleFilter: false,
-      inputVisible: false,
       fields: [],
-      tags: [],
-      inputKey: '',
-      inputValue: '',
-      filtered: false,
-      activeFilter: false
+      inputKey: null,
+      inputValue: null
     }
   },
   beforeCreate () {
@@ -381,7 +348,7 @@ export default {
         })
         state.push({
           id: 'Ready',
-          name: 'label.ready'
+          name: 'label.isready'
         })
         state.push({
           id: 'Destroy',
@@ -415,6 +382,7 @@ export default {
       return levels
     },
     onSearch (value) {
+      this.paramsFilter = {}
       this.searchQuery = value
       this.parentSearch(this.searchQuery)
     },
@@ -422,18 +390,13 @@ export default {
       this.searchFilters.map(item => {
         const field = {}
         field[item] = undefined
-        this.paramsFilter[item] = undefined
         this.form.setFieldsValue(field)
       })
-      this.filtered = false
-      this.tags = []
+      this.inputKey = null
+      this.inputValue = null
       this.searchQuery = null
-      this.paramsFilter.searchQuery = null
+      this.paramsFilter = {}
       this.parentFilter(this.paramsFilter)
-    },
-    onClickOutSide () {
-      if (this.visibleFilter) return
-      this.activeFilter = false
     },
     handleSubmit (e) {
       e.preventDefault()
@@ -450,14 +413,10 @@ export default {
           this.paramsFilter[key] = input
         }
         if (this.searchFilters.includes('tags')) {
-          if (this.tags.length > 0) {
-            this.paramsFilter['tags[0].key'] = this.tags[0].key
-            this.paramsFilter['tags[0].value'] = this.tags[0].value
+          if (this.inputKey) {
+            this.paramsFilter['tags[0].key'] = this.inputKey
+            this.paramsFilter['tags[0].value'] = this.inputValue
           }
-        }
-
-        if (Object.keys(this.paramsFilter).length > 0) {
-          this.filtered = true
         }
         this.parentFilter(this.paramsFilter)
       })
@@ -467,26 +426,6 @@ export default {
     },
     handleValueChange (e) {
       this.inputValue = e.target.value
-    },
-    handleInputConfirm () {
-      const args = {}
-      args['tags[0].key'] = this.inputKey
-      args['tags[0].value'] = this.inputValue
-
-      this.tags.push({
-        key: this.inputKey,
-        value: this.inputValue
-      })
-
-      this.inputVisible = false
-      this.inputKey = ''
-      this.inputValue = ''
-    },
-    handleDeleteTag () {
-      this.tags = []
-    },
-    showInput () {
-      this.inputVisible = true
     },
     changeFilter (filter) {
       this.parentChangeFilter(filter)

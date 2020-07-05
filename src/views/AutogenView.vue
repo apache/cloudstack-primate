@@ -70,9 +70,8 @@
             @exec-action="execAction"/>
           <search-view
             :dataView="dataView"
-            :selectedFilter="selectedFilter"
-            :filters="filters"
             :searchFilters="searchFilters"
+            :selectedFilters="paramsFilters"
             :apiName="apiName"/>
         </a-col>
       </a-row>
@@ -303,7 +302,7 @@
         :current="page"
         :pageSize="pageSize"
         :total="itemCount"
-        :showTotal="total => `Showing ${1+((page-1)*pageSize)}-${Math.min(page*pageSize, total)} of ${total} items`"
+        :showTotal="total => `Showing ${Math.min(total, 1+((page-1)*pageSize))}-${Math.min(page*pageSize, total)} of ${total} items`"
         :pageSizeOptions="device === 'desktop' ? ['20', '50', '100', '500'] : ['10', '20', '50', '100', '500']"
         @change="changePage"
         @showSizeChange="changePageSize"
@@ -403,6 +402,7 @@ export default {
     '$route' (to, from) {
       if (to.fullPath !== from.fullPath && !to.fullPath.includes('action/')) {
         this.searchQuery = ''
+        this.paramsFilters = {}
         this.page = 1
         this.itemCount = 0
         this.selectedFilter = ''
@@ -627,6 +627,16 @@ export default {
           this.$emit('change-resource', this.resource)
         }
       }).catch(error => {
+        if (Object.keys(this.paramsFilters).length > 0) {
+          this.itemCount = 0
+          this.items = []
+          this.$message.error({
+            content: error.response.headers['x-description'],
+            duration: 5
+          })
+          return
+        }
+
         this.$notifyError(error)
 
         if ([401, 405].includes(error.response.status)) {
@@ -645,21 +655,17 @@ export default {
       })
     },
     onSearch (value) {
+      this.paramsFilters = {}
       this.searchQuery = value
       this.page = 1
       this.fetchData()
     },
     onFilter (filters) {
       this.paramsFilters = {}
-
       if (filters && Object.keys(filters).length > 0) {
         this.paramsFilters = filters
-        if ('searchQuery' in this.paramsFilters) {
-          this.searchQuery = this.paramsFilters.searchQuery
-        }
-        this.page = 1
       }
-
+      this.page = 1
       this.fetchData()
     },
     closeAction () {
