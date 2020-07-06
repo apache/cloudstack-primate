@@ -99,7 +99,7 @@ export default {
             this.$store.dispatch('AddAsyncJob', {
               title: this.$t('label.zone.dedicated'),
               jobid: response.dedicatezoneresponse.jobid,
-              description: `Domain ID: ${this.dedicatedDomainId}`,
+              description: `${this.$t('label.domain.id')} : ${this.dedicatedDomainId}`,
               status: 'progress'
             })
           },

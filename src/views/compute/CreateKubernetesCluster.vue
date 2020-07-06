@@ -25,7 +25,7 @@
         <a-form-item :label="$t('label.name')">
           <a-input
             v-decorator="['name', {
-              rules: [{ required: true, message: $t('message.error.cluster.name') }]
+              rules: [{ required: true, message: $t('message.error.kubecluster.name') }]
             }]"
             :placeholder="apiParams.name.description"/>
         </a-form-item>

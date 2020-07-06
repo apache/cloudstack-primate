@@ -57,7 +57,7 @@
             :placeholder="$t('label.password')"
             v-decorator="[
               'password',
-              {rules: [{ required: true, message: $('message.error.password') }], validateTrigger: 'blur'}
+              {rules: [{ required: true, message: $t('message.error.password') }], validateTrigger: 'blur'}
             ]"
           >
             <a-icon slot="prefix" type="lock" :style="{ color: 'rgba(0,0,0,.25)' }"/>

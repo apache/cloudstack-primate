@@ -66,7 +66,7 @@
         <a-form-item :label="$t('label.url')">
           <a-input
             v-decorator="['url', {
-              rules: [{ required: true, message: $t('message.error.binaries.iso.url"') }]
+              rules: [{ required: true, message: $t('message.error.binaries.iso.url') }]
             }]"
             :placeholder="apiParams.url.description" />
         </a-form-item>
