@@ -524,7 +524,7 @@ export default {
             this.parentToggleLoading()
             this.closeModal()
           },
-          loadingMessage:this.$t('message.add.tag.processing'),
+          loadingMessage: this.$t('message.add.tag.processing'),
           catchMessage: this.$t('error.fetching.async.job.result'),
           catchMethod: () => {
             this.parentFetchData()
