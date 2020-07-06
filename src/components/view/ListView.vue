@@ -60,27 +60,28 @@
     </div>
     -->
 
-    <p v-if="actions.length > 0" :slot="actions.length > 0 ? 'expandedRowRender' : ''" slot-scope="record">
-      <action-button
-        size="default"
-        :actions="actions"
-        :dataView="true"
-        :resource="record"
-        @exec-action="$parent.execAction"/>
-    </p>
-
     <span slot="name" slot-scope="text, record">
-      <div style="min-width: 120px">
-        <span v-if="$route.path.startsWith('/project')" style="margin-right: 5px">
-          <a-button type="dashed" size="small" shape="circle" icon="login" @click="changeProject(record)" />
-        </span>
-        <os-logo v-if="record.ostypename" :osName="record.ostypename" size="1x" style="margin-right: 5px" />
+      <div style="min-width: 120px" >
+        <a-popover v-if="actions.length > 0" triggers="hover" placement="right">
+          <template slot="content">
+            <action-button
+              size="default"
+              :actions="actions"
+              :dataView="true"
+              :resource="record"
+              @exec-action="$parent.execAction"/>
+          </template>
+          <span v-if="$route.path.startsWith('/project')" style="margin-right: 5px">
+            <a-button type="dashed" size="small" shape="circle" icon="login" @click="changeProject(record)" />
+          </span>
+          <os-logo v-if="record.ostypename" :osName="record.ostypename" size="1x" style="margin-right: 5px" />
 
-        <span v-if="$route.path.startsWith('/globalsetting')">{{ text }}</span>
-        <span v-else>
-          <router-link :to="{ path: $route.path + '/' + record.id }" v-if="record.id">{{ text }}</router-link>
-          <router-link :to="{ path: $route.path + '/' + record.name }" v-else>{{ text }}</router-link>
-        </span>
+          <span v-if="$route.path.startsWith('/globalsetting')">{{ text }}</span>
+          <span v-else>
+            <router-link :to="{ path: $route.path + '/' + record.id }" v-if="record.id">{{ text }}</router-link>
+            <router-link :to="{ path: $route.path + '/' + record.name }" v-else>{{ text }}</router-link>
+          </span>
+        </a-popover>
       </div>
     </span>
     <a slot="templatetype" slot-scope="text, record" href="javascript:;">
