@@ -42,7 +42,7 @@
               v-model="iLb.vmguestip[index]"
             >
               <a-select-option v-for="(nic, nicIndex) in nics[index]" :key="nic" :value="nic">
-                {{ nic }}{{ nicIndex === 0 ? ' (Primary)' : null }}
+                {{ nic }}{{ nicIndex === 0 ? ` (${this.$t('label.primary')})` : null }}
               </a-select-option>
             </a-select>
           </span>
@@ -61,7 +61,7 @@
           :current="page"
           :pageSize="pageSize"
           :total="vmCounts"
-          :showTotal="total => `Total ${total} items`"
+          :showTotal="total => `${this.$t('label.total')} ${total} ${this.$t('label.items')}`"
           :pageSizeOptions="['10', '20', '40', '80', '100']"
           @change="changePage"
           @showSizeChange="changePageSize"
@@ -210,11 +210,11 @@ export default {
             this.$emit('refresh-data')
           },
           loadingMessage: `Assigning VMs to ${this.resource.name}`,
-          catchMessage: 'Error encountered while fetching async job result'
+          catchMessage: this.$t('error.fetching.async.job.result')
         })
       }).catch(error => {
         this.$notification.error({
-          message: `Error ${error.response.status}`,
+          message: `${this.$t('label.error')} ${error.response.status}`,
           description: error.response.data.errorresponse.errortext,
           duration: 0
         })

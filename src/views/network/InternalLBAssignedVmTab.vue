@@ -50,7 +50,7 @@
       :current="page"
       :pageSize="pageSize"
       :total="totalInstances"
-      :showTotal="total => `Total ${total} items`"
+      :showTotal="total => `${this.$t('label.total')} ${total} ${this.$t('label.items')}`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="changePage"
       @showSizeChange="changePageSize"
@@ -127,7 +127,7 @@ export default {
       }).then(response => {
         this.$pollJob({
           jobId: response.removefromloadbalancerruleresponse.jobid,
-          successMessage: `Successfully removed IP ${vm.name} from ${this.resource.name}`,
+          successMessage: `${this.$t('message.success.remove.ip')} ${vm.name} ${this.$t('label.from')} ${this.resource.name}`,
           successMethod: () => {
             this.fetchLoading = false
             this.fetchData()
@@ -138,7 +138,7 @@ export default {
             this.fetchData()
           },
           loadingMessage: `Removing ${vm.name} from LB is in progress`,
-          catchMessage: 'Error encountered while fetching async job result'
+          catchMessage: this.$t('error.fetching.async.job.result')
         })
       })
     },

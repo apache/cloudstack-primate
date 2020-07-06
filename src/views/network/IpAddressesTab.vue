@@ -85,7 +85,7 @@
         :current="page"
         :pageSize="pageSize"
         :total="totalIps"
-        :showTotal="total => `Total ${total} items`"
+        :showTotal="total => `${this.$t('label.total')} ${total} ${this.$t('label.items')}`"
         :pageSizeOptions="['10', '20', '40', '80', '100']"
         @change="changePage"
         @showSizeChange="changePageSize"
@@ -264,16 +264,16 @@ export default {
           successMethod: () => {
             this.fetchData()
           },
-          errorMessage: 'Failed to acquire IP',
+          errorMessage: this.$t('message.acquire.ip.failed'),
           errorMethod: () => {
             this.fetchData()
           },
           loadingMessage: `Acquiring IP for ${this.resource.name} is in progress`,
-          catchMessage: 'Error encountered while fetching async job result'
+          catchMessage: this.$t('error.fetching.async.job.result')
         })
       }).catch(error => {
         this.$notification.error({
-          message: `Error ${error.response.status}`,
+          message: `${this.$t('label.error')} ${error.response.status}`,
           description: error.response.data.errorresponse.errortext,
           duration: 0
         })
@@ -289,21 +289,21 @@ export default {
       }).then(response => {
         this.$pollJob({
           jobId: response.disassociateipaddressresponse.jobid,
-          successMessage: 'Successfully released IP',
+          successMessage: this.$t('message.success.release.ip'),
           successMethod: () => {
             this.fetchData()
           },
-          errorMessage: 'Failed to release IP',
+          errorMessage: this.$t('message.release.ip.failed'),
           errorMethod: () => {
             this.fetchData()
           },
           loadingMessage: `Releasing IP for ${this.resource.name} is in progress`,
-          catchMessage: 'Error encountered while fetching async job result'
+          catchMessage: this.$t('error.fetching.async.job.result')
         })
       }).catch(error => {
         this.fetchLoading = false
         this.$notification.error({
-          message: `Error ${error.response.status}`,
+          message: `${this.$t('label.error')} ${error.response.status}`,
           description: error.response.data.errorresponse.errortext,
           duration: 0
         })

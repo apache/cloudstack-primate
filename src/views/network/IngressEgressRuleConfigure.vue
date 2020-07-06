@@ -119,13 +119,13 @@
           <div class="add-tags__input">
             <p class="add-tags__label">{{ $t('label.key') }}</p>
             <a-form-item>
-              <a-input v-decorator="['key', { rules: [{ required: true, message: 'Please specify a tag key'}] }]" />
+              <a-input v-decorator="['key', { rules: [{ required: true, message: this.$t('message.specifiy.tag.key')}] }]" />
             </a-form-item>
           </div>
           <div class="add-tags__input">
             <p class="add-tags__label">{{ $t('label.value') }}</p>
             <a-form-item>
-              <a-input v-decorator="['value', { rules: [{ required: true, message: 'Please specify a tag value'}] }]" />
+              <a-input v-decorator="['value', { rules: [{ required: true, message: this.$t('message.specifiy.tag.value')}] }]" />
             </a-form-item>
           </div>
           <a-button type="primary" html-type="submit">{{ $t('label.add') }}</a-button>
@@ -236,7 +236,7 @@ export default {
   },
   filters: {
     capitalise: val => {
-      if (val === 'all') return 'All'
+      if (val === 'all') return this.$t('label.all')
       return val.toUpperCase()
     }
   },
@@ -277,7 +277,7 @@ export default {
             this.parentToggleLoading()
           },
           loadingMessage: `Adding new security-group rule...`,
-          catchMessage: 'Error encountered while fetching async job result',
+          catchMessage: this.$t('error.fetching.async.job.result'),
           catchMethod: () => {
             this.parentFetchData()
             this.parentToggleLoading()
@@ -298,18 +298,18 @@ export default {
         this.$pollJob({
           jobId: this.tabType === 'ingress' ? response.revokesecuritygroupingressresponse.jobid
             : response.revokesecuritygroupegressresponse.jobid,
-          successMessage: `Successfully deleted rule`,
+          successMessage: this.$t('message.success.remove.rule'),
           successMethod: () => {
             this.parentFetchData()
             this.parentToggleLoading()
           },
-          errorMessage: 'Failed to delete rule',
+          errorMessage: this.$t('message.remove.rule.failed'),
           errorMethod: () => {
             this.parentFetchData()
             this.parentToggleLoading()
           },
-          loadingMessage: `Deleting security-group rule...`,
-          catchMessage: 'Error encountered while fetching async job result',
+          loadingMessage: this.$t('message.remove.securitygroup.rule.processing'),
+          catchMessage: this.$t('error.fetching.async.job.result'),
           catchMethod: () => {
             this.parentFetchData()
             this.parentToggleLoading()
@@ -342,22 +342,22 @@ export default {
       }).then(response => {
         this.$pollJob({
           jobId: response.deletetagsresponse.jobid,
-          successMessage: `Successfully deleted tag`,
+          successMessage: this.$t('message.success.delete.tag'),
           successMethod: () => {
             this.parentFetchData()
             this.parentToggleLoading()
             this.fetchTags(this.selectedRule)
             this.tagsLoading = false
           },
-          errorMessage: 'Failed to delete tag',
+          errorMessage: this.$t('message.delete.tag.failed'),
           errorMethod: () => {
             this.parentFetchData()
             this.parentToggleLoading()
             this.fetchTags(this.selectedRule)
             this.tagsLoading = false
           },
-          loadingMessage: `Deleting tag...`,
-          catchMessage: 'Error encountered while fetching async job result',
+          loadingMessage: this.$t('message.delete.tag.processing'),
+          catchMessage: this.$t('error.fetching.async.job.result'),
           catchMethod: () => {
             this.parentFetchData()
             this.parentToggleLoading()
@@ -390,22 +390,22 @@ export default {
         }).then(response => {
           this.$pollJob({
             jobId: response.createtagsresponse.jobid,
-            successMessage: `Successfully added new tag`,
+            successMessage: this.$t('message.success.add.tag'),
             successMethod: () => {
               this.parentFetchData()
               this.parentToggleLoading()
               this.fetchTags(this.selectedRule)
               this.tagsLoading = false
             },
-            errorMessage: 'Failed to add new tag',
+            errorMessage: this.$t('message.add.tag.failed'),
             errorMethod: () => {
               this.parentFetchData()
               this.parentToggleLoading()
               this.fetchTags(this.selectedRule)
               this.tagsLoading = false
             },
-            loadingMessage: `Adding new tag...`,
-            catchMessage: 'Error encountered while fetching async job result',
+            loadingMessage: this.$t('message.add.tag.processing'),
+            catchMessage: this.$t('error.fetching.async.job.result'),
             catchMethod: () => {
               this.parentFetchData()
               this.parentToggleLoading()
