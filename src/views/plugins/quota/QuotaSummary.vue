@@ -16,54 +16,51 @@
 // under the License.
 
 <template>
-  <div class="footer">
-    <div class="line">
-      <span v-html="$config.footer" />
-    </div>
-    <div class="line" v-if="$store.getters.userInfo.roletype === 'Admin'">
-      CloudStack {{ $store.getters.features.cloudstackversion }}
-      <a-divider type="vertical" />
-      Primate {{ $store.getters.version }}
-      <a-divider type="vertical" />
-      <a href="https://github.com/apache/cloudstack-primate/issues/new/choose" target="_blank">
-        <a-icon type="github"/>
-        {{ $t('label.report.bug') }}
-      </a>
-    </div>
+  <div>
+    <autogen-view
+      @change-resource="changeResource"/>
+    <quota-summary-resource
+      v-if="isSummaryResouce"
+      :resource="resource"
+      :tabs="$route.meta.tabs"/>
   </div>
 </template>
 
 <script>
+import AutogenView from '@/views/AutogenView.vue'
+import QuotaSummaryResource from '@/views/plugins/quota/QuotaSummaryResource'
+
 export default {
-  name: 'LayoutFooter',
+  name: 'QuotaSummary',
+  components: {
+    AutogenView,
+    QuotaSummaryResource
+  },
   data () {
     return {
+      resource: {}
+    }
+  },
+  provide: function () {
+    return {
+      parentChangeResource: this.changeResource
+    }
+  },
+  computed: {
+    isSummaryResouce () {
+      if (this.$route.path.startsWith('/quotasummary')) {
+        if (this.$route.query && 'quota' in this.$route.query && this.$route.query.quota) {
+          return true
+        }
+      }
+      return false
+    }
+  },
+  methods: {
+    changeResource (resource) {
+      console.log(resource)
+      this.resource = resource
     }
   }
 }
 </script>
-
-<style lang="less" scoped>
-  .footer {
-    padding: 0 16px;
-    margin: 48px 0 24px;
-    text-align: center;
-
-    .line {
-      margin-bottom: 8px;
-
-      a {
-        color: rgba(0, 0, 0, .45);
-
-        &:hover {
-          color: rgba(0, 0, 0, .65);
-        }
-
-      }
-    }
-    .copyright {
-      color: rgba(0, 0, 0, .45);
-      font-size: 14px;
-    }
-  }
-</style>
