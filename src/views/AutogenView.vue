@@ -28,7 +28,7 @@
                 shape="round"
                 size="small"
                 icon="reload"
-                @click="fetchData({ listall: true, irefresh: true })">
+                @click="fetchData({ irefresh: true })">
                 {{ $t('label.refresh') }}
               </a-button>
               <a-switch
@@ -74,7 +74,7 @@
           <search-view
             v-if="!dataView"
             :searchFilters="searchFilters"
-            :selectedFilters="paramsFilters"
+            :searchParams="searchParams"
             :apiName="apiName"/>
         </a-col>
       </a-row>
@@ -349,7 +349,6 @@ export default {
       parentFinishLoading: this.finishLoading,
       parentSearch: this.onSearch,
       parentChangeFilter: this.changeFilter,
-      parentFilter: this.onFilter,
       parentChangeResource: this.changeResource,
       parentPollActionCompletion: this.pollActionCompletion,
       parentEditTariffAction: () => {}
@@ -365,7 +364,6 @@ export default {
       itemCount: 0,
       page: 1,
       pageSize: 10,
-      searchQuery: '',
       resource: {},
       selectedRowKeys: [],
       currentAction: {},
@@ -374,7 +372,7 @@ export default {
       selectedFilter: '',
       filters: [],
       searchFilters: [],
-      paramsFilters: {},
+      searchParams: {},
       actions: [],
       formModel: {},
       confirmDirty: false
@@ -404,12 +402,6 @@ export default {
   watch: {
     '$route' (to, from) {
       if (to.fullPath !== from.fullPath && !to.fullPath.includes('action/')) {
-        if ('q' in to.query) {
-          this.searchQuery = to.query.q
-        } else {
-          this.searchQuery = ''
-        }
-        this.paramsFilters = {}
         if ('page' in to.query) {
           this.page = Number(to.query.page)
           this.pageSize = Number(to.query.pagesize)
@@ -449,7 +441,7 @@ export default {
         this.$router.replace({ query })
       })
     },
-    fetchData (params = { listall: true }) {
+    fetchData (params = {}) {
       if (this.routeName !== this.$route.name) {
         this.routeName = this.$route.name
         this.items = []
@@ -461,14 +453,16 @@ export default {
       this.actions = []
       this.columns = []
       this.columnKeys = []
-      if (Object.keys(this.$route.query).length > 0) {
-        Object.assign(params, this.$route.query)
-      } else if (this.$route.meta.params) {
+
+      params.listall = true
+      if (this.$route.meta.params) {
         Object.assign(params, this.$route.meta.params)
       }
-      if (Object.keys(this.paramsFilters).length > 0) {
-        Object.assign(params, this.paramsFilters)
+      if (Object.keys(this.$route.query).length > 0) {
+        Object.assign(params, this.$route.query)
       }
+      delete params.q
+      delete params.filter
 
       this.searchFilters = this.$route && this.$route.meta && this.$route.meta.searchFilters
 
@@ -598,7 +592,7 @@ export default {
           this.$emit('change-resource', this.resource)
         }
       }).catch(error => {
-        if (Object.keys(this.paramsFilters).length > 0) {
+        if (Object.keys(this.searchParams).length > 0) {
           this.itemCount = 0
           this.items = []
           this.$message.error({
@@ -935,39 +929,46 @@ export default {
       }
       query.filter = filter
       query.page = 1
-      query.pagesize = 10
+      query.pagesize = this.pageSize
       this.$router.push({ query })
     },
-    onFilter (filters) {
-      this.paramsFilters = {}
-      if (filters && Object.keys(filters).length > 0) {
-        this.paramsFilters = filters
-      }
-      this.page = 1
-      this.fetchData()
-    },
-    onSearch (value) {
-      this.paramsFilters = {}
+    onSearch (opts) {
       const query = Object.assign({}, this.$route.query)
+      for (const key in this.searchParams) {
+        delete query[key]
+      }
       delete query.name
       delete query.templatetype
       delete query.keyword
       delete query.q
-      if (value && value.length > 0) {
-        if (this.$route.name === 'role') {
-          query.name = value
-        } else if (this.$route.name === 'quotaemailtemplate') {
-          query.templatetype = value
-        } else if (this.$route.name === 'globalsetting') {
-          query.name = value
+      this.searchParams = {}
+      if (opts && Object.keys(opts).length > 0) {
+        this.searchParams = opts
+        if ('searchQuery' in opts) {
+          const value = opts.searchQuery
+          if (value && value.length > 0) {
+            if (this.$route.name === 'role') {
+              query.name = value
+            } else if (this.$route.name === 'quotaemailtemplate') {
+              query.templatetype = value
+            } else if (this.$route.name === 'globalsetting') {
+              query.name = value
+            } else {
+              query.keyword = value
+            }
+            query.q = value
+          }
+          this.searchParams = {}
         } else {
-          query.keyword = value
+          Object.assign(query, opts)
         }
-        query.q = value
       }
       query.page = 1
       query.pagesize = this.pageSize
-      this.searchQuery = value
+      if (JSON.stringify(query) === JSON.stringify(this.$route.query)) {
+        this.fetchData(query)
+        return
+      }
       this.$router.push({ query })
     },
     changePage (page, pageSize) {

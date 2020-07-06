@@ -99,7 +99,7 @@
             class="filter-button"
             size="small"
             @click="() => { searchQuery = null }">
-            <a-icon type="filter" :theme="Object.keys(selectedFilters).length > 0 ? 'twoTone' : 'outlined'" />
+            <a-icon type="filter" :theme="Object.keys(searchParams).length > 0 ? 'twoTone' : 'outlined'" />
           </a-button>
         </a-popover>
       </a-input-search>
@@ -121,12 +121,12 @@ export default {
       type: String,
       default: () => ''
     },
-    selectedFilters: {
+    searchParams: {
       type: Object,
       default: () => {}
     }
   },
-  inject: ['parentSearch', 'parentFilter', 'parentChangeFilter'],
+  inject: ['parentSearch', 'parentChangeFilter'],
   data () {
     return {
       searchQuery: null,
@@ -145,6 +145,19 @@ export default {
       if (newValue) {
         this.initFormFieldData()
       }
+    },
+    '$route' (to, from) {
+      if (to && to.query && 'q' in to.query) {
+        this.searchQuery = to.query.q
+      } else {
+        this.searchQuery = ''
+      }
+    }
+  },
+  mounted () {
+    this.searchQuery = ''
+    if (this.$route && this.$route.query && 'q' in this.$route.query) {
+      this.searchQuery = this.$route.query.q
     }
   },
   computed: {
@@ -380,7 +393,7 @@ export default {
     onSearch (value) {
       this.paramsFilter = {}
       this.searchQuery = value
-      this.parentSearch(this.searchQuery)
+      this.parentSearch({ searchQuery: this.searchQuery })
     },
     onClear () {
       this.searchFilters.map(item => {
@@ -392,7 +405,7 @@ export default {
       this.inputValue = null
       this.searchQuery = null
       this.paramsFilter = {}
-      this.parentFilter(this.paramsFilter)
+      this.parentSearch(this.paramsFilter)
     },
     handleSubmit (e) {
       e.preventDefault()
@@ -414,7 +427,7 @@ export default {
             this.paramsFilter['tags[0].value'] = this.inputValue
           }
         }
-        this.parentFilter(this.paramsFilter)
+        this.parentSearch(this.paramsFilter)
       })
     },
     handleKeyChange (e) {
