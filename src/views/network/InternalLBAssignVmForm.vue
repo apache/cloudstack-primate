@@ -201,15 +201,15 @@ export default {
       api('assignToLoadBalancerRule', this.params).then(response => {
         this.$pollJob({
           jobId: response.assigntoloadbalancerruleresponse.jobid,
-          successMessage: `Successfully assigned VMs to ${this.resource.name}`,
+          successMessage: `${this.$t('message.success.assigned.vms')} ${this.$t('label.to')} ${this.resource.name}`,
           successMethod: () => {
             this.$emit('refresh-data')
           },
-          errorMessage: `Failed to assign VMs to ${this.resource.name}`,
+          errorMessage: `${this.$t('message.failed.to.assign.vms')} ${this.$t('label.to')} ${this.resource.name}`,
           errorMethod: () => {
             this.$emit('refresh-data')
           },
-          loadingMessage: `Assigning VMs to ${this.resource.name}`,
+          loadingMessage: `${this.$t('label.assigning.vms')} ${this.$t('label.to')} ${this.resource.name}`,
           catchMessage: this.$t('error.fetching.async.job.result')
         })
       }).catch(error => {

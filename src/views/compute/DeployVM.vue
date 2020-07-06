@@ -1058,13 +1058,13 @@ export default {
                 const name = vm.displayname || vm.name || vm.id
                 if (vm.password) {
                   this.$notification.success({
-                    message: password + ' for ' + name,
+                    message: password + ` ${this.$t('label.for')} ` + name,
                     description: vm.password,
                     duration: 0
                   })
                 }
               },
-              loadingMessage: `${title} in progress`,
+              loadingMessage: `${title} ${this.$t('label.in.progress')}`,
               catchMessage: this.$t('error.fetching.async.job.result')
             })
             this.$store.dispatch('AddAsyncJob', {

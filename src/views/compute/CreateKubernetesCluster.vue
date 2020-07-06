@@ -412,7 +412,7 @@ export default {
           })
           this.$pollJob({
             jobId,
-            loadingMessage: `Create Kubernetes cluster ${values.name} in progress`,
+            loadingMessage: `${this.$t('label.kubernetes.cluster.create')} ${values.name} ${this.$t('label.in.progress')}`,
             catchMessage: this.$t('error.fetching.async.job.result'),
             successMessage: this.$t('message.success.create.kubernetes.cluter') + ' ' + values.name,
             successMethod: result => {

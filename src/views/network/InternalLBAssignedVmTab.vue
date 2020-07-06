@@ -132,12 +132,12 @@ export default {
             this.fetchLoading = false
             this.fetchData()
           },
-          errorMessage: `Failed to remove ${vm.name} from the LB`,
+          errorMessage: `${this.$t('message.failed.to.remove')} ${vm.name} ${this.$t('label.from.lb')}`,
           errorMethod: () => {
             this.fetchLoading = false
             this.fetchData()
           },
-          loadingMessage: `Removing ${vm.name} from LB is in progress`,
+          loadingMessage: `${this.$t('label.removing')} ${vm.name} ${this.$t('label.from.lb')} ${this.$t('label.in.progress')}`,
           catchMessage: this.$t('error.fetching.async.job.result')
         })
       })

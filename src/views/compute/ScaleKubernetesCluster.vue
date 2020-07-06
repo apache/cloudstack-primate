@@ -179,7 +179,7 @@ export default {
           })
           this.$pollJob({
             jobId,
-            loadingMessage: `Scale Kubernetes cluster ${this.resource.name} in progress`,
+            loadingMessage: `${this.$t('label.kubernetes.cluster.scale')} ${this.resource.name} ${this.$t('label.in.progress')}`,
             catchMessage: this.$t('error.fetching.async.job.result'),
             successMessage: `${this.$t('message.success.scale.kubernetes')} ${this.resource.name}`,
             successMethod: result => {

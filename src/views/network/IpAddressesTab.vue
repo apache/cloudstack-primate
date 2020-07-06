@@ -260,7 +260,7 @@ export default {
       api('associateIpAddress', params).then(response => {
         this.$pollJob({
           jobId: response.associateipaddressresponse.jobid,
-          successMessage: `Successfully acquired IP for ${this.resource.name}`,
+          successMessage: `${this.$t('message.success.acquire.ip')} ${this.$t('label.for')} ${this.resource.name}`,
           successMethod: () => {
             this.fetchData()
           },
@@ -268,7 +268,7 @@ export default {
           errorMethod: () => {
             this.fetchData()
           },
-          loadingMessage: `Acquiring IP for ${this.resource.name} is in progress`,
+          loadingMessage: `${this.$t('label.acquiring.ip')}} ${this.$t('label.for')} ${this.resource.name} ${this.$t('label.is.in.progress')}}`,
           catchMessage: this.$t('error.fetching.async.job.result')
         })
       }).catch(error => {
@@ -297,7 +297,7 @@ export default {
           errorMethod: () => {
             this.fetchData()
           },
-          loadingMessage: `Releasing IP for ${this.resource.name} is in progress`,
+          loadingMessage: `${this.$t('label.releasing.ip')} ${this.$t('label.for')} ${this.resource.name} ${this.$t('label.is.in.progress')}`,
           catchMessage: this.$t('error.fetching.async.job.result')
         })
       }).catch(error => {

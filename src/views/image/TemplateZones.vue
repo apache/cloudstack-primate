@@ -258,7 +258,7 @@ export default {
             }
           },
           errorMethod: () => this.fetchData(),
-          loadingMessage: `Deleting template ${this.resource.name} in progress`,
+          loadingMessage: `${this.$t('label.deleting.template')} ${this.resource.name} ${this.$t('label.in.progress')}`,
           catchMessage: this.$t('error.fetching.async.job.result')
         })
       }).catch(error => {
@@ -323,7 +323,7 @@ export default {
               this.fetchData()
             },
             errorMethod: () => this.fetchData(),
-            loadingMessage: `Copy template ${this.resource.name} in progress`,
+            loadingMessage: `${this.$t('label.action.copy.template')} ${this.resource.name} ${this.$t('label.in.progress')}`,
             catchMessage: this.$t('error.fetching.async.job.result')
           })
         }).catch(error => {

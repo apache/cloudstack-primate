@@ -247,7 +247,7 @@ export default {
             }
           },
           errorMethod: () => this.fetchData(),
-          loadingMessage: `Deleting ISO ${this.resource.name} in progress`,
+          loadingMessage: `${this.$t('label.deleting.iso')} ${this.resource.name} ${this.$t('label.in.progress')}`,
           catchMessage: this.$t('error.fetching.async.job.result')
         })
       }).catch(error => {
@@ -305,7 +305,7 @@ export default {
               this.fetchData()
             },
             errorMethod: () => this.fetchData(),
-            loadingMessage: `Copy ISO ${this.resource.name} in progress`,
+            loadingMessage: `${this.$t('label.action.copy.iso')} ${this.resource.name} ${this.$t('label.in.progress')}`,
             catchMessage: this.$t('error.fetching.async.job.result')
           })
         }).catch(error => {
