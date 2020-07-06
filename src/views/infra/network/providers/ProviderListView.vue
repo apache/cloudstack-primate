@@ -101,7 +101,7 @@
       :current="page"
       :pageSize="pageSize"
       :total="itemCount"
-      :showTotal="total => `Total ${total} items`"
+      :showTotal="total => `${this.$t('label.total')} ${total} ${this.$t('label.items')}`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="changePage"
       @showSizeChange="changePageSize"
@@ -297,7 +297,7 @@ export default {
             } catch (error) {
               this.actionLoading = false
               this.$notification.error({
-                message: 'Request Failed',
+                message: this.$t('message.request.failed'),
                 description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
               })
             }
@@ -333,7 +333,7 @@ export default {
           } catch (error) {
             this.actionLoading = false
             this.$notification.error({
-              message: 'Request Failed',
+              message: this.$t('message.request.failed'),
               description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
             })
           }
