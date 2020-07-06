@@ -203,12 +203,15 @@ export default {
     })
   },
   created () {
-    this.zones = [
-      {
-        id: '-1',
-        name: this.$t('label.all.zone')
-      }
-    ]
+    this.zones = []
+    if (this.$store.getters.userInfo.roletype === 'Admin') {
+      this.zones = [
+        {
+          id: '-1',
+          name: this.$t('label.all.zone')
+        }
+      ]
+    }
   },
   mounted () {
     this.fetchData()

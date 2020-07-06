@@ -22,7 +22,7 @@ export default {
   docHelp: 'adminguide/accounts.html',
   permission: ['listAccounts'],
   columns: ['name', 'state', 'rolename', 'roletype', 'domainpath'],
-  details: ['name', 'id', 'rolename', 'roletype', 'domainpath', 'networkdomain', 'iptotal', 'vmtotal', 'volumetotal', 'receivedbytes', 'sentbytes', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit'],
+  details: ['name', 'id', 'rolename', 'roletype', 'domainpath', 'networkdomain', 'iptotal', 'vmtotal', 'volumetotal', 'receivedbytes', 'sentbytes'],
   related: [{
     name: 'accountuser',
     title: 'label.users',
@@ -32,6 +32,10 @@ export default {
     {
       name: 'details',
       component: () => import('@/components/view/DetailsTab.vue')
+    },
+    {
+      name: 'resources',
+      component: () => import('@/components/view/ResourceCountUsage.vue')
     },
     {
       name: 'limits',
