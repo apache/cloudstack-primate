@@ -23,7 +23,7 @@ export default {
   permission: ['listDomains', 'listDomainChildren'],
   resourceType: 'Domain',
   columns: ['name', 'state', 'path', 'parentdomainname', 'level'],
-  details: ['name', 'id', 'path', 'parentdomainname', 'level', 'networkdomain', 'iptotal', 'vmtotal', 'volumetotal', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit'],
+  details: ['name', 'id', 'path', 'parentdomainname', 'level', 'networkdomain'],
   component: () => import('@/views/iam/DomainView.vue'),
   related: [{
     name: 'account',
@@ -39,6 +39,11 @@ export default {
     {
       name: 'details',
       component: () => import('@/components/view/DetailsTab.vue')
+    },
+    {
+      name: 'resources',
+      show: (record, route, user) => { return ['Admin', 'DomainAdmin'].includes(user.roletype) },
+      component: () => import('@/components/view/ResourceCountUsage.vue')
     },
     {
       name: 'limits',
