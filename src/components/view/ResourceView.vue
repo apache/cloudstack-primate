@@ -106,19 +106,6 @@ export default {
           }
         })
       }
-      if (this.resource.projectaccountname) {
-        var projectAccountList = []
-        api('listProjectAccounts', { projectid: this.resource.id }).then(response => {
-          projectAccountList = response.listprojectaccountsresponse.projectaccount
-          for (var projectAccount of projectAccountList) {
-            if ((projectAccount.userid && projectAccount.userid === this.$store.getters.userInfo.id) ||
-              projectAccount.account === this.$store.getters.userInfo.account) {
-              this.projectAccount = projectAccount
-              break
-            }
-          }
-        })
-      }
     }
   },
   methods: {
@@ -138,8 +125,6 @@ export default {
         }
         return this.networkService && this.networkService.service &&
           tab.networkServiceFilter(this.networkService.service)
-      } else if ('projectAccountFilter' in tab) {
-        return tab.projectAccountFilter(this.projectAccount)
       } else if ('show' in tab) {
         return tab.show(this.resource, this.$route, this.$store.getters.userInfo)
       } else {

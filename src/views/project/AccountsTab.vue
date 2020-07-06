@@ -153,6 +153,7 @@ export default {
     this.pageSize = 10
     this.itemCount = 0
   },
+  inject: ['parentFetchData'],
   mounted () {
     this.fetchData()
   },
@@ -309,6 +310,7 @@ export default {
         this.$notifyError(error)
       }).finally(() => {
         setTimeout(loading, 1000)
+        this.parentFetchData()
       })
     },
     onShowConfirmDelete (record) {
