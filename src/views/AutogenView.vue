@@ -453,6 +453,7 @@ export default {
       this.actions = []
       this.columns = []
       this.columnKeys = []
+      const refreshed = ('irefresh' in params)
 
       params.listall = true
       if (this.$route.meta.params) {
@@ -463,21 +464,18 @@ export default {
       }
       delete params.q
       delete params.filter
+      delete params.irefresh
 
       this.searchFilters = this.$route && this.$route.meta && this.$route.meta.searchFilters
 
       if (this.$route && this.$route.params && this.$route.params.id) {
         this.dataView = true
-        if (!('irefresh' in params)) {
+        if (!refreshed) {
           this.resource = {}
           this.$emit('change-resource', this.resource)
         }
       } else {
         this.dataView = false
-      }
-
-      if ('irefresh' in params) {
-        delete params.irefresh
       }
 
       if ('listview' in this.$refs && this.$refs.listview) {

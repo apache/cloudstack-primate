@@ -147,10 +147,9 @@ export default {
       }
     },
     '$route' (to, from) {
+      this.searchQuery = ''
       if (to && to.query && 'q' in to.query) {
         this.searchQuery = to.query.q
-      } else {
-        this.searchQuery = ''
       }
     }
   },
