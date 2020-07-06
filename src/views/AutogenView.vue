@@ -28,7 +28,7 @@
                 shape="round"
                 size="small"
                 icon="reload"
-                @click="fetchData()">
+                @click="fetchData({ listall: true, irefresh: true })">
                 {{ $t('label.refresh') }}
               </a-button>
               <a-switch
@@ -71,21 +71,18 @@
             :dataView="dataView"
             :resource="resource"
             @exec-action="execAction"/>
-          <a-input-search
+          <search-view
             v-if="!dataView"
-            style="width: 100%; display: table-cell"
-            :placeholder="$t('label.search')"
-            v-model="searchQuery"
-            allowClear
-            @search="onSearch" />
+            :searchFilters="searchFilters"
+            :selectedFilters="paramsFilters"
+            :apiName="apiName"/>
         </a-col>
       </a-row>
     </a-card>
 
     <div v-show="showAction">
-      <keep-alive v-if="currentAction.component">
+      <keep-alive v-if="currentAction.component && (!currentAction.groupAction || this.selectedRowKeys.length === 0)">
         <a-modal
-          :title="$t(currentAction.label)"
           :visible="showAction"
           :closable="true"
           style="top: 20px;"
@@ -95,6 +92,16 @@
           centered
           width="auto"
         >
+          <span slot="title">
+            {{ $t(currentAction.label) }}
+            <a
+              v-if="currentAction.docHelp || $route.meta.docHelp"
+              style="margin-left: 5px"
+              :href="$config.docBase + '/' + (currentAction.docHelp || $route.meta.docHelp)"
+              target="_blank">
+              <a-icon type="question-circle-o"></a-icon>
+            </a>
+          </span>
           <component
             :is="currentAction.component"
             :resource="resource"
@@ -136,6 +143,7 @@
           <a-form
             :form="form"
             @submit="handleSubmit"
+            v-show="dataView || !currentAction.groupAction || this.selectedRowKeys.length === 0"
             layout="vertical" >
             <a-form-item
               v-for="(field, fieldIndex) in currentAction.paramFields"
@@ -276,7 +284,9 @@
     </div>
 
     <div v-if="dataView">
+      <slot v-if="$route.path.startsWith('/quotasummary')"></slot>
       <resource-view
+        v-else
         :resource="resource"
         :loading="loading"
         :tabs="$route.meta.tabs" />
@@ -286,6 +296,8 @@
         :loading="loading"
         :columns="columns"
         :items="items"
+        ref="listview"
+        @selection-change="onRowSelectionChange"
         @refresh="this.fetchData" />
       <a-pagination
         class="row-element"
@@ -293,8 +305,8 @@
         :current="page"
         :pageSize="pageSize"
         :total="itemCount"
-        :showTotal="total => `Total ${total} items`"
-        :pageSizeOptions="['10', '20', '40', '80', '100', '500']"
+        :showTotal="total => `Showing ${Math.min(total, 1+((page-1)*pageSize))}-${Math.min(page*pageSize, total)} of ${total} items`"
+        :pageSizeOptions="device === 'desktop' ? ['20', '50', '100', '500'] : ['10', '20', '50', '100', '500']"
         @change="changePage"
         @showSizeChange="changePageSize"
         showSizeChanger
@@ -315,6 +327,7 @@ import Status from '@/components/widgets/Status'
 import ListView from '@/components/view/ListView'
 import ResourceView from '@/components/view/ResourceView'
 import ActionButton from '@/components/view/ActionButton'
+import SearchView from '@/components/view/SearchView'
 
 export default {
   name: 'Resource',
@@ -324,7 +337,8 @@ export default {
     ResourceView,
     ListView,
     Status,
-    ActionButton
+    ActionButton,
+    SearchView
   },
   mixins: [mixinDevice],
   provide: function () {
@@ -332,7 +346,13 @@ export default {
       parentFetchData: this.fetchData,
       parentToggleLoading: this.toggleLoading,
       parentStartLoading: this.startLoading,
-      parentFinishLoading: this.finishLoading
+      parentFinishLoading: this.finishLoading,
+      parentSearch: this.onSearch,
+      parentChangeFilter: this.changeFilter,
+      parentFilter: this.onFilter,
+      parentChangeResource: this.changeResource,
+      parentPollActionCompletion: this.pollActionCompletion,
+      parentEditTariffAction: () => {}
     }
   },
   data () {
@@ -351,20 +371,22 @@ export default {
       currentAction: {},
       showAction: false,
       dataView: false,
+      selectedFilter: '',
+      filters: [],
+      searchFilters: [],
+      paramsFilters: {},
       actions: [],
       formModel: {},
       confirmDirty: false
-    }
-  },
-  computed: {
-    hasSelected () {
-      return this.selectedRowKeys.length > 0
     }
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
   },
   mounted () {
+    if (this.device === 'desktop') {
+      this.pageSize = 20
+    }
     this.currentPath = this.$route.fullPath
     this.fetchData()
     if ('projectid' in this.$route.query) {
@@ -387,12 +409,13 @@ export default {
         } else {
           this.searchQuery = ''
         }
+        this.paramsFilters = {}
         if ('page' in to.query) {
           this.page = Number(to.query.page)
           this.pageSize = Number(to.query.pagesize)
         } else {
           this.page = 1
-          this.pageSize = 10
+          this.pageSize = (this.device === 'desktop' ? 20 : 10)
         }
         this.itemCount = 0
         this.fetchData()
@@ -443,12 +466,28 @@ export default {
       } else if (this.$route.meta.params) {
         Object.assign(params, this.$route.meta.params)
       }
+      if (Object.keys(this.paramsFilters).length > 0) {
+        Object.assign(params, this.paramsFilters)
+      }
+
+      this.searchFilters = this.$route && this.$route.meta && this.$route.meta.searchFilters
 
       if (this.$route && this.$route.params && this.$route.params.id) {
-        this.resource = {}
         this.dataView = true
+        if (!('irefresh' in params)) {
+          this.resource = {}
+          this.$emit('change-resource', this.resource)
+        }
       } else {
         this.dataView = false
+      }
+
+      if ('irefresh' in params) {
+        delete params.irefresh
+      }
+
+      if ('listview' in this.$refs && this.$refs.listview) {
+        this.$refs.listview.resetSelection()
       }
 
       if (this.$route && this.$route.meta && this.$route.meta.permission) {
@@ -504,6 +543,8 @@ export default {
         params.id = this.$route.params.id
         if (this.$route.path.startsWith('/ssh/')) {
           params.name = this.$route.params.id
+        } else if (this.$route.path.startsWith('/vmsnapshot/')) {
+          params.vmsnapshotid = this.$route.params.id
         } else if (this.$route.path.startsWith('/ldapsetting/')) {
           params.hostname = this.$route.params.id
         }
@@ -533,9 +574,11 @@ export default {
         if (!this.items || this.items.length === 0) {
           this.items = []
         }
+
         if (['listTemplates', 'listIsos'].includes(this.apiName) && this.items.length > 1) {
           this.items = [...new Map(this.items.map(x => [x.id, x])).values()]
         }
+
         for (let idx = 0; idx < this.items.length; idx++) {
           this.items[idx].key = idx
           for (const key in customRender) {
@@ -552,8 +595,19 @@ export default {
         }
         if (this.items.length > 0) {
           this.resource = this.items[0]
+          this.$emit('change-resource', this.resource)
         }
       }).catch(error => {
+        if (Object.keys(this.paramsFilters).length > 0) {
+          this.itemCount = 0
+          this.items = []
+          this.$message.error({
+            content: error.response.headers['x-description'],
+            duration: 5
+          })
+          return
+        }
+
         this.$notifyError(error)
 
         if ([401, 405].includes(error.response.status)) {
@@ -575,6 +629,9 @@ export default {
       this.actionLoading = false
       this.showAction = false
       this.currentAction = {}
+    },
+    onRowSelectionChange (selection) {
+      this.selectedRowKeys = selection
     },
     execAction (action) {
       const self = this
@@ -628,7 +685,7 @@ export default {
         }
       }
       this.actionLoading = false
-      if (action.dataView && ['copy', 'edit'].includes(action.icon)) {
+      if (action.dataView && ['copy', 'edit', 'share-alt'].includes(action.icon)) {
         this.fillEditFormFieldValues()
       }
     },
@@ -736,6 +793,30 @@ export default {
       })
     },
     handleSubmit (e) {
+      if (!this.dataView && this.currentAction.groupAction && this.selectedRowKeys.length > 0) {
+        const paramsList = this.currentAction.groupMap(this.selectedRowKeys)
+        this.actionLoading = true
+        for (const params of paramsList) {
+          api(this.currentAction.api, params).then(json => {
+          }).catch(error => {
+            this.$notifyError(error)
+          })
+        }
+        this.$message.info({
+          content: this.$t(this.currentAction.label),
+          key: this.currentAction.label,
+          duration: 3
+        })
+        setTimeout(() => {
+          this.actionLoading = false
+          this.closeAction()
+          this.fetchData()
+        }, 2000)
+      } else {
+        this.execSubmit(e)
+      }
+    },
+    execSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
         console.log(values)
@@ -857,7 +938,16 @@ export default {
       query.pagesize = 10
       this.$router.push({ query })
     },
+    onFilter (filters) {
+      this.paramsFilters = {}
+      if (filters && Object.keys(filters).length > 0) {
+        this.paramsFilters = filters
+      }
+      this.page = 1
+      this.fetchData()
+    },
     onSearch (value) {
+      this.paramsFilters = {}
       const query = Object.assign({}, this.$route.query)
       delete query.name
       delete query.templatetype
@@ -876,7 +966,7 @@ export default {
         query.q = value
       }
       query.page = 1
-      query.pagesize = 10
+      query.pagesize = this.pageSize
       this.searchQuery = value
       this.$router.push({ query })
     },
@@ -891,6 +981,9 @@ export default {
       query.page = currentPage
       query.pagesize = pageSize
       this.$router.push({ query })
+    },
+    changeResource (resource) {
+      this.resource = resource
     },
     start () {
       this.loading = true

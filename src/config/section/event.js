@@ -21,8 +21,9 @@ export default {
   icon: 'schedule',
   docHelp: 'adminguide/events.html',
   permission: ['listEvents'],
-  columns: ['username', 'description', 'state', 'level', 'type', 'account', 'domain', 'created'],
+  columns: ['level', 'type', 'state', 'description', 'username', 'account', 'domain', 'created'],
   details: ['username', 'id', 'description', 'state', 'level', 'type', 'account', 'domain', 'created'],
+  searchFilters: ['level', 'domainid', 'account', 'keyword'],
   related: [{
     name: 'event',
     title: 'label.event.timeline',
@@ -35,8 +36,9 @@ export default {
       label: 'label.archive.events',
       message: 'message.confirm.archive.selected.events',
       docHelp: 'adminguide/events.html#deleting-and-archiving-events-and-alerts',
-      listView: false,
       dataView: true,
+      groupAction: true,
+      groupMap: (selection) => { return [{ ids: selection.join(',') }] },
       args: ['ids'],
       mapping: {
         ids: {
@@ -50,8 +52,9 @@ export default {
       label: 'label.delete.events',
       message: 'message.confirm.remove.selected.events',
       docHelp: 'adminguide/events.html#deleting-and-archiving-events-and-alerts',
-      listView: false,
       dataView: true,
+      groupAction: true,
+      groupMap: (selection) => { return [{ ids: selection.join(',') }] },
       args: ['ids'],
       mapping: {
         ids: {

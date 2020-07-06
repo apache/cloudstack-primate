@@ -61,22 +61,15 @@ export default {
         }
         return fields
       },
+      searchFilters: ['name', 'zoneid', 'domainid', 'account', 'tags'],
       details: ['displayname', 'name', 'id', 'state', 'ipaddress', 'templatename', 'ostypename', 'serviceofferingname', 'isdynamicallyscalable', 'haenable', 'hypervisor', 'boottype', 'bootmode', 'account', 'domain', 'zonename'],
       related: [{
-        name: 'volume',
-        title: 'label.volumes',
-        param: 'virtualmachineid'
-      }, {
         name: 'vmsnapshot',
         title: 'label.vm.snapshots',
         param: 'virtualmachineid'
       }, {
         name: 'backup',
         title: 'label.backup',
-        param: 'virtualmachineid'
-      }, {
-        name: 'affinitygroup',
-        title: 'label.affinity.groups',
         param: 'virtualmachineid'
       }],
       tabs: [{
@@ -108,6 +101,7 @@ export default {
           docHelp: 'adminguide/virtual_machines.html#stopping-and-starting-vms',
           dataView: true,
           groupAction: true,
+          groupMap: (selection) => { return selection.map(x => { return { id: x } }) },
           show: (record) => { return ['Stopped'].includes(record.state) },
           args: (record, store) => {
             var fields = []
@@ -131,6 +125,7 @@ export default {
           docHelp: 'adminguide/virtual_machines.html#stopping-and-starting-vms',
           dataView: true,
           groupAction: true,
+          groupMap: (selection) => { return selection.map(x => { return { id: x } }) },
           args: ['forced'],
           show: (record) => { return ['Running'].includes(record.state) }
         },
@@ -192,7 +187,7 @@ export default {
           docHelp: 'adminguide/virtual_machines.html#backup-offerings',
           dataView: true,
           args: ['virtualmachineid', 'backupofferingid'],
-          show: (record) => { return !record.backupofferingid },
+          show: (record) => { return !record.backupofferingid && !['Error', 'Destroyed'].includes(record.state) && ['VMware', 'Simulator'].includes(record.hypervisor) },
           mapping: {
             virtualmachineid: {
               value: (record, params) => { return record.id }
@@ -292,21 +287,12 @@ export default {
         {
           api: 'scaleVirtualMachine',
           icon: 'arrows-alt',
-          // label: label.change.service.offering
           label: 'Scale VM',
           docHelp: 'adminguide/virtual_machines.html#how-to-dynamically-scale-cpu-and-ram',
           dataView: true,
-          args: ['serviceofferingid', 'details'],
-          show: (record) => { return ['Running'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC' }
-        },
-        {
-          api: 'changeServiceForVirtualMachine',
-          icon: 'sliders',
-          label: 'label.change.service.offering',
-          docHelp: 'adminguide/virtual_machines.html#changing-the-service-offering-for-a-vm',
-          dataView: true,
-          args: ['serviceofferingid'],
-          show: (record) => { return ['Stopped'].includes(record.state) || (['Running'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC') }
+          show: (record) => { return ['Stopped'].includes(record.state) || (['Running'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC') },
+          popup: true,
+          component: () => import('@/views/compute/ScaleVM.vue')
         },
         {
           api: 'migrateVirtualMachine',
@@ -349,7 +335,7 @@ export default {
           label: 'label.action.reset.password',
           message: 'message.action.instance.reset.password',
           dataView: true,
-          show: (record) => { return ['Running', 'Stopped'].includes(record.state) },
+          show: (record) => { return ['Running', 'Stopped'].includes(record.state) && record.passwordenabled },
           response: (result) => { return result.virtualmachine && result.virtualmachine.password ? `Password of the VM is ${result.virtualmachine.password}` : null }
         },
         {
@@ -396,7 +382,6 @@ export default {
           icon: 'disconnect',
           label: 'label.action.unmanage.virtualmachine',
           dataView: true,
-          groupAction: true,
           show: (record) => { return ['Running', 'Stopped'].includes(record.state) && record.hypervisor === 'VMware' }
         },
         {
@@ -414,16 +399,12 @@ export default {
           label: 'label.action.destroy.instance',
           message: 'message.action.destroy.instance',
           docHelp: 'adminguide/virtual_machines.html#deleting-vms',
-          args: ['expunge', 'volumeids'],
-          mapping: {
-            volumeids: {
-              api: 'listVolumes',
-              params: (record) => { return { virtualmachineid: record.id, type: 'DATADISK' } }
-            }
-          },
           dataView: true,
           groupAction: true,
-          show: (record) => { return ['Running', 'Stopped', 'Error'].includes(record.state) }
+          popup: true,
+          groupMap: (selection) => { return selection.map(x => { return { id: x, expunge: true } }) },
+          show: (record) => { return ['Running', 'Stopped', 'Error'].includes(record.state) },
+          component: () => import('@/views/compute/DestoryVM.vue')
         }
       ]
     },
@@ -433,7 +414,14 @@ export default {
       icon: kubernetes,
       docHelp: 'plugins/cloudstack-kubernetes-service.html',
       permission: ['listKubernetesClusters'],
-      columns: ['name', 'state', 'size', 'cpunumber', 'memory', 'account', 'zonename'],
+      columns: () => {
+        var fields = ['name', 'state', 'size', 'cpunumber', 'memory']
+        if (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype)) {
+          fields.push('account')
+        }
+        fields.push('zonename')
+        return fields
+      },
       details: ['name', 'description', 'zonename', 'kubernetesversionname', 'size', 'masternodes', 'cpunumber', 'memory', 'keypair', 'associatednetworkname', 'account', 'domain', 'zonename'],
       tabs: [{
         name: 'k8s',
@@ -501,7 +489,7 @@ export default {
       icon: 'gold',
       docHelp: 'adminguide/virtual_machines.html#changing-the-vm-name-os-or-group',
       permission: ['listInstanceGroups'],
-      columns: ['name', 'account', 'domain'],
+      columns: ['name', 'account'],
       details: ['name', 'id', 'account', 'domain', 'created'],
       related: [{
         name: 'vm',
@@ -537,7 +525,13 @@ export default {
       icon: 'key',
       docHelp: 'adminguide/virtual_machines.html#using-ssh-keys-for-authentication',
       permission: ['listSSHKeyPairs'],
-      columns: ['name', 'fingerprint', 'account', 'domain'],
+      columns: () => {
+        var fields = ['name', 'fingerprint']
+        if (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype)) {
+          fields.push('account')
+        }
+        return fields
+      },
       details: ['name', 'fingerprint', 'account', 'domain'],
       related: [{
         name: 'vm',
@@ -580,7 +574,13 @@ export default {
       icon: 'swap',
       docHelp: 'adminguide/virtual_machines.html#affinity-groups',
       permission: ['listAffinityGroups'],
-      columns: ['name', 'type', 'description', 'account', 'domain'],
+      columns: () => {
+        var fields = ['name', 'type', 'description']
+        if (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype)) {
+          fields.push('account')
+        }
+        return fields
+      },
       details: ['name', 'id', 'description', 'type', 'account', 'domain'],
       related: [{
         name: 'vm',
