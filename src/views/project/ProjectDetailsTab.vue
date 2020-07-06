@@ -50,11 +50,11 @@ export default {
           account.account === this.$store.getters.userInfo.account) &&
           account.role === 'Admin')
         })
-        var isLoggedInUser = false
+        var isCurrentUserProjectAdmin = false
         if (listProjectAccount.length > 0) {
-          isLoggedInUser = true
+          isCurrentUserProjectAdmin = true
         }
-        this.$set(this.resource, 'isLoggedInUser', isLoggedInUser)
+        this.$set(this.resource, 'isCurrentUserProjectAdmin', isCurrentUserProjectAdmin)
       }).catch(error => {
         this.$notifyError(error)
       })

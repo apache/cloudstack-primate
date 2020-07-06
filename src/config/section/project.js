@@ -34,13 +34,13 @@ export default {
     {
       name: 'accounts',
       component: () => import('@/views/project/AccountsTab.vue'),
-      show: (record, route, user) => { return ['Admin', 'DomainAdmin'].includes(user.roletype) || record.isLoggedInUser }
+      show: (record, route, user) => { return ['Admin', 'DomainAdmin'].includes(user.roletype) || record.isCurrentUserProjectAdmin }
     },
     {
       name: 'project.roles',
       component: () => import('@/views/project/iam/ProjectRoleTab.vue'),
       show: (record, route, user) => {
-        return (['Admin', 'DomainAdmin'].includes(user.roletype) || record.isLoggedInUser) &&
+        return (['Admin', 'DomainAdmin'].includes(user.roletype) || record.isCurrentUserProjectAdmin) &&
         'listProjectRoles' in store.getters.apis
       }
     },
@@ -52,11 +52,6 @@ export default {
       name: 'limits',
       show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
       component: () => import('@/components/view/ResourceLimitTab.vue')
-    },
-    {
-      name: 'accounts',
-      show: (record, route, user) => { return record.account === user.account || ['Admin', 'DomainAdmin'].includes(user.roletype) },
-      component: () => import('@/views/project/AccountsTab.vue')
     }
   ],
   actions: [
@@ -98,7 +93,7 @@ export default {
       dataView: true,
       args: ['displaytext'],
       show: (record, store) => {
-        return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) || record.isLoggedInUser
+        return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) || record.isCurrentUserProjectAdmin
       }
     },
     {
@@ -108,7 +103,7 @@ export default {
       message: 'message.activate.project',
       dataView: true,
       show: (record, store) => {
-        return ((['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) || record.isLoggedInUser) && record.state === 'Suspended'
+        return ((['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) || record.isCurrentUserProjectAdmin) && record.state === 'Suspended'
       }
     },
     {
@@ -120,7 +115,7 @@ export default {
       dataView: true,
       show: (record, store) => {
         return ((['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) ||
-        record.isLoggedInUser) && record.state !== 'Suspended'
+        record.isCurrentUserProjectAdmin) && record.state !== 'Suspended'
       }
     },
     {
@@ -131,7 +126,7 @@ export default {
       dataView: true,
       popup: true,
       show: (record, store) => {
-        return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) || record.isLoggedInUser
+        return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) || record.isCurrentUserProjectAdmin
       },
       component: () => import('@/views/project/AddAccountOrUserToProject.vue')
     },
@@ -143,7 +138,7 @@ export default {
       docHelp: 'adminguide/projects.html#suspending-or-deleting-a-project',
       dataView: true,
       show: (record, store) => {
-        return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) || record.isLoggedInUser
+        return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) || record.isCurrentUserProjectAdmin
       }
     }
   ]
