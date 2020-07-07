@@ -1,10 +1,12 @@
 ---
 name: Full Test Plan
 about: Create a high level full-test plan
-title: "[TESTPLAN] Full Test Plan for $Version"
+title: "[TESTPLAN] Full Test Plan for $Version for $Role and $Hypervisor"
 labels: testing
 
 ---
+
+Note: for User role test exclude after Account/User feature, for DomainAdmin role exclude after Infrastrucutre (except for Offerings)
 
 | Feature | Tester | Result | Related Issues |
 |---------------|--------|--------|----------------|
@@ -346,30 +348,20 @@ labels: testing
 | View event timeline | | | |
 | Delete event | | | |
 | | | | |
-| **Identify and access > Users** | | | |
+| **Users** | | | |
 | Links | | | |
 | Search | | | |
 | Sort | | | |
 | Add user | | | |
 | | | | |
-| **Identify and access > Users > selected user** | | | |
-| Links | | | |
-| Edit user | | | |
-| Change password | | | |
-| Generate keys | | | |
-| Disable/enable user | | | |
-| Delete user | | | |
-| Copy API Key | | | |
-| Copy Secret Key | | | |
-| | | | |
-| **Identify and access > Accounts** | | | |
+| **Accounts** | | | |
 | Links | | | |
 | Search | | | |
 | Sort | | | |
 | Add account | | | |
 | Add LDAP account | | | |
 | | | | |
-| **Identify and access > Accounts > selected account** | | | |
+| **Accounts > selected account** | | | |
 | Links | | | |
 | Update account | | | |
 | Update resource count | | | |
@@ -379,7 +371,17 @@ labels: testing
 | Delete account | | | |
 | Settings | | | |
 | | | | |
-| **Identify and access > Domains** | | | |
+| **Users > selected user** | | | |
+| Links | | | |
+| Edit user | | | |
+| Change password | | | |
+| Generate keys | | | |
+| Disable/enable user | | | |
+| Delete user | | | |
+| Copy API Key | | | |
+| Copy Secret Key | | | |
+| | | | |
+| **Domains** | | | |
 | Search | | | |
 | Expand/collapse | | | |
 | Add/delete note | | | |
@@ -390,21 +392,19 @@ labels: testing
 | Link domain to LDAP Group/OU | | | |
 | Settings | | | |
 | | | | |
-| **Identify and access > Roles** | | | |
+| **Roles** | | | |
 | Links | | | |
 | Search | | | |
 | Sort | | | |
 | Create role | | | |
 | | | | |
-| **Identify and access > Roles > selected role** | | | |
+| **Roles > selected role** | | | |
 | Edit role | | | |
 | Delete role | | | |
 | Rules - add new rule | | | |
 | Rules - modify rule | | | |
 | Rules - delete rule | | | |
 | Rules - change rules order | | | |
-| | | | |
-| **Regions** | | | |
 | | | | |
 | **Infrastructure > Summary** | | | |
 | Links | | | |
@@ -647,22 +647,6 @@ labels: testing
 | | | | |
 | **Configuration > Hypervisor capabilities** | | | |
 | Data | | | |
-| Search | | | |
-| Sort | | | |
-| | | | |
-| **Quota > Summary** | | | |
-| Search | | | |
-| Sort | | | |
-| | | | |
-| **Quota > Summary > selected account** | | | |
-| Add credits | | | |
-| | | | |
-| **Quota > Tariff** | | | |
-| Sort | | | |
-| Calendar | | | |
-| Change value | | | |
-| | | | |
-| **Quota > Email template** | | | |
 | Search | | | |
 | Sort | | | |
 | | | | |
