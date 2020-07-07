@@ -283,7 +283,7 @@ export default {
       icon: 'camera',
       permission: ['listVMSnapshot'],
       resourceType: 'VMSnapshot',
-      columns: ['displayname', 'state', 'type', 'current', 'parentName', 'created', 'account'],
+      columns: ['name', 'state', 'type', 'current', 'parentName', 'created', 'account'],
       details: ['name', 'id', 'displayname', 'description', 'type', 'current', 'parentName', 'virtualmachineid', 'account', 'domain', 'created'],
       searchFilters: ['name', 'domainid', 'account', 'tags'],
       actions: [

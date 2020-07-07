@@ -19,7 +19,7 @@
   <a-table
     size="middle"
     :loading="loading"
-    :columns="fetchColumns()"
+    :columns="isOrderUpdatable() ? columns : columns.filter(x => x.dataIndex !== 'order')"
     :dataSource="items"
     :rowKey="record => record.id || record.name || record.usageType"
     :pagination="false"
@@ -62,26 +62,21 @@
 
     <span slot="name" slot-scope="text, record">
       <div style="min-width: 120px" >
-        <a-popover v-if="actions.length > 0" triggers="hover" placement="right">
-          <template slot="content">
-            <action-button
-              size="default"
-              :actions="actions"
-              :dataView="true"
-              :resource="record"
-              @exec-action="$parent.execAction"/>
-          </template>
-          <span v-if="$route.path.startsWith('/project')" style="margin-right: 5px">
-            <a-button type="dashed" size="small" shape="circle" icon="login" @click="changeProject(record)" />
-          </span>
-          <os-logo v-if="record.ostypename" :osName="record.ostypename" size="1x" style="margin-right: 5px" />
+        <span v-if="$route.path.startsWith('/project')" style="margin-right: 5px">
+          <a-button type="dashed" size="small" shape="circle" icon="login" @click="changeProject(record)" />
+        </span>
+        <os-logo v-if="record.ostypename" :osName="record.ostypename" size="1x" style="margin-right: 5px" />
 
-          <span v-if="$route.path.startsWith('/globalsetting')">{{ text }}</span>
-          <span v-else>
-            <router-link :to="{ path: $route.path + '/' + record.id }" v-if="record.id">{{ text }}</router-link>
-            <router-link :to="{ path: $route.path + '/' + record.name }" v-else>{{ text }}</router-link>
-          </span>
-        </a-popover>
+        <span v-if="$route.path.startsWith('/globalsetting')">{{ text }}</span>
+        <span v-else>
+          <router-link :to="{ path: $route.path + '/' + record.id }" v-if="record.id">{{ text }}</router-link>
+          <router-link :to="{ path: $route.path + '/' + record.name }" v-else>{{ text }}</router-link>
+        </span>
+        <QuickView
+          :actions="actions"
+          :resource="record"
+          :enabled="quickViewEnabled() && actions.length > 0 && columns && columns[0].dataIndex === 'name' "
+          @exec-action="$parent.execAction"/>
       </div>
     </span>
     <a slot="templatetype" slot-scope="text, record" href="javascript:;">
@@ -268,7 +263,7 @@ import Console from '@/components/widgets/Console'
 import OsLogo from '@/components/widgets/OsLogo'
 import Status from '@/components/widgets/Status'
 import InfoCard from '@/components/view/InfoCard'
-import ActionButton from '@/components/view/ActionButton'
+import QuickView from '@/components/view/QuickView'
 
 export default {
   name: 'ListView',
@@ -277,7 +272,7 @@ export default {
     OsLogo,
     Status,
     InfoCard,
-    ActionButton
+    QuickView
   },
   props: {
     columns: {
@@ -311,6 +306,16 @@ export default {
     }
   },
   methods: {
+    quickViewEnabled () {
+      return new RegExp(['/vm', '/kubernetes', '/ssh', '/vmgroup', '/affinitygroup',
+        '/volume', '/snapshot', '/backup',
+        '/guestnetwork', '/vpc', '/vpncustomergateway',
+        '/template', '/iso',
+        '/project', '/account',
+        '/zone', '/pod', '/cluster', '/host', '/storagepool', '/imagestore', '/systemvm', '/router', '/ilbvm',
+        '/computeoffering', '/systemoffering', '/diskoffering', '/backupoffering', '/networkoffering', '/vpcoffering'].join('|'))
+        .test(this.$route.path)
+    },
     fetchColumns () {
       if (this.isOrderUpdatable()) {
         return this.columns
