@@ -30,7 +30,7 @@
             </div>
             <slot name="name">
               <h4 class="name">
-                {{ resource.displayname || resource.displaytext || resource.name || resource.hostname || resource.username || resource.ipaddress || resource.virtualmachinename }}
+                {{ resource.displayname || resource.displaytext || resource.name || resource.hostname || resource.username || resource.ipaddress || resource.virtualmachinename || resource.templatetype }}
               </h4>
               <console style="margin-left: 10px" :resource="resource" size="default" v-if="resource.id" />
             </slot>
@@ -73,22 +73,19 @@
         <div class="resource-detail-item" v-if="resource.state || resource.status">
           <div class="resource-detail-item__label">{{ $t('label.status') }}</div>
           <div class="resource-detail-item__details">
-            <status class="status" :text="resource.state || resource.status"/>
-            <span>{{ resource.state || resource.status }}</span>
+            <status class="status" :text="resource.state || resource.status" displayText/>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.allocationstate">
           <div class="resource-detail-item__label">{{ $t('label.allocationstate') }}</div>
           <div class="resource-detail-item__details">
-            <status class="status" :text="resource.allocationstate"/>
-            <span>{{ resource.allocationstate }}</span>
+            <status class="status" :text="resource.allocationstate" displayText/>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.resourcestate">
           <div class="resource-detail-item__label">{{ $t('label.resourcestate') }}</div>
           <div class="resource-detail-item__details">
-            <status class="status" :text="resource.resourcestate"/>
-            <span>{{ resource.resourcestate }}</span>
+            <status class="status" :text="resource.resourcestate" displayText/>
           </div>
         </div>
 
@@ -458,7 +455,8 @@
           <div class="resource-detail-item__label">{{ $t('label.account') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="user" />
-            <router-link :to="{ path: '/account', query: { name: resource.account, domainid: resource.domainid } }">{{ resource.account }}</router-link>
+            <router-link v-if="$store.getters.userInfo.roletype !== 'User'" :to="{ path: '/account', query: { name: resource.account, domainid: resource.domainid } }">{{ resource.account }}</router-link>
+            <span v-else>{{ resource.account }}</span>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.roleid">
@@ -473,7 +471,7 @@
           <div class="resource-detail-item__label">{{ $t('label.domain') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="block" />
-            <router-link v-if="$router.resolve('/domain/' + resource.domainid).route.name !== '404'" :to="{ path: '/domain/' + resource.domainid }">{{ resource.domain || resource.domainid }}</router-link>
+            <router-link v-if="$store.getters.userInfo.roletype !== 'User'" :to="{ path: '/domain/' + resource.domainid }">{{ resource.domain || resource.domainid }}</router-link>
             <span v-else>{{ resource.domain || resource.domainid }}</span>
           </div>
         </div>

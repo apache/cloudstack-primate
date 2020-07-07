@@ -16,28 +16,45 @@
 // under the License.
 
 <template>
-  <a
-    v-if="['vm', 'systemvm', 'router', 'ilbvm'].includes($route.meta.name) && 'updateVirtualMachine' in $store.getters.apis"
-    :href="'/client/console?cmd=access&vm=' + resource.id"
-    target="_blank">
-    <a-button style="margin-left: 5px" shape="circle" type="dashed" :size="size" :disabled="['Stopped', 'Error', 'Destroyed'].includes(resource.state)" >
-      <a-icon type="code" />
-    </a-button>
-  </a>
+  <div>
+    <a-list size="small" :dataSource="details">
+      <a-list-item slot="renderItem" slot-scope="item">
+        <div>
+          <strong>{{ $t(`label.${item}`) }}</strong>
+          <br />
+          <div v-if="item === 'servicelist'">
+            {{ nsp[item] ? nsp[item].join(', ') : '' }}
+          </div>
+          <span v-else-if="item !== 'state'">{{ nsp[item] ? nsp[item] : '' }}</span>
+          <span v-else>
+            <status :text="nsp[item] ? nsp[item] : 'Disabled'" displayText />
+          </span>
+        </div>
+      </a-list-item>
+    </a-list>
+  </div>
 </template>
 
 <script>
+import Status from '@/components/widgets/Status'
+
 export default {
-  name: 'Console',
+  name: 'ProviderDetail',
+  components: {
+    Status
+  },
   props: {
-    resource: {
-      type: Object,
-      required: true
+    details: {
+      type: Array,
+      default: () => []
     },
-    size: {
-      type: String,
-      default: 'small'
+    nsp: {
+      type: Object,
+      default: () => {}
     }
   }
 }
 </script>
+
+<style scoped>
+</style>

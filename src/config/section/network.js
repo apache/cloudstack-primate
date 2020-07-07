@@ -31,6 +31,7 @@ export default {
       resourceType: 'Network',
       columns: ['name', 'state', 'type', 'cidr', 'ip6cidr', 'broadcasturi', 'account', 'zonename'],
       details: ['name', 'id', 'description', 'type', 'traffictype', 'vpcid', 'vlan', 'broadcasturi', 'cidr', 'ip6cidr', 'netmask', 'gateway', 'ispersistent', 'restartrequired', 'reservediprange', 'redundantrouter', 'networkdomain', 'zonename', 'account', 'domain'],
+      searchFilters: ['keyword', 'zoneid', 'domainid', 'account', 'tags'],
       related: [{
         name: 'vm',
         title: 'label.instances',
@@ -113,6 +114,7 @@ export default {
       resourceType: 'Vpc',
       columns: ['name', 'state', 'displaytext', 'cidr', 'account', 'zonename'],
       details: ['name', 'id', 'displaytext', 'cidr', 'networkdomain', 'ispersistent', 'redundantvpcrouter', 'restartrequired', 'zonename', 'account', 'domain'],
+      searchFilters: ['name', 'zoneid', 'domainid', 'account', 'tags'],
       related: [{
         name: 'vm',
         title: 'label.instances',
@@ -281,7 +283,7 @@ export default {
       icon: 'gateway',
       hidden: true,
       permission: ['listPrivateGateways'],
-      columns: ['ipaddress', 'state', 'gateway', 'netmask', 'account', 'domain'],
+      columns: ['ipaddress', 'state', 'gateway', 'netmask', 'account'],
       details: ['ipaddress', 'gateway', 'netmask', 'vlan', 'sourcenatsupported', 'aclid', 'account', 'domain', 'zone'],
       tabs: [{
         name: 'details',
@@ -552,8 +554,9 @@ export default {
       title: 'label.vpncustomergatewayid',
       icon: 'lock',
       permission: ['listVpnCustomerGateways'],
-      columns: ['name', 'gateway', 'cidrlist', 'ipsecpsk', 'account', 'domain'],
+      columns: ['name', 'gateway', 'cidrlist', 'ipsecpsk', 'account'],
       details: ['name', 'id', 'gateway', 'cidrlist', 'ipsecpsk', 'ikepolicy', 'ikelifetime', 'esppolicy', 'esplifetime', 'dpd', 'forceencap', 'account', 'domain'],
+      searchFilters: ['keyword', 'domainid', 'account'],
       actions: [
         {
           api: 'createVpnCustomerGateway',

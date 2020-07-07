@@ -21,8 +21,9 @@ export default {
   icon: 'schedule',
   docHelp: 'adminguide/events.html',
   permission: ['listEvents'],
-  columns: ['username', 'description', 'state', 'level', 'type', 'account', 'domain', 'created'],
+  columns: ['level', 'type', 'state', 'description', 'username', 'account', 'domain', 'created'],
   details: ['username', 'id', 'description', 'state', 'level', 'type', 'account', 'domain', 'created'],
+  searchFilters: ['level', 'domainid', 'account', 'keyword'],
   related: [{
     name: 'event',
     title: 'label.event.timeline',
