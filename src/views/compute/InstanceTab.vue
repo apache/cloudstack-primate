@@ -119,18 +119,18 @@
         <DetailSettings :resource="resource" :loading="loading" />
       </a-tab-pane>
       <a-tab-pane :tab="$t('label.vm.snapshots')" key="snapshots" v-if="'listVMSnapshot' in $store.getters.apis">
-        <ListApiView
+        <ListResourceTable
           apiName="listVMSnapshot"
           :params="{virtualmachineid: this.resource.id}"
           :columns="['name', 'type', 'state', 'created']"
-          :routerLink="{name: 'name', prefix: '/vmsnapshot/'}"/>
+          :routerlink="{name: 'name', prefix: '/vmsnapshot/'}"/>
       </a-tab-pane>
       <a-tab-pane :tab="$t('label.backup')" key="backups" v-if="'listBackups' in $store.getters.apis">
-        <ListApiView
+        <ListResourceTable
           apiName="listBackups"
           :params="{virtualmachineid: this.resource.id}"
           :columns="['id', 'type', 'status', 'created']"
-          :routerLink="{name: 'id', prefix: '/backup/'}"/>
+          :routerlink="{name: 'id', prefix: '/backup/'}"/>
       </a-tab-pane>
     </a-tabs>
 
@@ -217,7 +217,7 @@ import Status from '@/components/widgets/Status'
 import DetailsTab from '@/components/view/DetailsTab'
 import DetailSettings from '@/components/view/DetailSettings'
 import NicsTable from '@/views/network/NicsTable'
-import ListApiView from '@/components/view/ListApiView'
+import ListResourceTable from '@/components/view/ListResourceTable'
 
 export default {
   name: 'InstanceTab',
@@ -227,7 +227,7 @@ export default {
     DetailSettings,
     NicsTable,
     Status,
-    ListApiView
+    ListResourceTable
   },
   mixins: [mixinDevice],
   props: {

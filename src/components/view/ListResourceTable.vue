@@ -23,13 +23,15 @@
     :rowKey="item => item.id"
     :loading="loading"
     :pagination="false" >
-    <template v-if="routerLink" :slot="routerLink.name" slot-scope="text, item">
-      <router-link :to="{ path: routerLink.prefix + item.id }" v-if="routerLink">{{ text }}</router-link>
+
+    <template v-if="routerlink" :slot="routerlink.name" slot-scope="text, item">
+      <router-link :to="{ path: routerlink.prefix + item.id }" v-if="routerlink.prefix">{{ text }}</router-link>
       <span v-else>{{ text }}</span>
     </template>
     <template slot="state" slot-scope="text">
       <status :text="text ? text : ''" />{{ text }}
     </template>
+
   </a-table>
 </template>
 
@@ -38,7 +40,7 @@ import { api } from '@/api'
 import Status from '@/components/widgets/Status'
 
 export default {
-  name: 'ListApiView',
+  name: 'ListResourceTable',
   components: {
     Status
   },
@@ -47,7 +49,7 @@ export default {
       type: String,
       required: true
     },
-    routerLink: {
+    routerlink: {
       type: Object,
       default: () => {}
     },
