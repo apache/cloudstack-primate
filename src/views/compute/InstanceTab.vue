@@ -115,10 +115,7 @@
           </span>
         </NicsTable>
       </a-tab-pane>
-      <a-tab-pane :tab="$t('label.settings')" key="settings">
-        <DetailSettings :resource="resource" :loading="loading" />
-      </a-tab-pane>
-      <a-tab-pane :tab="$t('label.vm.snapshots')" key="snapshots" v-if="'listVMSnapshot' in $store.getters.apis">
+      <a-tab-pane :tab="$t('label.vm.snapshots')" key="vmsnapshots" v-if="'listVMSnapshot' in $store.getters.apis">
         <ListResourceTable
           apiName="listVMSnapshot"
           :params="{virtualmachineid: this.resource.id}"
@@ -131,6 +128,9 @@
           :params="{virtualmachineid: this.resource.id}"
           :columns="['id', 'state', 'type', 'created']"
           :routerlink="{name: 'id', prefix: '/backup/'}"/>
+      </a-tab-pane>
+      <a-tab-pane :tab="$t('label.settings')" key="settings">
+        <DetailSettings :resource="resource" :loading="loading" />
       </a-tab-pane>
     </a-tabs>
 
