@@ -49,7 +49,7 @@
             </a-tag>
           </template>
           <template slot="state" slot-scope="text">
-            <status :text="text ? text : ''" displayText />
+            <status :text="text ? text : ''" />{{ text }}
           </template>
           <template slot="size" slot-scope="text, item">
             {{ parseFloat(item.size / (1024.0 * 1024.0 * 1024.0)).toFixed(2) }} GB
@@ -117,6 +117,20 @@
       </a-tab-pane>
       <a-tab-pane :tab="$t('label.settings')" key="settings">
         <DetailSettings :resource="resource" :loading="loading" />
+      </a-tab-pane>
+      <a-tab-pane :tab="$t('label.vm.snapshots')" key="snapshots" v-if="'listVMSnapshot' in $store.getters.apis">
+        <ListApiView
+          apiName="listVMSnapshot"
+          :params="{virtualmachineid: this.resource.id}"
+          :columns="['name', 'type', 'state', 'created']"
+          :routerLink="{name: 'name', prefix: '/vmsnapshot/'}"/>
+      </a-tab-pane>
+      <a-tab-pane :tab="$t('label.backup')" key="backups" v-if="'listBackups' in $store.getters.apis">
+        <ListApiView
+          apiName="listBackups"
+          :params="{virtualmachineid: this.resource.id}"
+          :columns="['id', 'type', 'status', 'created']"
+          :routerLink="{name: 'id', prefix: '/backup/'}"/>
       </a-tab-pane>
     </a-tabs>
 
@@ -203,6 +217,7 @@ import Status from '@/components/widgets/Status'
 import DetailsTab from '@/components/view/DetailsTab'
 import DetailSettings from '@/components/view/DetailSettings'
 import NicsTable from '@/views/network/NicsTable'
+import ListApiView from '@/components/view/ListApiView'
 
 export default {
   name: 'InstanceTab',
@@ -211,7 +226,8 @@ export default {
     DetailsTab,
     DetailSettings,
     NicsTable,
-    Status
+    Status,
+    ListApiView
   },
   mixins: [mixinDevice],
   props: {
