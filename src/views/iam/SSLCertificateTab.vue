@@ -182,7 +182,7 @@ export default {
       params.id = row.id
 
       // show loading
-      const message = `${this.$t('label.delete.certificate')} ${this.$t('label.in.progress')} ${this.$t('label.for')} ${row.name}`
+      const message = `${this.$t('label.delete.certificate')} ${this.$t('label.in.progress.for')} ${row.name}`
       const loading = this.$message.loading(message, 0)
 
       api('deleteSslCert', params).then(json => {

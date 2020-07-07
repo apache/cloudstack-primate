@@ -178,8 +178,8 @@ export default {
                 })
                 this.closeAction()
               },
-              loadingMessage: `${title} in progress for ${description}`,
-              catchMessage: 'Error encountered while fetching async job result'
+              loadingMessage: `${title} ${this.$t('label.in.progress.for')} ${description}`,
+              catchMessage: this.$t('error.fetching.async.job.result')
             })
           }
         }).catch(error => {

@@ -76,7 +76,7 @@
                     rules: [{
                       type: 'object',
                       required: true,
-                      message: 'Please select time'
+                      message: $t('message.error.time')
                     }]
                   }]" />
               </a-form-item>
@@ -119,7 +119,7 @@
                   <a-input-number
                     style="width: 100%"
                     v-decorator="['maxsnaps', {
-                      rules: [{ required: true, message: 'Please enter input'}]
+                      rules: [{ required: true, message: $t('message.error.required.input')}]
                     }]"
                     :min="1"
                     :max="8" />
@@ -365,8 +365,8 @@ export default {
         api('createSnapshotPolicy', params).then(json => {
           this.$emit('refresh')
           this.$notification.success({
-            message: 'Recurring Snapshots',
-            description: 'Successfully recurring snapshots'
+            message: this.$t('label.action.recurring.snapshot'),
+            description: this.$t('message.success.recurring.snapshot')
           })
           this.resetForm()
         }).catch(error => {

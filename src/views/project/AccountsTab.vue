@@ -60,7 +60,7 @@
           :current="page"
           :pageSize="pageSize"
           :total="itemCount"
-          :showTotal="total => `Total ${total} items`"
+          :showTotal="total => `${this.$t('label.total')} ${total} ${this.$t('label.items')}`"
           :pageSizeOptions="['10', '20', '40', '80', '100']"
           @change="changePage"
           @showSizeChange="changePageSize"
@@ -168,7 +168,7 @@ export default {
     },
     onMakeProjectOwner (record) {
       const title = this.$t('label.make.project.owner')
-      const loading = this.$message.loading(title + 'in progress for ' + record.account, 0)
+      const loading = this.$message.loading(title + `${this.$t('label.in.progress.for')} ` + record.account, 0)
       const params = {}
 
       params.id = this.resource.id
@@ -204,7 +204,7 @@ export default {
     },
     removeAccount (record) {
       const title = this.$t('label.remove.project.account')
-      const loading = this.$message.loading(title + 'in progress for ' + record.account, 0)
+      const loading = this.$message.loading(title + `${this.$t('label.in.progress.for')} ` + record.account, 0)
       const params = {}
 
       params.account = record.account
