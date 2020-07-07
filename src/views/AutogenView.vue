@@ -49,7 +49,7 @@
                   style="min-width: 100px; margin-left: 10px"
                   @change="changeFilter">
                   <a-icon slot="suffixIcon" type="filter" />
-                  <a-select-option v-if="['Admin'].includes($store.getters.userInfo.roletype) || $route.name === 'vm'" key="all">
+                  <a-select-option v-if="['Admin', 'DomainAdmin'].includes($store.getters.userInfo.roletype) || $route.name === 'vm'" key="all">
                     {{ $t('label.all') }}
                   </a-select-option>
                   <a-select-option v-for="filter in $route.meta.filters" :key="filter">
