@@ -122,14 +122,14 @@
         <ListResourceTable
           apiName="listVMSnapshot"
           :params="{virtualmachineid: this.resource.id}"
-          :columns="['name', 'type', 'state', 'created']"
+          :columns="['name', 'state', 'type', 'created']"
           :routerlink="{name: 'name', prefix: '/vmsnapshot/'}"/>
       </a-tab-pane>
       <a-tab-pane :tab="$t('label.backup')" key="backups" v-if="'listBackups' in $store.getters.apis">
         <ListResourceTable
           apiName="listBackups"
           :params="{virtualmachineid: this.resource.id}"
-          :columns="['id', 'type', 'status', 'created']"
+          :columns="['id', 'state', 'type', 'created']"
           :routerlink="{name: 'id', prefix: '/backup/'}"/>
       </a-tab-pane>
     </a-tabs>
