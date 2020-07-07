@@ -99,7 +99,13 @@ export default {
           icon: 'share-alt',
           label: 'label.action.template.share',
           dataView: true,
-          args: ['ispublic', 'isfeatured', 'isextractable']
+          args: ['ispublic', 'isfeatured', 'isextractable'],
+          show: (record, store) => {
+            return (['Admin'].includes(store.userInfo.roletype) ||
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+              record.templatetype !== 'SYSTEM' &&
+              record.isready
+          }
         },
         {
           api: 'extractTemplate',
@@ -204,7 +210,13 @@ export default {
           icon: 'share-alt',
           label: 'label.action.iso.share',
           dataView: true,
-          args: ['ispublic', 'isfeatured', 'isextractable']
+          args: ['ispublic', 'isfeatured', 'isextractable'],
+          show: (record, store) => {
+            return (['Admin'].includes(store.userInfo.roletype) ||
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+              !(record.account === 'SYSTEM' && record.domainid === 1) &&
+              record.isready
+          }
         },
         {
           api: 'extractIso',
