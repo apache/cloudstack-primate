@@ -687,6 +687,8 @@ export default {
       }
       this.currentAction = action
       this.currentAction.params = store.getters.apis[this.currentAction.api].params
+      this.resource = action.resource
+      this.$emit('change-resource', this.resource)
       var paramFields = this.currentAction.params
       paramFields.sort(function (a, b) {
         if (a.name === 'name' && b.name !== 'name') { return -1 }
@@ -737,7 +739,6 @@ export default {
       if (this.currentAction.mapping && param.name in this.currentAction.mapping && !this.currentAction.mapping[param.name].api) {
         return
       }
-      const resource = this.currentAction.resource ? this.currentAction.resource : this.resource
       var paramName = param.name
       var extractedParamName = paramName.replace('ids', '').replace('id', '').toLowerCase()
       var params = { listall: true }
@@ -746,7 +747,7 @@ export default {
       if (this.currentAction.mapping && param.name in this.currentAction.mapping && this.currentAction.mapping[param.name].api) {
         possibleApi = this.currentAction.mapping[param.name].api
         if (this.currentAction.mapping[param.name].params) {
-          const customParams = this.currentAction.mapping[param.name].params(resource)
+          const customParams = this.currentAction.mapping[param.name].params(this.resource)
           if (customParams) {
             params = { ...params, ...customParams }
           }
@@ -822,7 +823,6 @@ export default {
     },
     fillEditFormFieldValues () {
       const form = this.form
-      const resource = this.currentAction.resource ? this.currentAction.resource : this.resource
       this.currentAction.paramFields.map(field => {
         let fieldValue = null
         let fieldName = null
@@ -831,7 +831,7 @@ export default {
         } else {
           fieldName = field.name
         }
-        fieldValue = resource[fieldName] ? resource[fieldName] : null
+        fieldValue = this.resource[fieldName] ? this.resource[fieldName] : null
         if (fieldValue) {
           form.getFieldDecorator(field.name, { initialValue: fieldValue })
           this.formModel[field.name] = fieldValue
@@ -866,11 +866,10 @@ export default {
       e.preventDefault()
       this.form.validateFields((err, values) => {
         console.log(values)
-        const resource = this.currentAction.resource ? this.currentAction.resource : this.resource
         if (!err) {
           const params = {}
-          if ('id' in resource && this.currentAction.params.map(i => { return i.name }).includes('id')) {
-            params.id = resource.id
+          if ('id' in this.resource && this.currentAction.params.map(i => { return i.name }).includes('id')) {
+            params.id = this.resource.id
           }
           for (const key in values) {
             const input = values[key]
@@ -912,15 +911,15 @@ export default {
               if (!this.currentAction.mapping[key].value) {
                 continue
               }
-              params[key] = this.currentAction.mapping[key].value(resource, params)
+              params[key] = this.currentAction.mapping[key].value(this.resource, params)
             }
           }
 
           console.log(this.currentAction)
-          console.log(resource)
+          console.log(this.resource)
           console.log(params)
 
-          const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username || params.ipaddress || params.virtualmachinename || resource.name
+          const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username || params.ipaddress || params.virtualmachinename || this.resource.name
 
           var hasJobId = false
           this.actionLoading = true
