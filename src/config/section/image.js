@@ -32,7 +32,7 @@ export default {
       resourceType: 'Template',
       filters: ['self', 'shared', 'featured', 'community'],
       columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain', 'order'],
-      details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'directdownload', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created'],
+      details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'sshkeyenabled', 'directdownload', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created'],
       related: [{
         name: 'vm',
         title: 'label.instances',
