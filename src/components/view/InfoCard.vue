@@ -455,7 +455,8 @@
           <div class="resource-detail-item__label">{{ $t('label.account') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="user" />
-            <router-link :to="{ path: '/account', query: { name: resource.account, domainid: resource.domainid } }">{{ resource.account }}</router-link>
+            <router-link v-if="$store.getters.userInfo.roletype !== 'User'" :to="{ path: '/account', query: { name: resource.account, domainid: resource.domainid } }">{{ resource.account }}</router-link>
+            <span v-else>{{ resource.account }}</span>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.roleid">
@@ -470,7 +471,7 @@
           <div class="resource-detail-item__label">{{ $t('label.domain') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="block" />
-            <router-link v-if="$router.resolve('/domain/' + resource.domainid).route.name !== '404'" :to="{ path: '/domain/' + resource.domainid }">{{ resource.domain || resource.domainid }}</router-link>
+            <router-link v-if="$store.getters.userInfo.roletype !== 'User'" :to="{ path: '/domain/' + resource.domainid }">{{ resource.domain || resource.domainid }}</router-link>
             <span v-else>{{ resource.domain || resource.domainid }}</span>
           </div>
         </div>
@@ -679,10 +680,6 @@ export default {
   watch: {
     resource: function (newItem, oldItem) {
       this.resource = newItem
-      if (newItem.id === oldItem.id) {
-        return
-      }
-
       this.resourceType = this.$route.meta.resourceType
       this.annotationType = ''
       this.showKeys = false
@@ -705,8 +702,7 @@ export default {
 
       if ('tags' in this.resource) {
         this.tags = this.resource.tags
-      }
-      if (this.resourceType) {
+      } else if (this.resourceType) {
         this.getTags()
       }
       if (this.annotationType) {
@@ -744,7 +740,15 @@ export default {
         return
       }
       this.tags = []
-      api('listTags', { listall: true, resourceid: this.resource.id, resourcetype: this.resourceType }).then(json => {
+      const params = {
+        listall: true,
+        resourceid: this.resource.id,
+        resourcetype: this.resourceType
+      }
+      if (this.$route.meta.name === 'project') {
+        params.projectid = this.resource.id
+      }
+      api('listTags', params).then(json => {
         if (json.listtagsresponse && json.listtagsresponse.tag) {
           this.tags = json.listtagsresponse.tag
         }

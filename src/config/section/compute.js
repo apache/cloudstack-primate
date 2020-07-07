@@ -63,15 +63,6 @@ export default {
       },
       searchFilters: ['name', 'zoneid', 'domainid', 'account', 'tags'],
       details: ['displayname', 'name', 'id', 'state', 'ipaddress', 'templatename', 'ostypename', 'serviceofferingname', 'isdynamicallyscalable', 'haenable', 'hypervisor', 'boottype', 'bootmode', 'account', 'domain', 'zonename'],
-      related: [{
-        name: 'vmsnapshot',
-        title: 'label.vm.snapshots',
-        param: 'virtualmachineid'
-      }, {
-        name: 'backup',
-        title: 'label.backup',
-        param: 'virtualmachineid'
-      }],
       tabs: [{
         component: () => import('@/views/compute/InstanceTab.vue')
       }],
@@ -414,7 +405,14 @@ export default {
       icon: kubernetes,
       docHelp: 'plugins/cloudstack-kubernetes-service.html',
       permission: ['listKubernetesClusters'],
-      columns: ['name', 'state', 'size', 'cpunumber', 'memory', 'account', 'zonename'],
+      columns: () => {
+        var fields = ['name', 'state', 'size', 'cpunumber', 'memory']
+        if (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype)) {
+          fields.push('account')
+        }
+        fields.push('zonename')
+        return fields
+      },
       details: ['name', 'description', 'zonename', 'kubernetesversionname', 'size', 'masternodes', 'cpunumber', 'memory', 'keypair', 'associatednetworkname', 'account', 'domain', 'zonename'],
       tabs: [{
         name: 'k8s',
@@ -482,7 +480,7 @@ export default {
       icon: 'gold',
       docHelp: 'adminguide/virtual_machines.html#changing-the-vm-name-os-or-group',
       permission: ['listInstanceGroups'],
-      columns: ['name', 'account', 'domain'],
+      columns: ['name', 'account'],
       details: ['name', 'id', 'account', 'domain', 'created'],
       related: [{
         name: 'vm',
@@ -518,7 +516,13 @@ export default {
       icon: 'key',
       docHelp: 'adminguide/virtual_machines.html#using-ssh-keys-for-authentication',
       permission: ['listSSHKeyPairs'],
-      columns: ['name', 'fingerprint', 'account', 'domain'],
+      columns: () => {
+        var fields = ['name', 'fingerprint']
+        if (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype)) {
+          fields.push('account')
+        }
+        return fields
+      },
       details: ['name', 'fingerprint', 'account', 'domain'],
       related: [{
         name: 'vm',
@@ -561,7 +565,13 @@ export default {
       icon: 'swap',
       docHelp: 'adminguide/virtual_machines.html#affinity-groups',
       permission: ['listAffinityGroups'],
-      columns: ['name', 'type', 'description', 'account', 'domain'],
+      columns: () => {
+        var fields = ['name', 'type', 'description']
+        if (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype)) {
+          fields.push('account')
+        }
+        return fields
+      },
       details: ['name', 'id', 'description', 'type', 'account', 'domain'],
       related: [{
         name: 'vm',
