@@ -70,8 +70,8 @@
             <a-popconfirm
               :title="$t('label.set.default.nic')"
               @confirm="setAsDefault(record.nic)"
-              okText="Yes"
-              cancelText="No"
+              :okText="$t('label.yes')"
+              :cancelText="$t('label.no')"
               v-if="!record.nic.isdefault"
             >
               <a-button
@@ -102,8 +102,8 @@
             <a-popconfirm
               :title="$t('message.network.removenic')"
               @confirm="removeNIC(record.nic)"
-              okText="Yes"
-              cancelText="No"
+              :okText="$t('label.yes')"
+              :cancelText="$t('label.no')"
               v-if="!record.nic.isdefault"
             >
               <a-button
@@ -166,10 +166,10 @@
         {{ $t('message.network.secondaryip') }}
       </p>
       <a-divider />
-      <a-input placeholder="Enter new secondary IP address" v-model="newSecondaryIp"></a-input>
+      <a-input :placeholder="$t('label.new.secondaryip.description')" v-model="newSecondaryIp"></a-input>
       <div style="margin-top: 10px; display: flex; justify-content:flex-end;">
-        <a-button @click="submitSecondaryIP" type="primary" style="margin-right: 10px;">Add Secondary IP</a-button>
-        <a-button @click="closeModals">Close</a-button>
+        <a-button @click="submitSecondaryIP" type="primary" style="margin-right: 10px;">{{ $t('label.add.secondary.ip') }}</a-button>
+        <a-button @click="closeModals">{{ $t('label.close') }}</a-button>
       </div>
 
       <a-divider />
@@ -178,8 +178,8 @@
           <a-popconfirm
             :title="`${$t('label.action.release.ip')}?`"
             @confirm="removeSecondaryIP(ip.id)"
-            okText="Yes"
-            cancelText="No"
+            :okText="$t('label.yes')"
+            :cancelText="$t('label.no')"
           >
             <a-button
               type="danger"
@@ -376,17 +376,17 @@ export default {
       }).then(response => {
         this.$pollJob({
           jobId: response.updatedefaultnicforvirtualmachineresponse.jobid,
-          successMessage: `Successfully set ${item.networkname} to default. Please manually update the default NIC on the VM now.`,
+          successMessage: `${this.$t('label.success.set')} ${item.networkname} ${this.$t('label.to.default')}. ${this.$t('message.set.default.nic.manual')}.`,
           successMethod: () => {
             this.loadingNic = false
             this.parentFetchData()
           },
-          errorMessage: `Error setting ${item.networkname} to default`,
+          errorMessage: `${this.$t('label.error.setting')} ${item.networkname} ${this.$t('label.to.default')}`,
           errorMethod: () => {
             this.loadingNic = false
             this.parentFetchData()
           },
-          loadingMessage: `Setting ${item.networkname} to default...`,
+          loadingMessage: `${this.$t('label.setting')} ${item.networkname} ${this.$t('label.to.default')}...`,
           catchMessage: this.$t('error.fetching.async.job.result'),
           catchMethod: () => {
             this.loadingNic = false

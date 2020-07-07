@@ -86,7 +86,7 @@
         <a-form-item :label="$t('label.volumechecksum')">
           <a-input
             v-decorator="['checksum']"
-            placeholder="Use the hash that you created at the start of the volume upload procedure"
+            :placeholder="$t('label.volumechecksum.description')"
           />
         </a-form-item>
         <div :span="24" class="action-button">

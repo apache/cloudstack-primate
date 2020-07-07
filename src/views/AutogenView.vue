@@ -302,7 +302,7 @@
         :current="page"
         :pageSize="pageSize"
         :total="itemCount"
-        :showTotal="total => `Showing ${Math.min(total, 1+((page-1)*pageSize))}-${Math.min(page*pageSize, total)} of ${total} items`"
+        :showTotal="total => `${$t('label.showing')} ${Math.min(total, 1+((page-1)*pageSize))}-${Math.min(page*pageSize, total)} ${$t('label.of')} ${total} ${$t('label.items')}`"
         :pageSizeOptions="device === 'desktop' ? ['20', '50', '100', '500'] : ['10', '20', '50', '100', '500']"
         @change="changePage"
         @showSizeChange="changePageSize"
@@ -431,7 +431,7 @@ export default {
         const project = json.listprojectsresponse.project[0]
         this.$store.dispatch('SetProject', project)
         this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
-        this.$message.success(`Switched to "${project.name}"`)
+        this.$message.success(`${this.$t('message.switch.to')} "${project.name}"`)
         const query = Object.assign({}, this.$route.query)
         delete query.projectid
         this.$router.replace({ query })
@@ -814,7 +814,7 @@ export default {
         },
         errorMethod: () => this.fetchData(),
         loadingMessage: `${this.$t(action.label)} - ${resourceName}`,
-        catchMessage: 'Error encountered while fetching async job result',
+        catchMessage: this.$t('error.fetching.async.job.result'),
         action
       })
     },

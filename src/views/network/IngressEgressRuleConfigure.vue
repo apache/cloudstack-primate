@@ -103,8 +103,8 @@
         <a-popconfirm
           :title="$t('label.delete') + '?'"
           @confirm="handleDeleteRule(record)"
-          okText="Yes"
-          cancelText="No"
+          :okText="$t('label.yes')"
+          :cancelText="$t('label.no')"
         >
           <a-button :disabled="!('revokeSecurityGroupIngress' in $store.getters.apis) && !('revokeSecurityGroupEgress' in $store.getters.apis)" shape="circle" type="danger" icon="delete" class="rule-action" />
         </a-popconfirm>

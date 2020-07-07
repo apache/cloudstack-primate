@@ -194,9 +194,9 @@ export default {
 
       this.$confirm({
         title: title,
-        okText: 'OK',
+        okText: this.$t('label.ok'),
         okType: 'danger',
-        cancelText: 'Cancel',
+        cancelText: this.$t('label.cancel'),
         onOk () {
           self.removeAccount(record)
         }
