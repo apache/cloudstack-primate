@@ -493,6 +493,7 @@ export default {
         }).finally(() => {
           this.parentFetchData()
           this.fetchData()
+          this.fetchLoading = false
         })
       })
     },
