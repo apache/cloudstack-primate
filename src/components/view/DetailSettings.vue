@@ -219,6 +219,7 @@ export default {
         this.error = 'Must provide a valid key and value for setting'
         return
       }
+      this.error = false
       this.details.push({ name: this.newKey, value: this.newValue })
       this.runApi()
     },
