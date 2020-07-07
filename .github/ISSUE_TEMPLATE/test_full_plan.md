@@ -145,6 +145,8 @@ Note: for User role test exclude after Account/User feature, for DomainAdmin rol
 | | | | |
 | **Storage > VM Snapshots** | | | |
 | | | | |
+| **Storage > Backups** | | | |
+| | | | |
 | **Network > Guest networks** | | | |
 | Basic search | | | |
 | Extended search | | | |
