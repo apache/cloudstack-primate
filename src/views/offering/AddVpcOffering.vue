@@ -25,14 +25,14 @@
         <a-form-item :label="$t('label.name')">
           <a-input
             v-decorator="['name', {
-              rules: [{ required: true, message: 'Please enter name' }]
+              rules: [{ required: true, message: $t('message.error.name') }]
             }]"
             :placeholder="this.$t('label.name')"/>
         </a-form-item>
         <a-form-item :label="$t('label.displaytext')">
           <a-input
             v-decorator="['displaytext', {
-              rules: [{ required: true, message: 'Please enter description' }]
+              rules: [{ required: true, message: $t('message.error.description') }]
             }]"
             :placeholder="this.$t('label.displaytext')"/>
         </a-form-item>
@@ -96,7 +96,7 @@
                 {
                   validator: (rule, value, callback) => {
                     if (value && value.length > 1 && value.indexOf(0) !== -1) {
-                      callback('All Zones cannot be combined with any other zone')
+                      callback($t('message.error.zone.combined'))
                     }
                     callback()
                   }
@@ -366,7 +366,7 @@ export default {
           params.supportedservices = ''
         }
         api('createVPCOffering', params).then(json => {
-          this.$message.success('VPC offering created: ' + values.name)
+          this.$message.success(`${this.$t('message.create.vpc.offering')}: ` + values.name)
         }).catch(error => {
           this.$notifyError(error)
         }).finally(() => {

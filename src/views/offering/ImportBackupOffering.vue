@@ -24,13 +24,13 @@
       <a-form-item :label="$t('label.name')">
         <a-input
           v-decorator="['name', {
-            rules: [{ required: true, message: 'Please enter input' }]
+            rules: [{ required: true, message: $t('message.error.required.input') }]
           }]"/>
       </a-form-item>
       <a-form-item :label="$t('label.description')">
         <a-input
           v-decorator="['description', {
-            rules: [{ required: true, message: 'Please enter input' }]
+            rules: [{ required: true, message: $t('message.error.required.input') }]
           }]"/>
       </a-form-item>
       <a-form-item :label="$t('label.zoneid')">
@@ -142,7 +142,7 @@ export default {
         }
         params.allowuserdrivenbackups = values.allowuserdrivenbackups ? values.allowuserdrivenbackups : false
         this.loading = true
-        const title = 'Import Offering'
+        const title = this.$t('label.import.offering')
         api('importBackupOffering', params).then(json => {
           const jobId = json.importbackupofferingresponse.jobid
           if (jobId) {
@@ -159,8 +159,8 @@ export default {
                 this.parentFetchData()
                 this.closeAction()
               },
-              loadingMessage: `${title} in progress for ${params.name}`,
-              catchMessage: 'Error encountered while fetching async job result'
+              loadingMessage: `${title} ${this.$t('label.in.progess')} ${this.$t('label.for')} ${params.name}`,
+              catchMessage: this.$t('error.fetching.async.job.result')
             })
           }
         }).catch(error => {

@@ -496,7 +496,7 @@
                 {
                   validator: (rule, value, callback) => {
                     if (value && value.length > 1 && value.indexOf(0) !== -1) {
-                      callback(this.$t('label.error.zone.combined'))
+                      callback(this.$t('message.error.zone.combined'))
                     }
                     callback()
                   }
@@ -832,7 +832,10 @@ export default {
           params.zoneid = zoneId
         }
         api('createServiceOffering', params).then(json => {
-          this.$message.success((this.isSystem ? 'Service offering created: ' : 'Compute offering created: ') + values.name)
+          const message = this.isSystem
+            ? `${this.$t('message.create.service.offering')}: `
+            : `${this.$t('message.create.compute.offering')}: `
+          this.$message.success(message + values.name)
         }).catch(error => {
           this.$notifyError(error)
         }).finally(() => {

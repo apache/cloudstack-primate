@@ -278,7 +278,7 @@
                 {
                   validator: (rule, value, callback) => {
                     if (value && value.length > 1 && value.indexOf(0) !== -1) {
-                      callback(this.$t('label.error.zone.combined'))
+                      callback(this.$t('message.error.zone.combined'))
                     }
                     callback()
                   }
