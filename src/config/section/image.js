@@ -16,11 +16,13 @@
 // under the License.
 
 import kubernetes from '@/assets/icons/kubernetes.svg?inline'
+import store from '@/store'
 
 export default {
   name: 'image',
   title: 'label.images',
   icon: 'picture',
+  docHelp: 'adminguide/templates.html',
   children: [
     {
       name: 'template',
@@ -30,8 +32,18 @@ export default {
       params: { templatefilter: 'self', showunique: 'true' },
       resourceType: 'Template',
       filters: ['self', 'shared', 'featured', 'community'],
-      columns: ['name', 'ostypename', 'status', 'hypervisor', 'account', 'domain', 'order'],
-      details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'directdownload', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created'],
+      columns: () => {
+        var fields = ['name', 'hypervisor', 'ostypename']
+        if (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype)) {
+          fields.push('account')
+        }
+        if (['Admin'].includes(store.getters.userInfo.roletype)) {
+          fields.push('order')
+        }
+        return fields
+      },
+      details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'sshkeyenabled', 'directdownload', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created'],
+      searchFilters: ['name', 'zoneid', 'tags'],
       related: [{
         name: 'vm',
         title: 'label.instances',
@@ -52,6 +64,7 @@ export default {
           api: 'registerTemplate',
           icon: 'plus',
           label: 'label.action.register.template',
+          docHelp: 'adminguide/templates.html#uploading-templates-from-a-remote-http-server',
           listView: true,
           popup: true,
           component: () => import('@/views/image/RegisterOrUploadTemplate.vue')
@@ -60,6 +73,7 @@ export default {
           api: 'registerTemplate',
           icon: 'cloud-upload',
           label: 'label.upload.template.from.local',
+          docHelp: 'adminguide/templates.html#uploading-templates-and-isos-from-a-local-computer',
           listView: true,
           popup: true,
           component: () => import('@/views/image/RegisterOrUploadTemplate.vue')
@@ -69,15 +83,47 @@ export default {
           icon: 'edit',
           label: 'label.edit',
           dataView: true,
-          args: ['name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable', 'isrouting']
+          show: (record, store) => {
+            return (['Admin'].includes(store.userInfo.roletype) ||
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+              record.templatetype !== 'SYSTEM' &&
+              record.isready
+          },
+          args: (record, store) => {
+            var fields = ['name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable']
+            if (['Admin'].includes(store.userInfo.roletype)) {
+              fields.push('isrouting')
+            }
+            return fields
+          }
+        },
+        {
+          api: 'updateTemplatePermissions',
+          icon: 'share-alt',
+          label: 'label.action.template.share',
+          dataView: true,
+          args: ['ispublic', 'isfeatured', 'isextractable'],
+          show: (record, store) => {
+            return (['Admin'].includes(store.userInfo.roletype) ||
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+              record.templatetype !== 'SYSTEM' &&
+              record.isready
+          }
         },
         {
           api: 'extractTemplate',
           icon: 'cloud-download',
           label: 'label.action.download.template',
           message: 'message.action.download.template',
+          docHelp: 'adminguide/templates.html#exporting-templates',
           dataView: true,
-          show: (record) => { return record && record.isextractable },
+          show: (record, store) => {
+            return (['Admin'].includes(store.userInfo.roletype) ||
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+              record.templatetype !== 'SYSTEM' &&
+              record.isready &&
+              record.isextractable
+          },
           args: ['zoneid', 'mode'],
           mapping: {
             zoneid: {
@@ -92,10 +138,16 @@ export default {
         {
           api: 'updateTemplatePermissions',
           icon: 'reconciliation',
-          label: 'label.action.share.template',
+          label: 'label.action.template.permission',
+          docHelp: 'adminguide/templates.html#sharing-templates-with-other-accounts-projects',
           dataView: true,
           popup: true,
-          show: (record, store) => { return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) || record.templatetype !== 'BUILTIN') },
+          show: (record, store) => {
+            return (['Admin'].includes(store.userInfo.roletype) ||
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+              record.templatetype !== 'SYSTEM' &&
+              record.isready
+          },
           component: () => import('@/views/image/UpdateTemplateIsoPermissions')
         }
       ]
@@ -104,12 +156,20 @@ export default {
       name: 'iso',
       title: 'label.isos',
       icon: 'usb',
+      docHelp: 'adminguide/templates.html#working-with-isos',
       permission: ['listIsos'],
       params: { isofilter: 'self', showunique: 'true' },
       resourceType: 'ISO',
       filters: ['self', 'shared', 'featured', 'community'],
-      columns: ['name', 'ostypename', 'account', 'domain'],
+      columns: () => {
+        var fields = ['name', 'ostypename']
+        if (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype)) {
+          fields.push('account')
+        }
+        return fields
+      },
       details: ['name', 'id', 'displaytext', 'checksum', 'ostypename', 'size', 'bootable', 'isready', 'directdownload', 'isextractable', 'ispublic', 'isfeatured', 'crosszones', 'account', 'domain', 'created'],
+      searchFilters: ['name', 'zoneid', 'tags'],
       related: [{
         name: 'vm',
         title: 'label.instances',
@@ -127,6 +187,7 @@ export default {
           api: 'registerIso',
           icon: 'plus',
           label: 'label.action.register.iso',
+          docHelp: 'adminguide/templates.html#id10',
           listView: true,
           popup: true,
           component: () => import('@/views/image/RegisterOrUploadIso.vue')
@@ -135,6 +196,7 @@ export default {
           api: 'registerIso',
           icon: 'cloud-upload',
           label: 'label.upload.iso.from.local',
+          docHelp: 'adminguide/templates.html#id10',
           listView: true,
           popup: true,
           component: () => import('@/views/image/RegisterOrUploadIso.vue')
@@ -142,17 +204,42 @@ export default {
         {
           api: 'updateIso',
           icon: 'edit',
-          label: 'label.edit',
+          label: 'label.action.edit.iso',
           dataView: true,
-          args: ['name', 'displaytext', 'bootable', 'ostypeid', 'isdynamicallyscalable', 'isrouting']
+          show: (record, store) => {
+            return (['Admin'].includes(store.userInfo.roletype) ||
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+              !(record.account === 'SYSTEM' && record.domainid === 1) &&
+              record.isready
+          },
+          args: ['name', 'displaytext', 'bootable', 'ostypeid']
+        },
+        {
+          api: 'updateIsoPermissions',
+          icon: 'share-alt',
+          label: 'label.action.iso.share',
+          dataView: true,
+          args: ['ispublic', 'isfeatured', 'isextractable'],
+          show: (record, store) => {
+            return (['Admin'].includes(store.userInfo.roletype) ||
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+              !(record.account === 'SYSTEM' && record.domainid === 1) &&
+              record.isready
+          }
         },
         {
           api: 'extractIso',
           icon: 'cloud-download',
           label: 'label.action.download.iso',
           message: 'message.action.download.iso',
+          docHelp: 'adminguide/templates.html#exporting-templates',
           dataView: true,
-          show: (record) => { return record && record.isextractable },
+          show: (record, store) => {
+            return (['Admin'].includes(store.userInfo.roletype) ||
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+              !(record.account === 'SYSTEM' && record.domainid === 1) &&
+              record.isready
+          },
           args: ['zoneid', 'mode'],
           mapping: {
             zoneid: {
@@ -167,11 +254,17 @@ export default {
         {
           api: 'updateIsoPermissions',
           icon: 'reconciliation',
-          label: 'label.action.edit.iso',
+          label: 'label.action.iso.permission',
+          docHelp: 'adminguide/templates.html#sharing-templates-with-other-accounts-projects',
           dataView: true,
           args: ['op', 'accounts', 'projectids'],
           popup: true,
-          show: (record, store) => { return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) || record.templatetype !== 'BUILTIN') },
+          show: (record, store) => {
+            return (['Admin'].includes(store.userInfo.roletype) ||
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+              !(record.account === 'SYSTEM' && record.domainid === 1) &&
+              record.isready
+          },
           component: () => import('@/views/image/UpdateTemplateIsoPermissions')
         }
       ]

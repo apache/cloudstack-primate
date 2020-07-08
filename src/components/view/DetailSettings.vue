@@ -27,7 +27,7 @@
           type="dashed"
           style="width: 100%"
           icon="plus"
-          :disabled="!('updateTemplate' in $store.getters.apis && 'updateVirtualMachine' in $store.getters.apis)"
+          :disabled="!('updateTemplate' in $store.getters.apis && 'updateVirtualMachine' in $store.getters.apis && isAdminOrOwner())"
           @click="showAddDetail = true">
           {{ $t('label.add.setting') }}
         </a-button>
@@ -47,6 +47,7 @@
           :dataSource="detailOptions[newKey]"
           :placeholder="$t('label.value')"
           @change="e => onAddInputChange(e, 'newValue')" />
+        <p v-if="error" style="color: red"> {{ $t(error) }} </p>
         <a-button type="primary" style="width: 25%" icon="plus" @click="addDetail">{{ $t('label.add.setting') }}</a-button>
         <a-button type="dashed" style="width: 25%" icon="close" @click="showAddDetail = false">{{ $t('label.cancel') }}</a-button>
       </div>
@@ -69,7 +70,7 @@
             <span v-else>{{ item.value }}</span>
           </span>
         </a-list-item-meta>
-        <div slot="actions" v-if="!disableSettings && 'updateTemplate' in $store.getters.apis && 'updateVirtualMachine' in $store.getters.apis">
+        <div slot="actions" v-if="!disableSettings && 'updateTemplate' in $store.getters.apis && 'updateVirtualMachine' in $store.getters.apis && isAdminOrOwner()">
           <a-button shape="circle" size="default" @click="updateDetail(index)" v-if="item.edit">
             <a-icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />
           </a-button>
@@ -82,7 +83,7 @@
             v-if="!item.edit"
             @click="showEditDetail(index)" />
         </div>
-        <div slot="actions" v-if="!disableSettings && 'updateTemplate' in $store.getters.apis && 'updateVirtualMachine' in $store.getters.apis">
+        <div slot="actions" v-if="!disableSettings && 'updateTemplate' in $store.getters.apis && 'updateVirtualMachine' in $store.getters.apis && isAdminOrOwner()">
           <a-popconfirm
             title="Delete setting?"
             @confirm="deleteDetail(index)"
@@ -118,7 +119,8 @@ export default {
       newKey: '',
       newValue: '',
       loading: false,
-      resourceType: 'UserVm'
+      resourceType: 'UserVm',
+      error: false
     }
   },
   watch: {
@@ -136,17 +138,17 @@ export default {
       )
     },
     updateResource (resource) {
+      this.details = []
       if (!resource) {
         return
       }
       this.resource = resource
       this.resourceType = this.$route.meta.resourceType
-      if (!resource.details) {
-        return
+      if (resource.details) {
+        this.details = Object.keys(this.resource.details).map(k => {
+          return { name: k, value: this.resource.details[k], edit: false }
+        })
       }
-      this.details = Object.keys(this.resource.details).map(k => {
-        return { name: k, value: this.resource.details[k], edit: false }
-      })
       api('listDetailOptions', { resourcetype: this.resourceType, resourceid: this.resource.id }).then(json => {
         this.detailOptions = json.listdetailoptionsresponse.detailoptions.details
       })
@@ -169,6 +171,11 @@ export default {
     onAddInputChange (val, obj) {
       this[obj] = val
     },
+    isAdminOrOwner () {
+      return ['Admin'].includes(this.$store.getters.userInfo.roletype) ||
+        (this.resource.domainid === this.$store.getters.userInfo.domainid && this.resource.account === this.$store.getters.userInfo.account) ||
+        this.resource.project && this.resource.projectid === this.$store.getters.project.id
+    },
     runApi () {
       var apiName = ''
       if (this.resourceType === 'UserVm') {
@@ -185,15 +192,19 @@ export default {
       }
 
       const params = { id: this.resource.id }
-      this.details.forEach(function (item, index) {
-        params['details[0].' + item.name] = item.value
-      })
+      if (this.details.length === 0) {
+        params.cleanupdetails = true
+      } else {
+        this.details.forEach(function (item, index) {
+          params['details[0].' + item.name] = item.value
+        })
+      }
       this.loading = true
       api(apiName, params).then(json => {
         var details = {}
-        if (this.resourceType === 'UserVm') {
+        if (this.resourceType === 'UserVm' && json.updatevirtualmachineresponse.virtualmachine.details) {
           details = json.updatevirtualmachineresponse.virtualmachine.details
-        } else if (this.resourceType === 'Template') {
+        } else if (this.resourceType === 'Template' && json.updatetemplateresponse.template.details) {
           details = json.updatetemplateresponse.template.details
         }
         this.details = Object.keys(details).map(k => {
@@ -209,6 +220,11 @@ export default {
       })
     },
     addDetail () {
+      if (this.newKey === '' || this.newValue === '') {
+        this.error = 'Must provide a valid key and value for setting'
+        return
+      }
+      this.error = false
       this.details.push({ name: this.newKey, value: this.newValue })
       this.runApi()
     },

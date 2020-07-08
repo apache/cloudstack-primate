@@ -23,21 +23,39 @@
           :form="form"
           layout="vertical"
           @submit="handleSubmit">
-          <a-form-item :label="$t('label.name')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.name') }}
+              <a-tooltip :title="apiParams.name.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-input
               v-decorator="['name', {
                 rules: [{ required: true, message: 'Please enter name' }]
               }]"
               :placeholder="this.$t('label.name')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.displaytext')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.displaytext') }}
+              <a-tooltip :title="apiParams.displaytext.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-input
               v-decorator="['displaytext', {
                 rules: [{ required: true, message: 'Please enter display text' }]
               }]"
               :placeholder="this.$t('label.displaytext')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.zoneid')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.zoneid') }}
+              <a-tooltip :title="apiParams.zoneid.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-select
               v-decorator="['zoneid', {
                 rules: [
@@ -60,7 +78,13 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('label.domain')" v-if="this.isAdminOrDomainAdmin()">
+          <a-form-item v-if="this.isAdminOrDomainAdmin()">
+            <span slot="label">
+              {{ $t('label.domain') }}
+              <a-tooltip :title="apiParams.domainid.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-select
               v-decorator="['domainid', {}]"
               showSearch
@@ -76,7 +100,13 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('label.networkofferingid')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.networkofferingid') }}
+              <a-tooltip :title="apiParams.networkofferingid.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-select
               v-decorator="['networkofferingid', {
                 rules: [
@@ -99,17 +129,73 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('label.vlan')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
+          <a-form-item v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
+            <span slot="label">
+              {{ $t('label.vlan') }}
+              <a-tooltip :title="apiParams.vlan.description" v-if="'vlan' in apiParams">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-input
               v-decorator="['vlanid', {
                 rules: [{ required: true, message: 'Please enter value' }]
               }]"
               :placeholder="this.$t('label.vlanid')"/>
           </a-form-item>
-          <a-form-item :label="$t('label.bypassvlanoverlapcheck')" v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
+          <a-form-item v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
+            <span slot="label">
+              {{ $t('label.bypassvlanoverlapcheck') }}
+              <a-tooltip :title="apiParams.bypassvlanoverlapcheck.description" v-if="'bypassvlanoverlapcheck' in apiParams">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-switch v-decorator="['bypassvlanoverlapcheck']" />
           </a-form-item>
-          <a-form-item :label="$t('label.account')" v-if="this.accountVisible">
+          <a-form-item v-if="!this.isObjectEmpty(this.selectedNetworkOffering) && this.selectedNetworkOffering.specifyvlan">
+            <span slot="label">
+              {{ $t('label.isolatedpvlantype') }}
+              <a-tooltip :title="apiParams.isolatedpvlantype.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
+            <a-radio-group
+              v-decorator="['isolatedpvlantype', {
+                initialValue: this.isolatePvlanType
+              }]"
+              buttonStyle="solid"
+              @change="selected => { this.isolatePvlanType = selected.target.value }">
+              <a-radio-button value="none">
+                {{ $t('label.none') }}
+              </a-radio-button>
+              <a-radio-button value="community">
+                {{ $t('label.community') }}
+              </a-radio-button>
+              <a-radio-button value="isolated">
+                {{ $t('label.secondary.isolated.vlan.type.isolated') }}
+              </a-radio-button>
+              <a-radio-button value="promiscuous">
+                {{ $t('label.secondary.isolated.vlan.type.promiscuous') }}
+              </a-radio-button>
+            </a-radio-group>
+          </a-form-item>
+          <a-form-item v-if="this.isolatePvlanType=='community' || this.isolatePvlanType=='isolated'">
+            <span slot="label">
+              {{ $t('label.isolatedpvlanid') }}
+              <a-tooltip :title="apiParams.isolatedpvlan.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
+            <a-input
+              v-decorator="['isolatedpvlan', {}]"
+              :placeholder="this.$t('label.isolatedpvlanid')"/>
+          </a-form-item>
+          <a-form-item v-if="this.accountVisible">
+            <span slot="label">
+              {{ $t('label.account') }}
+              <a-tooltip :title="apiParams.account.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-input
               v-decorator="['account', {
                 rules: [
@@ -164,11 +250,17 @@ export default {
       networkOfferings: [],
       networkOfferingLoading: false,
       selectedNetworkOffering: {},
-      accountVisible: this.isAdminOrDomainAdmin()
+      accountVisible: this.isAdminOrDomainAdmin(),
+      isolatePvlanType: 'none'
     }
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
+    this.apiConfig = this.$store.getters.apis.createNetwork || {}
+    this.apiParams = {}
+    this.apiConfig.params.forEach(param => {
+      this.apiParams[param.name] = param
+    })
   },
   created () {
     this.domains = [
@@ -321,6 +413,12 @@ export default {
           params.domainid = this.selectedDomain.id
           if (this.isValidTextValueForKey(values, 'account')) {
             params.account = values.account
+          }
+        }
+        if (this.isValidValueForKey(values, 'isolatedpvlantype') && values.isolatedpvlantype !== 'none') {
+          params.isolatedpvlantype = values.isolatedpvlantype
+          if (this.isValidValueForKey(values, 'isolatedpvlan')) {
+            params.isolatedpvlan = values.isolatedpvlan
           }
         }
         api('createNetwork', params).then(json => {

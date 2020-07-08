@@ -28,21 +28,31 @@
                 shape="round"
                 size="small"
                 icon="reload"
-                @click="fetchData()">
+                @click="fetchData({ irefresh: true })">
                 {{ $t('label.refresh') }}
               </a-button>
+              <a-switch
+                v-if="!dataView && ['vm', 'volume', 'zone', 'cluster', 'host', 'storagepool'].includes($route.name)"
+                style="margin-left: 8px"
+                :checked-children="$t('label.metrics')"
+                :un-checked-children="$t('label.metrics')"
+                :checked="$store.getters.metrics"
+                @change="(checked, event) => { $store.dispatch('SetMetrics', checked) }"/>
               <a-tooltip placement="right">
                 <template slot="title">
                   {{ $t('label.filterby') }}
                 </template>
                 <a-select
-                  v-if="filters && filters.length > 0"
+                  v-if="!dataView && $route.meta.filters && $route.meta.filters.length > 0"
                   :placeholder="$t('label.filterby')"
-                  :value="$t('label.' + selectedFilter)"
+                  :value="$route.query.filter"
                   style="min-width: 100px; margin-left: 10px"
                   @change="changeFilter">
                   <a-icon slot="suffixIcon" type="filter" />
-                  <a-select-option v-for="filter in filters" :key="filter">
+                  <a-select-option v-if="['Admin', 'DomainAdmin'].includes($store.getters.userInfo.roletype) || $route.name === 'vm'" key="all">
+                    {{ $t('label.all') }}
+                  </a-select-option>
+                  <a-select-option v-for="filter in $route.meta.filters" :key="filter">
                     {{ $t('label.' + filter) }}
                   </a-select-option>
                 </a-select>
@@ -61,30 +71,37 @@
             :dataView="dataView"
             :resource="resource"
             @exec-action="execAction"/>
-          <a-input-search
-            style="width: 100%; display: table-cell"
-            :placeholder="$t('label.search')"
+          <search-view
             v-if="!dataView"
-            v-model="searchQuery"
-            allowClear
-            @search="onSearch" />
+            :searchFilters="searchFilters"
+            :searchParams="searchParams"
+            :apiName="apiName"/>
         </a-col>
       </a-row>
     </a-card>
 
     <div v-show="showAction">
-      <keep-alive v-if="currentAction.component">
+      <keep-alive v-if="currentAction.component && (!currentAction.groupAction || this.selectedRowKeys.length === 0)">
         <a-modal
-          :title="$t(currentAction.label)"
           :visible="showAction"
           :closable="true"
           style="top: 20px;"
           @cancel="closeAction"
-          :confirmLoading="currentAction.loading"
+          :confirmLoading="actionLoading"
           :footer="null"
           centered
           width="auto"
         >
+          <span slot="title">
+            {{ $t(currentAction.label) }}
+            <a
+              v-if="currentAction.docHelp || $route.meta.docHelp"
+              style="margin-left: 5px"
+              :href="$config.docBase + '/' + (currentAction.docHelp || $route.meta.docHelp)"
+              target="_blank">
+              <a-icon type="question-circle-o"></a-icon>
+            </a>
+          </span>
           <component
             :is="currentAction.component"
             :resource="resource"
@@ -103,7 +120,7 @@
         style="top: 20px;"
         @ok="handleSubmit"
         @cancel="closeAction"
-        :confirmLoading="currentAction.loading"
+        :confirmLoading="actionLoading"
         centered
       >
         <span slot="title">
@@ -111,12 +128,12 @@
           <a
             v-if="currentAction.docHelp || $route.meta.docHelp"
             style="margin-left: 5px"
-            :href="docBase + '/' + (currentAction.docHelp || $route.meta.docHelp)"
+            :href="$config.docBase + '/' + (currentAction.docHelp || $route.meta.docHelp)"
             target="_blank">
             <a-icon type="question-circle-o"></a-icon>
           </a>
         </span>
-        <a-spin :spinning="currentAction.loading">
+        <a-spin :spinning="actionLoading">
           <span v-if="currentAction.message">
             <a-alert type="warning">
               <span slot="message" v-html="$t(currentAction.message)" />
@@ -126,6 +143,7 @@
           <a-form
             :form="form"
             @submit="handleSubmit"
+            v-show="dataView || !currentAction.groupAction || this.selectedRowKeys.length === 0"
             layout="vertical" >
             <a-form-item
               v-for="(field, fieldIndex) in currentAction.paramFields"
@@ -266,7 +284,9 @@
     </div>
 
     <div v-if="dataView">
+      <slot v-if="$route.path.startsWith('/quotasummary')"></slot>
       <resource-view
+        v-else
         :resource="resource"
         :loading="loading"
         :tabs="$route.meta.tabs" />
@@ -276,6 +296,8 @@
         :loading="loading"
         :columns="columns"
         :items="items"
+        ref="listview"
+        @selection-change="onRowSelectionChange"
         @refresh="this.fetchData" />
       <a-pagination
         class="row-element"
@@ -283,8 +305,8 @@
         :current="page"
         :pageSize="pageSize"
         :total="itemCount"
-        :showTotal="total => `Total ${total} items`"
-        :pageSizeOptions="['10', '20', '40', '80', '100', '500']"
+        :showTotal="total => `Showing ${Math.min(total, 1+((page-1)*pageSize))}-${Math.min(page*pageSize, total)} of ${total} items`"
+        :pageSizeOptions="device === 'desktop' ? ['20', '50', '100', '500'] : ['10', '20', '50', '100', '500']"
         @change="changePage"
         @showSizeChange="changePageSize"
         showSizeChanger
@@ -297,7 +319,6 @@
 import { api } from '@/api'
 import { mixinDevice } from '@/utils/mixin.js'
 import { genericCompare } from '@/utils/sort.js'
-import config from '@/config/settings'
 import store from '@/store'
 
 import Breadcrumb from '@/components/widgets/Breadcrumb'
@@ -306,6 +327,7 @@ import Status from '@/components/widgets/Status'
 import ListView from '@/components/view/ListView'
 import ResourceView from '@/components/view/ResourceView'
 import ActionButton from '@/components/view/ActionButton'
+import SearchView from '@/components/view/SearchView'
 
 export default {
   name: 'Resource',
@@ -315,7 +337,8 @@ export default {
     ResourceView,
     ListView,
     Status,
-    ActionButton
+    ActionButton,
+    SearchView
   },
   mixins: [mixinDevice],
   provide: function () {
@@ -323,20 +346,24 @@ export default {
       parentFetchData: this.fetchData,
       parentToggleLoading: this.toggleLoading,
       parentStartLoading: this.startLoading,
-      parentFinishLoading: this.finishLoading
+      parentFinishLoading: this.finishLoading,
+      parentSearch: this.onSearch,
+      parentChangeFilter: this.changeFilter,
+      parentChangeResource: this.changeResource,
+      parentPollActionCompletion: this.pollActionCompletion,
+      parentEditTariffAction: () => {}
     }
   },
   data () {
     return {
       apiName: '',
-      docBase: config.docBase,
       loading: false,
+      actionLoading: false,
       columns: [],
       items: [],
       itemCount: 0,
       page: 1,
       pageSize: 10,
-      searchQuery: '',
       resource: {},
       selectedRowKeys: [],
       currentAction: {},
@@ -344,22 +371,25 @@ export default {
       dataView: false,
       selectedFilter: '',
       filters: [],
+      searchFilters: [],
+      searchParams: {},
       actions: [],
       formModel: {},
       confirmDirty: false
-    }
-  },
-  computed: {
-    hasSelected () {
-      return this.selectedRowKeys.length > 0
     }
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
   },
   mounted () {
+    if (this.device === 'desktop') {
+      this.pageSize = 20
+    }
     this.currentPath = this.$route.fullPath
     this.fetchData()
+    if ('projectid' in this.$route.query) {
+      this.switchProject(this.$route.query.projectid)
+    }
   },
   beforeRouteUpdate (to, from, next) {
     this.currentPath = this.$route.fullPath
@@ -372,21 +402,46 @@ export default {
   watch: {
     '$route' (to, from) {
       if (to.fullPath !== from.fullPath && !to.fullPath.includes('action/')) {
-        this.searchQuery = ''
-        this.page = 1
+        if ('page' in to.query) {
+          this.page = Number(to.query.page)
+          this.pageSize = Number(to.query.pagesize)
+        } else {
+          this.page = 1
+          this.pageSize = (this.device === 'desktop' ? 20 : 10)
+        }
         this.itemCount = 0
-        this.selectedFilter = ''
         this.fetchData()
+        if ('projectid' in to.query) {
+          this.switchProject(to.query.projectid)
+        }
       }
     },
     '$i18n.locale' (to, from) {
       if (to !== from) {
         this.fetchData()
       }
+    },
+    '$store.getters.metrics' (oldVal, newVal) {
+      this.fetchData()
     }
   },
   methods: {
-    fetchData (params = { listall: true }) {
+    switchProject (projectId) {
+      if (!projectId || !projectId.length || projectId.length !== 36) {
+        return
+      }
+      api('listProjects', { id: projectId, listall: true, details: 'min' }).then(json => {
+        if (!json || !json.listprojectsresponse || !json.listprojectsresponse.project) return
+        const project = json.listprojectsresponse.project[0]
+        this.$store.dispatch('SetProject', project)
+        this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
+        this.$message.success(`Switched to "${project.name}"`)
+        const query = Object.assign({}, this.$route.query)
+        delete query.projectid
+        this.$router.replace({ query })
+      })
+    },
+    fetchData (params = {}) {
       if (this.routeName !== this.$route.name) {
         this.routeName = this.$route.name
         this.items = []
@@ -396,26 +451,46 @@ export default {
       }
       this.apiName = ''
       this.actions = []
-      this.filters = this.$route.meta.filters || []
       this.columns = []
       this.columnKeys = []
-      if (Object.keys(this.$route.query).length > 0) {
-        Object.assign(params, this.$route.query)
-      } else if (this.$route.meta.params) {
+      const refreshed = ('irefresh' in params)
+
+      params.listall = true
+      if (this.$route.meta.params) {
         Object.assign(params, this.$route.meta.params)
       }
+      if (Object.keys(this.$route.query).length > 0) {
+        Object.assign(params, this.$route.query)
+      }
+      delete params.q
+      delete params.filter
+      delete params.irefresh
+
+      this.searchFilters = this.$route && this.$route.meta && this.$route.meta.searchFilters
 
       if (this.$route && this.$route.params && this.$route.params.id) {
-        this.resource = {}
         this.dataView = true
+        if (!refreshed) {
+          this.resource = {}
+          this.$emit('change-resource', this.resource)
+        }
       } else {
         this.dataView = false
+      }
+
+      if ('listview' in this.$refs && this.$refs.listview) {
+        this.$refs.listview.resetSelection()
       }
 
       if (this.$route && this.$route.meta && this.$route.meta.permission) {
         this.apiName = this.$route.meta.permission[0]
         if (this.$route.meta.columns) {
-          this.columnKeys = this.$route.meta.columns
+          const columns = this.$route.meta.columns
+          if (columns && typeof columns === 'function') {
+            this.columnKeys = columns()
+          } else {
+            this.columnKeys = columns
+          }
         }
 
         if (this.$route.meta.actions) {
@@ -425,45 +500,6 @@ export default {
 
       if (this.apiName === '' || this.apiName === undefined) {
         return
-      }
-
-      if (['listTemplates', 'listIsos', 'listVirtualMachinesMetrics'].includes(this.apiName) && !this.dataView) {
-        if (['Admin'].includes(this.$store.getters.userInfo.roletype) || this.apiName === 'listVirtualMachinesMetrics') {
-          this.filters = ['all', ...this.filters]
-          if (this.selectedFilter === '') {
-            this.selectedFilter = 'all'
-          }
-        }
-        if (this.selectedFilter === '') {
-          this.selectedFilter = 'self'
-        }
-      }
-
-      if (this.selectedFilter && this.filters.length > 0) {
-        if (this.$route.path.startsWith('/template')) {
-          params.templatefilter = this.selectedFilter
-        } else if (this.$route.path.startsWith('/iso')) {
-          params.isofilter = this.selectedFilter
-        } else if (this.$route.path.startsWith('/vm')) {
-          if (this.selectedFilter === 'self') {
-            params.account = this.$store.getters.userInfo.account
-            params.domainid = this.$store.getters.userInfo.domainid
-          } else if (['running', 'stopped'].includes(this.selectedFilter)) {
-            params.state = this.selectedFilter
-          }
-        }
-      }
-
-      if (this.searchQuery !== '') {
-        if (this.apiName === 'listRoles') {
-          params.name = this.searchQuery
-        } else if (this.apiName === 'quotaEmailTemplateList') {
-          params.templatetype = this.searchQuery
-        } else if (this.apiName === 'listConfigurations') {
-          params.name = this.searchQuery
-        } else {
-          params.keyword = this.searchQuery
-        }
       }
 
       if (!this.columnKeys || this.columnKeys.length === 0) {
@@ -499,6 +535,8 @@ export default {
         params.id = this.$route.params.id
         if (this.$route.path.startsWith('/ssh/')) {
           params.name = this.$route.params.id
+        } else if (this.$route.path.startsWith('/vmsnapshot/')) {
+          params.vmsnapshotid = this.$route.params.id
         } else if (this.$route.path.startsWith('/ldapsetting/')) {
           params.hostname = this.$route.params.id
         }
@@ -506,7 +544,6 @@ export default {
 
       params.page = this.page
       params.pagesize = this.pageSize
-
       api(this.apiName, params).then(json => {
         var responseName
         var objectName
@@ -529,9 +566,11 @@ export default {
         if (!this.items || this.items.length === 0) {
           this.items = []
         }
+
         if (['listTemplates', 'listIsos'].includes(this.apiName) && this.items.length > 1) {
           this.items = [...new Map(this.items.map(x => [x.id, x])).values()]
         }
+
         for (let idx = 0; idx < this.items.length; idx++) {
           this.items[idx].key = idx
           for (const key in customRender) {
@@ -548,8 +587,19 @@ export default {
         }
         if (this.items.length > 0) {
           this.resource = this.items[0]
+          this.$emit('change-resource', this.resource)
         }
       }).catch(error => {
+        if (Object.keys(this.searchParams).length > 0) {
+          this.itemCount = 0
+          this.items = []
+          this.$message.error({
+            content: error.response.headers['x-description'],
+            duration: 5
+          })
+          return
+        }
+
         this.$notifyError(error)
 
         if ([401, 405].includes(error.response.status)) {
@@ -567,15 +617,13 @@ export default {
         this.loading = false
       })
     },
-    onSearch (value) {
-      this.searchQuery = value
-      this.page = 1
-      this.fetchData()
-    },
     closeAction () {
-      this.currentAction.loading = false
+      this.actionLoading = false
       this.showAction = false
       this.currentAction = {}
+    },
+    onRowSelectionChange (selection) {
+      this.selectedRowKeys = selection
     },
     execAction (action) {
       const self = this
@@ -628,8 +676,8 @@ export default {
           this.listUuidOpts(param)
         }
       }
-      this.currentAction.loading = false
-      if (action.dataView && ['copy', 'edit'].includes(action.icon)) {
+      this.actionLoading = false
+      if (action.dataView && ['copy', 'edit', 'share-alt'].includes(action.icon)) {
         this.fillEditFormFieldValues()
       }
     },
@@ -724,7 +772,7 @@ export default {
       this.currentAction.paramFields.map(field => {
         let fieldValue = null
         let fieldName = null
-        if (field.type === 'list' || field.name === 'account' || (this.currentAction.mapping && field.name in this.currentAction.mapping)) {
+        if (field.type === 'list' || field.name === 'account') {
           fieldName = field.name.replace('ids', 'name').replace('id', 'name')
         } else {
           fieldName = field.name
@@ -737,11 +785,34 @@ export default {
       })
     },
     handleSubmit (e) {
+      if (!this.dataView && this.currentAction.groupAction && this.selectedRowKeys.length > 0) {
+        const paramsList = this.currentAction.groupMap(this.selectedRowKeys)
+        this.actionLoading = true
+        for (const params of paramsList) {
+          api(this.currentAction.api, params).then(json => {
+          }).catch(error => {
+            this.$notifyError(error)
+          })
+        }
+        this.$message.info({
+          content: this.$t(this.currentAction.label),
+          key: this.currentAction.label,
+          duration: 3
+        })
+        setTimeout(() => {
+          this.actionLoading = false
+          this.closeAction()
+          this.fetchData()
+        }, 2000)
+      } else {
+        this.execSubmit(e)
+      }
+    },
+    execSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
         console.log(values)
         if (!err) {
-          this.currentAction.loading = true
           const params = {}
           if ('id' in this.resource && this.currentAction.params.map(i => { return i.name }).includes('id')) {
             params.id = this.resource.id
@@ -797,6 +868,7 @@ export default {
           const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username || params.ipaddress || params.virtualmachinename || this.resource.name
 
           var hasJobId = false
+          this.actionLoading = true
           api(this.currentAction.api, params).then(json => {
             for (const obj in json) {
               if (obj.includes('response')) {
@@ -807,7 +879,11 @@ export default {
                     hasJobId = true
                     break
                   } else {
-                    this.$message.success(this.$t(this.currentAction.label) + (resourceName ? ' - ' + resourceName : ''))
+                    this.$message.success({
+                      content: this.$t(this.currentAction.label) + (resourceName ? ' - ' + resourceName : ''),
+                      key: this.currentAction.label + resourceName,
+                      duration: 2
+                    })
                   }
                 }
                 break
@@ -824,25 +900,89 @@ export default {
             console.log(error)
             this.$notifyError(error)
           }).finally(f => {
+            this.actionLoading = false
             this.closeAction()
           })
         }
       })
     },
     changeFilter (filter) {
-      this.selectedFilter = filter
-      this.page = 1
-      this.fetchData()
+      const query = Object.assign({}, this.$route.query)
+      delete query.templatefilter
+      delete query.isofilter
+      delete query.account
+      delete query.domainid
+      delete query.state
+      if (this.$route.name === 'template') {
+        query.templatefilter = filter
+      } else if (this.$route.name === 'iso') {
+        query.isofilter = filter
+      } else if (this.$route.name === 'vm') {
+        if (filter === 'self') {
+          query.account = this.$store.getters.userInfo.account
+          query.domainid = this.$store.getters.userInfo.domainid
+        } else if (['running', 'stopped'].includes(filter)) {
+          query.state = filter
+        }
+      }
+      query.filter = filter
+      query.page = 1
+      query.pagesize = this.pageSize
+      this.$router.push({ query })
+    },
+    onSearch (opts) {
+      const query = Object.assign({}, this.$route.query)
+      for (const key in this.searchParams) {
+        delete query[key]
+      }
+      delete query.name
+      delete query.templatetype
+      delete query.keyword
+      delete query.q
+      this.searchParams = {}
+      if (opts && Object.keys(opts).length > 0) {
+        this.searchParams = opts
+        if ('searchQuery' in opts) {
+          const value = opts.searchQuery
+          if (value && value.length > 0) {
+            if (this.$route.name === 'role') {
+              query.name = value
+            } else if (this.$route.name === 'quotaemailtemplate') {
+              query.templatetype = value
+            } else if (this.$route.name === 'globalsetting') {
+              query.name = value
+            } else {
+              query.keyword = value
+            }
+            query.q = value
+          }
+          this.searchParams = {}
+        } else {
+          Object.assign(query, opts)
+        }
+      }
+      query.page = 1
+      query.pagesize = this.pageSize
+      if (JSON.stringify(query) === JSON.stringify(this.$route.query)) {
+        this.fetchData(query)
+        return
+      }
+      this.$router.push({ query })
     },
     changePage (page, pageSize) {
-      this.page = page
-      this.pageSize = pageSize
-      this.fetchData()
+      const query = Object.assign({}, this.$route.query)
+      query.page = page
+      query.pagesize = pageSize
+      this.$router.push({ query })
     },
     changePageSize (currentPage, pageSize) {
-      this.page = currentPage
-      this.pageSize = pageSize
-      this.fetchData()
+      const query = Object.assign({}, this.$route.query)
+      query.page = currentPage
+      query.pagesize = pageSize
+      this.$router.push({ query })
+    },
+    changeResource (resource) {
+      this.resource = resource
     },
     start () {
       this.loading = true

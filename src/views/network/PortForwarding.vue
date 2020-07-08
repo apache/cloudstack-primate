@@ -159,57 +159,85 @@
         {disabled: newRule.virtualmachineid === null } }"
       @cancel="closeModal"
     >
-
-      <a-icon v-if="addVmModalLoading" type="loading"></a-icon>
-
-      <div v-else>
-        <div class="vm-modal__header">
-          <span style="min-width: 200px;">{{ $t('label.name') }}</span>
-          <span>{{ $t('label.instancename') }}</span>
-          <span>{{ $t('label.displayname') }}</span>
-          <span>{{ $t('label.ip') }}</span>
-          <span>{{ $t('label.account') }}</span>
-          <span>{{ $t('label.zone') }}</span>
-          <span>{{ $t('label.state') }}</span>
-          <span>{{ $t('label.select') }}</span>
-        </div>
-
-        <a-radio-group v-model="newRule.virtualmachineid" style="width: 100%;" @change="fetchNics">
-          <div v-for="(vm, index) in vms" :key="index" class="vm-modal__item">
-
-            <span style="min-width: 200px;">
-              <span>
-                {{ vm.name }}
-              </span>
-              <a-icon v-if="addVmModalNicLoading" type="loading"></a-icon>
-              <a-select
-                v-else-if="!addVmModalNicLoading && newRule.virtualmachineid === vm.id"
-                v-model="newRule.vmguestip">
-                <a-select-option v-for="(nic, nicIndex) in nics" :key="nic" :value="nic">
-                  {{ nic }}{{ nicIndex === 0 ? ' (Primary)' : null }}
-                </a-select-option>
-              </a-select>
+      <div>
+        <span
+          v-if="'vpcid' in resource && !('associatednetworkid' in resource)">
+          <strong>{{ $t('label.select.tier') }} </strong>
+          <a-select
+            v-model="selectedTier"
+            @change="fetchVirtualMachines()"
+            :placeholder="$t('label.select.tier')" >
+            <a-select-option
+              v-for="tier in tiers.data"
+              :loading="tiers.loading"
+              :key="tier.id">
+              {{ tier.displaytext }}
+            </a-select-option>
+          </a-select>
+        </span>
+        <a-input-search
+          class="input-search"
+          placeholder="Search"
+          v-model="searchQuery"
+          allowClear
+          @search="onSearch" />
+        <a-table
+          size="small"
+          class="list-view"
+          :loading="addVmModalLoading"
+          :columns="vmColumns"
+          :dataSource="vms"
+          :pagination="false"
+          :rowKey="record => record.id"
+          :scroll="{ y: 300 }">
+          <div slot="name" slot-scope="text, record">
+            <span>
+              {{ text }}
             </span>
-            <span>{{ vm.instancename }}</span>
-            <span>{{ vm.displayname }}</span>
-            <span></span>
-            <span>{{ vm.account }}</span>
-            <span>{{ vm.zonename }}</span>
-            <span>{{ vm.state }}</span>
-            <a-radio :value="vm.id" />
+            <a-icon v-if="addVmModalNicLoading" type="loading"></a-icon>
+            <a-select
+              style="display: block"
+              v-else-if="!addVmModalNicLoading && newRule.virtualmachineid === record.id"
+              v-model="newRule.vmguestip"
+            >
+              <a-select-option v-for="(nic, nicIndex) in nics" :key="nic" :value="nic">
+                {{ nic }}{{ nicIndex === 0 ? ' (Primary)' : null }}
+              </a-select-option>
+            </a-select>
           </div>
-        </a-radio-group>
+
+          <div slot="state" slot-scope="text">
+            <status :text="text ? text : ''" displayText></status>
+          </div>
+
+          <div slot="action" slot-scope="text, record" style="text-align: center">
+            <a-radio :value="record.id" @change="e => fetchNics(e)" />
+          </div>
+        </a-table>
+        <a-pagination
+          class="pagination"
+          size="small"
+          :current="vmPage"
+          :pageSize="vmPageSize"
+          :total="vmCount"
+          :showTotal="total => `Total ${total} items`"
+          :pageSizeOptions="['10', '20', '40', '80', '100']"
+          @change="handleChangePage"
+          @showSizeChange="handleChangePageSize"
+          showSizeChanger/>
       </div>
-
     </a-modal>
-
   </div>
 </template>
 
 <script>
 import { api } from '@/api'
+import Status from '@/components/widgets/Status'
 
 export default {
+  components: {
+    Status
+  },
   props: {
     resource: {
       type: Object,
@@ -233,6 +261,7 @@ export default {
       },
       tagsModalVisible: false,
       selectedRule: null,
+      selectedTier: null,
       tags: [],
       newTag: {
         key: null,
@@ -272,7 +301,51 @@ export default {
           title: this.$t('label.action'),
           scopedSlots: { customRender: 'actions' }
         }
-      ]
+      ],
+      tiers: {
+        loading: false,
+        data: []
+      },
+      vmColumns: [
+        {
+          title: this.$t('label.name'),
+          dataIndex: 'name',
+          scopedSlots: { customRender: 'name' },
+          width: 210
+        },
+        {
+          title: this.$t('label.state'),
+          dataIndex: 'state',
+          scopedSlots: { customRender: 'state' }
+        },
+        {
+          title: this.$t('label.displayname'),
+          dataIndex: 'displayname'
+        },
+        {
+          title: this.$t('label.ip'),
+          dataIndex: 'ip',
+          width: 100
+        },
+        {
+          title: this.$t('label.account'),
+          dataIndex: 'account'
+        },
+        {
+          title: this.$t('label.zone'),
+          dataIndex: 'zonename'
+        },
+        {
+          title: this.$t('label.select'),
+          dataIndex: 'action',
+          scopedSlots: { customRender: 'action' },
+          width: 80
+        }
+      ],
+      vmPage: 1,
+      vmPageSize: 10,
+      vmCount: 0,
+      searchQuery: null
     }
   },
   mounted () {
@@ -295,6 +368,28 @@ export default {
   },
   methods: {
     fetchData () {
+      this.fetchListTiers()
+      this.fetchPFRules()
+    },
+    fetchListTiers () {
+      if ('vpcid' in this.resource && 'associatednetworkid' in this.resource) {
+        return
+      }
+      this.tiers.loading = true
+      api('listNetworks', {
+        account: this.resource.account,
+        domainid: this.resource.domainid,
+        supportedservices: 'PortForwarding',
+        vpcid: this.resource.vpcid
+      }).then(json => {
+        this.tiers.data = json.listnetworksresponse.network || []
+        this.selectedTier = this.tiers.data && this.tiers.data[0].id ? this.tiers.data[0].id : null
+        this.$forceUpdate()
+      }).catch(error => {
+        this.$notifyError(error)
+      }).finally(() => { this.tiers.loading = false })
+    },
+    fetchPFRules () {
       this.loading = true
       api('listPortForwardingRules', {
         listAll: true,
@@ -331,21 +426,24 @@ export default {
     addRule () {
       this.loading = true
       this.addVmModalVisible = false
+      const networkId = ('vpcid' in this.resource && !('associatednetworkid' in this.resource)) ? this.selectedTier : this.resource.associatednetworkid
       api('createPortForwardingRule', {
         ...this.newRule,
         ipaddressid: this.resource.id,
-        networkid: this.resource.associatednetworkid
+        networkid: networkId
       }).then(response => {
         this.$pollJob({
           jobId: response.createportforwardingruleresponse.jobid,
           successMessage: `Successfully added new Port Forwarding rule`,
           successMethod: () => {
             this.closeModal()
+            this.parentFetchData()
             this.fetchData()
           },
           errorMessage: 'Adding new Port Forwarding rule failed',
           errorMethod: () => {
             this.closeModal()
+            this.parentFetchData()
             this.fetchData()
           },
           loadingMessage: `Adding new Port Forwarding rule...`,
@@ -476,27 +574,14 @@ export default {
     },
     openAddVMModal () {
       this.addVmModalVisible = true
-      this.addVmModalLoading = true
-      api('listVirtualMachines', {
-        listAll: true,
-        page: 1,
-        pagesize: 500,
-        networkid: this.resource.associatednetworkid,
-        account: this.resource.account,
-        domainid: this.resource.domainid
-      }).then(response => {
-        this.vms = response.listvirtualmachinesresponse.virtualmachine
-        this.addVmModalLoading = false
-      }).catch(error => {
-        this.$notifyError(error)
-        this.closeModal()
-      })
+      this.fetchVirtualMachines()
     },
     fetchNics (e) {
       this.addVmModalNicLoading = true
+      this.newRule.virtualmachineid = e.target.value
       api('listNics', {
         virtualmachineid: e.target.value,
-        networkid: this.resource.associatednetworkid
+        networkId: ('vpcid' in this.resource && !('associatednetworkid' in this.resource)) ? this.selectedTier : this.resource.associatednetworkid
       }).then(response => {
         if (!response.listnicsresponse.nic || response.listnicsresponse.nic.length < 1) return
         const nic = response.listnicsresponse.nic[0]
@@ -512,6 +597,27 @@ export default {
         this.closeModal()
       })
     },
+    fetchVirtualMachines () {
+      this.vmCount = 0
+      this.vms = []
+      this.addVmModalLoading = true
+      const networkId = ('vpcid' in this.resource && !('associatednetworkid' in this.resource)) ? this.selectedTier : this.resource.associatednetworkid
+      api('listVirtualMachines', {
+        listAll: true,
+        keyword: this.searchQuery,
+        page: this.vmPage,
+        pagesize: this.vmPageSize,
+        networkid: networkId,
+        account: this.resource.account,
+        domainid: this.resource.domainid
+      }).then(response => {
+        this.vmCount = response.listvirtualmachinesresponse.count || 0
+        this.vms = response.listvirtualmachinesresponse.virtualmachine
+        this.addVmModalLoading = false
+      }).catch(error => {
+        this.$notifyError(error)
+      })
+    },
     handleChangePage (page, pageSize) {
       this.page = page
       this.pageSize = pageSize
@@ -521,6 +627,10 @@ export default {
       this.page = currentPage
       this.pageSize = pageSize
       this.fetchData()
+    },
+    onSearch (value) {
+      this.searchQuery = value
+      this.fetchVirtualMachines()
     }
   }
 }
@@ -707,6 +817,28 @@ export default {
 
   .pagination {
     margin-top: 20px;
+    text-align: right;
   }
 
+  .list-view {
+    overflow-y: auto;
+    display: block;
+    width: 100%;
+  }
+
+  .filter {
+    display: block;
+    width: 240px;
+    margin-bottom: 10px;
+
+    .form__item {
+      width: 100%;
+    }
+  }
+
+  .input-search {
+    margin-bottom: 10px;
+    width: 50%;
+    float: right;
+  }
 </style>

@@ -19,24 +19,30 @@ export default {
   name: 'project',
   title: 'label.projects',
   icon: 'project',
+  docHelp: 'adminguide/projects.html',
   permission: ['listProjects'],
   resourceType: 'Project',
   columns: ['name', 'state', 'displaytext', 'account', 'domain'],
-  details: ['name', 'id', 'displaytext', 'projectaccountname', 'vmtotal', 'cputotal', 'memorytotal', 'volumetotal', 'iptotal', 'vpctotal', 'templatetotal', 'primarystoragetotal', 'vmlimit', 'iplimit', 'volumelimit', 'snapshotlimit', 'templatelimit', 'vpclimit', 'cpulimit', 'memorylimit', 'networklimit', 'primarystoragelimit', 'secondarystoragelimit', 'account', 'domain'],
+  searchFilters: ['name', 'displaytext', 'domainid', 'account'],
+  details: ['name', 'id', 'displaytext', 'projectaccountname', 'account', 'domain'],
   tabs: [
     {
       name: 'details',
       component: () => import('@/components/view/DetailsTab.vue')
     },
     {
-      name: 'accounts',
-      show: (record, route, user) => { return record.account === user.account || ['Admin', 'DomainAdmin'].includes(user.roletype) },
-      component: () => import('@/views/project/AccountsTab.vue')
+      name: 'resources',
+      component: () => import('@/components/view/ResourceCountUsage.vue')
     },
     {
       name: 'limits',
       show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
       component: () => import('@/components/view/ResourceLimitTab.vue')
+    },
+    {
+      name: 'accounts',
+      show: (record, route, user) => { return record.account === user.account || ['Admin', 'DomainAdmin'].includes(user.roletype) },
+      component: () => import('@/views/project/AccountsTab.vue')
     }
   ],
   actions: [
@@ -44,6 +50,7 @@ export default {
       api: 'createProject',
       icon: 'plus',
       label: 'label.new.project',
+      docHelp: 'adminguide/projects.html#creating-a-new-project',
       listView: true,
       args: ['name', 'displaytext']
     },
@@ -51,6 +58,7 @@ export default {
       api: 'updateProjectInvitation',
       icon: 'key',
       label: 'label.enter.token',
+      docHelp: 'adminguide/projects.html#setting-up-invitations',
       listView: true,
       popup: true,
       component: () => import('@/views/project/InvitationTokenTemplate.vue')
@@ -59,6 +67,7 @@ export default {
       api: 'listProjectInvitations',
       icon: 'team',
       label: 'label.project.invitation',
+      docHelp: 'adminguide/projects.html#setting-up-invitations',
       listView: true,
       popup: true,
       showBadge: true,
@@ -88,6 +97,7 @@ export default {
       icon: 'pause-circle',
       label: 'label.suspend.project',
       message: 'message.suspend.project',
+      docHelp: 'adminguide/projects.html#suspending-or-deleting-a-project',
       dataView: true,
       show: (record) => { return record.state !== 'Suspended' }
     },
@@ -95,6 +105,7 @@ export default {
       api: 'addAccountToProject',
       icon: 'user-add',
       label: 'label.action.project.add.account',
+      docHelp: 'adminguide/projects.html#adding-project-members-from-the-ui',
       dataView: true,
       args: ['projectid', 'account', 'email'],
       show: (record, store) => { return record.account === store.userInfo.account || ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) },
@@ -109,6 +120,7 @@ export default {
       icon: 'delete',
       label: 'label.delete.project',
       message: 'message.delete.project',
+      docHelp: 'adminguide/projects.html#suspending-or-deleting-a-project',
       dataView: true
     }
   ]

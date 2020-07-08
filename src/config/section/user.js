@@ -19,9 +19,10 @@ export default {
   name: 'accountuser',
   title: 'label.users',
   icon: 'user',
+  docHelp: 'adminguide/accounts.html#users',
   hidden: true,
   permission: ['listUsers'],
-  columns: ['username', 'state', 'firstname', 'lastname', 'email', 'account', 'domain'],
+  columns: ['username', 'state', 'firstname', 'lastname', 'email', 'account'],
   details: ['username', 'id', 'firstname', 'lastname', 'email', 'usersource', 'timezone', 'rolename', 'roletype', 'account', 'domain', 'created'],
   actions: [
     {
@@ -68,6 +69,14 @@ export default {
       message: 'message.disable.user',
       dataView: true,
       show: (record) => { return record.state === 'enabled' }
+    },
+    {
+      api: 'authorizeSamlSso',
+      icon: 'form',
+      label: 'Configure SAML SSO Authorization',
+      dataView: true,
+      popup: true,
+      component: () => import('@/views/iam/ConfigureSamlSsoAuth.vue')
     },
     {
       api: 'deleteUser',

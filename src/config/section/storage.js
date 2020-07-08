@@ -15,6 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import store from '@/store'
+
 export default {
   name: 'storage',
   title: 'label.storage',
@@ -26,13 +28,40 @@ export default {
       icon: 'hdd',
       permission: ['listVolumesMetrics'],
       resourceType: 'Volume',
-      columns: ['name', 'state', 'type', 'vmname', 'size', 'physicalsize', 'utilization', 'diskkbsread', 'diskkbswrite', 'diskiopstotal', 'storage', 'account', 'zonename'],
+      columns: () => {
+        const fields = ['name', 'state', 'type', 'vmname', 'sizegb']
+        const metricsFields = ['diskkbsread', 'diskkbswrite', 'diskiopstotal']
+
+        if (store.getters.userInfo.roletype === 'Admin') {
+          metricsFields.push({
+            physicalsize: (record) => {
+              return record.physicalsize ? parseFloat(record.physicalsize / (1024.0 * 1024.0 * 1024.0)).toFixed(2) + 'GB' : ''
+            }
+          })
+          metricsFields.push('utilization')
+        }
+
+        if (store.getters.metrics) {
+          fields.push(...metricsFields)
+        }
+
+        if (store.getters.userInfo.roletype === 'Admin') {
+          fields.push('account')
+          fields.push('storage')
+        } else if (store.getters.userInfo.roletype === 'DomainAdmin') {
+          fields.push('account')
+        }
+        fields.push('zonename')
+
+        return fields
+      },
       details: ['name', 'id', 'type', 'storagetype', 'diskofferingdisplaytext', 'deviceid', 'sizegb', 'physicalsize', 'provisioningtype', 'utilization', 'diskkbsread', 'diskkbswrite', 'diskioread', 'diskiowrite', 'diskiopstotal', 'miniops', 'maxiops', 'path'],
       related: [{
         name: 'snapshot',
         title: 'label.snapshots',
         param: 'volumeid'
       }],
+      searchFilters: ['name', 'zoneid', 'domainid', 'account', 'state', 'tags'],
       actions: [
         {
           api: 'createVolume',
@@ -198,8 +227,15 @@ export default {
       icon: 'build',
       permission: ['listSnapshots'],
       resourceType: 'Snapshot',
-      columns: ['name', 'state', 'volumename', 'intervaltype', 'created', 'account'],
+      columns: () => {
+        var fields = ['name', 'state', 'volumename', 'intervaltype', 'created']
+        if (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype)) {
+          fields.push('account')
+        }
+        return fields
+      },
       details: ['name', 'id', 'volumename', 'intervaltype', 'account', 'domain', 'created'],
+      searchFilters: ['name', 'domainid', 'account', 'tags'],
       actions: [
         {
           api: 'createTemplate',
@@ -250,8 +286,15 @@ export default {
       icon: 'camera',
       permission: ['listVMSnapshot'],
       resourceType: 'VMSnapshot',
-      columns: ['displayname', 'state', 'type', 'current', 'parentName', 'created', 'account'],
+      columns: () => {
+        var fields = ['displayname', 'state', 'type', 'current', 'parentName', 'created']
+        if (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype)) {
+          fields.push('account')
+        }
+        return fields
+      },
       details: ['name', 'id', 'displayname', 'description', 'type', 'current', 'parentName', 'virtualmachineid', 'account', 'domain', 'created'],
+      searchFilters: ['name', 'domainid', 'account', 'tags'],
       actions: [
         {
           api: 'revertToVMSnapshot',
@@ -287,7 +330,7 @@ export default {
       title: 'label.backup',
       icon: 'cloud-upload',
       permission: ['listBackups'],
-      columns: [{ name: (record) => { return record.virtualmachinename } }, 'status', 'type', 'created', 'account', 'zone'],
+      columns: [{ name: (record) => { return record.virtualmachinename } }, 'virtualmachinename', 'status', 'type', 'created', 'account', 'zone'],
       details: ['virtualmachinename', 'id', 'type', 'externalid', 'size', 'virtualsize', 'volumes', 'backupofferingname', 'zone', 'account', 'domain', 'created'],
       actions: [
         {

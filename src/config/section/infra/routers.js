@@ -19,10 +19,23 @@ export default {
   name: 'router',
   title: 'label.virtual.routers',
   icon: 'fork',
+  docHelp: 'adminguide/systemvm.html#virtual-router',
   permission: ['listRouters'],
   params: { projectid: '-1' },
   columns: ['name', 'state', 'publicip', 'guestnetworkname', 'vpcname', 'redundantstate', 'version', 'hostname', 'account', 'zonename', 'requiresupgrade'],
+  searchFilters: ['name', 'zoneid', 'podid', 'clusterid'],
   details: ['name', 'id', 'version', 'requiresupgrade', 'guestnetworkname', 'vpcname', 'publicip', 'guestipaddress', 'linklocalip', 'serviceofferingname', 'networkdomain', 'isredundantrouter', 'redundantstate', 'hostname', 'account', 'zonename', 'created'],
+  tabs: [{
+    name: 'details',
+    component: () => import('@/components/view/DetailsTab.vue')
+  }, {
+    name: 'nics',
+    component: () => import('@/views/network/NicsTable.vue')
+  }, {
+    name: 'router.health.checks',
+    show: (record, route, user) => { return ['Running'].includes(record.state) && ['Admin'].includes(user.roletype) },
+    component: () => import('@views/infra/routers/RouterHealthCheck.vue')
+  }],
   actions: [
     {
       api: 'startRouter',
@@ -34,7 +47,7 @@ export default {
     },
     {
       api: 'stopRouter',
-      icon: 'stop',
+      icon: 'poweroff',
       label: 'label.action.stop.router',
       message: 'message.action.stop.router',
       dataView: true,
@@ -63,6 +76,7 @@ export default {
       icon: 'fullscreen',
       label: 'label.upgrade.router.newer.template',
       message: 'message.confirm.upgrade.router.newer.template',
+      docHelp: 'adminguide/systemvm.html#upgrading-virtual-routers',
       dataView: true,
       groupAction: true,
       show: (record) => { return record.requiresupgrade }
@@ -72,7 +86,7 @@ export default {
       icon: 'drag',
       label: 'label.action.migrate.router',
       dataView: true,
-      show: (record) => { return record.state === 'Running' },
+      show: (record, store) => { return ['Running'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) },
       args: ['virtualmachineid', 'hostid'],
       mapping: {
         virtualmachineid: {
@@ -85,7 +99,7 @@ export default {
       icon: 'reconciliation',
       label: 'label.action.run.diagnostics',
       dataView: true,
-      show: (record) => { return record.state === 'Running' },
+      show: (record, store) => { return ['Running'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) },
       args: ['targetid', 'type', 'ipaddress', 'params'],
       mapping: {
         targetid: {
@@ -102,7 +116,7 @@ export default {
       icon: 'download',
       label: 'label.action.get.diagnostics',
       dataView: true,
-      show: (record) => { return record.state === 'Running' },
+      show: (record, store) => { return ['Running'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) },
       args: ['targetid', 'files'],
       mapping: {
         targetid: {

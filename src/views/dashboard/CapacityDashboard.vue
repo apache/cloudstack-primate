@@ -24,6 +24,7 @@
             showSearch
             optionFilterProp="children"
             :defaultValue="zoneSelected.name"
+            :placeholder="$t('label.select.a.zone')"
             :value="zoneSelected.name"
             @change="changeZone">
             <a-select-option v-for="(zone, index) in zones" :key="index">
@@ -32,16 +33,11 @@
           </a-select>
         </div>
         <div class="capacity-dashboard-button">
-          <a-tooltip placement="bottom">
-            <template slot="title">
-              Fetch Latest
-            </template>
-            <a-button
-              shape="circle"
-              @click="listCapacity(zoneSelected, true)">
-              <a-icon class="capacity-dashboard-button-icon" type="reload" />
-            </a-button>
-          </a-tooltip>
+          <a-button
+            shape="round"
+            @click="listCapacity(zoneSelected, true)">
+            {{ $t('label.fetch.latest') }}
+          </a-button>
         </div>
       </div>
       <a-row :gutter="12">
@@ -72,7 +68,7 @@
     </a-col>
 
     <a-col :xl="6">
-      <chart-card>
+      <chart-card :loading="loading">
         <div style="text-align: center">
           <a-tooltip placement="bottom" class="capacity-dashboard-button-wrapper">
             <template slot="title">
@@ -229,7 +225,7 @@ export default {
     listEvents () {
       const params = {
         page: 1,
-        pagesize: 7,
+        pagesize: 6,
         listall: true
       }
       this.loading = true

@@ -324,13 +324,13 @@
                 </a-row>
                 <a-row>
                   <a-col :span="12">
-                    <a-checkbox value="isrouting">
-                      {{ $t('label.isrouting') }}
+                    <a-checkbox value="ispublic">
+                      {{ $t('label.ispublic') }}
                     </a-checkbox>
                   </a-col>
                   <a-col :span="12">
-                    <a-checkbox value="ispublic">
-                      {{ $t('label.ispublic') }}
+                    <a-checkbox value="isfeatured">
+                      {{ $t('label.isfeatured') }}
                     </a-checkbox>
                   </a-col>
                 </a-row>
@@ -340,9 +340,9 @@
                       {{ $t('label.requireshvm') }}
                     </a-checkbox>
                   </a-col>
-                  <a-col :span="12">
-                    <a-checkbox value="isfeatured">
-                      {{ $t('label.isfeatured') }}
+                  <a-col :span="12" v-if="$store.getters.userInfo.roletype === 'Admin'">
+                    <a-checkbox value="isrouting">
+                      {{ $t('label.isrouting') }}
                     </a-checkbox>
                   </a-col>
                 </a-row>
@@ -653,29 +653,17 @@ export default {
     },
     fetchKeyboardType () {
       const keyboardType = []
+      const keyboardOpts = this.$config.keyboardOptions || {}
       keyboardType.push({
         id: '',
         description: ''
       })
-      keyboardType.push({
-        id: 'us',
-        description: 'label.standard.us.keyboard'
-      })
-      keyboardType.push({
-        id: 'uk',
-        description: 'label.uk.keyboard'
-      })
-      keyboardType.push({
-        id: 'fr',
-        description: 'label.french.azerty.keyboard'
-      })
-      keyboardType.push({
-        id: 'jp',
-        description: 'label.japanese.keyboard'
-      })
-      keyboardType.push({
-        id: 'sc',
-        description: 'label.simplified.chinese.keyboard'
+
+      Object.keys(keyboardOpts).forEach(keyboard => {
+        keyboardType.push({
+          id: keyboard,
+          description: this.$t(keyboardOpts[keyboard])
+        })
       })
 
       this.$set(this.keyboardType, 'opts', keyboardType)

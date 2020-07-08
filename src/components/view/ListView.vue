@@ -19,11 +19,11 @@
   <a-table
     size="small"
     :loading="loading"
-    :columns="columns"
+    :columns="fetchColumns()"
     :dataSource="items"
-    :rowKey="record => record.id || record.name"
+    :rowKey="record => record.id || record.name || record.usageType"
     :pagination="false"
-    :rowSelection="['vm-tbd', 'event-tbd', 'alert-tbd'].includes($route.name) ? {selectedRowKeys: selectedRowKeys, onChange: onSelectChange} : null"
+    :rowSelection="['vm', 'event', 'alert'].includes($route.name) ? {selectedRowKeys: selectedRowKeys, onChange: onSelectChange} : null"
     :rowClassName="getRowClassName"
     style="overflow-y: auto"
   >
@@ -75,6 +75,9 @@
         </span>
       </div>
     </span>
+    <a slot="templatetype" slot-scope="text, record" href="javascript:;">
+      <router-link :to="{ path: $route.path + '/' + record.templatetype }">{{ text }}</router-link>
+    </a>
     <a slot="displayname" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
     </a>
@@ -95,6 +98,9 @@
       <router-link :to="{ path: $route.path + '/' + record.id + '?physicalnetworkid=' + record.physicalnetworkid }">{{ text }}</router-link>
     </a>
     <a slot="vmname" slot-scope="text, record" href="javascript:;">
+      <router-link :to="{ path: '/vm/' + record.virtualmachineid }">{{ text }}</router-link>
+    </a>
+    <a slot="virtualmachinename" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: '/vm/' + record.virtualmachineid }">{{ text }}</router-link>
     </a>
     <span slot="hypervisor" slot-scope="text, record">
@@ -121,6 +127,9 @@
     <a slot="guestnetworkname" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: '/guestnetwork/' + record.guestnetworkid }">{{ text }}</router-link>
     </a>
+    <a slot="associatednetworkname" slot-scope="text, record" href="javascript:;">
+      <router-link :to="{ path: '/guestnetwork/' + record.associatednetworkid }">{{ text }}</router-link>
+    </a>
     <a slot="vpcname" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: '/vpc/' + record.vpcid }">{{ text }}</router-link>
     </a>
@@ -129,18 +138,31 @@
       <router-link v-else-if="record.hostname" :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
       <span v-else>{{ text }}</span>
     </a>
+    <a slot="storage" slot-scope="text, record" href="javascript:;">
+      <router-link v-if="record.storageid" :to="{ path: '/storagepool/' + record.storageid }">{{ text }}</router-link>
+      <span v-else>{{ text }}</span>
+    </a>
+
+    <a slot="level" slot-scope="text, record" href="javascript:;">
+      <router-link :to="{ path: '/event/' + record.id }">{{ text }}</router-link>
+    </a>
+
     <a slot="clustername" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: '/cluster/' + record.clusterid }">{{ text }}</router-link>
     </a>
     <a slot="podname" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: '/pod/' + record.podid }">{{ text }}</router-link>
     </a>
-    <a slot="account" slot-scope="text, record" href="javascript:;">
-      <router-link :to="{ path: '/account/' + record.accountid }" v-if="record.accountid">{{ text }}</router-link>
-      <router-link :to="{ path: '/account', query: { name: record.account, domainid: record.domainid } }" v-else>{{ text }}</router-link>
-    </a>
+    <span slot="account" slot-scope="text, record">
+      <router-link
+        v-if="'quota' in record && $router.resolve(`${$route.path}/${record.account}`) !== '404'"
+        :to="{ path: `${$route.path}/${record.account}`, query: { account: record.account, domainid: record.domainid, quota: true } }">{{ text }}</router-link>
+      <router-link :to="{ path: '/account/' + record.accountid }" v-else-if="record.accountid">{{ text }}</router-link>
+      <router-link :to="{ path: '/account', query: { name: record.account, domainid: record.domainid } }" v-else-if="$store.getters.userInfo.roletype !== 'User'">{{ text }}</router-link>
+      <span v-else>{{ text }}</span>
+    </span>
     <span slot="domain" slot-scope="text, record" href="javascript:;">
-      <router-link v-if="record.domainid && !record.domainid.includes(',') && $router.resolve('/domain/' + record.domainid).route.name !== '404'" :to="{ path: '/domain/' + record.domainid }">{{ text }}</router-link>
+      <router-link v-if="record.domainid && !record.domainid.toString().includes(',') && $store.getters.userInfo.roletype !== 'User'" :to="{ path: '/domain/' + record.domainid }">{{ text }}</router-link>
       <span v-else>{{ text }}</span>
     </span>
     <span slot="domainpath" slot-scope="text, record" href="javascript:;">
@@ -224,6 +246,15 @@
         <a-icon type="close-circle" theme="twoTone" twoToneColor="#f5222d" />
       </a-button>
     </template>
+    <template slot="tariffActions" slot-scope="text, record">
+      <a-button
+        shape="circle"
+        v-if="editableValueKey !== record.key"
+        :disabled="!('quotaTariffUpdate' in $store.getters.apis)"
+        icon="edit"
+        @click="editTariffValue(record)" />
+      <slot></slot>
+    </template>
   </a-table>
 </template>
 
@@ -256,7 +287,7 @@ export default {
       default: false
     }
   },
-  inject: ['parentFetchData', 'parentToggleLoading'],
+  inject: ['parentFetchData', 'parentToggleLoading', 'parentEditTariffAction'],
   data () {
     return {
       selectedRowKeys: [],
@@ -270,15 +301,27 @@ export default {
     }
   },
   methods: {
+    fetchColumns () {
+      if (this.isOrderUpdatable()) {
+        return this.columns
+      }
+      return this.columns.filter(x => x.dataIndex !== 'order')
+    },
     getRowClassName (record, index) {
       if (index % 2 === 0) {
         return 'light-row'
       }
       return 'dark-row'
     },
-    onSelectChange (selectedRowKeys) {
-      console.log('selectedRowKeys changed: ', selectedRowKeys)
-      this.selectedRowKeys = selectedRowKeys
+    setSelection (selection) {
+      this.selectedRowKeys = selection
+      this.$emit('selection-change', this.selectedRowKeys)
+    },
+    resetSelection () {
+      this.setSelection([])
+    },
+    onSelectChange (selectedRowKeys, selectedRows) {
+      this.setSelection(selectedRowKeys)
     },
     changeProject (project) {
       this.$store.dispatch('SetProject', project)
@@ -306,17 +349,15 @@ export default {
       }).catch(error => {
         console.error(error)
         this.$message.error('There was an error saving this setting.')
+      }).finally(() => {
+        this.$emit('refresh')
       })
-        .finally(() => {
-          this.$emit('refresh')
-        })
     },
     editValue (record) {
       this.editableValueKey = record.key
       this.editableValue = record.value
     },
-    handleUpdateOrder (id, index) {
-      this.parentToggleLoading()
+    getUpdateApi () {
       let apiString = ''
       switch (this.$route.name) {
         case 'template':
@@ -344,6 +385,14 @@ export default {
         default:
           apiString = 'updateTemplate'
       }
+      return apiString
+    },
+    isOrderUpdatable () {
+      return this.getUpdateApi() in this.$store.getters.apis
+    },
+    handleUpdateOrder (id, index) {
+      this.parentToggleLoading()
+      const apiString = this.getUpdateApi()
 
       api(apiString, {
         id,
@@ -398,6 +447,9 @@ export default {
       data.forEach((item, index) => {
         this.handleUpdateOrder(item.id, index + 1)
       })
+    },
+    editTariffValue (record) {
+      this.parentEditTariffAction(true, record)
     }
   }
 }
