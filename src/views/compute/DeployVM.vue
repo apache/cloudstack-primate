@@ -511,8 +511,7 @@ export default {
         groups: [],
         keyboards: [],
         bootTypes: [],
-        bootModes: [],
-        templateOvfProperties: []
+        bootModes: []
       },
       rowCount: {},
       loading: {
@@ -529,8 +528,7 @@ export default {
         pods: false,
         clusters: false,
         hosts: false,
-        groups: false,
-        templateOvfProperties: false
+        groups: false
       },
       instanceConfig: {},
       template: {},
