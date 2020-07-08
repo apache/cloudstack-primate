@@ -29,17 +29,6 @@
                 <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
               </a-tooltip>
             </span>
-            <!-- <a-select
-              showSearch
-              v-decorator="['account']"
-              :loading="loading"
-              :placeholder="$t('label.account')"
-              @change="e => selectedAccount = e"
-            >
-              <a-select-option v-if="['Admin'].includes($store.getters.userInfo.roletype)" v-for="account in accounts" :key="account.name">
-                {{ account.name }}
-              </a-select-option>
-            </a-select> -->
             <a-input
               v-decorator="['account']"
               :placeholder="apiParams.addAccountToProject.account.description"/>
@@ -101,26 +90,13 @@
           <a-form-item>
             <span slot="label">
               {{ $t('label.user') }}
-              <a-tooltip :title="apiParams.addUserToProject.userid.description">
+              <a-tooltip :title="apiParams.addUserToProject.username.description">
                 <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
               </a-tooltip>
             </span>
-            <!-- <a-select
-              showSearch
-              v-decorator="['userid', {
-                rules: [{ required: true, message: 'Please select option' }]
-              }]"
-              @change="e => selectedUser = e"
-              :loading="loading"
-              :placeholder="$t('label.user')"
-            >
-              <a-select-option v-for="user in users" :key="user.id">
-                {{ user.username }} ( {{ user.id }} )
-              </a-select-option>
-            </a-select> -->
             <a-input
-              v-decorator="['userid']"
-              :placeholder="apiParams.addUserToProject.userid.description"/>
+              v-decorator="['username']"
+              :placeholder="apiParams.addUserToProject.username.description"/>
           </a-form-item>
           <a-form-item>
             <span slot="label">
@@ -317,9 +293,9 @@ export default {
         api('addUserToProject', params).then(response => {
           this.$pollJob({
             jobId: response.addusertoprojectresponse.jobid,
-            successMessage: `Successfully added user ${params.userid} to project`,
-            errorMessage: `Failed to add user: ${params.userid} to project`,
-            loadingMessage: `Adding User with id: ${params.userid} to project...`,
+            successMessage: `Successfully added user ${params.username} to project`,
+            errorMessage: `Failed to add user: ${params.username} to project`,
+            loadingMessage: `Adding User ${params.username} to project...`,
             catchMessage: 'Error encountered while fetching async job result'
           })
         }).catch(error => {
