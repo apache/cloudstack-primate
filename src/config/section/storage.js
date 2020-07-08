@@ -26,6 +26,7 @@ export default {
       name: 'volume',
       title: 'label.volumes',
       icon: 'hdd',
+      docHelp: 'adminguide/storage.html#working-with-volumes',
       permission: ['listVolumesMetrics'],
       resourceType: 'Volume',
       columns: () => {
@@ -66,6 +67,7 @@ export default {
         {
           api: 'createVolume',
           icon: 'plus',
+          docHelp: 'adminguide/storage.html#creating-a-new-volume',
           label: 'label.action.create.volume',
           listView: true,
           popup: true,
@@ -74,6 +76,7 @@ export default {
         {
           api: 'createVolume',
           icon: 'cloud-upload',
+          docHelp: 'adminguide/storage.html#uploading-an-existing-volume-to-a-virtual-machine',
           label: 'label.upload.volume.from.local',
           listView: true,
           popup: true,
@@ -82,6 +85,7 @@ export default {
         {
           api: 'uploadVolume',
           icon: 'link',
+          docHelp: 'adminguide/storage.html#uploading-an-existing-volume-to-a-virtual-machine',
           label: 'label.upload.volume.from.url',
           listView: true,
           args: ['url', 'name', 'zoneid', 'format', 'diskofferingid', 'checksum'],
@@ -225,6 +229,7 @@ export default {
       name: 'snapshot',
       title: 'label.snapshots',
       icon: 'build',
+      docHelp: 'adminguide/storage.html#working-with-volume-snapshots',
       permission: ['listSnapshots'],
       resourceType: 'Snapshot',
       columns: () => {
@@ -284,6 +289,7 @@ export default {
       name: 'vmsnapshot',
       title: 'label.vm.snapshots',
       icon: 'camera',
+      docHelp: 'adminguide/storage.html#working-with-volume-snapshots',
       permission: ['listVMSnapshot'],
       resourceType: 'VMSnapshot',
       columns: () => {

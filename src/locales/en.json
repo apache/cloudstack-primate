@@ -1,4 +1,5 @@
 {
+"alert.service.domainrouter": "Domain router",
 "changed.item.properties": "Changed item properties",
 "confirm.enable.s3": "Please fill in the following information to enable support for S3-backed Secondary Storage",
 "confirm.enable.swift": "Please fill in the following information to enable support for Swift",
@@ -3139,6 +3140,7 @@
 "message.zonewizard.enable.local.storage": "WARNING: If you enable local storage for this zone, you must do the following, depending on where you would like your system VMs to launch:<br/><br/>1. If system VMs need to be launched in shared primary storage, shared primary storage needs to be added to the zone after creation. You must also start the zone in a disabled state.<br/><br/>2. If system VMs need to be launched in local primary storage, system.vm.use.local.storage needs to be set to true before you enable the zone.<br/><br/><br/>Would you like to continue?",
 "messgae.validate.min": "Please enter a value greater than or equal to {0}.",
 "network.rate": "Network Rate",
+"router.health.checks": "Health Check",
 "side.by.side": "Side by Side",
 "state.accepted": "Accepted",
 "state.active": "Active",
@@ -3161,5 +3163,7 @@
 "state.stopped": "Stopped",
 "state.stopping": "Stopping",
 "state.suspended": "Suspended",
-"title.upload.volume": "Upload Volume"
+"title.upload.volume": "Upload Volume",
+"user.login": "Login",
+"user.logout": "Logout"
 }
