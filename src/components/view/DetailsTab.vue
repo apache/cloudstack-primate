@@ -33,9 +33,6 @@
             <router-link :to="{ path: '/volume/' + volume.uuid }">{{ volume.type }} - {{ volume.path }}</router-link> ({{ parseFloat(volume.size / (1024.0 * 1024.0 * 1024.0)).toFixed(1) }} GB)
           </div>
         </div>
-        <div v-else-if="$route.path.startsWith('/project/') && item === 'account' && fetchProjectAdmins()">
-          {{ fetchProjectAdmins() }}
-        </div>
         <div v-else>
           {{ resource[item] }}
         </div>
@@ -85,17 +82,6 @@ export default {
     $route () {
       this.dedicatedSectionActive = this.dedicatedRoutes.includes(this.$route.meta.name)
       this.fetchProjectAdmins()
-    }
-  },
-  methods: {
-    fetchProjectAdmins () {
-      var projectAdminAccounts = []
-      var projectAdmins = []
-      projectAdminAccounts = this.resource && this.resource.users && this.resource.users.filter(user => user.role === 'Admin')
-      projectAdmins = projectAdminAccounts && projectAdminAccounts.map(a => {
-        return a.userid ? a.account + '(' + (a.user && a.user[0].username || a.userid) + ')' : a.account
-      })
-      return projectAdmins && projectAdmins.join()
     }
   }
 }

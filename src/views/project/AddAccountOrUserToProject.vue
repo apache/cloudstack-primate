@@ -29,17 +29,20 @@
                 <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
               </a-tooltip>
             </span>
-            <a-select
+            <!-- <a-select
               showSearch
               v-decorator="['account']"
               :loading="loading"
               :placeholder="$t('label.account')"
               @change="e => selectedAccount = e"
             >
-              <a-select-option v-for="account in accounts" :key="account.name">
+              <a-select-option v-if="['Admin'].includes($store.getters.userInfo.roletype)" v-for="account in accounts" :key="account.name">
                 {{ account.name }}
               </a-select-option>
-            </a-select>
+            </a-select> -->
+            <a-input
+              v-decorator="['account']"
+              :placeholder="apiParams.addAccountToProject.account.description"/>
           </a-form-item>
           <a-form-item>
             <span slot="label">
@@ -102,7 +105,7 @@
                 <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
               </a-tooltip>
             </span>
-            <a-select
+            <!-- <a-select
               showSearch
               v-decorator="['userid', {
                 rules: [{ required: true, message: 'Please select option' }]
@@ -114,7 +117,10 @@
               <a-select-option v-for="user in users" :key="user.id">
                 {{ user.username }} ( {{ user.id }} )
               </a-select-option>
-            </a-select>
+            </a-select> -->
+            <a-input
+              v-decorator="['userid']"
+              :placeholder="apiParams.addUserToProject.userid.description"/>
           </a-form-item>
           <a-form-item>
             <span slot="label">
@@ -308,16 +314,16 @@ export default {
           }
           params[key] = input
         }
-        const user = this.users.filter(user => user.id === this.selectedUser)[0]
         api('addUserToProject', params).then(response => {
           this.$pollJob({
             jobId: response.addusertoprojectresponse.jobid,
-            successMessage: `Successfully added user ${user.username} to project`,
-            errorMessage: `Failed to add user: ${user.username} to project`,
-            loadingMessage: `Adding User ${user.username} to project...`,
+            successMessage: `Successfully added user ${params.userid} to project`,
+            errorMessage: `Failed to add user: ${params.userid} to project`,
+            loadingMessage: `Adding User with id: ${params.userid} to project...`,
             catchMessage: 'Error encountered while fetching async job result'
           })
         }).catch(error => {
+          console.log('catch')
           this.$notifyError(error)
         }).finally(() => {
           this.$emit('refresh-data')

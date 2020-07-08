@@ -609,18 +609,6 @@ export default {
         }
 
         if (this.apiName === 'listProjects' && this.items.length > 0) {
-          for (const item of this.items) {
-            api('listProjectAccounts', {
-              projectid: item.id,
-              role: 'Admin'
-            }).then(response => {
-              const projAccounts = response.listprojectaccountsresponse.projectaccount || []
-              var projectAccount = projAccounts.map(a => {
-                return a.userid ? a.account + '(' + (a.user && a.user[0].username || a.userid) + ')' : a.account
-              })
-              item.account = projectAccount.join()
-            })
-          }
           this.columns.map(col => {
             if (col.title === 'Account') {
               col.title = this.$t('label.project.owner')
