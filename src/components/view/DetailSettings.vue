@@ -172,7 +172,6 @@ export default {
       this[obj] = val
     },
     isAdminOrOwner () {
-      console.log('ui = ', this.$store.getters)
       return ['Admin'].includes(this.$store.getters.userInfo.roletype) ||
         (this.resource.domainid === this.$store.getters.userInfo.domainid && this.resource.account === this.$store.getters.userInfo.account) ||
         this.resource.project && this.resource.projectid === this.$store.getters.project.id
