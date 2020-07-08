@@ -28,7 +28,7 @@ import ActionButton from '@/components/view/ActionButton'
 
 jest.mock('axios', () => mockAxios)
 
-describe('Components > View > Status.vue', () => {
+describe('Components > View > ActionButton.vue', () => {
   const routes = [
     {
       name: 'testRouter1',
@@ -71,65 +71,6 @@ describe('Components > View > Status.vue', () => {
   })
 
   describe('Template', () => {
-    it('Console component is visible', () => {
-      const expectedLink = '<a href="/client/console?cmd=access&vm=test-resource-id" target="_blank">'
-      const expectedButton = '<button disabled="disabled" type="button" class="ant-btn ant-btn-dashed ant-btn-circle" style="margin-left: 5px;">'
-      const propsData = {
-        dataView: true,
-        resource: {
-          id: 'test-resource-id',
-          state: 'Stopped'
-        }
-      }
-
-      const wrapper = mount(ActionButton, {
-        localVue,
-        router,
-        store,
-        i18n,
-        propsData: propsData
-      })
-
-      router.push({ name: 'testRouter1' })
-
-      wrapper.vm.$nextTick(() => {
-        const wrapperHtml = wrapper.html()
-        const received = decodeHtml(wrapperHtml)
-
-        expect(received).toContain(expectedLink)
-        expect(received).toContain(expectedButton)
-      })
-    })
-
-    it('Console component is invisible', () => {
-      const expectedLink = '<a href="/client/console?cmd=access&vm=test-resource-id" target="_blank">'
-      const expectedButton = '<button disabled="disabled" type="button" class="ant-btn ant-btn-dashed ant-btn-circle" style="margin-left: 5px;">'
-      const propsData = {
-        dataView: true,
-        resource: {
-          id: 'test-resource-id',
-          state: 'Stopped'
-        }
-      }
-      const wrapper = mount(ActionButton, {
-        localVue,
-        router,
-        i18n,
-        store,
-        propsData: propsData
-      })
-
-      router.push({ name: 'testRouter2' })
-
-      wrapper.vm.$nextTick(() => {
-        const wrapperHtml = wrapper.html()
-        const received = decodeHtml(wrapperHtml)
-
-        expect(received).not.toContain(expectedLink)
-        expect(received).not.toContain(expectedButton)
-      })
-    })
-
     it('Button action is show', () => {
       const expected = '<i aria-label="icon: plus" class="anticon anticon-plus">'
       const wrapper = mount(ActionButton, {
@@ -408,10 +349,15 @@ describe('Components > View > Status.vue', () => {
           i18n,
           store,
           propsData: {
-            resource: null
+            resource: {
+              id: 'test-resource-id'
+            }
           }
         })
         const handleShowBadge = jest.spyOn(wrapper.vm, 'handleShowBadge')
+        wrapper.setProps({
+          resource: null
+        })
         await wrapper.vm.$nextTick()
         expect(handleShowBadge).not.toBeCalled()
       })
@@ -423,11 +369,14 @@ describe('Components > View > Status.vue', () => {
           i18n,
           store,
           propsData: {
-            resource: { id: null }
+            resource: { id: 'test-resource-id' }
           }
         })
 
         const handleShowBadge = jest.spyOn(wrapper.vm, 'handleShowBadge')
+        wrapper.setProps({
+          resource: { id: null }
+        })
         await wrapper.vm.$nextTick()
         expect(handleShowBadge).not.toBeCalled()
       })

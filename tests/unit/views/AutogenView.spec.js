@@ -174,7 +174,9 @@ const messages = {
     'label.quota.value': 'quota-value-en',
     'label.quota.tariff.effectivedate': 'quota-effectivedate-en',
     'label.confirmpassword': 'confirmpassword-en',
-    'label.confirmpassword.description': 'confirmpassword-description-en'
+    'label.confirmpassword.description': 'confirmpassword-description-en',
+    'label.open.documentation': 'open',
+    'label.metrics': 'metrics'
   },
   de: {
     labelname: 'test-name-de',
@@ -200,7 +202,9 @@ const messages = {
     'label.quota.value': 'quota-value-de',
     'label.quota.tariff.effectivedate': 'quota-effectivedate-de',
     'label.confirmpassword': 'confirmpassword-de',
-    'label.confirmpassword.description': 'confirmpassword-description-de'
+    'label.confirmpassword.description': 'confirmpassword-description-de',
+    'label.open.documentation': 'open',
+    'label.metrics': 'metrics'
   }
 }
 
@@ -320,7 +324,9 @@ const state = {
       }
     },
     info: {
-      roletype: 'Normal'
+      roletype: 'Normal',
+      account: 'test-account',
+      domainid: 'test-domain-id'
     }
   }
 }
@@ -470,17 +476,13 @@ describe('Views > AutogenView.vue', () => {
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
         wrapper.setData({
-          searchQuery: 'test-query',
           page: 2,
-          itemCount: 10,
-          selectedFilter: 'test-filter'
+          itemCount: 10
         })
 
         wrapper.vm.$nextTick(() => {
-          expect(wrapper.vm.searchQuery).toEqual('test-query')
           expect(wrapper.vm.page).toEqual(2)
           expect(wrapper.vm.itemCount).toEqual(10)
-          expect(wrapper.vm.selectedFilter).toEqual('test-filter')
           expect(spy).not.toBeCalled()
         })
       })
@@ -498,19 +500,15 @@ describe('Views > AutogenView.vue', () => {
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
         wrapper.setData({
-          searchQuery: 'test-query',
           page: 2,
-          itemCount: 10,
-          selectedFilter: 'test-filter'
+          itemCount: 10
         })
 
         router.push({ name: 'testRouter2' })
 
         wrapper.vm.$nextTick(() => {
-          expect(wrapper.vm.searchQuery).toEqual('')
           expect(wrapper.vm.page).toEqual(1)
           expect(wrapper.vm.itemCount).toEqual(0)
-          expect(wrapper.vm.selectedFilter).toEqual('')
           expect(spy).toBeCalled()
         })
       })
@@ -538,24 +536,6 @@ describe('Views > AutogenView.vue', () => {
           expect(wrapper.vm.$t('labelname')).toEqual('test-name-de')
           expect(spy).toBeCalled()
         })
-      })
-    })
-  })
-
-  describe('Computed', () => {
-    it('check hasSelected is true when the selectedRowKeys is otherwise empty', () => {
-      wrapper = factory({}, { selectedRowKeys: ['test-select-id'] })
-
-      wrapper.vm.$nextTick(() => {
-        expect(wrapper.vm.hasSelected).toBeTruthy()
-      })
-    })
-
-    it('check hasSelected is false when the selectedRowKeys is empty', () => {
-      wrapper = factory({}, { selectedRowKeys: [] })
-
-      wrapper.vm.$nextTick(() => {
-        expect(wrapper.vm.hasSelected).toBeFalsy()
       })
     })
   })
@@ -744,7 +724,7 @@ describe('Views > AutogenView.vue', () => {
               listall: true,
               key: 'test-value',
               page: 1,
-              pagesize: 10,
+              pagesize: 20,
               response: 'json'
             },
             url: '/'
@@ -789,281 +769,10 @@ describe('Views > AutogenView.vue', () => {
               listall: true,
               key: 'test-value',
               page: 1,
-              pagesize: 10,
+              pagesize: 20,
               response: 'json'
             },
             url: '/'
-          })
-
-          done()
-        })
-      })
-
-      it('check selectedFilter, filters when fetchData() is called with $route.meta.filters and user role is Normal', () => {
-        router = createRouter([{
-          name: 'testRouter10',
-          path: '/test-router-10',
-          meta: {
-            icon: 'test-router-10',
-            permission: ['listTemplates'],
-            filters: ['name', 'domainid']
-          }
-        }])
-        wrapper = factory()
-
-        const mockData = {
-          listtemplateresponse: {
-            count: 0,
-            template: []
-          }
-        }
-
-        mockAxios.mockImplementation(() => Promise.resolve(mockData))
-        router.push({ name: 'testRouter10' })
-
-        wrapper.vm.$nextTick(() => {
-          expect(wrapper.vm.selectedFilter).toEqual('self')
-          expect(wrapper.vm.filters).toEqual(['name', 'domainid'])
-        })
-      })
-
-      it('check selectedFilter, filters when fetchData() is called with $route.meta.filters and user role is Admin', () => {
-        router = createRouter([{
-          name: 'testRouter11',
-          path: '/test-router-11',
-          meta: {
-            icon: 'test-router-11',
-            permission: ['listTemplates'],
-            filters: ['name', 'domainid']
-          }
-        }])
-        state.user.info.roletype = 'Admin'
-        store = mockStore.mock(state)
-        wrapper = factory()
-
-        const mockData = {
-          listtemplateresponse: {
-            count: 0,
-            template: []
-          }
-        }
-
-        mockAxios.mockImplementation(() => Promise.resolve(mockData))
-        router.push({ name: 'testRouter11' })
-
-        wrapper.vm.$nextTick(() => {
-          expect(wrapper.vm.selectedFilter).toEqual('all')
-          expect(wrapper.vm.filters).toEqual(['all', 'name', 'domainid'])
-        })
-      })
-
-      it('check api is called with params has item templatefilter', (done) => {
-        router = createRouter([{
-          name: 'testRouter12',
-          path: '/template',
-          meta: {
-            icon: 'test-router-12',
-            permission: ['listTemplates'],
-            filters: ['name', 'domainid']
-          }
-        }])
-        wrapper = factory()
-
-        const mockData = {
-          listtemplateresponse: {
-            count: 0,
-            template: []
-          }
-        }
-
-        mockAxios.mockImplementation(() => Promise.resolve(mockData))
-        router.push({ name: 'testRouter12' })
-
-        wrapper.vm.$nextTick(() => {
-          expect(mockAxios).toHaveBeenCalledTimes(1)
-          expect(mockAxios).toHaveBeenCalledWith({
-            data: new URLSearchParams(),
-            method: 'GET',
-            params: {
-              command: 'listTemplates',
-              templatefilter: 'self',
-              listall: true,
-              page: 1,
-              pagesize: 10,
-              response: 'json'
-            },
-            url: '/'
-          })
-
-          done()
-        })
-      })
-
-      it('check api is called with params has item isofilter', (done) => {
-        router = createRouter([{
-          name: 'testRouter13',
-          path: '/iso',
-          meta: {
-            icon: 'test-router-13',
-            permission: ['listTemplates'],
-            filters: ['name', 'domainid']
-          }
-        }])
-        wrapper = factory()
-
-        const mockData = {
-          listtemplateresponse: {
-            count: 0,
-            template: []
-          }
-        }
-
-        mockAxios.mockImplementation(() => Promise.resolve(mockData))
-        router.push({ name: 'testRouter13' })
-
-        wrapper.vm.$nextTick(() => {
-          expect(mockAxios).toHaveBeenCalledTimes(1)
-          expect(mockAxios).toHaveBeenCalledWith({
-            data: new URLSearchParams(),
-            method: 'GET',
-            params: {
-              command: 'listTemplates',
-              isofilter: 'self',
-              listall: true,
-              page: 1,
-              pagesize: 10,
-              response: 'json'
-            },
-            url: '/'
-          })
-
-          done()
-        })
-      })
-
-      it('check api is called with params has item keyword when searchQuery is not empty', (done) => {
-        router = createRouter([{
-          name: 'testRouter14',
-          path: '/test-router-14',
-          meta: {
-            icon: 'test-router-14',
-            permission: ['testApiNameCase2']
-          }
-        }])
-        wrapper = factory()
-
-        const mockData = {
-          testapinamecase2response: {
-            count: 0,
-            testapinamecase2: []
-          }
-        }
-
-        router.push({ name: 'testRouter14' })
-        mockAxios.mockResolvedValue(mockData)
-        wrapper.setData({ searchQuery: 'test-query' })
-        wrapper.vm.fetchData()
-
-        wrapper.vm.$nextTick(() => {
-          expect(mockAxios).toHaveBeenCalledTimes(2)
-          expect(mockAxios).toHaveBeenCalledWith({
-            url: '/',
-            method: 'GET',
-            data: new URLSearchParams(),
-            params: {
-              command: 'testApiNameCase2',
-              listall: true,
-              keyword: 'test-query',
-              page: 1,
-              pagesize: 10,
-              response: 'json'
-            }
-          })
-
-          done()
-        })
-      })
-
-      it('check api is called with params has item name when searchQuery is not empty', (done) => {
-        router = createRouter([{
-          name: 'testRouter15',
-          path: '/test-router-15',
-          meta: {
-            icon: 'test-router-15',
-            permission: ['listRoles']
-          }
-        }])
-        wrapper = factory()
-
-        const mockData = {
-          listrolesresponse: {
-            count: 0,
-            roles: []
-          }
-        }
-
-        router.push({ name: 'testRouter15' })
-        mockAxios.mockResolvedValue(mockData)
-        wrapper.setData({ searchQuery: 'test-query' })
-        wrapper.vm.fetchData()
-
-        wrapper.vm.$nextTick(() => {
-          expect(mockAxios).toHaveBeenCalledTimes(2)
-          expect(mockAxios).toHaveBeenCalledWith({
-            url: '/',
-            method: 'GET',
-            data: new URLSearchParams(),
-            params: {
-              command: 'listRoles',
-              listall: true,
-              name: 'test-query',
-              page: 1,
-              pagesize: 10,
-              response: 'json'
-            }
-          })
-
-          done()
-        })
-      })
-
-      it('check api is called with params has item templatetype when searchQuery is not empty', (done) => {
-        router = createRouter([{
-          name: 'testRouter16',
-          path: '/test-router-16',
-          meta: {
-            icon: 'test-router-16',
-            permission: ['quotaEmailTemplateList']
-          }
-        }])
-        wrapper = factory()
-
-        const mockData = {
-          quotaemailtemplatelistresponse: {
-            count: 0,
-            quotaemailtemplatelist: []
-          }
-        }
-
-        router.push({ name: 'testRouter16' })
-        mockAxios.mockResolvedValue(mockData)
-        wrapper.setData({ searchQuery: 'test-query' })
-        wrapper.vm.fetchData()
-
-        wrapper.vm.$nextTick(() => {
-          expect(mockAxios).toHaveBeenCalledTimes(2)
-          expect(mockAxios).toHaveBeenCalledWith({
-            url: '/',
-            method: 'GET',
-            data: new URLSearchParams(),
-            params: {
-              command: 'quotaEmailTemplateList',
-              listall: true,
-              templatetype: 'test-query',
-              page: 1,
-              pagesize: 10,
-              response: 'json'
-            }
           })
 
           done()
@@ -1103,7 +812,7 @@ describe('Views > AutogenView.vue', () => {
               id: 'test-id',
               name: 'test-id',
               page: 1,
-              pagesize: 10,
+              pagesize: 20,
               response: 'json'
             }
           })
@@ -1145,7 +854,7 @@ describe('Views > AutogenView.vue', () => {
               id: 'test-id',
               hostname: 'test-id',
               page: 1,
-              pagesize: 10,
+              pagesize: 20,
               response: 'json'
             }
           })
@@ -1193,7 +902,7 @@ describe('Views > AutogenView.vue', () => {
               command: 'listTemplates',
               listall: true,
               page: 1,
-              pagesize: 10,
+              pagesize: 20,
               response: 'json'
             }
           })
@@ -1474,73 +1183,184 @@ describe('Views > AutogenView.vue', () => {
     })
 
     describe('onSearch()', () => {
-      it('check page, searchQuery value when onSearch() is called with query param is empty', (done) => {
+      it('check fetchData() is called when onSearch() is called', async () => {
         router = createRouter([{
           name: 'testRouter24',
           path: '/test-router-24',
           meta: {
-            icon: 'test-router-24',
-            permission: ['testApiNameCase1']
+            icon: 'test-router-24'
           }
         }])
-        wrapper = factory({}, { page: 2 })
-        router.push({ name: 'testRouter24' })
-
+        router.push({ name: 'testRouter24', query: { page: 1, pagesize: 20 } })
+        wrapper = factory()
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
-        const mockData = {
-          testapinamecase1response: {
-            count: 1,
-            testapinamecase1: [{
-              id: 'test-id-value',
-              name: 'test-name-value'
-            }]
+
+        await wrapper.vm.$nextTick()
+        wrapper.vm.onSearch()
+        expect(spy).toHaveBeenCalled()
+      })
+
+      it('check onSearch() is called with searchParams have item', async () => {
+        router = createRouter([{
+          name: 'testRouter24',
+          path: '/test-router-24',
+          meta: {
+            icon: 'test-router-24'
           }
-        }
-        mockAxios.mockResolvedValue(mockData)
+        }])
+        wrapper = factory({}, {
+          searchParams: {
+            key1: 'key1-value',
+            key2: 'key2-value'
+          }
+        })
 
-        wrapper.vm.$nextTick(() => {
-          wrapper.vm.onSearch('')
-
-          expect(wrapper.vm.page).toEqual(1)
-          expect(wrapper.vm.searchQuery).toEqual('')
-          expect(spy).toHaveBeenCalled()
-
-          done()
+        router.push({ name: 'testRouter24' })
+        await wrapper.vm.$nextTick()
+        wrapper.vm.onSearch()
+        expect(router.currentRoute.query).toEqual({
+          page: 1,
+          pagesize: 20
         })
       })
 
-      it('check page, searchQuery value when onSearch() is called with query param is not empty', (done) => {
+      it('check onSearch() is called with searchQuery not in opts', async () => {
         router = createRouter([{
           name: 'testRouter25',
           path: '/test-router-25',
           meta: {
-            icon: 'test-router-25',
-            permission: ['testApiNameCase1']
+            icon: 'test-router-25'
           }
         }])
-        wrapper = factory({}, { page: 2 })
+        wrapper = factory()
+
         router.push({ name: 'testRouter25' })
+        await wrapper.vm.$nextTick()
+        wrapper.vm.onSearch({
+          key1: 'key1-value'
+        })
+        expect(router.currentRoute.query).toEqual({
+          key1: 'key1-value',
+          page: 1,
+          pagesize: 20
+        })
+      })
 
-        const spy = jest.spyOn(wrapper.vm, 'fetchData')
-        const mockData = {
-          testapinamecase1response: {
-            count: 1,
-            testapinamecase1: [{
-              id: 'test-id-value',
-              name: 'test-name-value'
-            }]
-          }
-        }
-        mockAxios.mockResolvedValue(mockData)
+      it('check onSearch() is called with searchQuery in opts but this is empty', async () => {
+        router = createRouter([{
+          name: 'testRouter26',
+          path: '/test-router-26',
+          meta: {
+            icon: 'test-router-26'
+          },
+          query: {}
+        }])
+        wrapper = factory()
 
-        wrapper.vm.$nextTick(() => {
-          wrapper.vm.onSearch('test-query-value')
+        router.push({ name: 'testRouter26' })
+        await wrapper.vm.$nextTick()
+        wrapper.vm.onSearch({
+          searchQuery: null
+        })
+        expect(router.currentRoute.query).toEqual({
+          page: 1,
+          pagesize: 20
+        })
+      })
 
-          expect(wrapper.vm.page).toEqual(1)
-          expect(wrapper.vm.searchQuery).toEqual('test-query-value')
-          expect(spy).toHaveBeenCalled()
+      it('check onSearch() is called with searchQuery in opts', async () => {
+        router = createRouter([{
+          name: 'testRouter26',
+          path: '/test-router-26',
+          meta: {
+            icon: 'test-router-26'
+          },
+          query: {}
+        }])
+        wrapper = factory()
 
-          done()
+        router.push({ name: 'testRouter26' })
+        await wrapper.vm.$nextTick()
+        wrapper.vm.onSearch({
+          searchQuery: 'test-query'
+        })
+        expect(router.currentRoute.query).toEqual({
+          keyword: 'test-query',
+          q: 'test-query',
+          page: 1,
+          pagesize: 20
+        })
+      })
+
+      it('check onSearch() is called with searchQuery in opts and route.name equal `role`', async () => {
+        router = createRouter([{
+          name: 'role',
+          path: '/test-router-26',
+          meta: {
+            icon: 'test-router-26'
+          },
+          query: {}
+        }])
+        wrapper = factory()
+
+        router.push({ name: 'role' })
+        await wrapper.vm.$nextTick()
+        wrapper.vm.onSearch({
+          searchQuery: 'test-query'
+        })
+        expect(router.currentRoute.query).toEqual({
+          name: 'test-query',
+          q: 'test-query',
+          page: 1,
+          pagesize: 20
+        })
+      })
+
+      it('check onSearch() is called with searchQuery in opts and route.name equal `templatetype`', async () => {
+        router = createRouter([{
+          name: 'quotaemailtemplate',
+          path: '/test-router-26',
+          meta: {
+            icon: 'test-router-26'
+          },
+          query: {}
+        }])
+        wrapper = factory()
+
+        router.push({ name: 'quotaemailtemplate' })
+        await wrapper.vm.$nextTick()
+        wrapper.vm.onSearch({
+          searchQuery: 'test-query'
+        })
+        expect(router.currentRoute.query).toEqual({
+          templatetype: 'test-query',
+          q: 'test-query',
+          page: 1,
+          pagesize: 20
+        })
+      })
+
+      it('check onSearch() is called with searchQuery in opts and route.name equal `globalsetting`', async () => {
+        router = createRouter([{
+          name: 'globalsetting',
+          path: '/test-router-26',
+          meta: {
+            icon: 'test-router-26'
+          },
+          query: {}
+        }])
+        wrapper = factory()
+
+        router.push({ name: 'globalsetting' })
+        await wrapper.vm.$nextTick()
+        wrapper.vm.onSearch({
+          searchQuery: 'test-query'
+        })
+        expect(router.currentRoute.query).toEqual({
+          name: 'test-query',
+          q: 'test-query',
+          page: 1,
+          pagesize: 20
         })
       })
     })
@@ -2443,84 +2263,150 @@ describe('Views > AutogenView.vue', () => {
     })
 
     describe('changeFilter()', () => {
-      it('check selectedFilter, fetchData() when changeFilter() is called', () => {
-        wrapper = factory({}, {
-          selectedFilter: ''
+      it('check `route.query` when changeFilter() is called with filter', async () => {
+        wrapper = factory()
+
+        await wrapper.vm.$nextTick()
+        wrapper.vm.changeFilter('test')
+
+        expect(router.currentRoute.query).toEqual({
+          filter: 'test',
+          page: 1,
+          pagesize: 20
         })
+      })
 
-        const spy = jest.spyOn(wrapper.vm, 'fetchData')
+      it('check `route.query` when changeFilter() is called with `$route.name` equal `template`', async () => {
+        router = createRouter([{
+          name: 'template',
+          path: '/test-router-1',
+          meta: {
+            icon: 'test'
+          }
+        }])
+        wrapper = factory()
 
-        wrapper.vm.$nextTick(() => {
-          expect(wrapper.vm.selectedFilter).toEqual('')
-          expect(spy).not.toHaveBeenCalled()
+        router.push({ name: 'template' })
+        await wrapper.vm.$nextTick()
+        wrapper.vm.changeFilter('test')
 
-          wrapper.vm.changeFilter('test')
+        expect(router.currentRoute.query).toEqual({
+          templatefilter: 'test',
+          filter: 'test',
+          page: 1,
+          pagesize: 20
+        })
+      })
 
-          expect(wrapper.vm.selectedFilter).toEqual('test')
-          expect(spy).toHaveBeenCalled()
+      it('check `route.query` when changeFilter() is called with `$route.name` equal `iso`', async () => {
+        router = createRouter([{
+          name: 'iso',
+          path: '/test-router-1',
+          meta: {
+            icon: 'test'
+          }
+        }])
+        wrapper = factory()
+
+        router.push({ name: 'iso' })
+        await wrapper.vm.$nextTick()
+        wrapper.vm.changeFilter('test')
+
+        expect(router.currentRoute.query).toEqual({
+          isofilter: 'test',
+          filter: 'test',
+          page: 1,
+          pagesize: 20
+        })
+      })
+
+      it('check `route.query` when changeFilter() is called with `$route.name` equal `vm` and `filter` equal `self`', async () => {
+        router = createRouter([{
+          name: 'vm',
+          path: '/test-router-1',
+          meta: {
+            icon: 'test'
+          }
+        }])
+        wrapper = factory()
+
+        router.push({ name: 'vm' })
+        await wrapper.vm.$nextTick()
+        wrapper.vm.changeFilter('self')
+
+        expect(router.currentRoute.query).toEqual({
+          account: 'test-account',
+          domainid: 'test-domain-id',
+          filter: 'self',
+          page: 1,
+          pagesize: 20
+        })
+      })
+
+      it('check `route.query` when changeFilter() is called with `$route.name` equal `vm` and `filter` equal `running`', async () => {
+        router = createRouter([{
+          name: 'vm',
+          path: '/test-router-1',
+          meta: {
+            icon: 'test'
+          }
+        }])
+        wrapper = factory()
+
+        router.push({ name: 'vm' })
+        await wrapper.vm.$nextTick()
+        wrapper.vm.changeFilter('running')
+
+        expect(router.currentRoute.query).toEqual({
+          state: 'running',
+          filter: 'running',
+          page: 1,
+          pagesize: 20
         })
       })
     })
 
     describe('changePage()', () => {
-      it('check page, pageSize and fetchData() when changePage() is called', () => {
-        wrapper = factory({}, {
-          page: 1,
-          pageSize: 10
-        })
-
-        const spy = jest.spyOn(wrapper.vm, 'fetchData')
+      it('check page, pageSize when changePage() is called', () => {
+        wrapper = factory()
 
         wrapper.vm.$nextTick(() => {
-          expect(wrapper.vm.page).toEqual(1)
-          expect(wrapper.vm.pageSize).toEqual(10)
-          expect(spy).not.toBeCalled()
-
-          wrapper.vm.changePage(2, 20)
-
-          expect(wrapper.vm.page).toEqual(2)
-          expect(wrapper.vm.pageSize).toEqual(20)
-          expect(spy).toBeCalled()
+          expect(router.currentRoute.query).toEqual({})
+          wrapper.vm.changePage(1, 10)
+          expect(router.currentRoute.query).toEqual({
+            page: 1,
+            pagesize: 10
+          })
         })
       })
     })
 
     describe('changePageSize()', () => {
       it('check page, pageSize and fetchData() when changePageSize() is called', () => {
-        wrapper = factory({}, {
-          page: 1,
-          pageSize: 10
-        })
-
-        const spy = jest.spyOn(wrapper.vm, 'fetchData')
+        wrapper = factory({})
 
         wrapper.vm.$nextTick(() => {
-          expect(wrapper.vm.page).toEqual(1)
-          expect(wrapper.vm.pageSize).toEqual(10)
-          expect(spy).not.toBeCalled()
-
+          expect(router.currentRoute.query).toEqual({
+            page: 1,
+            pagesize: 10
+          })
           wrapper.vm.changePageSize(2, 20)
-
-          expect(wrapper.vm.page).toEqual(2)
-          expect(wrapper.vm.pageSize).toEqual(20)
-          expect(spy).toBeCalled()
+          expect(router.currentRoute.query).toEqual({
+            page: 2,
+            pagesize: 20
+          })
         })
       })
     })
 
     describe('start()', () => {
       it('check loading, selectedRowKeys, fetchData() when start() is called', async (done) => {
-        wrapper = factory({}, {
-          loading: false,
-          selectedRowKeys: ['test-selected']
-        })
+        wrapper = factory()
 
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
         await wrapper.vm.$nextTick()
         await wrapper.vm.start()
 
-        expect(wrapper.vm.loading).toBeTruthy()
-        expect(wrapper.vm.selectedRowKeys).toEqual(['test-selected'])
         expect(spy).toBeCalled()
 
         setTimeout(() => {
@@ -2580,7 +2466,7 @@ describe('Views > AutogenView.vue', () => {
       })
     })
 
-    describe('handleSubmit()', () => {
+    describe('execSubmit()', () => {
       it('check error from validateFields', (done) => {
         wrapper = factory({}, {
           showAction: true,
@@ -2605,7 +2491,7 @@ describe('Views > AutogenView.vue', () => {
 
         wrapper.vm.$nextTick(() => {
           const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
+          wrapper.vm.execSubmit(event)
 
           expect(mockAxios).not.toBeCalled()
           done()
@@ -2642,7 +2528,7 @@ describe('Views > AutogenView.vue', () => {
 
         wrapper.vm.$nextTick(() => {
           const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
+          wrapper.vm.execSubmit(event)
 
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
@@ -2691,7 +2577,7 @@ describe('Views > AutogenView.vue', () => {
 
         wrapper.vm.$nextTick(() => {
           const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
+          wrapper.vm.execSubmit(event)
 
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
@@ -2737,7 +2623,7 @@ describe('Views > AutogenView.vue', () => {
 
         wrapper.vm.$nextTick(() => {
           const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
+          wrapper.vm.execSubmit(event)
 
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
@@ -2784,7 +2670,7 @@ describe('Views > AutogenView.vue', () => {
         wrapper.vm.$nextTick(() => {
           wrapper.vm.form.getFieldDecorator('column1', { initialValue: null })
           const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
+          wrapper.vm.execSubmit(event)
 
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
@@ -2835,7 +2721,7 @@ describe('Views > AutogenView.vue', () => {
         wrapper.vm.$nextTick(() => {
           wrapper.vm.form.getFieldDecorator('column1', { initialValue: 1 })
           const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
+          wrapper.vm.execSubmit(event)
 
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
@@ -2891,7 +2777,7 @@ describe('Views > AutogenView.vue', () => {
         wrapper.vm.$nextTick(() => {
           wrapper.vm.form.getFieldDecorator('column1', { initialValue: [1, 2] })
           const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
+          wrapper.vm.execSubmit(event)
 
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
@@ -2941,7 +2827,7 @@ describe('Views > AutogenView.vue', () => {
         wrapper.vm.$nextTick(() => {
           wrapper.vm.form.getFieldDecorator('account', { initialValue: 'test-account-value' })
           const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
+          wrapper.vm.execSubmit(event)
 
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
@@ -2991,7 +2877,7 @@ describe('Views > AutogenView.vue', () => {
         wrapper.vm.$nextTick(() => {
           wrapper.vm.form.getFieldDecorator('keypair', { initialValue: 'test-keypair-value' })
           const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
+          wrapper.vm.execSubmit(event)
 
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
@@ -3045,7 +2931,7 @@ describe('Views > AutogenView.vue', () => {
         wrapper.vm.$nextTick(() => {
           wrapper.vm.form.getFieldDecorator('keypair', { initialValue: 1 })
           const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
+          wrapper.vm.execSubmit(event)
 
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
@@ -3095,7 +2981,7 @@ describe('Views > AutogenView.vue', () => {
         wrapper.vm.$nextTick(() => {
           wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column-value' })
           const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
+          wrapper.vm.execSubmit(event)
 
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
@@ -3145,7 +3031,7 @@ describe('Views > AutogenView.vue', () => {
         wrapper.vm.$nextTick(() => {
           wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column1-value' })
           const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
+          wrapper.vm.execSubmit(event)
 
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
@@ -3202,7 +3088,7 @@ describe('Views > AutogenView.vue', () => {
         wrapper.vm.$nextTick(() => {
           wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column1-value' })
           const event = document.createEvent('Event')
-          wrapper.vm.handleSubmit(event)
+          wrapper.vm.execSubmit(event)
 
           expect(mockAxios).toHaveBeenCalledTimes(1)
           expect(mockAxios).toHaveBeenCalledWith({
@@ -3266,7 +3152,7 @@ describe('Views > AutogenView.vue', () => {
 
         wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column1-value' })
         const event = document.createEvent('Event')
-        await wrapper.vm.handleSubmit(event)
+        await wrapper.vm.execSubmit(event)
 
         setTimeout(() => {
           expect(router.currentRoute.name).toEqual('home')
@@ -3305,7 +3191,7 @@ describe('Views > AutogenView.vue', () => {
         await wrapper.vm.$nextTick()
         wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column1-value' })
         const event = document.createEvent('Event')
-        wrapper.vm.handleSubmit(event)
+        wrapper.vm.execSubmit(event)
 
         setTimeout(() => {
           expect(actions.AddAsyncJob).toHaveBeenCalled()
@@ -3349,7 +3235,7 @@ describe('Views > AutogenView.vue', () => {
         await wrapper.vm.$nextTick()
         wrapper.vm.form.getFieldDecorator('column1', { initialValue: 'test-column1-value' })
         const event = document.createEvent('Event')
-        wrapper.vm.handleSubmit(event)
+        wrapper.vm.execSubmit(event)
 
         setTimeout(() => {
           expect(mocks.$message.success).toHaveBeenCalled()
@@ -3375,7 +3261,7 @@ describe('Views > AutogenView.vue', () => {
 
         await wrapper.vm.$nextTick()
         const event = document.createEvent('Event')
-        await wrapper.vm.handleSubmit(event)
+        await wrapper.vm.execSubmit(event)
 
         setTimeout(() => {
           expect(mocks.$notifyError).toHaveBeenCalledTimes(1)

@@ -48,13 +48,10 @@ export default {
         if (store.getters.userInfo.roletype === 'Admin') {
           fields.push('account')
           fields.push('storage')
-          fields.push('zonename')
         } else if (store.getters.userInfo.roletype === 'DomainAdmin') {
           fields.push('account')
-          fields.push('zonename')
-        } else {
-          fields.push('zonename')
         }
+        fields.push('zonename')
 
         return fields
       },
@@ -64,6 +61,7 @@ export default {
         title: 'label.snapshots',
         param: 'volumeid'
       }],
+      searchFilters: ['name', 'zoneid', 'domainid', 'account', 'state', 'tags'],
       actions: [
         {
           api: 'createVolume',
@@ -229,8 +227,15 @@ export default {
       icon: 'build',
       permission: ['listSnapshots'],
       resourceType: 'Snapshot',
-      columns: ['name', 'state', 'volumename', 'intervaltype', 'created', 'account'],
+      columns: () => {
+        var fields = ['name', 'state', 'volumename', 'intervaltype', 'created']
+        if (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype)) {
+          fields.push('account')
+        }
+        return fields
+      },
       details: ['name', 'id', 'volumename', 'intervaltype', 'account', 'domain', 'created'],
+      searchFilters: ['name', 'domainid', 'account', 'tags'],
       actions: [
         {
           api: 'createTemplate',
@@ -281,8 +286,15 @@ export default {
       icon: 'camera',
       permission: ['listVMSnapshot'],
       resourceType: 'VMSnapshot',
-      columns: ['displayname', 'state', 'type', 'current', 'parentName', 'created', 'account'],
+      columns: () => {
+        var fields = ['displayname', 'state', 'type', 'current', 'parentName', 'created']
+        if (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype)) {
+          fields.push('account')
+        }
+        return fields
+      },
       details: ['name', 'id', 'displayname', 'description', 'type', 'current', 'parentName', 'virtualmachineid', 'account', 'domain', 'created'],
+      searchFilters: ['name', 'domainid', 'account', 'tags'],
       actions: [
         {
           api: 'revertToVMSnapshot',
@@ -318,7 +330,7 @@ export default {
       title: 'label.backup',
       icon: 'cloud-upload',
       permission: ['listBackups'],
-      columns: [{ name: (record) => { return record.virtualmachinename } }, 'status', 'type', 'created', 'account', 'zone'],
+      columns: [{ name: (record) => { return record.virtualmachinename } }, 'virtualmachinename', 'status', 'type', 'created', 'account', 'zone'],
       details: ['virtualmachinename', 'id', 'type', 'externalid', 'size', 'virtualsize', 'volumes', 'backupofferingname', 'zone', 'account', 'domain', 'created'],
       actions: [
         {
