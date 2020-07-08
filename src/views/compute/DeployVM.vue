@@ -253,15 +253,15 @@
                 </template>
               </a-step>
               <a-step
-                :title="$t('label.advanced.mode')"
-                :status="zoneSelected ? 'process' : 'wait'">
+                :title="$t('label.ovf.properties')"
+                :status="zoneSelected ? 'process' : 'wait'"
+                v-if="vm.templateid && template.properties && template.properties.length > 0">
                 <template slot="description">
-                  <div v-if="vm.templateid && options.templateOvfProperties.length > 0">
+                  <div>
                     <a-form-item
-                      v-for="(property, propertyIndex) in options.templateOvfProperties"
+                      v-for="(property, propertyIndex) in template.properties"
                       :key="propertyIndex"
-                      :v-bind="property.key"
-                    >
+                      :v-bind="property.key" >
                       <span slot="label">
                         {{ property.label }}
                         <a-tooltip :title="property.description">
@@ -315,7 +315,7 @@
                 </template>
               </a-step>
               <a-step
-                :title="this.$t('label.details')"
+                :title="$t('label.advanced.mode')"
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description" v-if="zoneSelected">
                   <span>
@@ -960,7 +960,6 @@ export default {
           templateid: value,
           isoid: null
         })
-        this.fetchTemplateOvfProperties(value)
         const templates = this.options.templates.filter(x => x.id === value)
         if (templates.length > 0) {
           this.dataPreFill.minrootdisksize = templates[0].size / (1024 * 1024 * 1024) || 0 // bytes to GB
@@ -1308,34 +1307,6 @@ export default {
       }).finally(() => {
         this.loading.isos = false
       })
-    },
-    fetchTemplateOvfProperties (templateId) {
-      this.loading.templateOvfProperties = true
-      const params = {
-        id: templateId
-      }
-      api('listTemplateOvfProperties', params).then(json => {
-        this.options.templateOvfProperties = json.listtemplateovfpropertiesresponse.ovfproperty || []
-      }).catch(function (error) {
-        console.log(error.stack)
-      }).finally(() => {
-        this.loading.templateOvfProperties = false
-        console.log(this.options.templateOvfProperties)
-      })
-      // return new Promise((resolve) => {
-      //   this.loading.templateOvfProperties = true
-      //   const params = {
-      //     templateid: templateId
-      //   }
-      //   api('listTemplateOvfProperties', params).then(json => {
-      //     const ovfProperties = json.listtemplateovfpropertiesresponse.ovfproperty || []
-      //     resolve(ovfProperties)
-      //   }).catch(function (error) {
-      //     console.log(error.stack)
-      //   }).finally(() => {
-      //     this.loading.templateOvfProperties = false
-      //   })
-      // })
     },
     onSelectZoneId (value) {
       this.dataPreFill = {}
