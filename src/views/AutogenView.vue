@@ -609,6 +609,18 @@ export default {
         }
 
         if (this.apiName === 'listProjects' && this.items.length > 0) {
+          for (var item of this.items) {
+            if (!item.owner) {
+              break
+            }
+            var owners = item.owner
+            var projectAdmins = []
+
+            for (var owner of owners) {
+              projectAdmins.push(Object.keys(owner).includes('user') ? owner.account + '(' + owner.user + ')' : owner.account)
+            }
+            item.account = projectAdmins.join()
+          }
           this.columns.map(col => {
             if (col.title === 'Account') {
               col.title = this.$t('label.project.owner')

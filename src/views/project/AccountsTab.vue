@@ -27,7 +27,7 @@
           :pagination="false"
           :rowKey="record => record.userid ? record.userid : (record.accountid || record.account)">
           <span slot="user" slot-scope="text, record" v-if="record.userid">
-            {{ getUserName(record) }}
+            {{ record.username }}
           </span>
           <span slot="projectrole" slot-scope="text, record" v-if="record.projectroleid">
             {{ getProjectRole(record) }}
@@ -204,12 +204,6 @@ export default {
     isProjectRolesSupported () {
       return ('listProjectRoles' in this.$store.getters.apis)
     },
-    getUserName (record) {
-      if (record.userid) {
-        return record.user ? record.user[0].username : record.userid
-      }
-      return null
-    },
     getProjectRole (record) {
       const projectRole = this.projectRoles.filter(role => role.id === record.projectroleid)
       return projectRole[0].name || projectRole[0].id || null
@@ -274,7 +268,7 @@ export default {
       params.id = this.resource.id
       if (record.userid) {
         params.userid = record.userid
-        params.accountid = (record.user && record.user[0].accountid) || record.accountid
+        // params.accountid = (record.user && record.user[0].accountid) || record.accountid
         title = this.$t('label.make.user.project.owner')
       } else {
         params.account = record.account
@@ -289,7 +283,7 @@ export default {
       const params = {}
       if (record.userid) {
         params.userid = record.userid
-        params.accountid = (record.user && record.user[0].accountid) || record.accountid
+        // params.accountid = (record.user && record.user[0].accountid) || record.accountid
         title = this.$t('label.demote.project.owner.user')
       } else {
         params.account = record.account
