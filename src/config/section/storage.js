@@ -115,6 +115,7 @@ export default {
         {
           api: 'createSnapshot',
           icon: 'camera',
+          docHelp: 'adminguide/storage.html#working-with-volume-snapshots',
           label: 'label.action.take.snapshot',
           dataView: true,
           show: (record) => { return record.state === 'Ready' },
@@ -124,6 +125,7 @@ export default {
         {
           api: 'createSnapshotPolicy',
           icon: 'clock-circle',
+          docHelp: 'adminguide/storage.html#working-with-volume-snapshots',
           label: 'label.action.recurring.snapshot',
           dataView: true,
           show: (record) => { return record.state === 'Ready' },
@@ -141,6 +143,7 @@ export default {
         {
           api: 'resizeVolume',
           icon: 'fullscreen',
+          docHelp: 'adminguide/storage.html#resizing-volumes',
           label: 'label.action.resize.volume',
           dataView: true,
           popup: true,
@@ -150,6 +153,7 @@ export default {
         {
           api: 'migrateVolume',
           icon: 'drag',
+          docHelp: 'adminguide/storage.html#id2',
           label: 'label.migrate.volume',
           args: ['volumeid', 'storageid', 'livemigrate'],
           dataView: true,
@@ -342,6 +346,7 @@ export default {
         {
           api: 'restoreBackup',
           icon: 'sync',
+          docHelp: 'adminguide/virtual_machines.html#restoring-vm-backups',
           label: 'label.backup.restore',
           message: 'message.backup.restore',
           dataView: true
