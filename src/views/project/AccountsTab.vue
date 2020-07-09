@@ -189,8 +189,7 @@ export default {
     },
     onShowConfirmDelete (record) {
       const self = this
-      let title = this.$t('label.deleteconfirm')
-      title = title.replace('{name}', this.$t('label.account'))
+      const title = `${this.$t('label.deleteconfirm')} ${this.$t('label.account')}`
 
       this.$confirm({
         title: title,

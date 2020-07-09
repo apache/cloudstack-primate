@@ -127,7 +127,8 @@ export default {
         name: item.name,
         value: this.editableValue
       }).then(() => {
-        this.$message.success(this.$t('message.setting.name.to.value', { name: item.name, value: this.editableValue }))
+        const message = `${this.$t('label.setting')} ${item.name} ${this.$t('label.update.to')} ${this.editableValue}`
+        this.$message.success(message)
       }).catch(error => {
         console.error(error)
         this.$message.error(this.$t('message.error.save.setting'))

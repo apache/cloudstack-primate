@@ -207,8 +207,7 @@ export default {
     },
     onShowConfirm (row) {
       const self = this
-      let title = this.$t('label.deleteconfirm')
-      title = title.replace('{name}', this.$t('label.certificate'))
+      const title = `${this.$t('label.deleteconfirm')} ${this.$t('label.certificate')}`
 
       this.$confirm({
         title: title,

@@ -494,7 +494,7 @@ export default {
           params.zoneid = zoneId
         }
         api('createDiskOffering', params).then(json => {
-          this.$message.success(this.$t('message.disk.offering.created', { name: values.name }))
+          this.$message.success(`${this.$t('message.disk.offering.created')} ${values.name}}`)
         }).catch(error => {
           this.$notifyError(error)
         }).finally(() => {

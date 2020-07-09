@@ -340,7 +340,7 @@ export default {
       }).then(json => {
         this.editableValueKey = null
 
-        this.$message.success(this.$t('message.setting.updated', { name: record.name }))
+        this.$message.success(`${this.$t('message.setting.updated')} ${record.name}`)
         if (json.updateconfigurationresponse &&
           json.updateconfigurationresponse.configuration &&
           !json.updateconfigurationresponse.configuration.isdynamic &&
