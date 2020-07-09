@@ -54,6 +54,8 @@
 import { getNormalizedOsName } from '@/utils/icons'
 import TemplateIsoRadioGroup from '@views/compute/wizard/TemplateIsoRadioGroup'
 import store from '@/store'
+import { api } from '@/api'
+import _ from 'lodash'
 
 export default {
   name: 'TemplateIsoSelection',
@@ -143,10 +145,10 @@ export default {
       }
       this.filteredItems.forEach((os) => {
         os.osName = getNormalizedOsName(os.ostypename)
-        if (os.isPublic && os.isfeatured) {
+        if (os.ispublic && !os.isfeatured) {
           mappedItems.community.push(os)
           itemCount.community = itemCount.community + 1
-        } else if (os.isfeatured) {
+        } else if (os.ispublic && os.isfeatured) {
           mappedItems.featured.push(os)
           itemCount.featured = itemCount.featured + 1
         } else {
@@ -178,11 +180,10 @@ export default {
           this.filteredItems = this.filteredItems.concat(data)
         })
       } else if (strQuery !== '') {
-        this.filteredItems = this.items.filter((item) => item.displaytext.toLowerCase().includes(strQuery.toLowerCase()))
+        this.getTemplatesByKeyword(strQuery)
       } else {
         this.filteredItems = this.items
       }
-      this.dataSource = this.mappingDataSource()
     },
     filterDataSourceByTag (tag) {
       let arrResult = []
@@ -232,6 +233,46 @@ export default {
     },
     changeFilterType (value) {
       this.filterType = value
+    },
+    getTemplatesByKeyword (keyword) {
+      this.filteredItems = []
+      const promises = []
+      const templates = []
+      const templateFilter = [
+        'featured',
+        'community',
+        'selfexecutable',
+        'sharedexecutable'
+      ]
+      templateFilter.forEach(filter => {
+        promises.push(this.fetchTemplates(keyword, filter))
+      })
+
+      Promise.all(promises).then(response => {
+        response.forEach((resItem) => {
+          const concatTemplates = _.concat(templates, _.get(resItem, 'listtemplatesresponse.template', []))
+          concatTemplates.forEach(template => this.filteredItems.push(template))
+          this.filteredItems = _.uniqWith(this.filteredItems, _.isEqual)
+        })
+      }).catch((reason) => {
+        console.log(reason)
+      }).finally(() => {
+        this.dataSource = this.mappingDataSource()
+      })
+      return templates
+    },
+    fetchTemplates (keyword, filter) {
+      return new Promise((resolve, reject) => {
+        api('listTemplates', {
+          zoneid: _.get(this.zone, 'id'),
+          templatefilter: filter,
+          keyword: keyword
+        }).then((response) => {
+          resolve(response)
+        }).catch((reason) => {
+          reject(reason)
+        })
+      })
     }
   }
 }
