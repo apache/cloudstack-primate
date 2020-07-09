@@ -221,7 +221,7 @@ export default {
     },
     addDetail () {
       if (this.newKey === '' || this.newValue === '') {
-        this.error = 'Must provide a valid key and value for setting'
+        this.error = this.$t('message.error.provide.setting')
         return
       }
       this.error = false

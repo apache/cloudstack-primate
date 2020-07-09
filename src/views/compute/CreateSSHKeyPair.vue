@@ -67,8 +67,8 @@
     <div v-if="isSubmitted">
       <p v-html="$t('message.desc.created.ssh.key.pair')"></p>
       <div :span="24" class="action-button">
-        <a-button @click="notifyCopied" v-clipboard:copy="hiddenElement.innerHTML" type="primary">{{ 'Copy to clipboard' }}</a-button>
-        <a-button @click="downloadKey" type="primary">{{ this.$t('Download') }}</a-button>
+        <a-button @click="notifyCopied" v-clipboard:copy="hiddenElement.innerHTML" type="primary">{{ $t('label.copy.clipboard') }}</a-button>
+        <a-button @click="downloadKey" type="primary">{{ this.$t('label.download') }}</a-button>
         <a-button @click="closeAction">{{ this.$t('label.close') }}</a-button>
       </div>
     </div>
@@ -208,7 +208,7 @@ export default {
     },
     notifyCopied () {
       this.$notification.info({
-        message: this.$t('Copied Successfully to cilpboard')
+        message: this.$t('message.success.copy.clipboard')
       })
     },
     closeAction () {
