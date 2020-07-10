@@ -182,7 +182,9 @@ export default {
       } else if (strQuery !== '') {
         this.getTemplatesByKeyword(strQuery)
       } else {
+        // restore back original list
         this.filteredItems = this.items
+        this.dataSource = this.mappingDataSource()
       }
     },
     filterDataSourceByTag (tag) {
@@ -235,22 +237,38 @@ export default {
       this.filterType = value
     },
     getTemplatesByKeyword (keyword) {
+      let apiCommand = ''
+      let apiCommandResponse = ''
       this.filteredItems = []
       const promises = []
       const templates = []
+      const params = {}
       const templateFilter = [
         'featured',
         'community',
         'selfexecutable',
         'sharedexecutable'
       ]
+      // Fetch templates or isos depending on active tab
+      params.zoneid = _.get(this.zone, 'id')
+      params.keyword = keyword
+      if (this.inputDecorator === 'templateid') {
+        apiCommand = 'listTemplates'
+        apiCommandResponse = 'listtemplatesresponse.template'
+      } else {
+        apiCommand = 'listIsos'
+        apiCommandResponse = 'listisosresponse.iso'
+        params.bootable = 'true'
+      }
+      // Fetch templates/isos for all filters
       templateFilter.forEach(filter => {
-        promises.push(this.fetchTemplates(keyword, filter))
+        params.templatefilter = filter
+        promises.push(this.fetchTemplatesIsos(apiCommand, keyword, params))
       })
 
       Promise.all(promises).then(response => {
         response.forEach((resItem) => {
-          const concatTemplates = _.concat(templates, _.get(resItem, 'listtemplatesresponse.template', []))
+          const concatTemplates = _.concat(templates, _.get(resItem, apiCommandResponse, []))
           concatTemplates.forEach(template => this.filteredItems.push(template))
           this.filteredItems = _.uniqWith(this.filteredItems, _.isEqual)
         })
@@ -259,15 +277,10 @@ export default {
       }).finally(() => {
         this.dataSource = this.mappingDataSource()
       })
-      return templates
     },
-    fetchTemplates (keyword, filter) {
+    fetchTemplatesIsos (apiCommand, keyword, params) {
       return new Promise((resolve, reject) => {
-        api('listTemplates', {
-          zoneid: _.get(this.zone, 'id'),
-          templatefilter: filter,
-          keyword: keyword
-        }).then((response) => {
+        api(apiCommand, params).then((response) => {
           resolve(response)
         }).catch((reason) => {
           reject(reason)
