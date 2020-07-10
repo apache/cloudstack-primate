@@ -82,7 +82,6 @@ export default {
     }
   },
   data () {
-    console.log(this.resource)
     return {
       columns: [],
       dataSource: [],
