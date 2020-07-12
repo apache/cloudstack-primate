@@ -310,7 +310,11 @@
         @change="changePage"
         @showSizeChange="changePageSize"
         showSizeChanger
-        showQuickJumper />
+        showQuickJumper>
+          <template slot="buildOptionText" slot-scope="props">
+            <span>{{ props.value }} / {{$t('label.page')}}</span>
+          </template>
+      </a-pagination>
     </div>
   </div>
 </template>

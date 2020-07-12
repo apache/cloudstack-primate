@@ -73,7 +73,11 @@
           :pageSizeOptions="['10', '20', '40', '80', '100']"
           @change="changePage"
           @showSizeChange="changePageSize"
-          showSizeChanger/>
+          showSizeChanger>
+            <template slot="buildOptionText" slot-scope="props">
+              <span>{{ props.value }} / {{$t('label.page')}}</span>
+            </template>
+        </a-pagination>
       </a-col>
     </a-row>
   </div>
