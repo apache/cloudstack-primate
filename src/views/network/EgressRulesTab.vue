@@ -87,7 +87,7 @@
       :current="page"
       :pageSize="pageSize"
       :total="totalCount"
-      :showTotal="total => `Total ${total} items`"
+      :showTotal="total => `Total ${total} ${$t('label.items')}`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="handleChangePage"
       @showSizeChange="handleChangePageSize"
