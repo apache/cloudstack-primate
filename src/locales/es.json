@@ -296,6 +296,7 @@
 "label.add.new.tier": "Agregar un nuevo tier",
 "label.add.nfs.secondary.staging.store": "Agregar un Almacenamiento Secundario Temporario NFS",
 "label.add.niciranvp.device": "Agregar Controlador Nvp",
+"label.add.note": "Agregar Nota",
 "label.add.opendaylight.device": "Agregar el Controlador OpenDaylight",
 "label.add.pa.device": "Agregar dispositivo Palo Alto",
 "label.add.physical.network": "Agregar red f\u00edsica",
