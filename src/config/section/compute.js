@@ -63,15 +63,6 @@ export default {
       },
       searchFilters: ['name', 'zoneid', 'domainid', 'account', 'tags'],
       details: ['displayname', 'name', 'id', 'state', 'ipaddress', 'templatename', 'ostypename', 'serviceofferingname', 'isdynamicallyscalable', 'haenable', 'hypervisor', 'boottype', 'bootmode', 'account', 'domain', 'zonename'],
-      related: [{
-        name: 'vmsnapshot',
-        title: 'label.vm.snapshots',
-        param: 'virtualmachineid'
-      }, {
-        name: 'backup',
-        title: 'label.backup',
-        param: 'virtualmachineid'
-      }],
       tabs: [{
         component: () => import('@/views/compute/InstanceTab.vue')
       }],
@@ -500,21 +491,21 @@ export default {
         {
           api: 'createInstanceGroup',
           icon: 'plus',
-          label: 'New Instance Group',
+          label: 'label.new.instance.group',
           listView: true,
           args: ['name']
         },
         {
           api: 'updateInstanceGroup',
           icon: 'edit',
-          label: 'Update Instance Group',
+          label: 'label.update.instance.group',
           dataView: true,
           args: ['name']
         },
         {
           api: 'deleteInstanceGroup',
           icon: 'delete',
-          label: 'Delete Instance Group',
+          label: 'label.delete.instance.group',
           dataView: true
         }
       ]
