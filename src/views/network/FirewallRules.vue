@@ -107,14 +107,14 @@
           <p class="add-tags__label">{{ $t('label.value') }}</p>
           <a-input v-model="newTag.value"></a-input>
         </div>
-        <a-button type="primary" :disabled="!('createTag' in $store.getters.apis)" @click="() => handleAddTag()" :loading="addTagLoading">{{ $t('label.add') }}</a-button>
+        <a-button type="primary" :disabled="'createTags' in $store.getters.apis" @click="() => handleAddTag()" :loading="addTagLoading">{{ $t('label.add') }}</a-button>
       </div>
 
       <a-divider></a-divider>
 
       <div class="tags-container">
         <div class="tags" v-for="(tag, index) in tags" :key="index">
-          <a-tag :key="index" :closable="'deleteTag' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
+          <a-tag :key="index" :closable="'deleteTags' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
             {{ tag.key }} = {{ tag.value }}
           </a-tag>
         </div>
