@@ -173,7 +173,7 @@ export default {
         } else if (result.jobstatus === 0) {
           this.$message
             .loading('Data migration in progress')
-            .then(() => this.pollActionCompletion(jobId, 0))
+            .then(() => this.pollActionCompletion(jobId, title))
         }
       }).catch(e => {
         console.log('Error encountered while fetching async job result' + e)
