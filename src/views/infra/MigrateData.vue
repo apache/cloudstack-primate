@@ -132,8 +132,30 @@ export default {
 
         const title = 'Data Migration'
         this.loading = true
-        api('migrateSecondaryStorageData', {}, 'POST', params).then(response => {
-          this.pollActionCompletion(response.migratesecondarystoragedataresponse.jobid, title)
+
+        api('migrateSecondaryStorageData', params).then(response => {
+          const jobId = this.checkForAddAsyncJob(response, title)
+          if (jobId) {
+            api('queryAsyncJobResult', {
+              jobid: response.migratesecondarystoragedataresponse.jobid
+            }).then(json => {
+              const result = json.queryasyncjobresultresponse.jobresult
+              const success = result.imagestore.success || false
+              const message = result.imagestore.message || ''
+              if (success) {
+                this.$notification.success({
+                  message: title,
+                  description: message
+                })
+              } else {
+                this.$notification.error({
+                  message: title,
+                  description: message,
+                  duration: 0
+                })
+              }
+            })
+          }
         }).catch(error => {
           this.$notification.error({
             message: 'Request Failed',
@@ -146,38 +168,26 @@ export default {
         })
       })
     },
-    pollActionCompletion (jobId, title) {
-      api('queryAsyncJobResult', { jobid: jobId }).then(json => {
-        const result = json.queryasyncjobresultresponse
-        if (result.jobstatus === 1) {
-          const success = result.jobresult.imagestore.success || false
-          const message = result.jobresult.imagestore.message || ''
-          if (success) {
-            this.$notification.success({
-              message: title,
-              description: message
-            })
-          } else {
-            this.$notification.error({
-              message: title,
-              description: message,
-              duration: 0
-            })
+    checkForAddAsyncJob (json, title) {
+      let hasJobId = false
+      for (const obj in json) {
+        if (obj.includes('response')) {
+          for (const res in json[obj]) {
+            if (res === 'jobid') {
+              hasJobId = true
+              const jobId = json[obj][res]
+              this.$store.dispatch('AddAsyncJob', {
+                title: title,
+                jobid: jobId,
+                description: 'imagestore',
+                status: 'progress',
+                silent: true
+              })
+            }
           }
-        } else if (result.jobstatus === 2) {
-          this.$notification.error({
-            message: 'Data Migration Failed',
-            description: result.jobresult.errortext || 'Failed to Migrate Data',
-            duration: 0
-          })
-        } else if (result.jobstatus === 0) {
-          this.$message
-            .loading('Data migration in progress')
-            .then(() => this.pollActionCompletion(jobId, title))
         }
-      }).catch(e => {
-        console.log('Error encountered while fetching async job result' + e)
-      })
+      }
+      return hasJobId
     },
     closeAction () {
       this.$emit('close-action')
