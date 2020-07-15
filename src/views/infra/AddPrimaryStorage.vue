@@ -314,7 +314,8 @@ export default {
       } else if (this.hypervisorType === 'XenServer') {
         this.protocols = ['nfs', 'preSetup', 'iscsi', 'custom']
       } else if (this.hypervisorType === 'VMware') {
-        this.protocols = ['nfs', 'vmfs', 'custom']
+        // this.protocols = ['nfs', 'vmfs', 'custom']
+        this.protocols = ['nfs', 'preSetup', 'datastorecluster', 'custom']
       } else if (this.hypervisorType === 'Hyperv') {
         this.protocols = ['SMB']
       } else if (this.hypervisorType === 'Ovm') {
@@ -353,6 +354,15 @@ export default {
       var url
       if (server.indexOf('://') === -1) {
         url = 'presetup://' + server + path
+      } else {
+        url = server + path
+      }
+      return url
+    },
+    datastoreclusterURL (server, path) {
+      var url
+      if (server.indexOf('://') === -1) {
+        url = 'datastorecluster://' + server + path
       } else {
         url = server + path
       }
@@ -475,8 +485,22 @@ export default {
           Object.keys(smbParams).forEach((key, index) => {
             params['details[' + index.toString() + '].' + key] = smbParams[key]
           })
-        } else if (values.protocol === 'PreSetup') {
+        } else if (values.protocol === 'PreSetup' && values.hypervisor !== 'VMware') {
           url = this.presetupURL(server, path)
+        } else if (values.protocol === 'PreSetup' && values.hypervisortype === 'VMware') {
+          path = values.vCenterDataCenter
+          if (path.substring(0, 1) !== '/') {
+            path = '/' + path
+          }
+          path += '/' + values.vCenterDataStore
+          url = this.presetupURL('dummy', path)
+        } else if (values.protocol === 'datastorecluster' && values.hypervisortype === 'VMware') {
+          path = values.vCenterDataCenter
+          if (path.substring(0, 1) !== '/') {
+            path = '/' + path
+          }
+          path += '/' + values.vCenterDataStore
+          url = this.datastoreclusterURL('dummy', path)
         } else if (values.protocol === 'ocfs2') {
           url = this.ocfs2URL(server, path)
         } else if (values.protocol === 'SharedMountPoint') {
