@@ -169,7 +169,7 @@ export default {
           }
         },
         errorMethod: () => this.parentFetchData(),
-        loadingMessage: `${this.$t(action.label)} ${this.$t('label.in.progess')} ${this.$t('label.for')} ${this.resource.name}`,
+        loadingMessage: `${this.$t(action.label)} ${this.$t('label.in.progress')} ${this.$t('label.for')} ${this.resource.name}`,
         catchMessage: this.$t('error.fetching.async.job.result'),
         action
       })

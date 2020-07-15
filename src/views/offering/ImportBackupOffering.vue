@@ -159,7 +159,7 @@ export default {
                 this.parentFetchData()
                 this.closeAction()
               },
-              loadingMessage: `${title} ${this.$t('label.in.progess')} ${this.$t('label.for')} ${params.name}`,
+              loadingMessage: `${title} ${this.$t('label.in.progress')} ${this.$t('label.for')} ${params.name}`,
               catchMessage: this.$t('error.fetching.async.job.result')
             })
           }

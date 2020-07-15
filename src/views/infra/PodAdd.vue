@@ -227,7 +227,7 @@ export default {
           errorMethod: () => {
             this.loading = false
           },
-          loadingMessage: this.$t('message.dedicate.pod'),
+          loadingMessage: this.$t('message.dedicating.pod'),
           catchMessage: this.$t('error.fetching.async.job.result'),
           catchMethod: () => {
             this.loading = false

@@ -26,7 +26,7 @@
         <a-form-item :label="$t('label.name')">
           <a-input
             v-decorator="['name', {
-              rules: [{ required: true, message: $t('message.error.input.name') }]
+              rules: [{ required: true, message: $t('message.error.name') }]
             }]"
             :placeholder="apiParams.name.description"/>
         </a-form-item>

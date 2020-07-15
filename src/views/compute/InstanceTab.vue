@@ -91,7 +91,7 @@
             </a-tooltip>
             <a-tooltip placement="bottom" v-if="record.nic.type !== 'L2'">
               <template slot="title">
-                {{ $t('label.manage.secondary.ipaddress') }}
+                {{ $t('label.edit.secondary.ips') }}
               </template>
               <a-button
                 icon="environment"
