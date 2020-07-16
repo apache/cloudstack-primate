@@ -740,7 +740,7 @@ export default {
       gpuTypes: [
         {
           value: '',
-          title: 'None',
+          title: this.$t('label.none'),
           vgpu: []
         },
         {
