@@ -1587,7 +1587,7 @@ export default {
           if (jobId) {
             const result = await this.pollJob(jobId)
             if (result.jobstatus === 2) {
-              message = 'createPhysicalNetwork failed. Error: ' + result.jobresult.errortext
+              message = `createPhysicalNetwork ${this.$t('label.failed').toLowerCase()}. ${this.$t('label.error')}: ` + result.jobresult.errortext
               reject(message)
               return
             }
@@ -1616,7 +1616,9 @@ export default {
             const result = await this.pollJob(jobId)
             if (result.jobstatus === 2) {
               this.setStepStatus(STATUS_FAILED)
-              message = 'Failed to add ' + trafficType + ' traffic type to basic zone. Error: ' + result.jobresult.errortext
+              message = `${this.$t('message.failed.to.add')} ` + trafficType +
+                ` ${this.$t('message.traffic.type.to.basic.zone')}. ${this.$t('label.error')}: ` +
+                result.jobresult.errortext
               reject(message)
               return
             }

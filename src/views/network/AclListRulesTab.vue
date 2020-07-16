@@ -388,7 +388,7 @@ export default {
       })
     },
     openEditRuleModal (acl) {
-      this.ruleModalTitle = 'Edit rule'
+      this.ruleModalTitle = this.$t('label.edit.rule')
       this.ruleFormMode = 'edit'
       this.ruleForm.resetFields()
       this.ruleModalVisible = true
