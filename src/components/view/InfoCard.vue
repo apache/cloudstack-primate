@@ -44,7 +44,10 @@
                 {{ resource.instancename }}
               </a-tag>
               <a-tag v-if="resource.type">
-                {{ resource.type }}
+                <span v-if="['USER.LOGIN', 'USER.LOGOUT', 'ROUTER.HEALTH.CHECKS', 'FIREWALL.CLOSE', 'ALERT.SERVICE.DOMAINROUTER'].includes(resource.type)">{{ $t(resource.type.toLowerCase()) }}</span>
+                <span v-else>
+                  {{ resource.type }}
+                </span>
               </a-tag>
               <a-tag v-if="resource.issourcenat">
                 {{ $t('label.issourcenat') }}
