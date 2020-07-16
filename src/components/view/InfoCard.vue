@@ -29,10 +29,13 @@
               </slot>
             </div>
             <slot name="name">
-              <h4 class="name">
-                {{ resource.displayname || resource.displaytext || resource.name || resource.hostname || resource.username || resource.ipaddress || resource.virtualmachinename || resource.templatetype }}
-              </h4>
-              <console style="margin-left: 10px" :resource="resource" size="default" v-if="resource.id" />
+              <div v-if="['USER.LOGIN', 'USER.LOGOUT', 'ROUTER.HEALTH.CHECKS', 'FIREWALL.CLOSE', 'ALERT.SERVICE.DOMAINROUTER'].includes(resource.name)">{{ $t(resource.name.toLowerCase()) }}</div>
+              <div v-else>
+                <h4 class="name">
+                  {{ resource.displayname || resource.displaytext || resource.name || resource.hostname || resource.username || resource.ipaddress || resource.virtualmachinename || resource.templatetype }}
+                </h4>
+                <console style="margin-left: 10px" :resource="resource" size="default" v-if="resource.id" />
+              </div>
             </slot>
           </div>
           <slot name="actions">

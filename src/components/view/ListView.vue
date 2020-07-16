@@ -82,6 +82,10 @@
     <a slot="templatetype" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: $route.path + '/' + record.templatetype }">{{ text }}</router-link>
     </a>
+    <template slot="type" slot-scope="text">
+      <span v-if="['USER.LOGIN', 'USER.LOGOUT', 'ROUTER.HEALTH.CHECKS', 'FIREWALL.CLOSE', 'ALERT.SERVICE.DOMAINROUTER'].includes(text)">{{ $t(text.toLowerCase()) }}</span>
+      <span v-else>{{ text }}</span>
+    </template>
     <a slot="displayname" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
     </a>
