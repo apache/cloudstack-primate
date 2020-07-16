@@ -38,7 +38,7 @@
         </a-select>
       </a-form-item>
       <div class="card-footer">
-        <a-button @click="handleClose">{{ $t('Close') }}</a-button>
+        <a-button @click="handleClose">{{ $t('label.close') }}</a-button>
         <a-button :loading="loading" type="primary" @click="handleSubmit">{{ $t('label.ok') }}</a-button>
       </div>
     </a-form>

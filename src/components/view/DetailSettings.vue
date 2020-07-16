@@ -85,10 +85,10 @@
         </div>
         <div slot="actions" v-if="!disableSettings && 'updateTemplate' in $store.getters.apis && 'updateVirtualMachine' in $store.getters.apis && isAdminOrOwner()">
           <a-popconfirm
-            title="Delete setting?"
+            :title="`${$t('label.delete.setting')}?`"
             @confirm="deleteDetail(index)"
-            okText="Yes"
-            cancelText="No"
+            :okText="$t('label.yes')"
+            :cancelText="$t('label.no')"
             placement="left"
           >
             <a-button shape="circle" type="danger" icon="delete" />

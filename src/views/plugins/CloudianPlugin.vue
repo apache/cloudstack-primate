@@ -20,7 +20,7 @@
     <span v-if="showError">
       <a-alert type="error" :message="$t('message.error.cloudian.console')" showIcon />
       <br/>
-      <a-button @click="doSso()">Try Again</a-button>
+      <a-button @click="doSso()">{{ $t('label.try.again') }}</a-button>
     </span>
     <span v-else>
       <a-alert type="info" :message="$t('message.info.cloudian.console')" showIcon />

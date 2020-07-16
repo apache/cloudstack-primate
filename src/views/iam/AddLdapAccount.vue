@@ -210,7 +210,7 @@ export default {
         scopedSlots: { customRender: 'email' }
       },
       {
-        title: this.$t('Conflict'),
+        title: this.$t('label.user.conflict'),
         dataIndex: 'conflictingusersource',
         scopedSlots: { customRender: 'conflictingusersource' }
       }

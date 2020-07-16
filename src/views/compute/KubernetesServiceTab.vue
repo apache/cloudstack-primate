@@ -37,7 +37,7 @@
             <p>{{ $t('message.kubeconfig.cluster.not.available') }}</p>
           </div>
         </a-card>
-        <a-card title="Using CLI" :loading="this.versionLoading">
+        <a-card :title="$t('label.using.cli')" :loading="this.versionLoading">
           <a-timeline>
             <a-timeline-item>
               <p>

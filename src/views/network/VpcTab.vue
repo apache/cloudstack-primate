@@ -89,7 +89,7 @@
           icon="plus"
           style="width: 100%"
           :disabled="!('createPrivateGateway' in $store.getters.apis)"
-          @click="() => handleOpenModals('privateGateways')">Add Private Gateway</a-button>
+          @click="() => handleOpenModals('privateGateways')">{{ $t('label.add.private.gateway') }}</a-button>
         <a-table
           class="table"
           size="small"

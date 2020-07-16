@@ -148,7 +148,7 @@
     </div>
     <a-modal
       :visible="showError"
-      title="Error!"
+      :title="`${$t('label.error')}!`"
       @ok="() => { showError = false }"
       @cancel="() => { showError = false }"
       centered

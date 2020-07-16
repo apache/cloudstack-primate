@@ -20,7 +20,7 @@
     <div>
       <div style="margin-bottom: 10px;">
         <strong>{{ $t('label.dedicated') }}</strong>
-        <div>Yes</div>
+        <div>{{ $t('label.yes') }}</div>
       </div>
       <p>
         <strong>{{ $t('label.domainid') }}</strong><br/>
@@ -38,7 +38,7 @@
   <a-list-item v-else>
     <div>
       <strong>{{ $t('label.dedicated') }}</strong>
-      <div>No</div>
+      <div>{{ $t('label.no') }}</div>
       <a-button type="primary" style="margin-top: 10px; margin-bottom: 10px;" @click="modalActive = true" :disabled="!dedicateButtonAvailable">
         {{ dedicatedButtonLabel }}
       </a-button>
@@ -71,9 +71,9 @@ export default {
     return {
       modalActive: false,
       dedicateButtonAvailable: true,
-      dedicatedButtonLabel: 'Dedicate',
-      releaseButtonLabel: 'Release',
-      dedicatedModalLabel: 'Dedicate',
+      dedicatedButtonLabel: this.$t('label.dedicate'),
+      releaseButtonLabel: this.$t('label.release'),
+      dedicatedModalLabel: this.$t('label.dedicate'),
       dedicatedDomainId: null,
       dedicatedAccountId: null
     }

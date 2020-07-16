@@ -123,7 +123,7 @@
       </template>
     </a-pagination>
 
-    <a-modal title="Edit Tags" v-model="tagsModalVisible" :footer="null" :afterClose="closeModal">
+    <a-modal :title="$t('label.edit.tags')" v-model="tagsModalVisible" :footer="null" :afterClose="closeModal">
       <span v-show="tagsModalLoading" class="tags-modal-loading">
         <a-icon type="loading"></a-icon>
       </span>
@@ -154,7 +154,7 @@
     </a-modal>
 
     <a-modal
-      title="Add VM"
+      :title="$t('label.add.vm')"
       v-model="addVmModalVisible"
       class="vm-modal"
       width="60vw"

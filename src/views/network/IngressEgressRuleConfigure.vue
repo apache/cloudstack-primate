@@ -20,10 +20,10 @@
 
     <div>
       <div style="margin-bottom: 20px;">
-        <div class="form__label">Add by:</div>
+        <div class="form__label">{{ $t('label.add.by') }}:</div>
         <a-radio-group @change="resetAllRules" v-model="addType">
-          <a-radio value="cidr">CIDR</a-radio>
-          <a-radio value="account">Account</a-radio>
+          <a-radio value="cidr">{{ $t('label.cidr') }}</a-radio>
+          <a-radio value="account">{{ $t('label.account') }}</a-radio>
         </a-radio-group>
       </div>
 
@@ -59,11 +59,11 @@
           <a-input v-model="newRule.icmpcode"></a-input>
         </div>
         <div class="form__item" v-if="addType === 'cidr'">
-          <div class="form__label">CIDR</div>
+          <div class="form__label">{{ $t('label.cidr') }}</div>
           <a-input v-model="newRule.cidrlist"></a-input>
         </div>
         <div class="form__item" v-if="addType === 'account'">
-          <div class="form__label">Account, Security Group</div>
+          <div class="form__label">{{ $t('label.account.and.security.group') }}</div>
           <div style="display:flex;">
             <a-input v-model="newRule.usersecuritygrouplist.account" style="margin-right: 10px;"></a-input>
             <a-input v-model="newRule.usersecuritygrouplist.group"></a-input>
@@ -205,19 +205,19 @@ export default {
           scopedSlots: { customRender: 'endport' }
         },
         {
-          title: 'ICMP Type',
+          title: this.$t('label.icmptype'),
           dataIndex: 'icmptype'
         },
         {
-          title: 'ICMP Code',
+          title: this.$t('label.icmpcode'),
           dataIndex: 'icmpcode'
         },
         {
-          title: 'CIDR',
+          title: this.$t('label.cidr'),
           dataIndex: 'cidr'
         },
         {
-          title: 'Account, Security Group',
+          title: this.$t('label.account.and.security.group'),
           scopedSlots: { customRender: 'account' }
         },
         {
