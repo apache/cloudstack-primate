@@ -241,7 +241,7 @@ export default {
             this.componentLoading = false
             this.fetchData()
           },
-          errorMessage: 'Removing failed',
+          errorMessage: this.$t('message.remove.failed'),
           errorMethod: () => {
             this.componentLoading = false
             this.fetchData()

@@ -268,17 +268,17 @@ export default {
         this.$pollJob({
           jobId: this.tabType === 'ingress' ? response.authorizesecuritygroupingressresponse.jobid
             : response.authorizesecuritygroupegressresponse.jobid,
-          successMessage: `Successfully added new rule`,
+          successMessage: this.$t('message.success.add.rule'),
           successMethod: () => {
             this.parentFetchData()
             this.parentToggleLoading()
           },
-          errorMessage: 'Failed to add new rule',
+          errorMessage: this.$t('message.add.rule.failed'),
           errorMethod: () => {
             this.parentFetchData()
             this.parentToggleLoading()
           },
-          loadingMessage: `Adding new security-group rule...`,
+          loadingMessage: this.$t('message.add.rule.processing'),
           catchMessage: this.$t('error.fetching.async.job.result'),
           catchMethod: () => {
             this.parentFetchData()
