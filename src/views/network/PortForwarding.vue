@@ -117,7 +117,11 @@
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="handleChangePage"
       @showSizeChange="handleChangePageSize"
-      showSizeChanger/>
+      showSizeChanger>
+      <template slot="buildOptionText" slot-scope="props">
+        <span>{{ props.value }} / {{ $t('label.page') }}</span>
+      </template>
+    </a-pagination>
 
     <a-modal title="Edit Tags" v-model="tagsModalVisible" :footer="null" :afterClose="closeModal">
       <span v-show="tagsModalLoading" class="tags-modal-loading">
@@ -224,7 +228,11 @@
           :pageSizeOptions="['10', '20', '40', '80', '100']"
           @change="handleChangePage"
           @showSizeChange="handleChangePageSize"
-          showSizeChanger/>
+          showSizeChanger>
+          <template slot="buildOptionText" slot-scope="props">
+            <span>{{ props.value }} / {{ $t('label.page') }}</span>
+          </template>
+        </a-pagination>
       </div>
     </a-modal>
   </div>
