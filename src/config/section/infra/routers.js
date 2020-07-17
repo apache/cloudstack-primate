@@ -77,7 +77,7 @@ export default {
             return {
               virtualmachineid: record.virtualmachineid,
               issystem: true,
-              systemvmtype: ['VIRTUAL_ROUTER', 'LB', 'INTERNAL_LB_VM', 'NETSCALER_VM'].includes(record.role) ? 'domainrouter' : null
+              systemvmtype: 'domainrouter'
             }
           }
         }
