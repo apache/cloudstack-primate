@@ -574,6 +574,7 @@
 "label.cpuused": "CPU Utilized",
 "label.cpuusedghz": "Used CPU",
 "label.create.backup": "Start Backup",
+"label.create.network": "Create New Network",
 "label.create.nfs.secondary.staging.storage": "Create NFS Secondary Staging Store",
 "label.create.nfs.secondary.staging.store": "Create NFS secondary staging store",
 "label.create.project": "Create project",
