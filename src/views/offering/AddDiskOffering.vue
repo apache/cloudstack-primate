@@ -398,10 +398,28 @@
             :filterOption="(input, option) => {
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
+            @select="val => fetchvSphereStoragePolicies(val)"
             :loading="zoneLoading"
             :placeholder="this.$t('label.zoneid')">
             <a-select-option v-for="(opt, optIndex) in this.zones" :key="optIndex">
               {{ opt.name || opt.description }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item v-if="'listVsphereStoragePolicies' in $store.getters.apis && storagePolicies !== null">
+          <span slot="label">
+            {{ $t('label.vmware.storage.policy') }}
+            <a-tooltip :title="apiParams.storagetype.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
+          <a-select
+            v-decorator="['storagepolicy', {
+              rules: [{ required: true, message: $t('message.error.select') }]
+            }]"
+            :placeholder="apiParams.storagepolicy.description">
+            <a-select-option v-for="policy in this.storagePolicies" :key="policy.id">
+              {{ policy.name || policy.id }}
             </a-select-option>
           </a-select>
         </a-form-item>
@@ -420,6 +438,10 @@ import { api } from '@/api'
 export default {
   name: 'AddDiskOffering',
   props: {
+    resource: {
+      type: Object,
+      required: true
+    }
   },
   components: {
   },
@@ -432,8 +454,9 @@ export default {
       isCustomizedDiskIops: false,
       writeCacheType: 'none',
       selectedDomains: [],
-      selectedZones: [],
+      selectedZoneIndex: [],
       storageTags: [],
+      storagePolicies: null,
       storageTagLoading: false,
       isPublic: true,
       domains: [],
@@ -444,7 +467,11 @@ export default {
     }
   },
   beforeCreate () {
-    this.form = this.$form.createForm(this)
+    this.form = this.$form.createForm(this, {
+      onValuesChange: (_, values) => {
+        this.selectedZoneIndex = values.zoneid
+      }
+    })
     this.apiParams = {}
     var apiConfig = this.$store.getters.apis.createDiskOffering || {}
     apiConfig.params.forEach(param => {
@@ -516,6 +543,18 @@ export default {
         }
       }).finally(() => {
         this.storageTagLoading = false
+      })
+    },
+    fetchvSphereStoragePolicies (zoneIndex) {
+      if (zoneIndex === 0 || this.selectedZoneIndex.length > 1) {
+        this.storagePolicies = null
+        return
+      }
+      const zoneid = this.zones[zoneIndex].id
+      api('listVsphereStoragePolicies', {
+        zoneid: zoneid
+      }).then(response => {
+        this.storagePolicies = response.listvspherestoragepoliciesresponse.StoragePolicy
       })
     },
     handleStorageTypeChange (val) {
@@ -605,6 +644,9 @@ export default {
         }
         if (zoneId) {
           params.zoneid = zoneId
+        }
+        if (values.storagepolicy) {
+          params.storagepolicy = values.storagepolicy
         }
         api('createDiskOffering', params).then(json => {
           this.$message.success(this.$t('message.disk.offering.created', { name: values.name }))

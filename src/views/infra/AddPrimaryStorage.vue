@@ -89,12 +89,13 @@
           </a-select>
         </a-form-item>
         <div
-          v-if="protocolSelected === 'nfs' || protocolSelected === 'SMB' || protocolSelected === 'iscsi' || protocolSelected === 'vmfs'|| protocolSelected === 'Gluster'">
+          v-if="protocolSelected === 'nfs' || protocolSelected === 'SMB' || protocolSelected === 'iscsi' || protocolSelected === 'vmfs'|| protocolSelected === 'Gluster' ||
+            (protocolSelected === 'PreSetup' && hypervisorType === 'VMware') || protocolSelected === 'datastorecluster'">
           <a-form-item :label="$t('label.server')">
             <a-input v-decorator="['server', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]" />
           </a-form-item>
         </div>
-        <div v-if="protocolSelected === 'nfs' || protocolSelected === 'SMB' || protocolSelected === 'ocfs2' || protocolSelected === 'preSetup'|| protocolSelected === 'SharedMountPoint'">
+        <div v-if="protocolSelected === 'nfs' || protocolSelected === 'SMB' || protocolSelected === 'ocfs2' || (protocolSelected === 'PreSetup' && hypervisorType !== 'VMware') || protocolSelected === 'SharedMountPoint'">
           <a-form-item :label="$t('label.path')">
             <a-input v-decorator="['path', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]" />
           </a-form-item>
@@ -118,7 +119,7 @@
             <a-input v-decorator="['lun', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]"/>
           </a-form-item>
         </div>
-        <div v-if="protocolSelected === 'vmfs'">
+        <div v-if="protocolSelected === 'vmfs' || (protocolSelected === 'PreSetup' && hypervisorType === 'VMware') || protocolSelected === 'datastorecluster'">
           <a-form-item :label="$t('label.vcenterdatacenter')">
             <a-input v-decorator="['vCenterDataCenter', { rules: [{ required: true, message: `${this.$t('label.required')}` }] }]"/>
           </a-form-item>
@@ -312,10 +313,9 @@ export default {
       if (this.hypervisorType === 'KVM') {
         this.protocols = ['nfs', 'SharedMountPoint', 'RBD', 'CLVM', 'Gluster', 'custom']
       } else if (this.hypervisorType === 'XenServer') {
-        this.protocols = ['nfs', 'preSetup', 'iscsi', 'custom']
+        this.protocols = ['nfs', 'PreSetup', 'iscsi', 'custom']
       } else if (this.hypervisorType === 'VMware') {
-        // this.protocols = ['nfs', 'vmfs', 'custom']
-        this.protocols = ['nfs', 'preSetup', 'datastorecluster', 'custom']
+        this.protocols = ['nfs', 'PreSetup', 'datastorecluster', 'custom']
       } else if (this.hypervisorType === 'Hyperv') {
         this.protocols = ['SMB']
       } else if (this.hypervisorType === 'Ovm') {
@@ -487,14 +487,14 @@ export default {
           })
         } else if (values.protocol === 'PreSetup' && values.hypervisor !== 'VMware') {
           url = this.presetupURL(server, path)
-        } else if (values.protocol === 'PreSetup' && values.hypervisortype === 'VMware') {
+        } else if (values.protocol === 'PreSetup' && values.hypervisor === 'VMware') {
           path = values.vCenterDataCenter
           if (path.substring(0, 1) !== '/') {
             path = '/' + path
           }
           path += '/' + values.vCenterDataStore
           url = this.presetupURL('dummy', path)
-        } else if (values.protocol === 'datastorecluster' && values.hypervisortype === 'VMware') {
+        } else if (values.protocol === 'datastorecluster' && values.hypervisor === 'VMware') {
           path = values.vCenterDataCenter
           if (path.substring(0, 1) !== '/') {
             path = '/' + path
