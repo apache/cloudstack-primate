@@ -479,13 +479,14 @@ export default {
           message: 'Upload Successful',
           description: 'This template file has been uploaded. Please check its status at Templates menu'
         })
-        this.closeAction()
       }).catch(e => {
         this.$notification.error({
           message: 'Upload Failed',
           description: `Failed to upload Template -  ${e}`,
           duration: 0
         })
+      }).finally(() => {
+        this.$emit('refresh-data')
         this.closeAction()
       })
     },
@@ -852,7 +853,6 @@ export default {
         if (this.currentForm === 'Create') {
           this.loading = true
           api('registerTemplate', params).then(json => {
-            this.$emit('refresh-data')
             this.$notification.success({
               message: 'Register Template',
               description: 'Successfully registered template ' + params.name
@@ -861,6 +861,7 @@ export default {
             this.$notifyError(error)
           }).finally(() => {
             this.loading = false
+            this.$emit('refresh-data')
             this.closeAction()
           })
         } else {

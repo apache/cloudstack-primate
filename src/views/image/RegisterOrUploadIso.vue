@@ -293,14 +293,15 @@ export default {
           message: 'Upload Successful',
           description: 'This ISO file has been uploaded. Please check its status at Templates menu'
         })
-        this.closeAction()
       }).catch(e => {
         this.$notification.error({
           message: 'Upload Failed',
           description: `Failed to upload ISO -  ${e}`,
           duration: 0
         })
+      }).finally(() => {
         this.closeAction()
+        this.$emit('refresh-data')
       })
     },
     handleSubmit (e) {
@@ -336,7 +337,6 @@ export default {
         if (this.currentForm === 'Create') {
           this.loading = true
           api('registerIso', params).then(json => {
-            this.$emit('refresh-data')
             this.$notification.success({
               message: this.$t('label.action.register.iso'),
               description: 'Sucessfully registered ISO ' + params.name
@@ -346,6 +346,7 @@ export default {
           }).finally(() => {
             this.loading = false
             this.closeAction()
+            this.$emit('refresh-data')
           })
         } else {
           if (this.fileList.length !== 1) {
@@ -366,6 +367,7 @@ export default {
             this.$notifyError(error)
           }).finally(() => {
             this.loading = false
+            this.$emit('refresh-data')
           })
         }
       })
