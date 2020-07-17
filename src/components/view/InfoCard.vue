@@ -795,8 +795,8 @@ export default {
     },
     handleDeleteTag (tag) {
       const args = {}
-      args.resourceids = tag.resourceid
-      args.resourcetype = tag.resourcetype
+      args.resourceids = this.resource.id
+      args.resourcetype = this.resourceType
       args['tags[0].key'] = tag.key
       args['tags[0].value'] = tag.value
       api('deleteTags', args).then(json => {
