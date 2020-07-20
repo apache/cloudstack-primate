@@ -1642,7 +1642,7 @@
 "label.removing.user": "Removing User",
 "label.replace.acl": "Replace ACL",
 "label.replace.acl.list": "Replace ACL List",
-"label.report.bug": "Report Bug",
+"label.report.bug": "Report Issue",
 "label.required": "Required",
 "label.requireshvm": "HVM",
 "label.requiresupgrade": "Requires Upgrade",
