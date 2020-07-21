@@ -221,9 +221,9 @@ const user = {
       jobsArray.push(jobJson)
       commit('SET_ASYNC_JOB_IDS', jobsArray)
     },
-    ProjectView ({ commit }) {
+    ProjectView ({ commit }, projectid) {
       return new Promise((resolve, reject) => {
-        api('listApis').then(response => {
+        api('listApis', { projectid: projectid }).then(response => {
           const apis = {}
           const apiList = response.listapisresponse.api
           for (var idx = 0; idx < apiList.length; idx++) {
