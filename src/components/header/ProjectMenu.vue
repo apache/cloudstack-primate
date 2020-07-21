@@ -90,6 +90,7 @@ export default {
     },
     changeProject (index) {
       const project = this.projects[index]
+      this.$store.dispatch('ProjectView')
       this.$store.dispatch('SetProject', project)
       this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
       this.$message.success(`Switched to "${project.name}"`)

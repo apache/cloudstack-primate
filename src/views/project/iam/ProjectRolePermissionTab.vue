@@ -207,7 +207,7 @@ export default {
       api('updateProjectRolePermission', {
         projectid: this.resource.id,
         projectroleid: this.role.id,
-        projectruleid: record.id,
+        projectrolepermissionid: record.id,
         permission: value
       }).then(() => {
         this.fetchData()

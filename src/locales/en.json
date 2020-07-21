@@ -1426,6 +1426,7 @@
 "label.owned.public.ips": "Owned Public IP Addresses",
 "label.owner.account": "Owner Account",
 "label.owner.domain": "Owner Domain",
+"label.owners": "Owners",
 "label.pa": "Palo Alto",
 "label.palo.alto.details": "Palo Alto details",
 "label.palo.alto.firewall": "Palo Alto Firewall",

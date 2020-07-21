@@ -220,6 +220,29 @@ const user = {
       var jobsArray = Vue.ls.get(ASYNC_JOB_IDS, [])
       jobsArray.push(jobJson)
       commit('SET_ASYNC_JOB_IDS', jobsArray)
+    },
+    ProjectView ({ commit }) {
+      return new Promise((resolve, reject) => {
+        api('listApis').then(response => {
+          const apis = {}
+          const apiList = response.listapisresponse.api
+          for (var idx = 0; idx < apiList.length; idx++) {
+            const api = apiList[idx]
+            const apiName = api.name
+            apis[apiName] = {
+              params: api.params,
+              response: api.response
+            }
+          }
+          commit('SET_APIS', apis)
+          resolve(apis)
+          store.dispatch('GenerateRoutes', { apis }).then(() => {
+            router.addRoutes(store.getters.addRouters)
+          })
+        }).catch(error => {
+          reject(error)
+        })
+      })
     }
   }
 }

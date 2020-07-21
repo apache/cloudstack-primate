@@ -19,7 +19,6 @@
 </template>
 <script>
 import DetailsTab from '@/components/view/DetailsTab'
-import { api } from '@/api'
 export default {
   name: 'ProjectDetailsTab',
   components: {
@@ -42,22 +41,17 @@ export default {
   },
   methods: {
     fetchProjectAccounts () {
-      api('listProjectAccounts', { projectid: this.resource.id }).then(json => {
-        var listProjectAccount = json.listprojectaccountsresponse.projectaccount || []
-        this.$set(this.resource, 'users', listProjectAccount)
-        listProjectAccount = listProjectAccount.filter(account => {
-          return (((account.userid && account.userid === this.$store.getters.userInfo.id) ||
-          account.account === this.$store.getters.userInfo.account) &&
-          account.role === 'Admin')
-        })
-        var isCurrentUserProjectAdmin = false
-        if (listProjectAccount.length > 0) {
-          isCurrentUserProjectAdmin = true
-        }
-        this.$set(this.resource, 'isCurrentUserProjectAdmin', isCurrentUserProjectAdmin)
-      }).catch(error => {
-        this.$notifyError(error)
+      var owner = this.resource.owner
+      owner = owner.filter(projectaccount => {
+        return (projectaccount.userid && projectaccount.userid === this.$store.getters.userInfo.id) ||
+          projectaccount.account === this.$store.getters.userInfo.account &&
+          projectaccount.role === 'Admin'
       })
+      var isCurrentUserProjectAdmin = false
+      if (owner.length > 0) {
+        isCurrentUserProjectAdmin = true
+      }
+      this.$set(this.resource, 'isCurrentUserProjectAdmin', isCurrentUserProjectAdmin)
     }
   }
 }
