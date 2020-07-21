@@ -255,11 +255,11 @@
               <a-step
                 :title="$t('label.ovf.properties')"
                 :status="zoneSelected ? 'process' : 'wait'"
-                v-if="vm.templateid && template.properties && template.properties.length > 0">
+                v-if="vm.templateid && templateProperties && templateProperties.length > 0">
                 <template slot="description">
                   <div>
                     <a-form-item
-                      v-for="(property, propertyIndex) in template.properties"
+                      v-for="(property, propertyIndex) in templateProperties"
                       :key="propertyIndex"
                       :v-bind="property.key" >
                       <span slot="label">
@@ -532,6 +532,7 @@ export default {
       },
       instanceConfig: {},
       template: {},
+      templateProperties: [],
       iso: {},
       hypervisor: '',
       serviceOffering: {},
@@ -771,6 +772,11 @@ export default {
     '$route' (to, from) {
       if (to.name === 'deployVirtualMachine') {
         this.resetData()
+      }
+    },
+    template (newValue, oldValue) {
+      if (newValue) {
+        this.templateProperties = this.fetchTemplateProperties(newValue)
       }
     },
     instanceConfig (instanceConfig) {
@@ -1020,6 +1026,27 @@ export default {
     },
     getText (option) {
       return _.get(option, 'displaytext', _.get(option, 'name'))
+    },
+    fetchTemplateProperties (template) {
+      var properties = []
+      if (template && template.details && Object.keys(template.details).length > 0) {
+        var keys = Object.keys(template.details)
+        keys = keys.filter(key => key.startsWith('ovfProperty-') && key.endsWith('-label'))
+        for (var key of keys) {
+          const property = key.replace('-label', '')
+          var propertyMap = {
+            key: property.replace('ovfProperty', ''),
+            label: template.details[key],
+            description: template.details[property + '-description'],
+            type: template.details[property + '-type'],
+            default: template.details[property + '-default'],
+            password: template.details[property + '-password'],
+            qualifiers: template.details[property + '-qualifiers']
+          }
+          properties.push(propertyMap)
+        }
+      }
+      return properties
     },
     handleSubmit (e) {
       console.log('wizard submit')
