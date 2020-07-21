@@ -91,11 +91,15 @@
       :current="page"
       :pageSize="pageSize"
       :total="totalCount"
-      :showTotal="total => `Total ${total} items`"
+      :showTotal="total => `Total ${total} ${$t('label.items')}`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="handleChangePage"
       @showSizeChange="handleChangePageSize"
-      showSizeChanger/>
+      showSizeChanger>
+      <template slot="buildOptionText" slot-scope="props">
+        <span>{{ props.value }} / {{ $t('label.page') }}</span>
+      </template>
+    </a-pagination>
 
     <a-modal :title="$t('label.edit.tags')" v-model="tagsModalVisible" :footer="null" :afterClose="closeModal">
       <div class="add-tags">
@@ -107,17 +111,17 @@
           <p class="add-tags__label">{{ $t('label.value') }}</p>
           <a-input v-model="newTag.value"></a-input>
         </div>
-        <a-button type="primary" :disabled="!('createTag' in $store.getters.apis)" @click="() => handleAddTag()" :loading="addTagLoading">{{ $t('label.add') }}</a-button>
+        <a-button type="primary" :disabled="!('createTags' in $store.getters.apis)" @click="() => handleAddTag()" :loading="addTagLoading">{{ $t('label.add') }}</a-button>
       </div>
 
       <a-divider></a-divider>
 
       <div class="tags-container">
-        <div class="tags" v-for="(tag, index) in tags" :key="index">
-          <a-tag :key="index" :closable="'deleteTag' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
+        <template class="tags" v-for="(tag) in tags">
+          <a-tag :key="tag.key" :closable="'deleteTags' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
             {{ tag.key }} = {{ tag.value }}
           </a-tag>
-        </div>
+        </template>
       </div>
 
       <a-button class="add-tags-done" @click="tagsModalVisible = false" type="primary">{{ $t('label.done') }}</a-button>
@@ -296,7 +300,7 @@ export default {
         resourceType: 'FirewallRule',
         listAll: true
       }).then(response => {
-        this.tags = response.listtagsresponse.tag
+        this.tags = response.listtagsresponse.tag || []
       }).catch(error => {
         this.$notifyError(error)
         this.closeModal()

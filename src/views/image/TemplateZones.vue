@@ -54,11 +54,15 @@
       :current="page"
       :pageSize="pageSize"
       :total="itemCount"
-      :showTotal="total => `Total ${total} items`"
+      :showTotal="total => `Total ${total} ${$t('label.items')}`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="handleChangePage"
       @showSizeChange="handleChangePageSize"
-      showSizeChanger/>
+      showSizeChanger>
+      <template slot="buildOptionText" slot-scope="props">
+        <span>{{ props.value }} / {{ $t('label.page') }}</span>
+      </template>
+    </a-pagination>
 
     <a-modal
       v-if="'copyTemplate' in $store.getters.apis"
@@ -176,15 +180,18 @@ export default {
         title: this.$t('label.isready'),
         dataIndex: 'isready',
         scopedSlots: { customRender: 'isready' }
-      },
-      {
+      }
+    ]
+    if (this.isActionPermitted()) {
+      this.columns.push({
         title: '',
         dataIndex: 'action',
         fixed: 'right',
         width: 100,
         scopedSlots: { customRender: 'action' }
-      }
-    ]
+      })
+    }
+
     const userInfo = this.$store.getters.userInfo
     if (!['Admin'].includes(userInfo.roletype) &&
       (userInfo.account !== this.resource.account || userInfo.domain !== this.resource.domain)) {
@@ -231,6 +238,11 @@ export default {
       this.page = currentPage
       this.pageSize = pageSize
       this.fetchData()
+    },
+    isActionPermitted () {
+      return (['Admin'].includes(this.$store.getters.userInfo.roletype) ||
+        (this.resource.domainid === this.$store.getters.userInfo.domainid && this.resource.account === this.$store.getters.userInfo.account)) &&
+        this.resource.isready && this.resource.templatetype !== 'SYSTEM'
     },
     deleteTemplate () {
       const params = {

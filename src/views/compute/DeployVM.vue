@@ -89,12 +89,18 @@
                           :selected="tabKey"
                           :loading="loading.templates"
                           :preFillContent="dataPreFill"
-                          @update-template-iso="updateFieldValue"
-                        ></template-iso-selection>
+                          @update-template-iso="updateFieldValue" />
+                        <span>
+                          {{ $t('label.override.rootdisk.size') }}
+                          <a-switch @change="val => { this.showRootDiskSizeChanger = val }" style="margin-left: 10px;"/>
+                        </span>
                         <disk-size-selection
+                          v-show="showRootDiskSizeChanger"
                           input-decorator="rootdisksize"
                           :preFillContent="dataPreFill"
-                          @update-disk-size="updateFieldValue"/>
+                          :minDiskSize="dataPreFill.minrootdisksize"
+                          @update-disk-size="updateFieldValue"
+                          style="margin-top: 10px;"/>
                       </p>
                       <p v-else>
                         {{ $t('message.iso.desc') }}
@@ -204,24 +210,6 @@
                 </template>
               </a-step>
               <a-step
-                :title="this.$t('label.affinity.groups')"
-                :status="zoneSelected ? 'process' : 'wait'">
-                <template slot="description">
-                  <div v-if="zoneSelected">
-                    <affinity-group-selection
-                      :items="options.affinityGroups"
-                      :row-count="rowCount.affinityGroups"
-                      :zoneId="zoneId"
-                      :value="affinityGroupIds"
-                      :loading="loading.affinityGroups"
-                      :preFillContent="dataPreFill"
-                      @select-affinity-group-item="($event) => updateAffinityGroups($event)"
-                      @handle-search-filter="($event) => handleSearchFilter('affinityGroups', $event)"
-                    ></affinity-group-selection>
-                  </div>
-                </template>
-              </a-step>
-              <a-step
                 :title="this.$t('label.networks')"
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
@@ -265,25 +253,76 @@
                 </template>
               </a-step>
               <a-step
-                :title="this.$t('label.details')"
+                :title="$t('label.ovf.properties')"
+                :status="zoneSelected ? 'process' : 'wait'"
+                v-if="vm.templateid && template.properties && template.properties.length > 0">
+                <template slot="description">
+                  <div>
+                    <a-form-item
+                      v-for="(property, propertyIndex) in template.properties"
+                      :key="propertyIndex"
+                      :v-bind="property.key" >
+                      <span slot="label">
+                        {{ property.label }}
+                        <a-tooltip :title="property.description">
+                          <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                        </a-tooltip>
+                      </span>
+
+                      <span v-if="property.type && property.type==='boolean'">
+                        <a-switch
+                          v-decorator="['properties.' + property.key, { initialValue: property.value==='TRUE'?true:false}]"
+                          :defaultChecked="property.value==='TRUE'?true:false"
+                          :placeholder="property.description"
+                        />
+                      </span>
+                      <span v-else-if="property.type && (property.type==='int' || property.type==='real')">
+                        <a-input-number
+                          v-decorator="['properties.'+property.key]"
+                          :defaultValue="property.value"
+                          :placeholder="property.description"
+                          :min="property.qualifiers && property.qualifiers.includes('MinValue') && property.qualifiers.includes('MaxValue')?property.qualifiers.split(',')[0].replace('MinValue(','').slice(0, -1):0"
+                          :max="property.qualifiers && property.qualifiers.includes('MinValue') && property.qualifiers.includes('MaxValue')?property.qualifiers.split(',')[1].replace('MaxValue(','').slice(0, -1):property.type==='real'?1:Number.MAX_SAFE_INTEGER" />
+                      </span>
+                      <span v-else-if="property.type && property.type==='string' && property.qualifiers && property.qualifiers.startsWith('ValueMap')">
+                        <a-select
+                          showSearch
+                          optionFilterProp="children"
+                          v-decorator="['properties.' + property.key, { initialValue: property.value }]"
+                          :placeholder="property.description"
+                          :filterOption="(input, option) => {
+                            return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                          }"
+                        >
+                          <a-select-option :v-if="property.value===''" key="">{{ }}</a-select-option>
+                          <a-select-option v-for="opt in property.qualifiers.replace('ValueMap','').substr(1).slice(0, -1).split(',')" :key="removeQuotes(opt)">
+                            {{ removeQuotes(opt) }}
+                          </a-select-option>
+                        </a-select>
+                      </span>
+                      <span v-else-if="property.type && property.type==='string' && property.password">
+                        <a-input-password
+                          v-decorator="['properties.' + property.key, { initialValue: property.value }]"
+                          :placeholder="property.description" />
+                      </span>
+                      <span v-else>
+                        <a-input
+                          v-decorator="['properties.' + property.key, { initialValue: property.value }]"
+                          :placeholder="property.description" />
+                      </span>
+                    </a-form-item>
+                  </div>
+                </template>
+              </a-step>
+              <a-step
+                :title="$t('label.advanced.mode')"
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description" v-if="zoneSelected">
-                  {{ $t('message.vm.review.launch') }}
-                  <div style="margin-top: 15px">
-                    <a-form-item :label="$t('label.name.optional')">
-                      <a-input
-                        v-decorator="['name']"
-                      />
-                    </a-form-item>
-                    <a-form-item :label="$t('label.group.optional')">
-                      <a-input v-decorator="['group']" />
-                    </a-form-item>
-                    <a-form-item :label="$t('label.keyboard')">
-                      <a-select
-                        v-decorator="['keyboard']"
-                        :options="keyboardSelectOptions"
-                      ></a-select>
-                    </a-form-item>
+                  <span>
+                    {{ $t('label.isadvanced') }}
+                    <a-switch @change="val => { this.showDetails = val }" style="margin-left: 10px"/>
+                  </span>
+                  <div style="margin-top: 15px" v-show="this.showDetails">
                     <div
                       v-if="vm.templateid && ['KVM', 'VMware'].includes(hypervisor)">
                       <a-form-item :label="$t('label.vm.boottype')">
@@ -316,6 +355,40 @@
                       <a-textarea
                         v-decorator="['userdata']">
                       </a-textarea>
+                    </a-form-item>
+                    <a-form-item :label="this.$t('label.affinity.groups')">
+                      <affinity-group-selection
+                        :items="options.affinityGroups"
+                        :row-count="rowCount.affinityGroups"
+                        :zoneId="zoneId"
+                        :value="affinityGroupIds"
+                        :loading="loading.affinityGroups"
+                        :preFillContent="dataPreFill"
+                        @select-affinity-group-item="($event) => updateAffinityGroups($event)"
+                        @handle-search-filter="($event) => handleSearchFilter('affinityGroups', $event)"/>
+                    </a-form-item>
+                  </div>
+                </template>
+              </a-step>
+              <a-step
+                :title="this.$t('label.details')"
+                :status="zoneSelected ? 'process' : 'wait'">
+                <template slot="description" v-if="zoneSelected">
+                  <div style="margin-top: 15px">
+                    {{ $t('message.vm.review.launch') }}
+                    <a-form-item :label="$t('label.name.optional')">
+                      <a-input
+                        v-decorator="['name']"
+                      />
+                    </a-form-item>
+                    <a-form-item :label="$t('label.group.optional')">
+                      <a-input v-decorator="['group']" />
+                    </a-form-item>
+                    <a-form-item :label="$t('label.keyboard')">
+                      <a-select
+                        v-decorator="['keyboard']"
+                        :options="keyboardSelectOptions"
+                      ></a-select>
                     </a-form-item>
                   </div>
                 </template>
@@ -505,7 +578,9 @@ export default {
         }
       ],
       tabKey: 'templateid',
-      dataPreFill: {}
+      dataPreFill: {},
+      showDetails: false,
+      showRootDiskSizeChanger: false
     }
   },
   computed: {
@@ -792,6 +867,9 @@ export default {
     }
   },
   methods: {
+    removeQuotes (value) {
+      return value.replace(/"/g, '')
+    },
     fillValue (field) {
       this.form.getFieldDecorator([field], { initialValue: this.dataPreFill[field] })
     },
@@ -880,6 +958,10 @@ export default {
           templateid: value,
           isoid: null
         })
+        const templates = this.options.templates.filter(x => x.id === value)
+        if (templates.length > 0) {
+          this.dataPreFill.minrootdisksize = templates[0].size / (1024 * 1024 * 1024) || 0 // bytes to GB
+        }
       } else if (name === 'isoid') {
         this.tabKey = 'isoid'
         this.form.setFieldsValue({
@@ -1042,6 +1124,13 @@ export default {
         deployVmData.name = values.name
         deployVmData.displayname = values.name
         // step 8: enter setup
+        if ('properties' in values) {
+          const keys = Object.keys(values.properties)
+          for (var i = 0; i < keys.length; ++i) {
+            deployVmData['properties[' + i + '].key'] = keys[i]
+            deployVmData['properties[' + i + '].value'] = values.properties[keys[i]]
+          }
+        }
         if ('bootintosetup' in values) {
           deployVmData.bootintosetup = values.bootintosetup
         }

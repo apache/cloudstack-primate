@@ -374,7 +374,8 @@
           <div class="resource-detail-item__label">{{ $t('label.serviceofferingname') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="cloud" />
-            <router-link v-if="$router.resolve('/computeoffering/' + resource.serviceofferingid).route.name !== '404'" :to="{ path: '/computeoffering/' + resource.serviceofferingid }">{{ resource.serviceofferingname || resource.serviceofferingid }} </router-link>
+            <router-link v-if="$route.meta.name === 'router'" :to="{ path: '/computeoffering/' + resource.serviceofferingid, query: { issystem: true } }">{{ resource.serviceofferingname || resource.serviceofferingid }} </router-link>
+            <router-link v-else-if="$router.resolve('/computeoffering/' + resource.serviceofferingid).route.name !== '404'" :to="{ path: '/computeoffering/' + resource.serviceofferingid }">{{ resource.serviceofferingname || resource.serviceofferingid }} </router-link>
             <span v-else>{{ resource.serviceofferingname || resource.serviceofferingid }}</span>
           </div>
         </div>
@@ -575,9 +576,9 @@
               @blur="handleInputConfirm"
               @keyup.enter="handleInputConfirm"
               compact>
-              <a-input ref="input" :value="inputKey" @change="handleKeyChange" style="width: 30%; text-align: center" placeholder="Key" />
+              <a-input ref="input" :value="inputKey" @change="handleKeyChange" style="width: 30%; text-align: center" :placeholder="$t('label.key')" />
               <a-input style=" width: 30px; border-left: 0; pointer-events: none; backgroundColor: #fff" placeholder="=" disabled />
-              <a-input :value="inputValue" @change="handleValueChange" style="width: 30%; text-align: center; border-left: 0" placeholder="Value" />
+              <a-input :value="inputValue" @change="handleValueChange" style="width: 30%; text-align: center; border-left: 0" :placeholder="$t('label.value')" />
               <a-button shape="circle" size="small" @click="handleInputConfirm">
                 <a-icon type="check"/>
               </a-button>
@@ -587,7 +588,7 @@
             </a-input-group>
           </div>
           <a-tag @click="showInput" style="background: #fff; borderStyle: dashed;" v-else-if="'createTags' in $store.getters.apis">
-            <a-icon type="plus" /> New Tag
+            <a-icon type="plus" /> {{ $t('label.new.tag') }}
           </a-tag>
         </div>
       </div>
@@ -595,7 +596,7 @@
       <div class="account-center-team" v-if="annotationType && 'listAnnotations' in $store.getters.apis">
         <a-divider :dashed="true"/>
         <div class="title">
-          Comments ({{ notes.length }})
+          {{ $t('label.comments') }} ({{ notes.length }})
         </div>
         <a-list
           v-if="notes.length"
@@ -632,13 +633,13 @@
               rows="4"
               @change="handleNoteChange"
               :value="annotation"
-              placeholder="Add Note" />
+              :placeholder="$t('label.add.note')" />
             <a-button
               style="margin-top: 10px"
               @click="saveNote"
               type="primary"
             >
-              Save
+              {{ $t('label.save') }}
             </a-button>
           </div>
         </a-comment>
@@ -696,10 +697,6 @@ export default {
   watch: {
     resource: function (newItem, oldItem) {
       this.resource = newItem
-      if (newItem.id === oldItem.id) {
-        return
-      }
-
       this.resourceType = this.$route.meta.resourceType
       this.annotationType = ''
       this.showKeys = false
@@ -722,8 +719,7 @@ export default {
 
       if ('tags' in this.resource) {
         this.tags = this.resource.tags
-      }
-      if (this.resourceType) {
+      } else if (this.resourceType) {
         this.getTags()
       }
       if (this.annotationType) {
@@ -761,7 +757,15 @@ export default {
         return
       }
       this.tags = []
-      api('listTags', { listall: true, resourceid: this.resource.id, resourcetype: this.resourceType }).then(json => {
+      const params = {
+        listall: true,
+        resourceid: this.resource.id,
+        resourcetype: this.resourceType
+      }
+      if (this.$route.meta.name === 'project') {
+        params.projectid = this.resource.id
+      }
+      api('listTags', params).then(json => {
         if (json.listtagsresponse && json.listtagsresponse.tag) {
           this.tags = json.listtagsresponse.tag
         }

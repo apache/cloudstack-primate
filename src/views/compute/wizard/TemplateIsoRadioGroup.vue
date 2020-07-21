@@ -48,11 +48,15 @@
         :current="page"
         :pageSize="pageSize"
         :total="itemCount"
-        :showTotal="total => `Total ${total} items`"
+        :showTotal="total => `Total ${total} ${$t('label.items')}`"
         :pageSizeOptions="['10', '20', '40', '80', '100', '500']"
         @change="onChangePage"
         @showSizeChange="onChangePageSize"
-        showSizeChanger />
+        showSizeChanger>
+        <template slot="buildOptionText" slot-scope="props">
+          <span>{{ props.value }} / {{ $t('label.page') }}</span>
+        </template>
+      </a-pagination>
     </div>
   </a-form-item>
 </template>
@@ -130,18 +134,10 @@ export default {
 
 <style lang="less" scoped>
   .radio-group {
-    display: block;
+    margin: 0.5rem 0;
 
     /deep/.ant-radio {
-      width: 35px;
-    }
-
-    &__radio {
-      margin: 0.5rem 0;
-
-      /deep/span:last-child {
-        display: inline-block;
-      }
+      margin-right: 20px;
     }
 
     &__os-logo {
