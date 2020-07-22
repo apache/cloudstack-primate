@@ -258,9 +258,9 @@ export default {
         api('addAccountToProject', params).then(response => {
           this.$pollJob({
             jobId: response.addaccounttoprojectresponse.jobid,
-            successMessage: `Successfully added account ${this.selectedAccount} to project`,
-            errorMessage: `Failed to add account: ${this.selectedAccount} to project`,
-            loadingMessage: `Adding Account: ${this.selectedAccount} to project...`,
+            successMessage: `Successfully added account ${params.account} to project`,
+            errorMessage: `Failed to add account: ${params.account} to project`,
+            loadingMessage: `Adding Account: ${params.account} to project...`,
             catchMessage: 'Error encountered while fetching async job result'
           })
         }).catch(error => {

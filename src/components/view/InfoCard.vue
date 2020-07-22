@@ -457,13 +457,12 @@
           <div class="resource-detail-item__details">
             <a-icon type="user" />
             <template v-for="(item,idx) in resource.owner">
-              <span :key="idx">
+              <span style="margin-right:5px" :key="idx">
                 <span v-if="$store.getters.userInfo.roletype !== 'User'">
                   <router-link v-if="'user' in item" :to="{ path: '/accountuser', query: { username: item.user, domainid: resource.domainid }}">{{ item.account + '(' + item.user + ')' }}</router-link>
                   <router-link v-else :to="{ path: '/account', query: { name: item.account, domainid: resource.domainid } }">{{ item.account }}</router-link>
                 </span>
                 <span v-else>{{ item.user ? item.account + '(' + item.user + ')' : item.account }}</span>
-                <span style="margin-left:5px"/>
               </span>
             </template>
           </div>

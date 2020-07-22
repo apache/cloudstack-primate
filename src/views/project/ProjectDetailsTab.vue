@@ -44,8 +44,7 @@ export default {
       var owner = this.resource.owner
       owner = owner.filter(projectaccount => {
         return (projectaccount.userid && projectaccount.userid === this.$store.getters.userInfo.id) ||
-          projectaccount.account === this.$store.getters.userInfo.account &&
-          projectaccount.role === 'Admin'
+          projectaccount.account === this.$store.getters.userInfo.account
       })
       var isCurrentUserProjectAdmin = false
       if (owner.length > 0) {

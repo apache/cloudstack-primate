@@ -158,13 +158,12 @@
     <span slot="account" slot-scope="text, record">
       <template v-if="record.owner">
         <template v-for="(item,idx) in record.owner">
-          <span :key="idx">
+          <span style="margin-right:5px" :key="idx">
             <span v-if="$store.getters.userInfo.roletype !== 'User'">
               <router-link v-if="'user' in item" :to="{ path: '/accountuser', query: { username: item.user, domainid: record.domainid }}">{{ item.account + '(' + item.user + ')' }}</router-link>
               <router-link v-else :to="{ path: '/account', query: { name: item.account, domainid: record.domainid } }">{{ item.account }}</router-link>
-              <span style="margin-left:5px"/>
             </span>
-            <span v-else>{{ item.user ? item.user : item.account }}</span>
+            <span v-else>{{ item.user ? item.account + '(' + item.user + ')' : item.account }}</span>
           </span>
         </template>
       </template>
