@@ -545,88 +545,89 @@
 
       <div class="account-center-tags" v-if="resourceType && 'listTags' in $store.getters.apis">
         <a-divider/>
-        <div class="title">{{ $t('label.tags') }}</div>
-        <div>
-          <template v-for="(tag, index) in tags">
-            <a-tag :key="index" :closable="'deleteTags' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
-              {{ tag.key }} = {{ tag.value }}
-            </a-tag>
-          </template>
+        <a-spin :spinning="loadingTags">
+          <div class="title">{{ $t('label.tags') }}</div>
+          <div>
+            <template v-for="(tag, index) in tags">
+              <a-tag :key="index" :closable="'deleteTags' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
+                {{ tag.key }} = {{ tag.value }}
+              </a-tag>
+            </template>
 
-          <div v-if="inputVisible">
-            <a-input-group
-              type="text"
-              size="small"
-              @blur="handleInputConfirm"
-              @keyup.enter="handleInputConfirm"
-              compact>
-              <a-input ref="input" :value="inputKey" @change="handleKeyChange" style="width: 30%; text-align: center" :placeholder="$t('label.key')" />
-              <a-input style=" width: 30px; border-left: 0; pointer-events: none; backgroundColor: #fff" placeholder="=" disabled />
-              <a-input :value="inputValue" @change="handleValueChange" style="width: 30%; text-align: center; border-left: 0" :placeholder="$t('label.value')" />
-              <a-button shape="circle" size="small" @click="handleInputConfirm">
-                <a-icon type="check"/>
-              </a-button>
-              <a-button shape="circle" size="small" @click="inputVisible=false">
-                <a-icon type="close"/>
-              </a-button>
-            </a-input-group>
+            <div v-if="inputVisible">
+              <a-input-group
+                type="text"
+                size="small"
+                @blur="handleInputConfirm"
+                @keyup.enter="handleInputConfirm"
+                compact>
+                <a-input ref="input" :value="inputKey" @change="handleKeyChange" style="width: 30%; text-align: center" :placeholder="$t('label.key')" />
+                <a-input style=" width: 30px; border-left: 0; pointer-events: none; backgroundColor: #fff" placeholder="=" disabled />
+                <a-input :value="inputValue" @change="handleValueChange" style="width: 30%; text-align: center; border-left: 0" :placeholder="$t('label.value')" />
+                <a-button shape="circle" size="small" @click="handleInputConfirm">
+                  <a-icon type="check"/>
+                </a-button>
+                <a-button shape="circle" size="small" @click="inputVisible=false">
+                  <a-icon type="close"/>
+                </a-button>
+              </a-input-group>
+            </div>
+            <a-tag @click="showInput" style="background: #fff; borderStyle: dashed;" v-else-if="'createTags' in $store.getters.apis">
+              <a-icon type="plus" /> {{ $t('label.new.tag') }}
+            </a-tag>
           </div>
-          <a-tag @click="showInput" style="background: #fff; borderStyle: dashed;" v-else-if="'createTags' in $store.getters.apis">
-            <a-icon type="plus" /> {{ $t('label.new.tag') }}
-          </a-tag>
-        </div>
+        </a-spin>
       </div>
 
       <div class="account-center-team" v-if="annotationType && 'listAnnotations' in $store.getters.apis">
         <a-divider :dashed="true"/>
-        <div class="title">
-          {{ $t('label.comments') }} ({{ notes.length }})
-        </div>
-        <a-list
-          v-if="notes.length"
-          :dataSource="notes"
-          itemLayout="horizontal"
-          size="small"
-        >
-          <a-list-item slot="renderItem" slot-scope="item">
-            <a-comment
-              :content="item.annotation"
-              :datetime="item.created"
-            >
-              <a-button
-                v-if="'removeAnnotation' in $store.getters.apis"
-                slot="avatar"
-                type="danger"
-                shape="circle"
-                size="small"
-                @click="deleteNote(item)">
-                <a-icon type="delete"/>
-              </a-button>
-            </a-comment>
-          </a-list-item>
-        </a-list>
-
-        <a-comment v-if="'addAnnotation' in $store.getters.apis">
-          <a-avatar
-            slot="avatar"
-            icon="edit"
-            @click="showNotesInput = true"
-          />
-          <div slot="content">
-            <a-textarea
-              rows="4"
-              @change="handleNoteChange"
-              :value="annotation"
-              :placeholder="$t('label.add.note')" />
-            <a-button
-              style="margin-top: 10px"
-              @click="saveNote"
-              type="primary"
-            >
-              {{ $t('label.save') }}
-            </a-button>
+        <a-spin :spinning="loadingAnnotations">
+          <div class="title">
+            {{ $t('label.comments') }} ({{ notes.length }})
           </div>
-        </a-comment>
+          <a-list
+            v-if="notes.length"
+            :dataSource="notes"
+            itemLayout="horizontal"
+            size="small" >
+            <a-list-item slot="renderItem" slot-scope="item">
+              <a-comment
+                :content="item.annotation"
+                :datetime="item.created" >
+                <a-button
+                  v-if="'removeAnnotation' in $store.getters.apis"
+                  slot="avatar"
+                  type="danger"
+                  shape="circle"
+                  size="small"
+                  @click="deleteNote(item)">
+                  <a-icon type="delete"/>
+                </a-button>
+              </a-comment>
+            </a-list-item>
+          </a-list>
+
+          <a-comment v-if="'addAnnotation' in $store.getters.apis">
+            <a-avatar
+              slot="avatar"
+              icon="edit"
+              @click="showNotesInput = true" />
+            <div slot="content">
+              <a-textarea
+                rows="4"
+                @change="handleNoteChange"
+                :value="annotation"
+                :placeholder="$t('label.add.note')" />
+              <a-button
+                style="margin-top: 10px"
+                @click="saveNote"
+                type="primary"
+              >
+                {{ $t('label.save') }}
+              </a-button>
+            </div>
+          </a-comment>
+        </a-spin>
       </div>
     </a-card>
   </a-spin>
@@ -675,7 +676,9 @@ export default {
       notes: [],
       annotation: '',
       showKeys: false,
-      showNotesInput: false
+      showNotesInput: false,
+      loadingTags: false,
+      loadingAnnotations: false
     }
   },
   watch: {
@@ -740,6 +743,7 @@ export default {
       if (!('listTags' in this.$store.getters.apis) || !this.resource || !this.resource.id) {
         return
       }
+      this.loadingTags = true
       this.tags = []
       const params = {
         listall: true,
@@ -753,17 +757,22 @@ export default {
         if (json.listtagsresponse && json.listtagsresponse.tag) {
           this.tags = json.listtagsresponse.tag
         }
+      }).finally(() => {
+        this.loadingTags = false
       })
     },
     getNotes () {
       if (!('listAnnotations' in this.$store.getters.apis)) {
         return
       }
+      this.loadingAnnotations = true
       this.notes = []
       api('listAnnotations', { entityid: this.resource.id, entitytype: this.annotationType }).then(json => {
         if (json.listannotationsresponse && json.listannotationsresponse.annotation) {
           this.notes = json.listannotationsresponse.annotation
         }
+      }).finally(() => {
+        this.loadingAnnotations = false
       })
     },
     showInput () {
@@ -780,6 +789,7 @@ export default {
     },
     handleInputConfirm () {
       const args = {}
+      this.loadingTags = true
       args.resourceids = this.resource.id
       args.resourcetype = this.resourceType
       args['tags[0].key'] = this.inputKey
@@ -795,6 +805,7 @@ export default {
     },
     handleDeleteTag (tag) {
       const args = {}
+      this.loadingTags = true
       args.resourceids = tag.resourceid
       args.resourcetype = tag.resourcetype
       args['tags[0].key'] = tag.key
@@ -811,6 +822,7 @@ export default {
       if (this.annotation.length < 1) {
         return
       }
+      this.loadingAnnotations = true
       this.showNotesInput = false
       const args = {}
       args.entityid = this.resource.id
@@ -823,6 +835,7 @@ export default {
       this.annotation = ''
     },
     deleteNote (annotation) {
+      this.loadingAnnotations = true
       const args = {}
       args.id = annotation.id
       api('removeAnnotation', args).then(json => {
