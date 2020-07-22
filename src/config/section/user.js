@@ -30,7 +30,8 @@ export default {
       icon: 'plus',
       label: 'label.add.user',
       listView: true,
-      args: ['username', 'password', 'confirmpassword', 'email', 'firstname', 'lastname', 'timezone', 'account', 'domainid']
+      popup: true,
+      component: () => import('@/views/iam/AddUser.vue')
     },
     {
       api: 'updateUser',
