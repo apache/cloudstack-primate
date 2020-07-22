@@ -272,14 +272,15 @@ export default {
           label: 'label.action.revert.snapshot',
           message: 'message.action.revert.snapshot',
           dataView: true,
-          show: (record) => { return record.revertable }
+          show: (record) => { return record.state === 'BackedUp' && record.revertable }
         },
         {
           api: 'deleteSnapshot',
           icon: 'delete',
           label: 'label.action.delete.snapshot',
           message: 'message.action.delete.snapshot',
-          dataView: true
+          dataView: true,
+          show: (record) => { return record.state !== 'Destroyed' }
         }
       ]
     },
