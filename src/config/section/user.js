@@ -38,7 +38,8 @@ export default {
       icon: 'edit',
       label: 'label.edit',
       dataView: true,
-      args: ['username', 'email', 'firstname', 'lastname', 'timezone']
+      popup: true,
+      component: () => import('@/views/iam/EditUser.vue')
     },
     {
       api: 'updateUser',
