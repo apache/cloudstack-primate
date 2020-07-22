@@ -320,6 +320,7 @@ export default {
           label: 'label.action.vmsnapshot.delete',
           message: 'message.action.vmsnapshot.delete',
           dataView: true,
+          show: (record) => { return ['Ready', 'Expunging', 'Error'].includes(record.state) },
           args: ['vmsnapshotid'],
           mapping: {
             vmsnapshotid: {
