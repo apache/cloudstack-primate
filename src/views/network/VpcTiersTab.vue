@@ -99,7 +99,7 @@
                 :current="page"
                 :pageSize="pageSize"
                 :total="itemCounts.vms[network.id]"
-                :showTotal="total => `${this.$t('label.total')} ${total} ${this.$t('label.items')}`"
+                :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
                 :pageSizeOptions="['10', '20', '40', '80', '100']"
                 @change="changePage"
                 @showSizeChange="changePageSize"
@@ -139,7 +139,7 @@
                 :current="page"
                 :pageSize="pageSize"
                 :total="itemCounts.internalLB[network.id]"
-                :showTotal="total => `${this.$t('label.total')} ${total} ${this.$t('label.items')}`"
+                :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
                 :pageSizeOptions="['10', '20', '40', '80', '100']"
                 @change="changePage"
                 @showSizeChange="changePageSize"
@@ -160,11 +160,11 @@
           <a-form-item :label="$t('label.name')">
             <a-input
               :placeholder="$t('label.unique.name.tier')"
-              v-decorator="['name',{rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"></a-input>
+              v-decorator="['name',{rules: [{ required: true, message: `${$t('label.required')}` }]}]"></a-input>
           </a-form-item>
           <a-form-item :label="$t('label.networkofferingid')">
             <a-select
-              v-decorator="['networkOffering',{rules: [{ required: true, message: `${this.$t('label.required')}` }]}]">
+              v-decorator="['networkOffering',{rules: [{ required: true, message: `${$t('label.required')}` }]}]">
               <a-select-option v-for="item in networkOfferings" :key="item.id" :value="item.id">
                 {{ item.name }}
               </a-select-option>
@@ -173,12 +173,12 @@
           <a-form-item :label="$t('label.gateway')">
             <a-input
               :placeholder="$t('label.create.network.gateway.description')"
-              v-decorator="['gateway',{rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"></a-input>
+              v-decorator="['gateway',{rules: [{ required: true, message: `${$t('label.required')}` }]}]"></a-input>
           </a-form-item>
           <a-form-item :label="$t('label.netmask')">
             <a-input
               :placeholder="$t('label.create.network.netmask.description')"
-              v-decorator="['netmask',{rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"></a-input>
+              v-decorator="['netmask',{rules: [{ required: true, message: `${$t('label.required')}` }]}]"></a-input>
           </a-form-item>
           <a-form-item :label="$t('label.externalid')">
             <a-input
@@ -227,7 +227,7 @@
                 'algorithm',
                 {
                   initialValue: 'Source',
-                  rules: [{ required: true, message: `${this.$t('label.required')}`}]
+                  rules: [{ required: true, message: `${$t('label.required')}`}]
                 }]">
               <a-select-option v-for="(key, idx) in Object.keys(algorithms)" :key="idx" :value="algorithms[key]">
                 {{ key }}
