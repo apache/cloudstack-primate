@@ -442,7 +442,7 @@ export default {
           label: 'label.kubernetes.cluster.stop',
           docHelp: 'plugins/cloudstack-kubernetes-service.html#stopping-kubernetes-cluster',
           dataView: true,
-          show: (record) => { return !['Stopped'].includes(record.state) }
+          show: (record) => { return !['Stopped', 'Destroyed', 'Destroying'].includes(record.state) }
         },
         {
           api: 'scaleKubernetesCluster',
