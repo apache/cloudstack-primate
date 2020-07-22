@@ -343,7 +343,8 @@ export default {
           icon: 'sync',
           label: 'label.backup.restore',
           message: 'message.backup.restore',
-          dataView: true
+          dataView: true,
+          show: (record) => { return record.state !== 'Destroyed' }
         },
         {
           api: 'restoreVolumeFromBackupAndAttachToVM',
@@ -351,6 +352,7 @@ export default {
           label: 'label.backup.attach.restore',
           message: 'message.backup.attach.restore',
           dataView: true,
+          show: (record) => { return record.state !== 'Destroyed' },
           popup: true,
           component: () => import('@/views/storage/RestoreAttachBackupVolume.vue')
         },
@@ -360,6 +362,7 @@ export default {
           label: 'label.backup.offering.remove',
           message: 'message.backup.offering.remove',
           dataView: true,
+          show: (record) => { return record.state !== 'Destroyed' },
           args: ['forced', 'virtualmachineid'],
           mapping: {
             forced: {
@@ -375,7 +378,8 @@ export default {
           icon: 'delete',
           label: 'label.delete.backup',
           message: 'message.delete.backup',
-          dataView: true
+          dataView: true,
+          show: (record) => { return record.state !== 'Destroyed' }
         }
       ]
     }
