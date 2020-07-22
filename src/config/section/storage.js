@@ -98,7 +98,7 @@ export default {
           message: 'message.confirm.attach.disk',
           args: ['virtualmachineid'],
           dataView: true,
-          show: (record) => { return record.type !== 'ROOT' && record.state !== 'Destroy' && !('virtualmachineid' in record) }
+          show: (record) => { return record.type !== 'ROOT' && ['Allocated', 'Ready', 'Uploaded'].includes(record.state) && !('virtualmachineid' in record) }
         },
         {
           api: 'detachVolume',
@@ -106,7 +106,10 @@ export default {
           label: 'label.action.detach.disk',
           message: 'message.detach.disk',
           dataView: true,
-          show: (record) => { return record.type !== 'ROOT' && 'virtualmachineid' in record && record.virtualmachineid }
+          show: (record) => {
+            return record.type !== 'ROOT' && 'virtualmachineid' in record && record.virtualmachineid &&
+              ['Running', 'Stopped', 'Destroyed'].includes(record.vmstate)
+          }
         },
         {
           api: 'createSnapshot',
@@ -140,7 +143,7 @@ export default {
           label: 'label.action.resize.volume',
           dataView: true,
           popup: true,
-          show: (record) => { return record.state !== 'Destroy' },
+          show: (record) => { return ['Allocated', 'Ready'].includes(record.state) },
           component: () => import('@/views/storage/ResizeVolume.vue')
         },
         {
@@ -159,7 +162,7 @@ export default {
           label: 'label.action.download.volume',
           message: 'message.download.volume.confirm',
           dataView: true,
-          show: (record) => { return record && record.state === 'Ready' && (record.vmstate === 'Stopped' || record.virtualmachineid == null) && record.state !== 'Destroy' },
+          show: (record) => { return record && record.state === 'Ready' && (record.vmstate === 'Stopped' || record.virtualmachineid == null) },
           args: ['zoneid', 'mode'],
           mapping: {
             zoneid: {
