@@ -84,8 +84,9 @@ export default {
           label: 'label.edit',
           dataView: true,
           show: (record, store) => {
-            return (['Admin'].includes(store.userInfo.roletype) ||
-              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+            return (['Admin'].includes(store.userInfo.roletype) || // If admin or owner or belongs to current project
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) ||
+              (record.domainid === store.userInfo.domainid && record.projectid && store.project && store.project.id && record.projectid === store.project.id)) &&
               record.templatetype !== 'SYSTEM' &&
               record.isready
           },
@@ -104,8 +105,9 @@ export default {
           dataView: true,
           args: ['ispublic', 'isfeatured', 'isextractable'],
           show: (record, store) => {
-            return (['Admin'].includes(store.userInfo.roletype) ||
-              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+            return (['Admin'].includes(store.userInfo.roletype) || // If admin or owner or belongs to current project
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) ||
+              (record.domainid === store.userInfo.domainid && record.projectid && store.project && store.project.id && record.projectid === store.project.id)) &&
               record.templatetype !== 'SYSTEM' &&
               record.isready
           }
@@ -118,8 +120,9 @@ export default {
           docHelp: 'adminguide/templates.html#exporting-templates',
           dataView: true,
           show: (record, store) => {
-            return (['Admin'].includes(store.userInfo.roletype) ||
-              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+            return (['Admin'].includes(store.userInfo.roletype) || // If admin or owner or belongs to current project
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) ||
+              (record.domainid === store.userInfo.domainid && record.projectid && store.project && store.project.id && record.projectid === store.project.id)) &&
               record.templatetype !== 'SYSTEM' &&
               record.isready &&
               record.isextractable
@@ -143,8 +146,9 @@ export default {
           dataView: true,
           popup: true,
           show: (record, store) => {
-            return (['Admin'].includes(store.userInfo.roletype) ||
-              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
+            return (['Admin'].includes(store.userInfo.roletype) || // If admin or owner or belongs to current project
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) ||
+              (record.domainid === store.userInfo.domainid && record.projectid && store.project && store.project.id && record.projectid === store.project.id)) &&
               record.templatetype !== 'SYSTEM' &&
               record.isready
           },
@@ -207,9 +211,10 @@ export default {
           label: 'label.action.edit.iso',
           dataView: true,
           show: (record, store) => {
-            return (['Admin'].includes(store.userInfo.roletype) ||
-              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
-              !(record.account === 'SYSTEM' && record.domainid === 1) &&
+            return (['Admin'].includes(store.userInfo.roletype) || // If admin or owner or belongs to current project
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) ||
+              (record.domainid === store.userInfo.domainid && record.projectid && store.project && store.project.id && record.projectid === store.project.id)) &&
+              !(record.account === 'system' && record.domainid === 1) &&
               record.isready
           },
           args: ['name', 'displaytext', 'bootable', 'ostypeid']
@@ -221,9 +226,10 @@ export default {
           dataView: true,
           args: ['ispublic', 'isfeatured', 'isextractable'],
           show: (record, store) => {
-            return (['Admin'].includes(store.userInfo.roletype) ||
-              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
-              !(record.account === 'SYSTEM' && record.domainid === 1) &&
+            return (['Admin'].includes(store.userInfo.roletype) || // If admin or owner or belongs to current project
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) ||
+              (record.domainid === store.userInfo.domainid && record.projectid && store.project && store.project.id && record.projectid === store.project.id)) &&
+              !(record.account === 'system' && record.domainid === 1) &&
               record.isready
           }
         },
@@ -235,9 +241,10 @@ export default {
           docHelp: 'adminguide/templates.html#exporting-templates',
           dataView: true,
           show: (record, store) => {
-            return (['Admin'].includes(store.userInfo.roletype) ||
-              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
-              !(record.account === 'SYSTEM' && record.domainid === 1) &&
+            return (['Admin'].includes(store.userInfo.roletype) || // If admin or owner or belongs to current project
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) ||
+              (record.domainid === store.userInfo.domainid && record.projectid && store.project && store.project.id && record.projectid === store.project.id)) &&
+              !(record.account === 'system' && record.domainid === 1) &&
               record.isready
           },
           args: ['zoneid', 'mode'],
@@ -260,9 +267,10 @@ export default {
           args: ['op', 'accounts', 'projectids'],
           popup: true,
           show: (record, store) => {
-            return (['Admin'].includes(store.userInfo.roletype) ||
-              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account)) &&
-              !(record.account === 'SYSTEM' && record.domainid === 1) &&
+            return (['Admin'].includes(store.userInfo.roletype) || // If admin or owner or belongs to current project
+              (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) ||
+              (record.domainid === store.userInfo.domainid && record.projectid && store.project && store.project.id && record.projectid === store.project.id)) &&
+              !(record.account === 'system' && record.domainid === 1) &&
               record.isready
           },
           component: () => import('@/views/image/UpdateTemplateIsoPermissions')
