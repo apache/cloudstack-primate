@@ -1507,6 +1507,7 @@
 "label.profiledn": "Associated Profile",
 "label.profilename": "Profile",
 "label.project": "Project",
+"label.projectname": "Project",
 "label.project.dashboard": "Project dashboard",
 "label.project.ids": "Project IDs",
 "label.project.invitation": "Project Invitations",

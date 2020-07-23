@@ -282,11 +282,12 @@
             <span v-else>{{ resource.ipaddress }}</span>
           </div>
         </div>
-        <div class="resource-detail-item" v-if="resource.projectid">
+        <div class="resource-detail-item" v-if="resource.projectid || resource.projectname">
           <div class="resource-detail-item__label">{{ $t('label.project') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="project" />
-            <router-link :to="{ path: '/project/' + resource.projectid }">{{ resource.project || resource.projectname || resource.projectid }}</router-link>
+            <router-link v-if="resource.projectid" :to="{ path: '/project/' + resource.projectid }">{{ resource.project || resource.projectname || resource.projectid }}</router-link>
+            <router-link v-else :to="{ path: '/project', query: { name: resource.projectname }}">{{ resource.projectname }}</router-link>
           </div>
         </div>
 
@@ -452,7 +453,7 @@
             <span v-else>{{ resource.zone || resource.zonename || resource.zoneid }}</span>
           </div>
         </div>
-        <div class="resource-detail-item" v-if="resource.account">
+        <div class="resource-detail-item" v-if="resource.account && !resource.account.startsWith('PrjAcct-')">
           <div class="resource-detail-item__label">{{ $t('label.account') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="user" />
