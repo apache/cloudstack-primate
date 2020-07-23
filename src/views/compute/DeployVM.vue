@@ -992,13 +992,7 @@ export default {
           nics.push(propertyMap)
         }
         nics.sort(function (a, b) {
-          const prefix = 'Network adapter '
-          if (a.elementName && b.elementName &&
-            a.elementName.startsWith(prefix) &&
-            b.elementName.startsWith(prefix)) {
-            return parseInt(a.elementName.replace(prefix, '')) - parseInt(b.elementName.replace(prefix, ''))
-          }
-          return a.elementName.localeCompare(b.elementName)
+          return a.InstanceID - b.InstanceID
         })
       }
       return nics
