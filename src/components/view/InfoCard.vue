@@ -550,7 +550,7 @@
           <div class="title">{{ $t('label.tags') }}</div>
           <div>
             <template v-for="(tag, index) in tags">
-              <a-tag :key="index" :closable="'deleteTags' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
+              <a-tag :key="index" :closable="isAdminOrOwner() && 'deleteTags' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
                 {{ tag.key }} = {{ tag.value }}
               </a-tag>
             </template>
@@ -573,7 +573,7 @@
                 </a-button>
               </a-input-group>
             </div>
-            <a-tag @click="showInput" style="background: #fff; borderStyle: dashed;" v-else-if="'createTags' in $store.getters.apis">
+            <a-tag @click="showInput" style="background: #fff; borderStyle: dashed;" v-else-if="isAdminOrOwner() && 'createTags' in $store.getters.apis">
               <a-icon type="plus" /> {{ $t('label.new.tag') }}
             </a-tag>
           </div>
@@ -776,6 +776,11 @@ export default {
         this.loadingAnnotations = false
       })
     },
+    isAdminOrOwner () {
+      return ['Admin'].includes(this.$store.getters.userInfo.roletype) ||
+        (this.resource.domainid === this.$store.getters.userInfo.domainid && this.resource.account === this.$store.getters.userInfo.account) ||
+        this.resource.project && this.resource.projectid === this.$store.getters.project.id
+    },
     showInput () {
       this.inputVisible = true
       this.$nextTick(function () {
@@ -807,8 +812,8 @@ export default {
     handleDeleteTag (tag) {
       const args = {}
       this.loadingTags = true
-      args.resourceids = tag.resourceid
-      args.resourcetype = tag.resourcetype
+      args.resourceids = this.resource.id
+      args.resourcetype = this.resourceType
       args['tags[0].key'] = tag.key
       args['tags[0].value'] = tag.value
       api('deleteTags', args).then(json => {
