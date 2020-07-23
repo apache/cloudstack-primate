@@ -214,23 +214,54 @@
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
                   <div v-if="zoneSelected">
-                    <network-selection
-                      :items="options.networks"
-                      :row-count="rowCount.networks"
-                      :value="networkOfferingIds"
-                      :loading="loading.networks"
-                      :zoneId="zoneId"
-                      :preFillContent="dataPreFill"
-                      @select-network-item="($event) => updateNetworks($event)"
-                      @handle-search-filter="($event) => handleSearchFilter('networks', $event)"
-                    ></network-selection>
-                    <network-configuration
-                      v-if="networks.length > 0"
-                      :items="networks"
-                      :preFillContent="dataPreFill"
-                      @update-network-config="($event) => updateNetworkConfig($event)"
-                      @select-default-network-item="($event) => updateDefaultNetworks($event)"
-                    ></network-configuration>
+                    <div v-if="vm.templateid && templateNics && templateNics.length > 0">
+                      <a-form-item
+                        v-for="(nic, nicIndex) in templateNics"
+                        :key="nicIndex"
+                        :v-bind="nic.name" >
+                        <span slot="label">
+                          {{ nic.elementName + ' - ' + nic.name }}
+                          <a-tooltip :title="nic.networkDescription">
+                            <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                          </a-tooltip>
+                        </span>
+                        <a-select
+                          showSearch
+                          optionFilterProp="children"
+                          v-decorator="[
+                            'templateNics.' + nic.name,
+                            { initialValue: options.networks && options.networks.length > 0 ? options.networks[Math.min(nicIndex, options.networks.length - 1)].id : null }
+                          ]"
+                          :placeholder="nic.networkDescription"
+                          :filterOption="(input, option) => {
+                            return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                          }"
+                        >
+                          <a-select-option v-for="opt in options.networks" :key="opt.id">
+                            {{ opt.name || opt.description }}
+                          </a-select-option>
+                        </a-select>
+                      </a-form-item>
+                    </div>
+                    <div v-else>
+                      <network-selection
+                        :items="options.networks"
+                        :row-count="rowCount.networks"
+                        :value="networkOfferingIds"
+                        :loading="loading.networks"
+                        :zoneId="zoneId"
+                        :preFillContent="dataPreFill"
+                        @select-network-item="($event) => updateNetworks($event)"
+                        @handle-search-filter="($event) => handleSearchFilter('networks', $event)"
+                      ></network-selection>
+                      <network-configuration
+                        v-if="networks.length > 0"
+                        :items="networks"
+                        :preFillContent="dataPreFill"
+                        @update-network-config="($event) => updateNetworkConfig($event)"
+                        @select-default-network-item="($event) => updateDefaultNetworks($event)"
+                      ></network-configuration>
+                    </div>
                   </div>
                 </template>
               </a-step>
@@ -532,6 +563,7 @@ export default {
       },
       instanceConfig: {},
       template: {},
+      templateNics: [],
       iso: {},
       hypervisor: '',
       serviceOffering: {},
@@ -773,6 +805,11 @@ export default {
         this.resetData()
       }
     },
+    template (newValue) {
+      if (newValue) {
+        this.templateNics = this.fetchTemplateNics(newValue)
+      }
+    },
     instanceConfig (instanceConfig) {
       this.template = _.find(this.options.templates, (option) => option.id === instanceConfig.templateid)
       this.iso = _.find(this.options.isos, (option) => option.id === instanceConfig.isoid)
@@ -944,6 +981,27 @@ export default {
     fetchNetwork () {
       const param = this.params.networks
       this.fetchOptions(param, 'networks')
+    },
+    fetchTemplateNics (template) {
+      var nics = []
+      if (template && template.details && Object.keys(template.details).length > 0) {
+        var keys = Object.keys(template.details)
+        keys = keys.filter(key => key.startsWith('ACS-network-'))
+        for (var key of keys) {
+          var propertyMap = JSON.parse(template.details[key])
+          nics.push(propertyMap)
+        }
+        nics.sort(function (a, b) {
+          const prefix = 'Network adapter '
+          if (a.elementName && b.elementName &&
+            a.elementName.startsWith(prefix) &&
+            b.elementName.startsWith(prefix)) {
+            return parseInt(a.elementName.replace(prefix, '')) - parseInt(b.elementName.replace(prefix, ''))
+          }
+          return a.elementName.localeCompare(b.elementName)
+        })
+      }
+      return nics
     },
     resetData () {
       this.vm = {}
