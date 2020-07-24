@@ -23,7 +23,7 @@ import router from '@/router'
 import store from '@/store'
 import { login, logout, api } from '@/api'
 import i18n from '@/locales'
-import { ACCESS_TOKEN, CURRENT_PROJECT, DEFAULT_THEME, APIS, ASYNC_JOB_IDS, ZONES } from '@/store/mutation-types'
+import { ACCESS_TOKEN, CURRENT_PROJECT, DEFAULT_THEME, APIS, ASYNC_JOB_IDS } from '@/store/mutation-types'
 
 const user = {
   state: {
