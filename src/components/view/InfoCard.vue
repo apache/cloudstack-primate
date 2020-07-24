@@ -70,7 +70,7 @@
 
         <a-divider/>
 
-        <div class="resource-detail-item" v-if="resource.state || resource.status">
+        <div class="resource-detail-item" v-if="(resource.state || resource.status) && $route.meta.name !== 'zone'">
           <div class="resource-detail-item__label">{{ $t('label.status') }}</div>
           <div class="resource-detail-item__details">
             <status class="status" :text="resource.state || resource.status" displayText/>
