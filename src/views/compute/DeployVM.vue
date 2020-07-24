@@ -229,7 +229,7 @@
                           showSearch
                           optionFilterProp="children"
                           v-decorator="[
-                            'templateNics.' + nic.name,
+                            'templateNics.nic-' + nic.InstanceID.toString(),
                             { initialValue: options.networks && options.networks.length > 0 ? options.networks[Math.min(nicIndex, options.networks.length - 1)].id : null }
                           ]"
                           :placeholder="nic.networkDescription"
@@ -1145,30 +1145,38 @@ export default {
         // step 5: select an affinity group
         deployVmData.affinitygroupids = (values.affinitygroupids || []).join(',')
         // step 6: select network
-        const arrNetwork = []
-        networkIds = values.networkids
-        if (networkIds.length > 0) {
-          for (let i = 0; i < networkIds.length; i++) {
-            if (networkIds[i] === this.defaultNetwork) {
-              const ipToNetwork = {
-                networkid: this.defaultNetwork
+        if ('templateNics' in values) {
+          const keys = Object.keys(values.templateNics)
+          for (var j = 0; j < keys.length; ++j) {
+            deployVmData['nicnetworklist[' + j + '].nic'] = keys[j].replace('nic-', '')
+            deployVmData['nicnetworklist[' + j + '].network'] = values.templateNics[keys[j]]
+          }
+        } else {
+          const arrNetwork = []
+          networkIds = values.networkids
+          if (networkIds.length > 0) {
+            for (let i = 0; i < networkIds.length; i++) {
+              if (networkIds[i] === this.defaultNetwork) {
+                const ipToNetwork = {
+                  networkid: this.defaultNetwork
+                }
+                arrNetwork.unshift(ipToNetwork)
+              } else {
+                const ipToNetwork = {
+                  networkid: networkIds[i]
+                }
+                arrNetwork.push(ipToNetwork)
               }
-              arrNetwork.unshift(ipToNetwork)
-            } else {
-              const ipToNetwork = {
-                networkid: networkIds[i]
-              }
-              arrNetwork.push(ipToNetwork)
             }
           }
-        }
-        for (let j = 0; j < arrNetwork.length; j++) {
-          deployVmData['iptonetworklist[' + j + '].networkid'] = arrNetwork[j].networkid
-          if (this.networkConfig.length > 0) {
-            const networkConfig = this.networkConfig.filter((item) => item.key === arrNetwork[j].networkid)
-            if (networkConfig && networkConfig.length > 0) {
-              deployVmData['iptonetworklist[' + j + '].ip'] = networkConfig[0].ipAddress ? networkConfig[0].ipAddress : undefined
-              deployVmData['iptonetworklist[' + j + '].mac'] = networkConfig[0].macAddress ? networkConfig[0].macAddress : undefined
+          for (let j = 0; j < arrNetwork.length; j++) {
+            deployVmData['iptonetworklist[' + j + '].networkid'] = arrNetwork[j].networkid
+            if (this.networkConfig.length > 0) {
+              const networkConfig = this.networkConfig.filter((item) => item.key === arrNetwork[j].networkid)
+              if (networkConfig && networkConfig.length > 0) {
+                deployVmData['iptonetworklist[' + j + '].ip'] = networkConfig[0].ipAddress ? networkConfig[0].ipAddress : undefined
+                deployVmData['iptonetworklist[' + j + '].mac'] = networkConfig[0].macAddress ? networkConfig[0].macAddress : undefined
+              }
             }
           }
         }
@@ -1187,6 +1195,7 @@ export default {
         if ('bootintosetup' in values) {
           deployVmData.bootintosetup = values.bootintosetup
         }
+
         const title = this.$t('label.launch.vm')
         const description = values.name || ''
         const password = this.$t('label.password')
