@@ -64,7 +64,7 @@ export default {
     component: () => import('@/views/infra/zone/SystemVmsTab.vue')
   }, {
     name: 'resources',
-    component: () => import('@/views/infra/zone/ZoneResources.vue')
+    component: () => import('@/views/infra/Resources.vue')
   }, {
     name: 'settings',
     component: () => import('@/components/view/SettingsTab.vue')
