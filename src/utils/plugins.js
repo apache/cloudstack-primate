@@ -38,12 +38,12 @@ export const pollJobPlugin = {
       const {
         jobId,
         name = '',
-        successMessage = i18n.t('label.success'),
+        successMessage = 'Success',
         successMethod = () => {},
-        errorMessage = i18n.t('label.error'),
+        errorMessage = 'Error',
         errorMethod = () => {},
-        loadingMessage = `${i18n.t('label.loading')}...`,
-        catchMessage = i18n.t('label.error.caught'),
+        loadingMessage = 'Loading...',
+        catchMessage = 'Error caught',
         catchMethod = () => {},
         action = null
       } = options
@@ -98,7 +98,7 @@ export const pollJobPlugin = {
       }).catch(e => {
         console.error(`${catchMessage} - ${e}`)
         notification.error({
-          message: i18n.t('label.error'),
+          message: this.$t('label.error'),
           description: catchMessage,
           duration: 0
         })
@@ -113,11 +113,11 @@ export const notifierPlugin = {
   install (Vue) {
     Vue.prototype.$notifyError = function (error) {
       console.log(error)
-      var msg = i18n.t('message.request.failed')
+      var msg = 'Request Failed'
       var desc = ''
       if (error && error.response) {
         if (error.response.status) {
-          msg = `${i18n.t('message.request.failed')} (${error.response.status})`
+          msg = `Request Failed (${error.response.status})`
         }
         if (error.message) {
           desc = error.message

@@ -22,7 +22,6 @@ import message from 'ant-design-vue/es/message'
 import router from '@/router'
 import store from '@/store'
 import { login, logout, api } from '@/api'
-import i18n from '@/locales'
 import { ACCESS_TOKEN, CURRENT_PROJECT, DEFAULT_THEME, APIS, ASYNC_JOB_IDS } from '@/store/mutation-types'
 
 const user = {
@@ -125,7 +124,7 @@ const user = {
           commit('SET_APIS', cachedApis)
           resolve(cachedApis)
         } else {
-          const hide = message.loading(i18n.t('message.discovering.feature'), 0)
+          const hide = message.loading('Discovering features, please wait...', 0)
           api('listApis').then(response => {
             const apis = {}
             const apiList = response.listapisresponse.api
@@ -143,7 +142,7 @@ const user = {
               router.addRoutes(store.getters.addRouters)
             })
             hide()
-            message.success(i18n.t('message.sussess.discovering.feature'))
+            message.success('Discovered all available features!')
           }).catch(error => {
             reject(error)
           })

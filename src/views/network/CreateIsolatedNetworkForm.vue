@@ -225,7 +225,7 @@
             <a-input
               v-decorator="['account', {
                 rules: [
-                  { required: true, message: $t('label.required') }
+                  { required: true, message: this.$t('label.required') }
                 ]
               }]"
               :placeholder="this.$t('label.account')"/>

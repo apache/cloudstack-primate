@@ -155,7 +155,7 @@
         </a-form-item>
 
         <a-form-item v-if="ruleForm.getFieldValue('protocol') === 'protocolnumber'" :label="$t('label.protocolnumber')">
-          <a-input v-decorator="['protocolnumber' , { rules: [{ required: true, message: `${$t('label.required')}` }]}]" />
+          <a-input v-decorator="['protocolnumber' , { rules: [{ required: true, message: `${this.$t('label.required')}` }]}]" />
         </a-form-item>
 
         <div v-if="ruleForm.getFieldValue('protocol') === 'icmp' || ruleForm.getFieldValue('protocol') === 'protocolnumber'">

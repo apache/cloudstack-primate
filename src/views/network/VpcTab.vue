@@ -60,7 +60,7 @@
           :current="page"
           :pageSize="pageSize"
           :total="itemCounts.networkAcls"
-          :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
+          :showTotal="total => `${this.$t('label.total')} ${total} ${this.$t('label.items')}`"
           :pageSizeOptions="['10', '20', '40', '80', '100']"
           @change="changePage"
           @showSizeChange="changePageSize"
@@ -75,10 +75,10 @@
           @ok="handleNetworkAclFormSubmit">
           <a-form @submit.prevent="handleNetworkAclFormSubmit" :form="networkAclForm">
             <a-form-item :label="$t('label.add.list.name')">
-              <a-input v-decorator="['name', {rules: [{ required: true, message: `${$t('label.required')}` }]}]"></a-input>
+              <a-input v-decorator="['name', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"></a-input>
             </a-form-item>
             <a-form-item :label="$t('label.description')">
-              <a-input v-decorator="['description', {rules: [{ required: true, message: `${$t('label.required')}` }]}]"></a-input>
+              <a-input v-decorator="['description', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"></a-input>
             </a-form-item>
           </a-form>
         </a-modal>
@@ -111,7 +111,7 @@
           :current="page"
           :pageSize="pageSize"
           :total="itemCounts.privateGateways"
-          :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
+          :showTotal="total => `${this.$t('label.total')} ${total} ${this.$t('label.items')}`"
           :pageSizeOptions="['10', '20', '40', '80', '100']"
           @change="changePage"
           @showSizeChange="changePageSize"
@@ -135,7 +135,7 @@
               <a-form-item :label="$t('label.vlan')" :required="true">
                 <a-input
                   :placeholder="placeholders.vlan"
-                  v-decorator="['vlan', {rules: [{ required: true, message: `${$t('label.required')}` }]}]"
+                  v-decorator="['vlan', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"
                 ></a-input>
               </a-form-item>
               <a-form-item
@@ -148,19 +148,19 @@
               <a-form-item :label="$t('label.publicip')" :required="true">
                 <a-input
                   :placeholder="placeholders.ipaddress"
-                  v-decorator="['ipaddress', {rules: [{ required: true, message: `${$t('label.required')}` }]}]"
+                  v-decorator="['ipaddress', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"
                 ></a-input>
               </a-form-item>
               <a-form-item :label="$t('label.gateway')" :required="true">
                 <a-input
                   :placeholder="placeholders.gateway"
-                  v-decorator="['gateway', {rules: [{ required: true, message: `${$t('label.required')}` }]}]"
+                  v-decorator="['gateway', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"
                 ></a-input>
               </a-form-item>
               <a-form-item :label="$t('label.netmask')" :required="true">
                 <a-input
                   :placeholder="placeholders.netmask"
-                  v-decorator="['netmask', {rules: [{ required: true, message: `${$t('label.required')}` }]}]"
+                  v-decorator="['netmask', {rules: [{ required: true, message: `${this.$t('label.required')}` }]}]"
                 ></a-input>
               </a-form-item>
               <a-form-item :label="$t('label.sourcenat')">
@@ -233,7 +233,7 @@
           :current="page"
           :pageSize="pageSize"
           :total="itemCounts.vpnConnections"
-          :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
+          :showTotal="total => `${this.$t('label.total')} ${total} ${this.$t('label.items')}`"
           :pageSizeOptions="['10', '20', '40', '80', '100']"
           @change="changePage"
           @showSizeChange="changePageSize"
