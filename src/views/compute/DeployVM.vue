@@ -230,13 +230,14 @@
                           optionFilterProp="children"
                           v-decorator="[
                             'templateNics.nic-' + nic.InstanceID.toString(),
-                            { initialValue: options.networks && options.networks.length > 0 ? options.networks[Math.min(nicIndex, options.networks.length - 1)].id : null }
+                            { initialValue: nic.automaticAllocation && options.networks && options.networks.length > 0 ? options.networks[Math.min(nicIndex, options.networks.length - 1)].id : null }
                           ]"
                           :placeholder="nic.networkDescription"
                           :filterOption="(input, option) => {
                             return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
                           }"
                         >
+                          <a-select-option :key="null">{{ }}</a-select-option>
                           <a-select-option v-for="opt in options.networks" :key="opt.id">
                             {{ opt.name || opt.description }}
                           </a-select-option>
@@ -1148,8 +1149,10 @@ export default {
         if ('templateNics' in values) {
           const keys = Object.keys(values.templateNics)
           for (var j = 0; j < keys.length; ++j) {
-            deployVmData['nicnetworklist[' + j + '].nic'] = keys[j].replace('nic-', '')
-            deployVmData['nicnetworklist[' + j + '].network'] = values.templateNics[keys[j]]
+            if (values.templateNics[keys[j]] && values.templateNics[keys[j]].length > 0) {
+              deployVmData['nicnetworklist[' + j + '].nic'] = keys[j].replace('nic-', '')
+              deployVmData['nicnetworklist[' + j + '].network'] = values.templateNics[keys[j]]
+            }
           }
         } else {
           const arrNetwork = []
