@@ -69,11 +69,17 @@ export default {
       message: 'message.confirm.scale.up.router.vm',
       dataView: true,
       args: ['serviceofferingid'],
-      show: (record) => { return record.state === 'Running' && record.hypervisor === 'VMware' || record.state === 'Stopped' },
+      show: (record) => { return record.hypervisor !== 'KVM' },
       mapping: {
         serviceofferingid: {
           api: 'listServiceOfferings',
-          params: (record) => { return { virtualmachineid: record.id, issystem: true, systemvmtype: 'domainrouter' } }
+          params: (record) => {
+            return {
+              virtualmachineid: record.virtualmachineid,
+              issystem: true,
+              systemvmtype: 'domainrouter'
+            }
+          }
         }
       }
     },

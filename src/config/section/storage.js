@@ -26,6 +26,7 @@ export default {
       name: 'volume',
       title: 'label.volumes',
       icon: 'hdd',
+      docHelp: 'adminguide/storage.html#working-with-volumes',
       permission: ['listVolumesMetrics'],
       resourceType: 'Volume',
       columns: () => {
@@ -66,6 +67,7 @@ export default {
         {
           api: 'createVolume',
           icon: 'plus',
+          docHelp: 'adminguide/storage.html#creating-a-new-volume',
           label: 'label.action.create.volume',
           listView: true,
           popup: true,
@@ -74,6 +76,7 @@ export default {
         {
           api: 'createVolume',
           icon: 'cloud-upload',
+          docHelp: 'adminguide/storage.html#uploading-an-existing-volume-to-a-virtual-machine',
           label: 'label.upload.volume.from.local',
           listView: true,
           popup: true,
@@ -82,6 +85,7 @@ export default {
         {
           api: 'uploadVolume',
           icon: 'link',
+          docHelp: 'adminguide/storage.html#uploading-an-existing-volume-to-a-virtual-machine',
           label: 'label.upload.volume.from.url',
           listView: true,
           args: ['url', 'name', 'zoneid', 'format', 'diskofferingid', 'checksum'],
@@ -114,6 +118,7 @@ export default {
         {
           api: 'createSnapshot',
           icon: 'camera',
+          docHelp: 'adminguide/storage.html#working-with-volume-snapshots',
           label: 'label.action.take.snapshot',
           dataView: true,
           show: (record) => { return record.state === 'Ready' },
@@ -123,6 +128,7 @@ export default {
         {
           api: 'createSnapshotPolicy',
           icon: 'clock-circle',
+          docHelp: 'adminguide/storage.html#working-with-volume-snapshots',
           label: 'label.action.recurring.snapshot',
           dataView: true,
           show: (record) => { return record.state === 'Ready' },
@@ -140,6 +146,7 @@ export default {
         {
           api: 'resizeVolume',
           icon: 'fullscreen',
+          docHelp: 'adminguide/storage.html#resizing-volumes',
           label: 'label.action.resize.volume',
           dataView: true,
           popup: true,
@@ -149,6 +156,7 @@ export default {
         {
           api: 'migrateVolume',
           icon: 'drag',
+          docHelp: 'adminguide/storage.html#id2',
           label: 'label.migrate.volume',
           args: ['volumeid', 'storageid', 'livemigrate'],
           dataView: true,
@@ -228,6 +236,7 @@ export default {
       name: 'snapshot',
       title: 'label.snapshots',
       icon: 'build',
+      docHelp: 'adminguide/storage.html#working-with-volume-snapshots',
       permission: ['listSnapshots'],
       resourceType: 'Snapshot',
       columns: () => {
@@ -288,6 +297,7 @@ export default {
       name: 'vmsnapshot',
       title: 'label.vm.snapshots',
       icon: 'camera',
+      docHelp: 'adminguide/storage.html#working-with-volume-snapshots',
       permission: ['listVMSnapshot'],
       resourceType: 'VMSnapshot',
       columns: () => {
@@ -341,6 +351,7 @@ export default {
         {
           api: 'restoreBackup',
           icon: 'sync',
+          docHelp: 'adminguide/virtual_machines.html#restoring-vm-backups',
           label: 'label.backup.restore',
           message: 'message.backup.restore',
           dataView: true,

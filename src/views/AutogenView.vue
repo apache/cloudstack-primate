@@ -175,7 +175,7 @@
                   }]"
                   :placeholder="field.description"
                 >
-                  <a-select-option :key="null">{{ }}</a-select-option>
+                  <a-select-option key="" >{{ }}</a-select-option>
                   <a-select-option v-for="(opt, optIndex) in currentAction.mapping[field.name].options" :key="optIndex">
                     {{ opt }}
                   </a-select-option>
@@ -196,7 +196,7 @@
                     return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }"
                 >
-                  <a-select-option :key="null">{{ }}</a-select-option>
+                  <a-select-option key="">{{ }}</a-select-option>
                   <a-select-option v-for="(opt, optIndex) in field.opts" :key="optIndex">
                     {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
@@ -216,7 +216,7 @@
                     return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }"
                 >
-                  <a-select-option :key="null">{{ }}</a-select-option>
+                  <a-select-option key="">{{ }}</a-select-option>
                   <a-select-option v-for="opt in field.opts" :key="opt.id">
                     {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
@@ -439,7 +439,7 @@ export default {
         const project = json.listprojectsresponse.project[0]
         this.$store.dispatch('SetProject', project)
         this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
-        this.$message.success(`Switched to "${project.name}"`)
+        this.$message.success(`${this.$t('message.switch.to')} "${project.name}"`)
         const query = Object.assign({}, this.$route.query)
         delete query.projectid
         this.$router.replace({ query })
@@ -767,7 +767,7 @@ export default {
         },
         errorMethod: () => this.fetchData(),
         loadingMessage: `${this.$t(action.label)} - ${resourceName}`,
-        catchMessage: 'Error encountered while fetching async job result',
+        catchMessage: this.$t('error.fetching.async.job.result'),
         action
       })
     },
@@ -827,7 +827,7 @@ export default {
               if (param.name !== key) {
                 continue
               }
-              if (input === undefined || input === null) {
+              if (input === undefined || input === null || input === '') {
                 if (param.type === 'boolean') {
                   params[key] = false
                 }
