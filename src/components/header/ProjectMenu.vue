@@ -21,7 +21,7 @@
       class="project-select"
       :defaultValue="$t('label.default.view')"
       :loading="loading"
-      :value="($store.getters.project && 'id' in $store.getters.project) ? ($store.getters.project.name || $store.getters.project.displaytext) : $t('label.default.view')"
+      :value="($store.getters.project && 'id' in $store.getters.project) ? ($store.getters.project.displaytext || $store.getters.project.name) : $t('label.default.view')"
       :disabled="isDisabled()"
       :filterOption="filterProject"
       @change="changeProject"
@@ -39,7 +39,7 @@
       </a-tooltip>
 
       <a-select-option v-for="(project, index) in projects" :key="index">
-        {{ project.name }}
+        {{ project.displaytext || project.name }}
       </a-select-option>
     </a-select>
   </span>
@@ -79,7 +79,7 @@ export default {
             getNextPage()
           }
         }).finally(() => {
-          this.projects = _.orderBy(projects, ['name'], ['asc'])
+          this.projects = _.orderBy(projects, ['displaytext'], ['asc'])
           this.projects.unshift({ name: this.$t('label.default.view') })
           this.loading = false
         })
@@ -93,7 +93,7 @@ export default {
       const project = this.projects[index]
       this.$store.dispatch('SetProject', project)
       this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
-      this.$message.success(`Switched to "${project.name}"`)
+      this.$message.success(`Switched to "${project.displaytext}"`)
       if (this.$route.name !== 'dashboard') {
         this.$router.push({ name: 'dashboard' })
       }
