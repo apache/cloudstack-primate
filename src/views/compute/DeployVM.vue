@@ -782,7 +782,7 @@ export default {
       return this.$route.query.name || null
     },
     showSecurityGroupSection () {
-      return this.networks.length > 0 && this.zone.securitygroupsenabled && this.hypervisor !== 'KVM'
+      return this.networks.length > 0 && this.zone.securitygroupsenabled
     }
   },
   watch: {
