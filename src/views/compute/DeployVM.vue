@@ -230,14 +230,13 @@
                           optionFilterProp="children"
                           v-decorator="[
                             'templateNics.nic-' + nic.InstanceID.toString(),
-                            { initialValue: nic.automaticAllocation && options.networks && options.networks.length > 0 ? options.networks[Math.min(nicIndex, options.networks.length - 1)].id : null }
+                            { initialValue: options.networks && options.networks.length > 0 ? options.networks[Math.min(nicIndex, options.networks.length - 1)].id : null }
                           ]"
                           :placeholder="nic.networkDescription"
                           :filterOption="(input, option) => {
                             return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
                           }"
                         >
-                          <a-select-option :key="null">{{ }}</a-select-option>
                           <a-select-option v-for="opt in options.networks" :key="opt.id">
                             {{ opt.name || opt.description }}
                           </a-select-option>
