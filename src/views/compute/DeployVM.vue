@@ -142,17 +142,19 @@
                 <template slot="description">
                   <div v-if="zoneSelected">
                     <compute-offering-selection
-                      :compute-items="options.serviceOfferings"
-                      :row-count="rowCount.serviceOfferings"
+                      :search-visible="!this.templateConfigurationExists"
+                      :compute-items="this.templateConfigurationExists ? templateConfigurations: options.serviceOfferings"
+                      :row-count="this.templateConfigurationExists ? templateConfigurations.length : rowCount.serviceOfferings"
                       :zoneId="zoneId"
                       :value="serviceOffering ? serviceOffering.id : ''"
                       :loading="loading.serviceOfferings"
                       :preFillContent="dataPreFill"
                       @select-compute-item="($event) => updateComputeOffering($event)"
-                      @handle-search-filter="($event) => handleSearchFilter('serviceOfferings', $event)"
+                      @handle-search-filter="this.templateConfigurationExists ? null : ($event) => handleSearchFilter('serviceOfferings', $event)"
                     ></compute-offering-selection>
                     <compute-selection
                       v-if="serviceOffering && serviceOffering.iscustomized"
+                      v-show="!this.templateConfigurationExists"
                       cpunumber-input-decorator="cpunumber"
                       cpuspeed-input-decorator="cpuspeed"
                       memory-input-decorator="memory"
@@ -167,12 +169,12 @@
                       @update-compute-cpuspeed="updateFieldValue"
                       @update-compute-memory="updateFieldValue" />
                     <span v-if="serviceOffering && serviceOffering.iscustomized">
-                      <a-form-item class="form-item-hidden" >
+                      <a-form-item class="form-item-hidden">
                         <a-input v-decorator="['cpunumber']"/>
                       </a-form-item>
                       <a-form-item
                         class="form-item-hidden"
-                        v-if="serviceOffering && !(serviceOffering.cpuspeed > 0)">
+                        v-if="(serviceOffering && !(serviceOffering.cpuspeed > 0)) || this.templateConfigurationExists">
                         <a-input v-decorator="['cpuspeed']"/>
                       </a-form-item>
                       <a-form-item class="form-item-hidden">
@@ -564,6 +566,7 @@ export default {
       instanceConfig: {},
       template: {},
       templateNics: [],
+      templateConfigurations: [],
       iso: {},
       hypervisor: '',
       serviceOffering: {},
@@ -797,6 +800,9 @@ export default {
           value: keyboard
         }
       })
+    },
+    templateConfigurationExists () {
+      return this.vm.templateid && this.templateConfigurations && this.templateConfigurations.length > 0
     }
   },
   watch: {
@@ -808,6 +814,7 @@ export default {
     template (newValue) {
       if (newValue) {
         this.templateNics = this.fetchTemplateNics(newValue)
+        this.templateConfigurations = this.fetchTemplateConfigurations(newValue)
       }
     },
     instanceConfig (instanceConfig) {
@@ -819,7 +826,8 @@ export default {
         this.hypervisor = hypervisorItem ? hypervisorItem.name : null
       }
 
-      this.serviceOffering = _.find(this.options.serviceOfferings, (option) => option.id === instanceConfig.computeofferingid)
+      var offerings = this.templateConfigurationExists ? this.templateConfigurations : this.options.serviceOfferings
+      this.serviceOffering = _.find(offerings, (option) => option.id === instanceConfig.computeofferingid)
       this.diskOffering = _.find(this.options.diskOfferings, (option) => option.id === instanceConfig.diskofferingid)
       this.zone = _.find(this.options.zones, (option) => option.id === instanceConfig.zoneid)
       this.affinityGroups = _.filter(this.options.affinityGroups, (option) => _.includes(instanceConfig.affinitygroupids, option.id))
@@ -997,6 +1005,52 @@ export default {
       }
       return nics
     },
+    fetchTemplateConfigurations (template) {
+      var configurations = []
+      if (template && template.details && Object.keys(template.details).length > 0) {
+        var keys = Object.keys(template.details)
+        keys = keys.filter(key => key.startsWith('ACS-configuration-'))
+        for (var key of keys) {
+          var configuration = JSON.parse(template.details[key])
+          configuration.name = configuration.label
+          configuration.displaytext = configuration.label
+          configuration.iscustomized = true
+          configuration.cpunumber = 0
+          configuration.cpuspeed = 0
+          configuration.memory = 0
+          for (var harwareItem of configuration.hardwareItems) {
+            if (harwareItem.resourceType === 'Processor') {
+              configuration.cpunumber = harwareItem.virtualQuantity
+              configuration.cpuspeed = harwareItem.reservation
+            } else if (harwareItem.resourceType === 'Memory') {
+              configuration.memory = harwareItem.virtualQuantity
+            }
+          }
+          configurations.push(configuration)
+        }
+        configurations.sort(function (a, b) {
+          return a.cpunumber - b.cpunumber
+        })
+      }
+      return configurations
+    },
+    // fetchDeployAsIsServiceOffering () {
+    //   var serviceOffering = []
+    //   var params = {
+    //     zoneid: _.get(this.zone, 'id'),
+    //     issystem: true,
+    //     name: 'Custom Deploy-as-is Instance'
+    //   }
+    //   api('listServiceOfferings', params).then(json => {
+    //     var items = json.listserviceofferingsresponse.serviceoffering
+    //     if (items && items.length > 0) {
+    //       serviceOffering = items[0]
+    //     }
+    //   }).catch(error => {
+    //     this.$notifyError(error)
+    //   })
+    //   return serviceOffering
+    // },
     resetData () {
       this.vm = {}
       this.zoneSelected = false
@@ -1031,6 +1085,16 @@ export default {
       this.form.setFieldsValue({
         computeofferingid: id
       })
+      if (this.templateConfigurationExists) {
+        var offering = _.find(this.templateConfigurations, (option) => option.id === id)
+        if (offering) {
+          setTimeout(() => {
+            this.updateFieldValue('cpunumber', offering.cpunumber)
+            this.updateFieldValue('cpuspeed', offering.cpuspeed)
+            this.updateFieldValue('memory', offering.memory)
+          }, 500)
+        }
+      }
     },
     updateDiskOffering (id) {
       if (id === '0') {
@@ -1125,7 +1189,9 @@ export default {
           deployVmData.hypervisor = values.hypervisor
         }
         // step 3: select service offering
-        deployVmData.serviceofferingid = values.computeofferingid
+        if (!this.templateConfigurations) {
+          deployVmData.serviceofferingid = values.computeofferingid
+        }
         if (values.cpunumber || values.cpuspeed || values.memory) {
           if (values.cpunumber) {
             deployVmData['details[0].cpuNumber'] = values.cpunumber
