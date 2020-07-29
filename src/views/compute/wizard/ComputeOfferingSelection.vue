@@ -127,9 +127,9 @@ export default {
   computed: {
     tableSource () {
       return this.computeItems.map((item) => {
-        var minCpuNumber = item.cpunumber
-        var minCpuSpeed = item.cpunspeed
-        var minMemory = item.memory
+        var maxCpuNumber = item.cpunumber
+        var maxCpuSpeed = item.cpuspeed
+        var maxMemory = item.memory
         var cpuNumberValue = (item.cpunumber !== null && item.cpunumber !== undefined && item.cpunumber > 0) ? item.cpunumber + '' : ''
         var cpuSpeedValue = (item.cpuspeed !== null && item.cpuspeed !== undefined && item.cpuspeed > 0) ? parseFloat(item.cpuspeed / 1000.0).toFixed(2) + '' : ''
         var ramValue = (item.memory !== null && item.memory !== undefined && item.memory > 0) ? item.memory + '' : ''
@@ -137,24 +137,27 @@ export default {
           if ('serviceofferingdetails' in item &&
             'mincpunumber' in item.serviceofferingdetails &&
             'maxcpunumber' in item.serviceofferingdetails) {
-            minCpuSpeed = item.serviceofferingdetails.mincpunumber
+            maxCpuNumber = item.serviceofferingdetails.maxcpunumber
             cpuNumberValue = item.serviceofferingdetails.mincpunumber + '-' + item.serviceofferingdetails.maxcpunumber
           }
           if ('serviceofferingdetails' in item &&
             'minmemory' in item.serviceofferingdetails &&
             'maxmemory' in item.serviceofferingdetails) {
-            minMemory = item.serviceofferingdetails.minmemory
+            maxMemory = item.serviceofferingdetails.maxmemory
             ramValue = item.serviceofferingdetails.minmemory + '-' + item.serviceofferingdetails.maxmemory
           }
         }
         var disabled = false
-        if (minCpuNumber && minCpuNumber < this.minimumCpunumber) {
+        if ((item.iscustomized === false && maxCpuNumber !== this.minimumCpunumber) ||
+            (item.iscustomized === true && maxCpuNumber < this.minimumCpunumber)) {
           disabled = true
         }
-        if (disabled === false && minCpuSpeed && minCpuSpeed < this.minimumCpuspeed) {
+        if (disabled === false && maxCpuSpeed && maxCpuSpeed !== this.minimumCpuspeed) {
           disabled = true
         }
-        if (disabled === false && minMemory && minMemory < this.minimumMemory) {
+        if (disabled === false && maxMemory &&
+          ((item.iscustomized === false && maxMemory !== this.minimumMemory) ||
+            (item.iscustomized === true && maxMemory < this.minimumMemory))) {
           disabled = true
         }
         return {
@@ -172,7 +175,9 @@ export default {
         selectedRowKeys: this.selectedRowKeys || [],
         onChange: this.onSelectRow,
         getCheckboxProps: (record) => ({
-          disabled: record.disabled
+          props: {
+            disabled: record.disabled
+          }
         })
       }
     }
@@ -181,6 +186,8 @@ export default {
     value (newValue, oldValue) {
       if (newValue && newValue !== oldValue) {
         this.selectedRowKeys = [newValue]
+      } else {
+        this.selectedRowKeys = []
       }
     },
     loading () {

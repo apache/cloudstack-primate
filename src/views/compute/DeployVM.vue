@@ -144,7 +144,7 @@
                     <a-form-item>
                       <span slot="label">
                         {{ $t('label.configuration') }}
-                        <a-tooltip :title="'Configuration'">
+                        <a-tooltip :title="$t('message.ovf.configurations')">
                           <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
                         </a-tooltip>
                       </span>
@@ -166,6 +166,7 @@
                           {{ opt.name || opt.description }}
                         </a-select-option>
                       </a-select>
+                      <span v-if="selectedTemplateConfiguration && selectedTemplateConfiguration.description">{{ selectedTemplateConfiguration.description }}</span>
                     </a-form-item>
                     <compute-offering-selection
                       :compute-items="options.serviceOfferings"
@@ -176,13 +177,12 @@
                       :preFillContent="dataPreFill"
                       :minimum-cpunumber="templateConfigurationExists && selectedTemplateConfiguration && selectedTemplateConfiguration.cpunumber ? selectedTemplateConfiguration.cpunumber : 0"
                       :minimum-cpuspeed="templateConfigurationExists && selectedTemplateConfiguration && selectedTemplateConfiguration.cpuspeed ? selectedTemplateConfiguration.cpuspeed : 0"
-                      :minimum-memory="templateConfigurationExists && selectedTemplateConfiguration && selectedTemplateConfiguration.memory ? templateConfigurations[0].memory : 0"
+                      :minimum-memory="templateConfigurationExists && selectedTemplateConfiguration && selectedTemplateConfiguration.memory ? selectedTemplateConfiguration.memory : 0"
                       @select-compute-item="($event) => updateComputeOffering($event)"
                       @handle-search-filter="($event) => handleSearchFilter('serviceOfferings', $event)"
                     ></compute-offering-selection>
                     <compute-selection
                       v-if="serviceOffering && serviceOffering.iscustomized"
-                      v-show="!this.templateConfigurationExists"
                       cpunumber-input-decorator="cpunumber"
                       cpuspeed-input-decorator="cpuspeed"
                       memory-input-decorator="memory"
@@ -851,6 +851,7 @@ export default {
             if ('templateConfiguration' in this.form.fieldsStore.fieldsMeta) {
               this.updateFieldValue('templateConfiguration', this.selectedTemplateConfiguration.id)
             }
+            this.updateComputeOffering(null)
           }, 500)
         }
       }
@@ -1105,6 +1106,9 @@ export default {
       this.form.setFieldsValue({
         computeofferingid: id
       })
+      setTimeout(() => {
+        this.updateTemplateConfigurationOfferingDetails()
+      }, 500)
     },
     updateDiskOffering (id) {
       if (id === '0') {
@@ -1199,9 +1203,7 @@ export default {
           deployVmData.hypervisor = values.hypervisor
         }
         // step 3: select service offering
-        if (!this.templateConfigurations) {
-          deployVmData.serviceofferingid = values.computeofferingid
-        }
+        deployVmData.serviceofferingid = values.computeofferingid
         if (values.cpunumber || values.cpuspeed || values.memory) {
           if (values.cpunumber) {
             deployVmData['details[0].cpuNumber'] = values.cpunumber
@@ -1499,6 +1501,20 @@ export default {
     },
     onSelectTemplateConfigurationId (value) {
       this.selectedTemplateConfiguration = _.find(this.templateConfigurations, (option) => option.id === value)
+      this.updateComputeOffering(null)
+    },
+    updateTemplateConfigurationOfferingDetails () {
+      if (this.templateConfigurationExists && this.selectedTemplateConfiguration) {
+        if ('cpunumber' in this.form.fieldsStore.fieldsMeta) {
+          this.updateFieldValue('cpunumber', this.selectedTemplateConfiguration.cpunumber)
+        }
+        if ('cpuspeed' in this.form.fieldsStore.fieldsMeta) {
+          this.updateFieldValue('cpuspeed', this.selectedTemplateConfiguration.cpuspeed)
+        }
+        if ('memory' in this.form.fieldsStore.fieldsMeta) {
+          this.updateFieldValue('memory', this.selectedTemplateConfiguration.memory)
+        }
+      }
     }
   }
 }
