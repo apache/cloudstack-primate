@@ -24,7 +24,7 @@
           :key="idx"
           style="margin-bottom: 10px;">
           <div><strong>{{ $t(type) }}</strong></div>
-          <div>{{ item[type] || 'Use default gateway' }}</div>
+          <div>{{ item[type] || $t('label.network.label.display.for.blank.value') }}</div>
         </div>
         <div v-if="item.traffictype === 'Public'">
           <div style="margin-bottom: 10px;">
@@ -111,7 +111,11 @@ export default {
         isSystem: true,
         zoneId: this.resource.zoneid
       }).then(json => {
-        this.publicNetwork = json.listnetworksresponse.network[0] || {}
+        if (json.listnetworksresponse && json.listnetworksresponse.network && json.listnetworksresponse.network.length > 0) {
+          this.publicNetwork = json.listnetworksresponse.network[0]
+        } else {
+          this.publicNetwork = {}
+        }
       }).catch(error => {
         this.$notifyError(error)
       }).finally(() => {

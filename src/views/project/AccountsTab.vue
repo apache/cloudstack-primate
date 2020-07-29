@@ -78,7 +78,7 @@
           :current="page"
           :pageSize="pageSize"
           :total="itemCount"
-          :showTotal="total => `Total ${total} ${$t('label.items')}`"
+          :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
           :pageSizeOptions="['10', '20', '40', '80', '100']"
           @change="changePage"
           @showSizeChange="changePageSize"
@@ -258,7 +258,11 @@ export default {
     },
     onMakeProjectOwner (record) {
       const title = this.$t('label.make.project.owner')
+<<<<<<< HEAD
       const loading = this.$message.loading(title + ' in progress for ' + record.account, 0)
+=======
+      const loading = this.$message.loading(title + `${this.$t('label.in.progress.for')} ` + record.account, 0)
+>>>>>>> 41aa289778aafe0d5d49d31566c78a5c1ea438b3
       const params = {}
       params.id = this.resource.id
       params.account = record.account
@@ -313,14 +317,13 @@ export default {
     },
     onShowConfirmDelete (record) {
       const self = this
-      let title = this.$t('label.deleteconfirm')
-      title = title.replace('{name}', this.$t('label.account'))
+      const title = `${this.$t('label.deleteconfirm')} ${this.$t('label.account')}`
 
       this.$confirm({
         title: title,
-        okText: 'OK',
+        okText: this.$t('label.ok'),
         okType: 'danger',
-        cancelText: 'Cancel',
+        cancelText: this.$t('label.cancel'),
         onOk () {
           self.removeAccount(record)
         }
@@ -328,7 +331,11 @@ export default {
     },
     removeAccount (record) {
       const title = this.$t('label.remove.project.account')
+<<<<<<< HEAD
       const loading = this.$message.loading(title + ' in progress for ' + record.account, 0)
+=======
+      const loading = this.$message.loading(title + `${this.$t('label.in.progress.for')} ` + record.account, 0)
+>>>>>>> 41aa289778aafe0d5d49d31566c78a5c1ea438b3
       const params = {}
       params.projectid = this.resource.id
       if (record.userid) {

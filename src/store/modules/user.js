@@ -22,7 +22,8 @@ import message from 'ant-design-vue/es/message'
 import router from '@/router'
 import store from '@/store'
 import { login, logout, api } from '@/api'
-import { ACCESS_TOKEN, CURRENT_PROJECT, DEFAULT_THEME, APIS, ASYNC_JOB_IDS } from '@/store/mutation-types'
+import i18n from '@/locales'
+import { ACCESS_TOKEN, CURRENT_PROJECT, DEFAULT_THEME, APIS, ASYNC_JOB_IDS, ZONES } from '@/store/mutation-types'
 
 const user = {
   state: {
@@ -35,7 +36,8 @@ const user = {
     project: {},
     asyncJobIds: [],
     isLdapEnabled: false,
-    cloudian: {}
+    cloudian: {},
+    zones: {}
   },
 
   mutations: {
@@ -74,6 +76,10 @@ const user = {
     },
     RESET_THEME: (state) => {
       Vue.ls.set(DEFAULT_THEME, 'light')
+    },
+    SET_ZONES: (state, zones) => {
+      state.zones = zones
+      Vue.ls.set(ZONES, zones)
     }
   },
 
@@ -116,13 +122,33 @@ const user = {
     GetInfo ({ commit }) {
       return new Promise((resolve, reject) => {
         const cachedApis = Vue.ls.get(APIS, {})
+        const cachedZones = Vue.ls.get(ZONES, [])
         const hasAuth = Object.keys(cachedApis).length > 0
         if (hasAuth) {
           console.log('Login detected, using cached APIs')
+          commit('SET_ZONES', cachedZones)
           commit('SET_APIS', cachedApis)
-          resolve(cachedApis)
+
+          // Ensuring we get the user info so that store.getters.user is never empty when the page is freshly loaded
+          api('listUsers', { username: Cookies.get('username'), listall: true }).then(response => {
+            const result = response.listusersresponse.user[0]
+            commit('SET_INFO', result)
+            commit('SET_NAME', result.firstname + ' ' + result.lastname)
+            if ('email' in result) {
+              commit('SET_AVATAR', 'https://www.gravatar.com/avatar/' + md5(result.email))
+            } else {
+              commit('SET_AVATAR', 'https://www.gravatar.com/avatar/' + md5('dev@cloudstack.apache.org'))
+            }
+            resolve(cachedApis)
+          }).catch(error => {
+            reject(error)
+          })
         } else {
-          const hide = message.loading('Discovering features, please wait...', 0)
+          const hide = message.loading(i18n.t('message.discovering.feature'), 0)
+          api('listZones', { listall: true }).then(json => {
+            const zones = json.listzonesresponse.zone || []
+            commit('SET_ZONES', zones)
+          })
           api('listApis').then(response => {
             const apis = {}
             const apiList = response.listapisresponse.api
@@ -140,7 +166,7 @@ const user = {
               router.addRoutes(store.getters.addRouters)
             })
             hide()
-            message.success('Discovered all available features!')
+            message.success(i18n.t('message.sussess.discovering.feature'))
           }).catch(error => {
             reject(error)
           })

@@ -82,7 +82,7 @@
                 :key="event.id"
                 :color="getEventColour(event)">
                 <span :style="{ color: '#999' }"><small>{{ event.created }}</small></span><br/>
-                <span :style="{ color: '#666' }"><small>{{ event.type }}</small></span><br/>
+                <span :style="{ color: '#666' }"><small><router-link :to="{ path: 'event/' + event.id }">{{ event.type }}</router-link></small></span><br/>
                 <span :style="{ color: '#aaa' }">({{ event.username }}) {{ event.description }}</span>
               </a-timeline-item>
             </a-timeline>
@@ -187,14 +187,14 @@ export default {
         if (json && json.listvolumesresponse) {
           count = json.listvolumesresponse.count
         }
-        this.stats.splice(3, 1, { name: 'Total Volumes', count: count, icon: 'database', path: '/volume' })
+        this.stats.splice(3, 1, { name: this.$t('label.total.volume'), count: count, icon: 'database', path: '/volume' })
       })
       api('listNetworks', { listall: true }).then(json => {
         var count = 0
         if (json && json.listnetworksresponse) {
           count = json.listnetworksresponse.count
         }
-        this.stats.splice(4, 1, { name: 'Total Networks', count: count, icon: 'apartment', path: '/guestnetwork' })
+        this.stats.splice(4, 1, { name: this.$t('label.total.network'), count: count, icon: 'apartment', path: '/guestnetwork' })
       })
       api('listPublicIpAddresses', { listall: true }).then(json => {
         var count = 0
