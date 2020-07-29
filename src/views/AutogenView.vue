@@ -751,12 +751,12 @@ export default {
               if (['listTemplates', 'listIsos'].includes(possibleApi)) {
                 param.opts = [...new Map(param.opts.map(x => [x.id, x])).values()]
               }
-              this.$forceUpdate()
               break
             }
             break
           }
         }
+        this.$forceUpdate()
       }).catch(function (error) {
         console.log(error.stack)
         param.loading = false
