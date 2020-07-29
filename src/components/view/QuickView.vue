@@ -16,7 +16,7 @@
 // under the License.
 
 <template>
-  <a-popover v-if="enabled && actionsExist" triggers="hover" placement="right">
+  <a-popover v-if="enabled && actionsExist" triggers="hover" placement="top">
     <template slot="content">
       <action-button
         :size="size"
@@ -25,7 +25,7 @@
         :resource="resource"
         @exec-action="execAction" />
     </template>
-    <a-icon type="right-circle" style="margin-left: 5px" />
+    <a-icon type="eye" />
   </a-popover>
 </template>
 

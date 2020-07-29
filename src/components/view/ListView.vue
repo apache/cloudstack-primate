@@ -62,6 +62,12 @@
 
     <span slot="name" slot-scope="text, record">
       <div style="min-width: 120px" >
+        <QuickView
+          style="margin-right: 5px"
+          :actions="actions"
+          :resource="record"
+          :enabled="quickViewEnabled() && actions.length > 0 && columns && columns[0].dataIndex === 'name' "
+          @exec-action="$parent.execAction"/>
         <span v-if="$route.path.startsWith('/project')" style="margin-right: 5px">
           <a-button type="dashed" size="small" shape="circle" icon="login" @click="changeProject(record)" />
         </span>
@@ -72,11 +78,6 @@
           <router-link :to="{ path: $route.path + '/' + record.id }" v-if="record.id">{{ text }}</router-link>
           <router-link :to="{ path: $route.path + '/' + record.name }" v-else>{{ text }}</router-link>
         </span>
-        <QuickView
-          :actions="actions"
-          :resource="record"
-          :enabled="quickViewEnabled() && actions.length > 0 && columns && columns[0].dataIndex === 'name' "
-          @exec-action="$parent.execAction"/>
       </div>
     </span>
     <a slot="templatetype" slot-scope="text, record" href="javascript:;">
