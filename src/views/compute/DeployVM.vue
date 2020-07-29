@@ -89,12 +89,19 @@
                           :selected="tabKey"
                           :loading="loading.templates"
                           :preFillContent="dataPreFill"
-                          @update-template-iso="updateFieldValue"
-                        ></template-iso-selection>
+                          @handle-search-filter="($event) => fetchAllTemplates($event)"
+                          @update-template-iso="updateFieldValue" />
+                        <span>
+                          {{ $t('label.override.rootdisk.size') }}
+                          <a-switch @change="val => { this.showRootDiskSizeChanger = val }" style="margin-left: 10px;"/>
+                        </span>
                         <disk-size-selection
+                          v-show="showRootDiskSizeChanger"
                           input-decorator="rootdisksize"
                           :preFillContent="dataPreFill"
-                          @update-disk-size="updateFieldValue"/>
+                          :minDiskSize="dataPreFill.minrootdisksize"
+                          @update-disk-size="updateFieldValue"
+                          style="margin-top: 10px;"/>
                       </p>
                       <p v-else>
                         {{ $t('message.iso.desc') }}
@@ -104,6 +111,7 @@
                           :selected="tabKey"
                           :loading="loading.isos"
                           :preFillContent="dataPreFill"
+                          @handle-search-filter="($event) => fetchAllIsos($event)"
                           @update-template-iso="updateFieldValue" />
                         <a-form-item :label="this.$t('label.hypervisor')">
                           <a-select
@@ -204,29 +212,12 @@
                 </template>
               </a-step>
               <a-step
-                :title="this.$t('label.affinity.groups')"
-                :status="zoneSelected ? 'process' : 'wait'">
-                <template slot="description">
-                  <div v-if="zoneSelected">
-                    <affinity-group-selection
-                      :items="options.affinityGroups"
-                      :row-count="rowCount.affinityGroups"
-                      :zoneId="zoneId"
-                      :value="affinityGroupIds"
-                      :loading="loading.affinityGroups"
-                      :preFillContent="dataPreFill"
-                      @select-affinity-group-item="($event) => updateAffinityGroups($event)"
-                      @handle-search-filter="($event) => handleSearchFilter('affinityGroups', $event)"
-                    ></affinity-group-selection>
-                  </div>
-                </template>
-              </a-step>
-              <a-step
                 :title="this.$t('label.networks')"
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
                   <div v-if="zoneSelected">
                     <network-selection
+                      v-if="!networkId"
                       :items="options.networks"
                       :row-count="rowCount.networks"
                       :value="networkOfferingIds"
@@ -244,6 +235,19 @@
                       @select-default-network-item="($event) => updateDefaultNetworks($event)"
                     ></network-configuration>
                   </div>
+                </template>
+              </a-step>
+              <a-step
+                v-if="showSecurityGroupSection"
+                :title="$t('label.security.groups')"
+                :status="zoneSelected ? 'process' : 'wait'">
+                <template slot="description">
+                  <security-group-selection
+                    :zoneId="zoneId"
+                    :value="securitygroupids"
+                    :loading="loading.networks"
+                    :preFillContent="dataPreFill"
+                    @select-security-group-item="($event) => updateSecurityGroups($event)"></security-group-selection>
                 </template>
               </a-step>
               <a-step
@@ -265,25 +269,76 @@
                 </template>
               </a-step>
               <a-step
-                :title="this.$t('label.details')"
+                :title="$t('label.ovf.properties')"
+                :status="zoneSelected ? 'process' : 'wait'"
+                v-if="vm.templateid && template.properties && template.properties.length > 0">
+                <template slot="description">
+                  <div>
+                    <a-form-item
+                      v-for="(property, propertyIndex) in template.properties"
+                      :key="propertyIndex"
+                      :v-bind="property.key" >
+                      <span slot="label">
+                        {{ property.label }}
+                        <a-tooltip :title="property.description">
+                          <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                        </a-tooltip>
+                      </span>
+
+                      <span v-if="property.type && property.type==='boolean'">
+                        <a-switch
+                          v-decorator="['properties.' + property.key, { initialValue: property.value==='TRUE'?true:false}]"
+                          :defaultChecked="property.value==='TRUE'?true:false"
+                          :placeholder="property.description"
+                        />
+                      </span>
+                      <span v-else-if="property.type && (property.type==='int' || property.type==='real')">
+                        <a-input-number
+                          v-decorator="['properties.'+property.key]"
+                          :defaultValue="property.value"
+                          :placeholder="property.description"
+                          :min="property.qualifiers && property.qualifiers.includes('MinValue') && property.qualifiers.includes('MaxValue')?property.qualifiers.split(',')[0].replace('MinValue(','').slice(0, -1):0"
+                          :max="property.qualifiers && property.qualifiers.includes('MinValue') && property.qualifiers.includes('MaxValue')?property.qualifiers.split(',')[1].replace('MaxValue(','').slice(0, -1):property.type==='real'?1:Number.MAX_SAFE_INTEGER" />
+                      </span>
+                      <span v-else-if="property.type && property.type==='string' && property.qualifiers && property.qualifiers.startsWith('ValueMap')">
+                        <a-select
+                          showSearch
+                          optionFilterProp="children"
+                          v-decorator="['properties.' + property.key, { initialValue: property.value }]"
+                          :placeholder="property.description"
+                          :filterOption="(input, option) => {
+                            return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                          }"
+                        >
+                          <a-select-option :v-if="property.value===''" key="">{{ }}</a-select-option>
+                          <a-select-option v-for="opt in property.qualifiers.replace('ValueMap','').substr(1).slice(0, -1).split(',')" :key="removeQuotes(opt)">
+                            {{ removeQuotes(opt) }}
+                          </a-select-option>
+                        </a-select>
+                      </span>
+                      <span v-else-if="property.type && property.type==='string' && property.password">
+                        <a-input-password
+                          v-decorator="['properties.' + property.key, { initialValue: property.value }]"
+                          :placeholder="property.description" />
+                      </span>
+                      <span v-else>
+                        <a-input
+                          v-decorator="['properties.' + property.key, { initialValue: property.value }]"
+                          :placeholder="property.description" />
+                      </span>
+                    </a-form-item>
+                  </div>
+                </template>
+              </a-step>
+              <a-step
+                :title="$t('label.advanced.mode')"
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description" v-if="zoneSelected">
-                  {{ $t('message.vm.review.launch') }}
-                  <div style="margin-top: 15px">
-                    <a-form-item :label="$t('label.name.optional')">
-                      <a-input
-                        v-decorator="['name']"
-                      />
-                    </a-form-item>
-                    <a-form-item :label="$t('label.group.optional')">
-                      <a-input v-decorator="['group']" />
-                    </a-form-item>
-                    <a-form-item :label="$t('label.keyboard')">
-                      <a-select
-                        v-decorator="['keyboard']"
-                        :options="keyboardSelectOptions"
-                      ></a-select>
-                    </a-form-item>
+                  <span>
+                    {{ $t('label.isadvanced') }}
+                    <a-switch @change="val => { this.showDetails = val }" style="margin-left: 10px"/>
+                  </span>
+                  <div style="margin-top: 15px" v-show="this.showDetails">
                     <div
                       v-if="vm.templateid && ['KVM', 'VMware'].includes(hypervisor)">
                       <a-form-item :label="$t('label.vm.boottype')">
@@ -316,6 +371,40 @@
                       <a-textarea
                         v-decorator="['userdata']">
                       </a-textarea>
+                    </a-form-item>
+                    <a-form-item :label="this.$t('label.affinity.groups')">
+                      <affinity-group-selection
+                        :items="options.affinityGroups"
+                        :row-count="rowCount.affinityGroups"
+                        :zoneId="zoneId"
+                        :value="affinityGroupIds"
+                        :loading="loading.affinityGroups"
+                        :preFillContent="dataPreFill"
+                        @select-affinity-group-item="($event) => updateAffinityGroups($event)"
+                        @handle-search-filter="($event) => handleSearchFilter('affinityGroups', $event)"/>
+                    </a-form-item>
+                  </div>
+                </template>
+              </a-step>
+              <a-step
+                :title="this.$t('label.details')"
+                :status="zoneSelected ? 'process' : 'wait'">
+                <template slot="description" v-if="zoneSelected">
+                  <div style="margin-top: 15px">
+                    {{ $t('message.vm.review.launch') }}
+                    <a-form-item :label="$t('label.name.optional')">
+                      <a-input
+                        v-decorator="['name']"
+                      />
+                    </a-form-item>
+                    <a-form-item :label="$t('label.group.optional')">
+                      <a-input v-decorator="['group']" />
+                    </a-form-item>
+                    <a-form-item :label="$t('label.keyboard')">
+                      <a-select
+                        v-decorator="['keyboard']"
+                        :options="keyboardSelectOptions"
+                      ></a-select>
                     </a-form-item>
                   </div>
                 </template>
@@ -372,6 +461,7 @@ import AffinityGroupSelection from '@views/compute/wizard/AffinityGroupSelection
 import NetworkSelection from '@views/compute/wizard/NetworkSelection'
 import NetworkConfiguration from '@views/compute/wizard/NetworkConfiguration'
 import SshKeyPairSelection from '@views/compute/wizard/SshKeyPairSelection'
+import SecurityGroupSelection from '@views/compute/wizard/SecurityGroupSelection'
 
 export default {
   name: 'Wizard',
@@ -385,7 +475,8 @@ export default {
     DiskOfferingSelection,
     InfoCard,
     ComputeOfferingSelection,
-    ComputeSelection
+    ComputeSelection,
+    SecurityGroupSelection
   },
   props: {
     visible: {
@@ -480,16 +571,6 @@ export default {
         'selfexecutable',
         'sharedexecutable'
       ],
-      steps: {
-        BASIC: 0,
-        TEMPLATE_ISO: 1,
-        COMPUTE: 2,
-        DISK_OFFERING: 3,
-        AFFINITY_GROUP: 4,
-        NETWORK: 5,
-        SSH_KEY_PAIR: 6,
-        ENABLE_SETUP: 7
-      },
       initDataConfig: {},
       defaultNetwork: '',
       networkConfig: [],
@@ -505,7 +586,10 @@ export default {
         }
       ],
       tabKey: 'templateid',
-      dataPreFill: {}
+      dataPreFill: {},
+      showDetails: false,
+      showRootDiskSizeChanger: false,
+      securitygroupids: []
     }
   },
   computed: {
@@ -690,6 +774,15 @@ export default {
           value: keyboard
         }
       })
+    },
+    networkId () {
+      return this.$route.query.networkid || null
+    },
+    networkName () {
+      return this.$route.query.name || null
+    },
+    showSecurityGroupSection () {
+      return this.networks.length > 0 && this.zone.securitygroupsenabled
     }
   },
   watch: {
@@ -699,8 +792,23 @@ export default {
       }
     },
     instanceConfig (instanceConfig) {
-      this.template = _.find(this.options.templates, (option) => option.id === instanceConfig.templateid)
-      this.iso = _.find(this.options.isos, (option) => option.id === instanceConfig.isoid)
+      this.template = ''
+      for (const key in this.options.templates) {
+        var template = _.find(_.get(this.options.templates[key], 'template', []), (option) => option.id === instanceConfig.templateid)
+        if (template) {
+          this.template = template
+          break
+        }
+      }
+
+      this.iso = ''
+      for (const key in this.options.isos) {
+        var iso = _.find(_.get(this.options.isos[key], 'iso', []), (option) => option.id === instanceConfig.isoid)
+        if (iso) {
+          this.iso = iso
+          break
+        }
+      }
 
       if (instanceConfig.hypervisor) {
         var hypervisorItem = _.find(this.options.hypervisors, (option) => option.name === instanceConfig.hypervisor)
@@ -711,7 +819,9 @@ export default {
       this.diskOffering = _.find(this.options.diskOfferings, (option) => option.id === instanceConfig.diskofferingid)
       this.zone = _.find(this.options.zones, (option) => option.id === instanceConfig.zoneid)
       this.affinityGroups = _.filter(this.options.affinityGroups, (option) => _.includes(instanceConfig.affinitygroupids, option.id))
-      this.networks = _.filter(this.options.networks, (option) => _.includes(instanceConfig.networkids, option.id))
+      if (!this.networkId) {
+        this.networks = _.filter(this.options.networks, (option) => _.includes(instanceConfig.networkids, option.id))
+      }
       this.sshKeyPair = _.find(this.options.sshKeyPairs, (option) => option.name === instanceConfig.keypair)
 
       if (this.zone) {
@@ -792,10 +902,22 @@ export default {
     }
   },
   methods: {
+    removeQuotes (value) {
+      return value.replace(/"/g, '')
+    },
     fillValue (field) {
       this.form.getFieldDecorator([field], { initialValue: this.dataPreFill[field] })
     },
     fetchData () {
+      if (this.networkId) {
+        this.updateNetworks([this.networkId])
+        this.updateDefaultNetworks(this.networkId)
+        this.networks = [{
+          id: this.networkId,
+          name: this.networkName
+        }]
+      }
+
       if (this.dataPreFill.zoneid) {
         this.fetchDataByZone(this.dataPreFill.zoneid)
       } else {
@@ -880,6 +1002,18 @@ export default {
           templateid: value,
           isoid: null
         })
+        let template = ''
+        for (const key in this.options.templates) {
+          var t = _.find(_.get(this.options.templates[key], 'template', []), (option) => option.id === value)
+          if (t) {
+            template = t
+            break
+          }
+        }
+        if (template) {
+          var size = template.size / (1024 * 1024 * 1024) || 0 // bytes to GB
+          this.dataPreFill.minrootdisksize = Math.ceil(size)
+        }
       } else if (name === 'isoid') {
         this.tabKey = 'isoid'
         this.form.setFieldsValue({
@@ -935,6 +1069,9 @@ export default {
         keypair: name
       })
     },
+    updateSecurityGroups (securitygroupids) {
+      this.securitygroupids = securitygroupids
+    },
     getText (option) {
       return _.get(option, 'displaytext', _.get(option, 'name'))
     },
@@ -948,14 +1085,14 @@ export default {
 
         if (!values.templateid && !values.isoid) {
           this.$notification.error({
-            message: 'Request Failed',
+            message: this.$t('message.request.failed'),
             description: this.$t('message.template.iso')
           })
           return
         } else if (values.isoid && (!values.diskofferingid || values.diskofferingid === '0')) {
           this.$notification.error({
-            message: 'Request Failed',
-            description: this.$t('Please select a Disk Offering to continue')
+            message: this.$t('message.request.failed'),
+            description: this.$t('message.step.3.continue')
           })
           return
         }
@@ -983,7 +1120,7 @@ export default {
         } else {
           deployVmData.templateid = values.isoid
         }
-        if (values.rootdisksize && values.rootdisksize > 0) {
+        if (this.showRootDiskSizeChanger && values.rootdisksize && values.rootdisksize > 0) {
           deployVmData.rootdisksize = values.rootdisksize
         }
         if (values.hypervisor && values.hypervisor.length > 0) {
@@ -1037,11 +1174,21 @@ export default {
             }
           }
         }
+        if (this.securitygroupids.length > 0) {
+          deployVmData.securitygroupids = this.securitygroupids.join(',')
+        }
         // step 7: select ssh key pair
         deployVmData.keypair = values.keypair
         deployVmData.name = values.name
         deployVmData.displayname = values.name
         // step 8: enter setup
+        if ('properties' in values) {
+          const keys = Object.keys(values.properties)
+          for (var i = 0; i < keys.length; ++i) {
+            deployVmData['properties[' + i + '].key'] = keys[i]
+            deployVmData['properties[' + i + '].value'] = values.properties[keys[i]]
+          }
+        }
         if ('bootintosetup' in values) {
           deployVmData.bootintosetup = values.bootintosetup
         }
@@ -1058,14 +1205,14 @@ export default {
                 const name = vm.displayname || vm.name || vm.id
                 if (vm.password) {
                   this.$notification.success({
-                    message: password + ' for ' + name,
+                    message: password + ` ${this.$t('label.for')} ` + name,
                     description: vm.password,
                     duration: 0
                   })
                 }
               },
-              loadingMessage: `${title} in progress`,
-              catchMessage: 'Error encountered while fetching async job result'
+              loadingMessage: `${title} ${this.$t('label.in.progress')}`,
+              catchMessage: this.$t('error.fetching.async.job.result')
             })
             this.$store.dispatch('AddAsyncJob', {
               title: title,
@@ -1146,12 +1293,17 @@ export default {
         this.loading[name] = false
       })
     },
-    fetchTemplates (templateFilter) {
+    fetchTemplates (templateFilter, params) {
+      params = params || {}
+      if (params.keyword || params.category !== templateFilter) {
+        params.page = 1
+        params.pageSize = params.pageSize || 10
+      }
+      params.zoneid = _.get(this.zone, 'id')
+      params.templatefilter = templateFilter
+
       return new Promise((resolve, reject) => {
-        api('listTemplates', {
-          zoneid: _.get(this.zone, 'id'),
-          templatefilter: templateFilter
-        }).then((response) => {
+        api('listTemplates', params).then((response) => {
           resolve(response)
         }).catch((reason) => {
           // ToDo: Handle errors
@@ -1159,13 +1311,18 @@ export default {
         })
       })
     },
-    fetchIsos (isoFilter) {
+    fetchIsos (isoFilter, params) {
+      params = params || {}
+      if (params.keyword || params.category !== isoFilter) {
+        params.page = 1
+        params.pageSize = params.pageSize || 10
+      }
+      params.zoneid = _.get(this.zone, 'id')
+      params.isoFilter = isoFilter
+      params.bootable = true
+
       return new Promise((resolve, reject) => {
-        api('listIsos', {
-          zoneid: _.get(this.zone, 'id'),
-          isofilter: isoFilter,
-          bootable: true
-        }).then((response) => {
+        api('listIsos', params).then((response) => {
           resolve(response)
         }).catch((reason) => {
           // ToDo: Handle errors
@@ -1173,20 +1330,19 @@ export default {
         })
       })
     },
-    fetchAllTemplates (filterKeys) {
+    fetchAllTemplates (params) {
       const promises = []
-      this.options.templates = []
+      const templates = {}
       this.loading.templates = true
       this.templateFilter.forEach((filter) => {
-        if (filterKeys && !filterKeys.includes(filter)) {
-          return true
-        }
-        promises.push(this.fetchTemplates(filter))
+        templates[filter] = { count: 0, template: [] }
+        promises.push(this.fetchTemplates(filter, params))
       })
-      Promise.all(promises).then(response => {
-        response.forEach((resItem) => {
-          const concatTemplates = _.concat(this.options.templates, _.get(resItem, 'listtemplatesresponse.template', []))
-          this.options.templates = _.uniqWith(concatTemplates, _.isEqual)
+      this.options.templates = templates
+      Promise.all(promises).then((response) => {
+        response.forEach((resItem, idx) => {
+          templates[this.templateFilter[idx]] = _.isEmpty(resItem.listtemplatesresponse) ? { count: 0, template: [] } : resItem.listtemplatesresponse
+          this.options.templates = { ...templates }
           this.$forceUpdate()
         })
       }).catch((reason) => {
@@ -1195,20 +1351,19 @@ export default {
         this.loading.templates = false
       })
     },
-    fetchAllIsos (filterKey) {
+    fetchAllIsos (params) {
       const promises = []
-      this.options.isos = []
+      const isos = {}
       this.loading.isos = true
       this.isoFilter.forEach((filter) => {
-        if (filterKey && filterKey !== filter) {
-          return true
-        }
-        promises.push(this.fetchIsos(filter))
+        isos[filter] = { count: 0, iso: [] }
+        promises.push(this.fetchIsos(filter, params))
       })
-      Promise.all(promises).then(response => {
-        response.forEach((resItem) => {
-          const concatedIsos = _.concat(this.options.isos, _.get(resItem, 'listisosresponse.iso', []))
-          this.options.isos = _.uniqWith(concatedIsos, _.isEqual)
+      this.options.isos = isos
+      Promise.all(promises).then((response) => {
+        response.forEach((resItem, idx) => {
+          isos[this.isoFilter[idx]] = _.isEmpty(resItem.listisosresponse) ? { count: 0, iso: [] } : resItem.listisosresponse
+          this.options.isos = { ...isos }
           this.$forceUpdate()
         })
       }).catch((reason) => {
@@ -1233,6 +1388,9 @@ export default {
       })
       this.tabKey = 'templateid'
       _.each(this.params, (param, name) => {
+        if (this.networkId && name === 'networks') {
+          return true
+        }
         if (!('isLoad' in param) || param.isLoad) {
           this.fetchOptions(param, name, ['zones'])
         }

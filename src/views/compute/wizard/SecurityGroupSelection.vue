@@ -16,15 +16,15 @@
 // under the License.
 
 <template>
-  <div>
-    {{ $t('message.select.affinity.groups') }}
+  <div style="margin-top: 10px;">
+    <label>{{ $t('message.select.security.groups') }}</label>
     <a-input-search
-      style="width: 25vw;float: right;margin-bottom: 10px; z-index: 8"
+      style="width: 25vw; float: right; margin-bottom: 10px; z-index: 8;"
       :placeholder="$t('label.search')"
       v-model="filter"
       @search="handleSearch" />
     <a-table
-      :loading="loading"
+      :loading="loading || fetchLoading"
       :columns="columns"
       :dataSource="items"
       :rowKey="record => record.id"
@@ -32,14 +32,13 @@
       :rowSelection="rowSelection"
       size="middle"
       :scroll="{ y: 225 }"
-    >
-    </a-table>
+    ></a-table>
 
-    <div style="display: block; text-align: right;">
+    <div style="display: block; text-align: right; margin-top: 30px">
       <a-pagination
         size="small"
-        :current="options.page"
-        :pageSize="options.pageSize"
+        :current="page"
+        :pageSize="pageSize"
         :total="rowCount"
         :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
         :pageSizeOptions="['10', '20', '40', '80', '100', '500']"
@@ -55,19 +54,12 @@
 </template>
 
 <script>
+import { api } from '@/api'
 import _ from 'lodash'
 
 export default {
-  name: 'AffinityGroupSelection',
+  name: 'SecurityGroupSelection',
   props: {
-    items: {
-      type: Array,
-      default: () => []
-    },
-    rowCount: {
-      type: Number,
-      default: () => 0
-    },
     value: {
       type: Array,
       default: () => []
@@ -76,22 +68,23 @@ export default {
       type: Boolean,
       default: false
     },
-    preFillContent: {
-      type: Object,
-      default: () => {}
-    },
     zoneId: {
       type: String,
       default: () => ''
+    },
+    preFillContent: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
     return {
       filter: '',
+      fetchLoading: false,
       columns: [
         {
           dataIndex: 'name',
-          title: this.$t('label.affinity.groups'),
+          title: this.$t('label.security.groups'),
           width: '40%'
         },
         {
@@ -100,13 +93,12 @@ export default {
           width: '60%'
         }
       ],
+      items: [],
       selectedRowKeys: [],
-      oldZoneId: null,
-      options: {
-        page: 1,
-        pageSize: 10,
-        keyword: null
-      }
+      page: 1,
+      pageSize: 10,
+      keyword: null,
+      rowCount: 0
     }
   },
   computed: {
@@ -115,10 +107,13 @@ export default {
         type: 'checkbox',
         selectedRowKeys: this.selectedRowKeys,
         onChange: (rows) => {
-          this.$emit('select-affinity-group-item', rows)
+          this.$emit('select-security-group-item', rows)
         }
       }
     }
+  },
+  mounted () {
+    this.fetchData()
   },
   watch: {
     value (newValue, oldValue) {
@@ -128,37 +123,69 @@ export default {
     },
     loading () {
       if (!this.loading) {
-        if (this.preFillContent.affinitygroupids) {
-          this.selectedRowKeys = this.preFillContent.affinitygroupids
-          this.$emit('select-affinity-group-item', this.preFillContent.affinitygroupids)
+        if (this.preFillContent.securitygroupids) {
+          this.selectedRowKeys = this.preFillContent.securitygroupids
+          this.$emit('select-security-group-item', this.preFillContent.securitygroupids)
         } else {
           if (this.oldZoneId === this.zoneId) {
             return
           }
           this.oldZoneId = this.zoneId
           this.selectedRowKeys = []
-          this.$emit('select-affinity-group-item', null)
+          this.$emit('select-security-group-item', null)
         }
       }
     }
   },
   methods: {
+    fetchData () {
+      const params = {
+        domainid: this.$store.getters.userInfo.domainid,
+        account: this.$store.getters.userInfo.account,
+        page: this.page,
+        pageSize: this.pageSize
+      }
+
+      if (this.keyword) {
+        params.keyword = this.keyword
+      }
+
+      this.items = []
+      this.fetchLoading = true
+
+      api('listSecurityGroups', params).then(json => {
+        const items = json.listsecuritygroupsresponse.securitygroup || []
+        this.rowCount = json.listsecuritygroupsresponse.count || 0
+        if (items && items.length > 0) {
+          for (let i = 0; i < items.length; i++) {
+            this.items.push(items[i])
+          }
+          this.items.sort((a, b) => {
+            if (a.name < b.name) return -1
+            if (a.name > b.name) return 1
+            return 0
+          })
+        }
+      }).finally(() => {
+        this.fetchLoading = false
+      })
+    },
     handleSearch (value) {
       this.filter = value
-      this.options.page = 1
-      this.options.pageSize = 10
-      this.options.keyword = this.filter
-      this.$emit('handle-search-filter', this.options)
+      this.page = 1
+      this.pageSize = 10
+      this.keyword = this.filter
+      this.fetchData()
     },
     onChangePage (page, pageSize) {
-      this.options.page = page
-      this.options.pageSize = pageSize
-      this.$emit('handle-search-filter', this.options)
+      this.page = page
+      this.pageSize = pageSize
+      this.fetchData()
     },
     onChangePageSize (page, pageSize) {
-      this.options.page = page
-      this.options.pageSize = pageSize
-      this.$emit('handle-search-filter', this.options)
+      this.page = page
+      this.pageSize = pageSize
+      this.fetchData()
     }
   }
 }

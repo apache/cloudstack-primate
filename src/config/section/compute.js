@@ -143,7 +143,6 @@ export default {
           icon: 'sync',
           label: 'label.reinstall.vm',
           message: 'message.reinstall.vm',
-          docHelp: 'adminguide/virtual_machines.html#virtual-machine-snapshots',
           dataView: true,
           args: ['virtualmachineid', 'templateid'],
           show: (record) => { return ['Running', 'Stopped'].includes(record.state) },
@@ -178,7 +177,7 @@ export default {
           docHelp: 'adminguide/virtual_machines.html#backup-offerings',
           dataView: true,
           args: ['virtualmachineid', 'backupofferingid'],
-          show: (record) => { return !record.backupofferingid && !['Error', 'Destroyed'].includes(record.state) && ['VMware', 'Simulator'].includes(record.hypervisor) },
+          show: (record) => { return !record.backupofferingid },
           mapping: {
             virtualmachineid: {
               value: (record, params) => { return record.id }
@@ -442,7 +441,7 @@ export default {
           label: 'label.kubernetes.cluster.stop',
           docHelp: 'plugins/cloudstack-kubernetes-service.html#stopping-kubernetes-cluster',
           dataView: true,
-          show: (record) => { return !['Stopped'].includes(record.state) }
+          show: (record) => { return !['Stopped', 'Destroyed', 'Destroying'].includes(record.state) }
         },
         {
           api: 'scaleKubernetesCluster',
@@ -491,21 +490,21 @@ export default {
         {
           api: 'createInstanceGroup',
           icon: 'plus',
-          label: 'New Instance Group',
+          label: 'label.new.instance.group',
           listView: true,
           args: ['name']
         },
         {
           api: 'updateInstanceGroup',
           icon: 'edit',
-          label: 'Update Instance Group',
+          label: 'label.update.instance.group',
           dataView: true,
           args: ['name']
         },
         {
           api: 'deleteInstanceGroup',
           icon: 'delete',
-          label: 'Delete Instance Group',
+          label: 'label.delete.instance.group',
           dataView: true
         }
       ]

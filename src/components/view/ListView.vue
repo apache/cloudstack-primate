@@ -74,6 +74,10 @@
         <os-logo v-if="record.ostypename" :osName="record.ostypename" size="1x" style="margin-right: 5px" />
 
         <span v-if="$route.path.startsWith('/globalsetting')">{{ text }}</span>
+        <span v-if="$route.path.startsWith('/alert')">
+          <router-link :to="{ path: $route.path + '/' + record.id }" v-if="record.id">{{ $t(text.toLowerCase()) }}</router-link>
+          <router-link :to="{ path: $route.path + '/' + record.name }" v-else>{{ $t(text.toLowerCase()) }}</router-link>
+        </span>
         <span v-else>
           <router-link :to="{ path: $route.path + '/' + record.id }" v-if="record.id">{{ text }}</router-link>
           <router-link :to="{ path: $route.path + '/' + record.name }" v-else>{{ text }}</router-link>
@@ -83,12 +87,18 @@
     <a slot="templatetype" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: $route.path + '/' + record.templatetype }">{{ text }}</router-link>
     </a>
+    <template slot="type" slot-scope="text">
+      <span v-if="['USER.LOGIN', 'USER.LOGOUT', 'ROUTER.HEALTH.CHECKS', 'FIREWALL.CLOSE', 'ALERT.SERVICE.DOMAINROUTER'].includes(text)">{{ $t(text.toLowerCase()) }}</span>
+      <span v-else>{{ text }}</span>
+    </template>
     <a slot="displayname" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
     </a>
-    <a slot="username" slot-scope="text, record" href="javascript:;">
-      <router-link :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
-    </a>
+    <span slot="username" slot-scope="text, record" href="javascript:;">
+      <router-link :to="{ path: $route.path + '/' + record.id }" v-if="['/accountuser', '/vpnuser'].includes($route.path)">{{ text }}</router-link>
+      <router-link :to="{ path: '/accountuser', query: { username: record.username, domainid: record.domainid } }" v-else-if="$store.getters.userInfo.roletype !== 'User'">{{ text }}</router-link>
+      <span v-else>{{ text }}</span>
+    </span>
     <a slot="ipaddress" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
       <span v-if="record.issourcenat">
@@ -99,9 +109,9 @@
     <a slot="publicip" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
     </a>
-    <a slot="traffictype" slot-scope="text, record" href="javascript:;">
-      <router-link :to="{ path: $route.path + '/' + record.id + '?physicalnetworkid=' + record.physicalnetworkid }">{{ text }}</router-link>
-    </a>
+    <span slot="traffictype" slot-scope="text" href="javascript:;">
+      {{ text }}
+    </span>
     <a slot="vmname" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: '/vm/' + record.virtualmachineid }">{{ text }}</router-link>
     </a>
@@ -159,12 +169,14 @@
       <router-link :to="{ path: '/pod/' + record.podid }">{{ text }}</router-link>
     </a>
     <span slot="account" slot-scope="text, record">
-      <router-link
-        v-if="'quota' in record && $router.resolve(`${$route.path}/${record.account}`) !== '404'"
-        :to="{ path: `${$route.path}/${record.account}`, query: { account: record.account, domainid: record.domainid, quota: true } }">{{ text }}</router-link>
-      <router-link :to="{ path: '/account/' + record.accountid }" v-else-if="record.accountid">{{ text }}</router-link>
-      <router-link :to="{ path: '/account', query: { name: record.account, domainid: record.domainid } }" v-else-if="$store.getters.userInfo.roletype !== 'User'">{{ text }}</router-link>
-      <span v-else>{{ text }}</span>
+      <template v-if="text && !text.startsWith('PrjAcct-')">
+        <router-link
+          v-if="'quota' in record && $router.resolve(`${$route.path}/${record.account}`) !== '404'"
+          :to="{ path: `${$route.path}/${record.account}`, query: { account: record.account, domainid: record.domainid, quota: true } }">{{ text }}</router-link>
+        <router-link :to="{ path: '/account/' + record.accountid }" v-else-if="record.accountid">{{ text }}</router-link>
+        <router-link :to="{ path: '/account', query: { name: record.account, domainid: record.domainid } }" v-else-if="$store.getters.userInfo.roletype !== 'User'">{{ text }}</router-link>
+        <span v-else>{{ text }}</span>
+      </template>
     </span>
     <span slot="domain" slot-scope="text, record" href="javascript:;">
       <router-link v-if="record.domainid && !record.domainid.toString().includes(',') && $store.getters.userInfo.roletype !== 'User'" :to="{ path: '/domain/' + record.domainid }">{{ text }}</router-link>
@@ -185,7 +197,7 @@
 
     <div slot="order" slot-scope="text, record" class="shift-btns">
       <a-tooltip placement="top">
-        <template slot="title">Move to top</template>
+        <template slot="title">{{ $t('label.move.to.top') }}</template>
         <a-button
           shape="round"
           @click="moveItemTop(record)"
@@ -194,7 +206,7 @@
         </a-button>
       </a-tooltip>
       <a-tooltip placement="top">
-        <template slot="title">Move to bottom</template>
+        <template slot="title">{{ $t('label.move.to.bottom') }}</template>
         <a-button
           shape="round"
           @click="moveItemBottom(record)"
@@ -203,13 +215,13 @@
         </a-button>
       </a-tooltip>
       <a-tooltip placement="top">
-        <template slot="title">Move up one row</template>
+        <template slot="title">{{ $t('label.move.up.row') }}</template>
         <a-button shape="round" @click="moveItemUp(record)" class="shift-btn">
           <a-icon type="caret-up" class="shift-btn" />
         </a-button>
       </a-tooltip>
       <a-tooltip placement="top">
-        <template slot="title">Move down one row</template>
+        <template slot="title">{{ $t('label.move.down.row') }}</template>
         <a-button shape="round" @click="moveItemDown(record)" class="shift-btn">
           <a-icon type="caret-down" class="shift-btn" />
         </a-button>
@@ -347,7 +359,7 @@ export default {
     changeProject (project) {
       this.$store.dispatch('SetProject', project)
       this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
-      this.$message.success(`Switched to "${project.name}"`)
+      this.$message.success(this.$t('message.switch.to') + ' ' + project.name)
       this.$router.push({ name: 'dashboard' })
     },
     saveValue (record) {
@@ -357,7 +369,7 @@ export default {
       }).then(json => {
         this.editableValueKey = null
 
-        this.$message.success('Setting Updated: ' + record.name)
+        this.$message.success(`${this.$t('message.setting.updated')} ${record.name}`)
         if (json.updateconfigurationresponse &&
           json.updateconfigurationresponse.configuration &&
           !json.updateconfigurationresponse.configuration.isdynamic &&
@@ -369,7 +381,7 @@ export default {
         }
       }).catch(error => {
         console.error(error)
-        this.$message.error('There was an error saving this setting.')
+        this.$message.error(this.$t('message.error.save.setting'))
       }).finally(() => {
         this.$emit('refresh')
       })

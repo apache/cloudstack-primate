@@ -58,7 +58,7 @@ export default {
       api: 'updateProjectInvitation',
       icon: 'key',
       label: 'label.enter.token',
-      docHelp: 'adminguide/projects.html#setting-up-invitations',
+      docHelp: 'adminguide/projects.html#accepting-a-membership-invitation',
       listView: true,
       popup: true,
       component: () => import('@/views/project/InvitationTokenTemplate.vue')
@@ -67,7 +67,7 @@ export default {
       api: 'listProjectInvitations',
       icon: 'team',
       label: 'label.project.invitation',
-      docHelp: 'adminguide/projects.html#setting-up-invitations',
+      docHelp: 'adminguide/projects.html#accepting-a-membership-invitation',
       listView: true,
       popup: true,
       showBadge: true,
@@ -82,7 +82,10 @@ export default {
       icon: 'edit',
       label: 'label.edit.project.details',
       dataView: true,
-      args: ['displaytext']
+      args: ['displaytext'],
+      show: (record, store) => {
+        return record.account === store.userInfo.account || ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)
+      }
     },
     {
       api: 'activateProject',
@@ -90,16 +93,20 @@ export default {
       label: 'label.activate.project',
       message: 'message.activate.project',
       dataView: true,
-      show: (record) => { return record.state === 'Suspended' }
+      show: (record, store) => {
+        return (record.account === store.userInfo.account || ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) && record.state === 'Suspended'
+      }
     },
     {
       api: 'suspendProject',
       icon: 'pause-circle',
       label: 'label.suspend.project',
       message: 'message.suspend.project',
-      docHelp: 'adminguide/projects.html#suspending-or-deleting-a-project',
+      docHelp: 'adminguide/projects.html#sending-project-membership-invitations',
       dataView: true,
-      show: (record) => { return record.state !== 'Suspended' }
+      show: (record, store) => {
+        return (record.account === store.userInfo.account || ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) && record.state !== 'Suspended'
+      }
     },
     {
       api: 'addAccountToProject',
@@ -121,7 +128,8 @@ export default {
       label: 'label.delete.project',
       message: 'message.delete.project',
       docHelp: 'adminguide/projects.html#suspending-or-deleting-a-project',
-      dataView: true
+      dataView: true,
+      show: (record, store) => { return record.account === store.userInfo.account || ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) }
     }
   ]
 }

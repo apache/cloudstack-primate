@@ -85,10 +85,10 @@
         </div>
         <div slot="actions" v-if="!disableSettings && 'updateTemplate' in $store.getters.apis && 'updateVirtualMachine' in $store.getters.apis && isAdminOrOwner()">
           <a-popconfirm
-            title="Delete setting?"
+            :title="`${$t('label.delete.setting')}?`"
             @confirm="deleteDetail(index)"
-            okText="Yes"
-            cancelText="No"
+            :okText="$t('label.yes')"
+            :cancelText="$t('label.no')"
             placement="left"
           >
             <a-button shape="circle" type="danger" icon="delete" />
@@ -173,7 +173,8 @@ export default {
     },
     isAdminOrOwner () {
       return ['Admin'].includes(this.$store.getters.userInfo.roletype) ||
-        (this.resource.domainid === this.$store.getters.userInfo.domainid && this.resource.account === this.$store.getters.userInfo.account)
+        (this.resource.domainid === this.$store.getters.userInfo.domainid && this.resource.account === this.$store.getters.userInfo.account) ||
+        this.resource.project && this.resource.projectid === this.$store.getters.project.id
     },
     runApi () {
       var apiName = ''
@@ -184,8 +185,8 @@ export default {
       }
       if (!(apiName in this.$store.getters.apis)) {
         this.$notification.error({
-          message: 'Failed to execute API: ' + apiName,
-          description: 'User is not permitted to use the API'
+          message: this.$t('error.execute.api.failed') + ' ' + apiName,
+          description: this.$t('message.user.not.permitted.api')
         })
         return
       }
@@ -220,7 +221,7 @@ export default {
     },
     addDetail () {
       if (this.newKey === '' || this.newValue === '') {
-        this.error = 'Must provide a valid key and value for setting'
+        this.error = this.$t('message.error.provide.setting')
         return
       }
       this.error = false

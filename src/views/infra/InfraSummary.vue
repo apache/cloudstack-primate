@@ -44,11 +44,17 @@
             :footer="null"
             @cancel="sslModalClose">
             <p>
-              Please submit a new X.509 compliant SSL certificate chain to be updated to each console proxy and secondary storage virtual instance:
+              {{ $t('message.update.ssl') }}
             </p>
 
             <a-form @submit.prevent="handleSslFormSubmit" ref="sslForm" :form="form">
-              <a-form-item :label="$t('label.root.certificate')" :required="true">
+              <a-form-item :required="true">
+                <span slot="label">
+                  {{ $t('label.root.certificate') }}
+                  <a-tooltip placement="bottom" :title="apiParams.name.description">
+                    <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                  </a-tooltip>
+                </span>
                 <a-textarea
                   id="rootCert"
                   rows="2"
@@ -57,7 +63,7 @@
                   name="rootCert"
                   v-decorator="[
                     'root',
-                    {rules: [{ required: true, message: `${this.$t('label.required')}` }], validateTrigger:'change'}
+                    {rules: [{ required: true, message: `${$t('label.required')}` }], validateTrigger:'change'}
                   ]"
                 ></a-textarea>
               </a-form-item>
@@ -66,8 +72,13 @@
                 <a-form-item
                   v-for="(item, index) in intermediateCertificates"
                   :key="`key-${index}`"
-                  class="intermediate-certificate"
-                  :label="$t('label.intermediate.certificate') + ` ${index + 1}`">
+                  class="intermediate-certificate">
+                  <span slot="label">
+                    {{ $t('label.intermediate.certificate') + ` ${index + 1} ` }}
+                    <a-tooltip placement="bottom" :title="apiParams.id.description">
+                      <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                    </a-tooltip>
+                  </span>
                   <a-textarea
                     :id="`intermediateCert${index}`"
                     rows="2"
@@ -84,11 +95,17 @@
               <a-form-item>
                 <a-button @click="addIntermediateCert">
                   <a-icon type="plus-circle" />
-                  Add intermediate certificate
+                  {{ $t('label.add.intermediate.certificate') }}
                 </a-button>
               </a-form-item>
 
-              <a-form-item :label="$t('label.server.certificate')" :required="true">
+              <a-form-item :required="true">
+                <span slot="label">
+                  {{ $t('label.server.certificate') }}
+                  <a-tooltip placement="bottom" :title="apiParams.certificate.description">
+                    <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                  </a-tooltip>
+                </span>
                 <a-textarea
                   id="serverCert"
                   rows="2"
@@ -96,12 +113,18 @@
                   name="serverCert"
                   v-decorator="[
                     'server',
-                    {rules: [{ required: true, message: `${this.$t('label.required')}` }], validateTrigger:'change'}
+                    {rules: [{ required: true, message: `${$t('label.required')}` }], validateTrigger:'change'}
                   ]"
                 ></a-textarea>
               </a-form-item>
 
-              <a-form-item :label="$t('label.pkcs.private.certificate')" :required="true">
+              <a-form-item :required="true">
+                <span slot="label">
+                  {{ $t('label.pkcs.private.certificate') }}
+                  <a-tooltip placement="bottom" :title="apiParams.privatekey.description">
+                    <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                  </a-tooltip>
+                </span>
                 <a-textarea
                   id="pkcsKey"
                   rows="2"
@@ -109,19 +132,25 @@
                   name="pkcsKey"
                   v-decorator="[
                     'pkcs',
-                    {rules: [{ required: true, message: `${this.$t('label.required')}` }], validateTrigger:'change'}
+                    {rules: [{ required: true, message: `${$t('label.required')}` }], validateTrigger:'change'}
                   ]"
                 ></a-textarea>
               </a-form-item>
 
-              <a-form-item :label="$t('label.domain.suffix')" :required="true">
+              <a-form-item :required="true">
+                <span slot="label">
+                  {{ $t('label.domain.suffix') }}
+                  <a-tooltip placement="bottom" :title="apiParams.domainsuffix.description">
+                    <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                  </a-tooltip>
+                </span>
                 <a-input
                   id="dnsSuffix"
                   :placeholder="$t('label.domain.suffix')"
                   name="dnsSuffix"
                   v-decorator="[
                     'dns',
-                    {rules: [{ required: true, message: `${this.$t('label.required')}` }], validateTrigger:'change'}
+                    {rules: [{ required: true, message: `${$t('label.required')}` }], validateTrigger:'change'}
                   ]"
                 ></a-input>
               </a-form-item>
@@ -184,6 +213,11 @@ export default {
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
+    this.apiParams = {}
+    var apiConfig = this.$store.getters.apis.uploadCustomCertificate || {}
+    apiConfig.params.forEach(param => {
+      this.apiParams[param.name] = param
+    })
   },
   mounted () {
     this.fetchData()
@@ -231,24 +265,24 @@ export default {
       api('queryAsyncJobResult', { jobid: jobId }).then(json => {
         const result = json.queryasyncjobresultresponse
         if (result.jobstatus === 1 && this.maxCerts === count) {
-          this.$message.success('Certificate Uploaded: ' + result.jobresult.customcertificate.message)
+          this.$message.success(`${this.$t('label.certificate.upload')}: ${result.jobresult.customcertificate.message}`)
           this.$notification.success({
-            message: 'Certificate Uploaded',
-            description: result.jobresult.customcertificate.message || 'Certificate successfully uploaded'
+            message: this.$t('label.certificate.upload'),
+            description: result.jobresult.customcertificate.message || this.$t('message.success.certificate.upload')
           })
         } else if (result.jobstatus === 2) {
           this.$notification.error({
-            message: 'Certificate Upload Failed',
-            description: result.jobresult.errortext || 'Failed to update SSL Certificate. Failed to pass certificate validation check',
+            message: this.$t('label.certificate.upload.failed'),
+            description: result.jobresult.errortext || this.$t('label.certificate.upload.failed.description'),
             duration: 0
           })
         } else if (result.jobstatus === 0) {
           this.$message
-            .loading('Certificate upload in progress: ' + count, 2)
+            .loading(`${this.$t('message.certificate.upload.processing')}: ${count}`, 2)
             .then(() => this.pollActionCompletion(jobId, count))
         }
       }).catch(e => {
-        console.log('Error encountered while fetching async job result' + e)
+        console.log(this.$t('error.fetching.async.job.result') + e)
       })
     },
 

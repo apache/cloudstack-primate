@@ -45,7 +45,7 @@
                 <a-select
                   v-if="!dataView && $route.meta.filters && $route.meta.filters.length > 0"
                   :placeholder="$t('label.filterby')"
-                  :value="$route.query.filter"
+                  :value="$route.query.filter || 'self'"
                   style="min-width: 100px; margin-left: 10px"
                   @change="changeFilter">
                   <a-icon slot="suffixIcon" type="filter" />
@@ -175,7 +175,7 @@
                   }]"
                   :placeholder="field.description"
                 >
-                  <a-select-option :key="null">{{ }}</a-select-option>
+                  <a-select-option key="" >{{ }}</a-select-option>
                   <a-select-option v-for="(opt, optIndex) in currentAction.mapping[field.name].options" :key="optIndex">
                     {{ opt }}
                   </a-select-option>
@@ -196,7 +196,7 @@
                     return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }"
                 >
-                  <a-select-option :key="null">{{ }}</a-select-option>
+                  <a-select-option key="">{{ }}</a-select-option>
                   <a-select-option v-for="(opt, optIndex) in field.opts" :key="optIndex">
                     {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
@@ -216,7 +216,7 @@
                     return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }"
                 >
-                  <a-select-option :key="null">{{ }}</a-select-option>
+                  <a-select-option key="">{{ }}</a-select-option>
                   <a-select-option v-for="opt in field.opts" :key="opt.id">
                     {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
@@ -306,12 +306,16 @@
         :current="page"
         :pageSize="pageSize"
         :total="itemCount"
-        :showTotal="total => `Showing ${Math.min(total, 1+((page-1)*pageSize))}-${Math.min(page*pageSize, total)} of ${total} items`"
+        :showTotal="total => `${$t('label.showing')} ${Math.min(total, 1+((page-1)*pageSize))}-${Math.min(page*pageSize, total)} ${$t('label.of')} ${total} ${$t('label.items')}`"
         :pageSizeOptions="device === 'desktop' ? ['20', '50', '100', '500'] : ['10', '20', '50', '100', '500']"
         @change="changePage"
         @showSizeChange="changePageSize"
         showSizeChanger
-        showQuickJumper />
+        showQuickJumper>
+        <template slot="buildOptionText" slot-scope="props">
+          <span>{{ props.value }} / {{ $t('label.page') }}</span>
+        </template>
+      </a-pagination>
     </div>
   </div>
 </template>
@@ -436,7 +440,7 @@ export default {
         const project = json.listprojectsresponse.project[0]
         this.$store.dispatch('SetProject', project)
         this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
-        this.$message.success(`Switched to "${project.name}"`)
+        this.$message.success(`${this.$t('message.switch.to')} "${project.name}"`)
         const query = Object.assign({}, this.$route.query)
         delete query.projectid
         this.$router.replace({ query })
@@ -531,6 +535,10 @@ export default {
         })
       }
 
+      if (['listTemplates', 'listIsos'].includes(this.apiName) && this.dataView) {
+        delete params.showunique
+      }
+
       this.loading = true
       if (this.$route.params && this.$route.params.id) {
         params.id = this.$route.params.id
@@ -566,10 +574,6 @@ export default {
         this.items = json[responseName][objectName]
         if (!this.items || this.items.length === 0) {
           this.items = []
-        }
-
-        if (['listTemplates', 'listIsos'].includes(this.apiName) && this.items.length > 1) {
-          this.items = [...new Map(this.items.map(x => [x.id, x])).values()]
         }
 
         for (let idx = 0; idx < this.items.length; idx++) {
@@ -766,7 +770,7 @@ export default {
         },
         errorMethod: () => this.fetchData(),
         loadingMessage: `${this.$t(action.label)} - ${resourceName}`,
-        catchMessage: 'Error encountered while fetching async job result',
+        catchMessage: this.$t('error.fetching.async.job.result'),
         action
       })
     },
@@ -826,7 +830,7 @@ export default {
               if (param.name !== key) {
                 continue
               }
-              if (input === undefined || input === null) {
+              if (input === undefined || input === null || input === '') {
                 if (param.type === 'boolean') {
                   params[key] = false
                 }
