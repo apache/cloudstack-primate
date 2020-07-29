@@ -183,6 +183,7 @@
                     ></compute-offering-selection>
                     <compute-selection
                       v-if="serviceOffering && serviceOffering.iscustomized"
+                      v-show="!templateConfigurationExists"
                       cpunumber-input-decorator="cpunumber"
                       cpuspeed-input-decorator="cpuspeed"
                       memory-input-decorator="memory"
