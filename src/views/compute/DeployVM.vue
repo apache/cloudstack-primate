@@ -1108,7 +1108,7 @@ export default {
         computeofferingid: id
       })
       setTimeout(() => {
-        this.updateTemplateConfigurationOfferingDetails()
+        this.updateTemplateConfigurationOfferingDetails(id)
       }, 500)
     },
     updateDiskOffering (id) {
@@ -1504,12 +1504,16 @@ export default {
       this.selectedTemplateConfiguration = _.find(this.templateConfigurations, (option) => option.id === value)
       this.updateComputeOffering(null)
     },
-    updateTemplateConfigurationOfferingDetails () {
-      if (this.templateConfigurationExists && this.selectedTemplateConfiguration) {
+    updateTemplateConfigurationOfferingDetails (offeringId) {
+      var offering = this.serviceOffering
+      if (!offering || offering.id !== offeringId) {
+        offering = _.find(this.options.serviceOfferings, (option) => option.id === offeringId)
+      }
+      if (offering && offering.iscustomized && this.templateConfigurationExists && this.selectedTemplateConfiguration) {
         if ('cpunumber' in this.form.fieldsStore.fieldsMeta) {
           this.updateFieldValue('cpunumber', this.selectedTemplateConfiguration.cpunumber)
         }
-        if ('cpuspeed' in this.form.fieldsStore.fieldsMeta) {
+        if ((offering.cpuspeed == null || offering.cpuspeed === undefined) && 'cpuspeed' in this.form.fieldsStore.fieldsMeta) {
           this.updateFieldValue('cpuspeed', this.selectedTemplateConfiguration.cpuspeed)
         }
         if ('memory' in this.form.fieldsStore.fieldsMeta) {
