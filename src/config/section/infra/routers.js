@@ -75,7 +75,7 @@ export default {
           api: 'listServiceOfferings',
           params: (record) => {
             return {
-              virtualmachineid: record.virtualmachineid,
+              virtualmachineid: record.id,
               issystem: true,
               systemvmtype: 'domainrouter'
             }
