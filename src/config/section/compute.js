@@ -188,6 +188,7 @@ export default {
           api: 'createBackup',
           icon: 'cloud-upload',
           label: 'label.create.backup',
+          message: 'message.backup.create',
           docHelp: 'adminguide/virtual_machines.html#creating-vm-backups',
           dataView: true,
           args: ['virtualmachineid'],
