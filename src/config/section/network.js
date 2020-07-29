@@ -145,7 +145,13 @@ export default {
           label: 'label.add.vpc',
           docHelp: 'adminguide/networking_and_traffic.html#adding-a-virtual-private-cloud',
           listView: true,
-          args: ['name', 'displaytext', 'zoneid', 'cidr', 'networkdomain', 'vpcofferingid', 'start']
+          args: ['name', 'displaytext', 'zoneid', 'cidr', 'networkdomain', 'vpcofferingid', 'start'],
+          mapping: {
+            zoneid: {
+              api: 'listZones',
+              filter: (record) => { return !record.securitygroupsenabled }
+            }
+          }
         },
         {
           api: 'updateVPC',

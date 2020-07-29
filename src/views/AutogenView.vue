@@ -747,7 +747,12 @@ export default {
               if (res === 'count') {
                 continue
               }
-              param.opts = json[obj][res]
+              const filter = this.currentAction.mapping[param.name].filter
+              if (filter) {
+                param.opts = json[obj][res].filter(filter)
+              } else {
+                param.opts = json[obj][res]
+              }
               if (['listTemplates', 'listIsos'].includes(possibleApi)) {
                 param.opts = [...new Map(param.opts.map(x => [x.id, x])).values()]
               }
