@@ -176,6 +176,7 @@ export default {
   },
   mounted () {
     if (this.launchZone) {
+      this.processStatus = STATUS_PROCESS
       this.stepData = this.launchData
       if (this.stepChild === 'publicTraffic') {
         this.stepData.returnedPublicTraffic = []
