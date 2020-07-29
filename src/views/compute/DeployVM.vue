@@ -141,16 +141,44 @@
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
                   <div v-if="zoneSelected">
+                    <a-form-item>
+                      <span slot="label">
+                        {{ $t('label.configuration') }}
+                        <a-tooltip :title="'Configuration'">
+                          <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                        </a-tooltip>
+                      </span>
+                      <a-select
+                        v-if="zoneSelected && templateConfigurationExists"
+                        showSearch
+                        optionFilterProp="children"
+                        v-decorator="[
+                          'templateConfiguration'
+                        ]"
+                        defaultActiveFirstOption
+                        :placeholder="'Something'"
+                        :filterOption="(input, option) => {
+                          return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }"
+                        @change="onSelectTemplateConfigurationId"
+                      >
+                        <a-select-option v-for="opt in templateConfigurations" :key="opt.id">
+                          {{ opt.name || opt.description }}
+                        </a-select-option>
+                      </a-select>
+                    </a-form-item>
                     <compute-offering-selection
-                      :search-visible="!this.templateConfigurationExists"
-                      :compute-items="this.templateConfigurationExists ? templateConfigurations: options.serviceOfferings"
-                      :row-count="this.templateConfigurationExists ? templateConfigurations.length : rowCount.serviceOfferings"
+                      :compute-items="options.serviceOfferings"
+                      :row-count="rowCount.serviceOfferings"
                       :zoneId="zoneId"
                       :value="serviceOffering ? serviceOffering.id : ''"
                       :loading="loading.serviceOfferings"
                       :preFillContent="dataPreFill"
+                      :minimum-cpunumber="templateConfigurationExists && selectedTemplateConfiguration && selectedTemplateConfiguration.cpunumber ? selectedTemplateConfiguration.cpunumber : 0"
+                      :minimum-cpuspeed="templateConfigurationExists && selectedTemplateConfiguration && selectedTemplateConfiguration.cpuspeed ? selectedTemplateConfiguration.cpuspeed : 0"
+                      :minimum-memory="templateConfigurationExists && selectedTemplateConfiguration && selectedTemplateConfiguration.memory ? templateConfigurations[0].memory : 0"
                       @select-compute-item="($event) => updateComputeOffering($event)"
-                      @handle-search-filter="this.templateConfigurationExists ? null : ($event) => handleSearchFilter('serviceOfferings', $event)"
+                      @handle-search-filter="($event) => handleSearchFilter('serviceOfferings', $event)"
                     ></compute-offering-selection>
                     <compute-selection
                       v-if="serviceOffering && serviceOffering.iscustomized"
@@ -174,7 +202,7 @@
                       </a-form-item>
                       <a-form-item
                         class="form-item-hidden"
-                        v-if="(serviceOffering && !(serviceOffering.cpuspeed > 0)) || this.templateConfigurationExists">
+                        v-if="(serviceOffering && !(serviceOffering.cpuspeed > 0))">
                         <a-input v-decorator="['cpuspeed']"/>
                       </a-form-item>
                       <a-form-item class="form-item-hidden">
@@ -567,6 +595,7 @@ export default {
       template: {},
       templateNics: [],
       templateConfigurations: [],
+      selectedTemplateConfiguration: {},
       iso: {},
       hypervisor: '',
       serviceOffering: {},
@@ -815,6 +844,15 @@ export default {
       if (newValue) {
         this.templateNics = this.fetchTemplateNics(newValue)
         this.templateConfigurations = this.fetchTemplateConfigurations(newValue)
+        this.selectedTemplateConfiguration = {}
+        if (this.templateConfigurationExists) {
+          setTimeout(() => {
+            this.selectedTemplateConfiguration = this.templateConfigurations[0]
+            if ('templateConfiguration' in this.form.fieldsStore.fieldsMeta) {
+              this.updateFieldValue('templateConfiguration', this.selectedTemplateConfiguration.id)
+            }
+          }, 500)
+        }
       }
     },
     instanceConfig (instanceConfig) {
@@ -826,8 +864,7 @@ export default {
         this.hypervisor = hypervisorItem ? hypervisorItem.name : null
       }
 
-      var offerings = this.templateConfigurationExists ? this.templateConfigurations : this.options.serviceOfferings
-      this.serviceOffering = _.find(offerings, (option) => option.id === instanceConfig.computeofferingid)
+      this.serviceOffering = _.find(this.options.serviceOfferings, (option) => option.id === instanceConfig.computeofferingid)
       this.diskOffering = _.find(this.options.diskOfferings, (option) => option.id === instanceConfig.diskofferingid)
       this.zone = _.find(this.options.zones, (option) => option.id === instanceConfig.zoneid)
       this.affinityGroups = _.filter(this.options.affinityGroups, (option) => _.includes(instanceConfig.affinitygroupids, option.id))
@@ -1034,23 +1071,6 @@ export default {
       }
       return configurations
     },
-    // fetchDeployAsIsServiceOffering () {
-    //   var serviceOffering = []
-    //   var params = {
-    //     zoneid: _.get(this.zone, 'id'),
-    //     issystem: true,
-    //     name: 'Custom Deploy-as-is Instance'
-    //   }
-    //   api('listServiceOfferings', params).then(json => {
-    //     var items = json.listserviceofferingsresponse.serviceoffering
-    //     if (items && items.length > 0) {
-    //       serviceOffering = items[0]
-    //     }
-    //   }).catch(error => {
-    //     this.$notifyError(error)
-    //   })
-    //   return serviceOffering
-    // },
     resetData () {
       this.vm = {}
       this.zoneSelected = false
@@ -1085,16 +1105,6 @@ export default {
       this.form.setFieldsValue({
         computeofferingid: id
       })
-      if (this.templateConfigurationExists) {
-        var offering = _.find(this.templateConfigurations, (option) => option.id === id)
-        if (offering) {
-          setTimeout(() => {
-            this.updateFieldValue('cpunumber', offering.cpunumber)
-            this.updateFieldValue('cpuspeed', offering.cpuspeed)
-            this.updateFieldValue('memory', offering.memory)
-          }, 500)
-        }
-      }
     },
     updateDiskOffering (id) {
       if (id === '0') {
@@ -1486,6 +1496,9 @@ export default {
         .replace(/&gt;/g, '>')
 
       return reversedValue
+    },
+    onSelectTemplateConfigurationId (value) {
+      this.selectedTemplateConfiguration = _.find(this.templateConfigurations, (option) => option.id === value)
     }
   }
 }

@@ -19,7 +19,6 @@
   <div>
     <a-input-search
       style="width: 25vw;float: right;margin-bottom: 10px; z-index: 8"
-      v-if="searchVisible"
       :placeholder="$t('label.search')"
       v-model="filter"
       @search="handleSearch" />
@@ -32,12 +31,6 @@
       size="middle"
       :scroll="{ y: 225 }"
     >
-      <template slot="name" slot-scope="text, item">
-        {{ text }}
-        <a-tooltip :title="item.description" v-if="item.description && item.description.length > 0">
-          <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
-        </a-tooltip>
-      </template>
       <span slot="cpuTitle"><a-icon type="appstore" /> {{ $t('label.cpu') }}</span>
       <span slot="ramTitle"><a-icon type="bulb" /> {{ $t('label.memory') }}</span>
     </a-table>
@@ -65,10 +58,6 @@
 export default {
   name: 'ComputeOfferingSelection',
   props: {
-    searchVisible: {
-      type: Boolean,
-      default: true
-    },
     computeItems: {
       type: Array,
       default: () => []
@@ -92,6 +81,18 @@ export default {
     zoneId: {
       type: String,
       default: () => ''
+    },
+    minimumCpunumber: {
+      type: Number,
+      default: 0
+    },
+    minimumCpuspeed: {
+      type: Number,
+      default: 0
+    },
+    minimumMemory: {
+      type: Number,
+      default: 0
     }
   },
   data () {
@@ -101,8 +102,7 @@ export default {
         {
           dataIndex: 'name',
           title: this.$t('label.serviceofferingid'),
-          width: '40%',
-          scopedSlots: { customRender: 'name' }
+          width: '40%'
         },
         {
           dataIndex: 'cpu',
@@ -127,6 +127,9 @@ export default {
   computed: {
     tableSource () {
       return this.computeItems.map((item) => {
+        var minCpuNumber = item.cpunumber
+        var minCpuSpeed = item.cpunspeed
+        var minMemory = item.memory
         var cpuNumberValue = (item.cpunumber !== null && item.cpunumber !== undefined && item.cpunumber > 0) ? item.cpunumber + '' : ''
         var cpuSpeedValue = (item.cpuspeed !== null && item.cpuspeed !== undefined && item.cpuspeed > 0) ? parseFloat(item.cpuspeed / 1000.0).toFixed(2) + '' : ''
         var ramValue = (item.memory !== null && item.memory !== undefined && item.memory > 0) ? item.memory + '' : ''
@@ -134,28 +137,43 @@ export default {
           if ('serviceofferingdetails' in item &&
             'mincpunumber' in item.serviceofferingdetails &&
             'maxcpunumber' in item.serviceofferingdetails) {
+            minCpuSpeed = item.serviceofferingdetails.mincpunumber
             cpuNumberValue = item.serviceofferingdetails.mincpunumber + '-' + item.serviceofferingdetails.maxcpunumber
           }
           if ('serviceofferingdetails' in item &&
             'minmemory' in item.serviceofferingdetails &&
             'maxmemory' in item.serviceofferingdetails) {
+            minMemory = item.serviceofferingdetails.minmemory
             ramValue = item.serviceofferingdetails.minmemory + '-' + item.serviceofferingdetails.maxmemory
           }
+        }
+        var disabled = false
+        if (minCpuNumber && minCpuNumber < this.minimumCpunumber) {
+          disabled = true
+        }
+        if (disabled === false && minCpuSpeed && minCpuSpeed < this.minimumCpuspeed) {
+          disabled = true
+        }
+        if (disabled === false && minMemory && minMemory < this.minimumMemory) {
+          disabled = true
         }
         return {
           key: item.id,
           name: item.name,
-          description: item.description,
           cpu: cpuNumberValue.length > 0 ? `${cpuNumberValue} CPU x ${cpuSpeedValue} Ghz` : '',
-          ram: ramValue.length > 0 ? `${ramValue} MB` : ''
+          ram: ramValue.length > 0 ? `${ramValue} MB` : '',
+          disabled: disabled
         }
       })
     },
     rowSelection () {
       return {
         type: 'radio',
-        selectedRowKeys: this.selectedRowKeys,
-        onChange: this.onSelectRow
+        selectedRowKeys: this.selectedRowKeys || [],
+        onChange: this.onSelectRow,
+        getCheckboxProps: (record) => ({
+          disabled: record.disabled
+        })
       }
     }
   },
