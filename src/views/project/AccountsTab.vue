@@ -258,11 +258,7 @@ export default {
     },
     onMakeProjectOwner (record) {
       const title = this.$t('label.make.project.owner')
-<<<<<<< HEAD
-      const loading = this.$message.loading(title + ' in progress for ' + record.account, 0)
-=======
       const loading = this.$message.loading(title + `${this.$t('label.in.progress.for')} ` + record.account, 0)
->>>>>>> 41aa289778aafe0d5d49d31566c78a5c1ea438b3
       const params = {}
       params.id = this.resource.id
       params.account = record.account
@@ -270,7 +266,7 @@ export default {
     },
     promoteAccount (record) {
       var title = this.$t('label.make.project.owner')
-      const loading = this.$message.loading(title + ' in progress for ' + record.account, 0)
+      const loading = this.$message.loading(title + `${this.$t('label.in.progress.for')} ` + record.account, 0)
       const params = {}
 
       params.id = this.resource.id
@@ -287,7 +283,7 @@ export default {
     },
     demoteAccount (record) {
       var title = this.$t('label.demote.project.owner')
-      const loading = this.$message.loading(title + ' in progress for ' + record.account, 0)
+      const loading = this.$message.loading(title + `${this.$t('label.in.progress.for')} ` + record.account, 0)
       const params = {}
       if (record.userid) {
         params.userid = record.userid
@@ -331,11 +327,7 @@ export default {
     },
     removeAccount (record) {
       const title = this.$t('label.remove.project.account')
-<<<<<<< HEAD
-      const loading = this.$message.loading(title + ' in progress for ' + record.account, 0)
-=======
       const loading = this.$message.loading(title + `${this.$t('label.in.progress.for')} ` + record.account, 0)
->>>>>>> 41aa289778aafe0d5d49d31566c78a5c1ea438b3
       const params = {}
       params.projectid = this.resource.id
       if (record.userid) {

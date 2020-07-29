@@ -610,13 +610,10 @@
 "label.create.nfs.secondary.staging.storage": "Create NFS Secondary Staging Store",
 "label.create.nfs.secondary.staging.store": "Create NFS secondary staging store",
 "label.create.project": "Create project",
-<<<<<<< HEAD
 "label.create.project.role": "Create Project Role",
-=======
 "label.create.user": "Create user",
 "label.create.site.vpn.connection": "Create Site-to-Site VPN Connection",
 "label.create.site.vpn.gateway": "Create Site-to-Site VPN Gateway",
->>>>>>> 41aa289778aafe0d5d49d31566c78a5c1ea438b3
 "label.create.ssh.key.pair": "Create a SSH Key Pair",
 "label.create.template": "Create template",
 "label.create.vpn.connection": "Create VPN Connection",
@@ -701,12 +698,9 @@
 "label.deleting.failed": "Deleting Failed",
 "label.deleting.iso": "Deleting ISO",
 "label.deleting.processing": "Deleting....",
-<<<<<<< HEAD
 "label.demote.project.owner": "Demote account to Regular role",
 "label.demote.project.owner.user": "Demote user to Regular role",
-=======
 "label.deleting.template": "Deleting template",
->>>>>>> 41aa289778aafe0d5d49d31566c78a5c1ea438b3
 "label.deny": "Deny",
 "label.deploymentplanner": "Deployment planner",
 "label.description": "Description",
@@ -3235,12 +3229,7 @@
 "state.stopped": "Stopped",
 "state.stopping": "Stopping",
 "state.suspended": "Suspended",
-<<<<<<< HEAD
-"title.upload.volume": "Upload Volume"
-}
-=======
 "title.upload.volume": "Upload Volume",
 "user.login": "Login",
 "user.logout": "Logout"
 }
->>>>>>> 41aa289778aafe0d5d49d31566c78a5c1ea438b3
