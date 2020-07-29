@@ -68,7 +68,13 @@ export default {
           icon: 'edit',
           label: 'label.edit',
           dataView: true,
-          args: ['name', 'displaytext', 'guestvmcidr']
+          args: (record) => {
+            var fields = ['name', 'displaytext', 'guestvmcidr']
+            if (record.type === 'Isolated') {
+              fields.push(...['networkofferingid', 'networkdomain'])
+            }
+            return fields
+          }
         },
         {
           api: 'restartNetwork',
