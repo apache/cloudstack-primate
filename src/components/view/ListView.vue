@@ -63,7 +63,7 @@
     <span slot="name" slot-scope="text, record">
       <div style="min-width: 120px" >
         <QuickView
-          style="margin-right: 5px"
+          style="margin-left: 5px"
           :actions="actions"
           :resource="record"
           :enabled="quickViewEnabled() && actions.length > 0 && columns && columns[0].dataIndex === 'name' "
