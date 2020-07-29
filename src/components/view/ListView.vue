@@ -21,7 +21,7 @@
     :loading="loading"
     :columns="isOrderUpdatable() ? columns : columns.filter(x => x.dataIndex !== 'order')"
     :dataSource="items"
-    :rowKey="record => record.id || record.name || record.usageType"
+    :rowKey="(record, idx) => record.id || record.name || record.usageType || idx + '-' + Math.random()"
     :pagination="false"
     :rowSelection="['vm', 'event', 'alert'].includes($route.name) ? {selectedRowKeys: selectedRowKeys, onChange: onSelectChange} : null"
     :rowClassName="getRowClassName"
