@@ -166,7 +166,13 @@ export default {
           label: 'label.restart.vpc',
           message: 'message.restart.vpc',
           dataView: true,
-          args: ['makeredundant', 'cleanup']
+          args: (record) => {
+            var fields = ['cleanup']
+            if (!record.redundantvpcrouter) {
+              fields.push('makeredundant')
+            }
+            return fields
+          }
         },
         {
           api: 'deleteVPC',
