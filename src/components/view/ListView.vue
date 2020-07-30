@@ -439,59 +439,56 @@ export default {
       this.parentToggleLoading()
       const apiString = this.getUpdateApi()
 
-      api(apiString, {
-        id,
-        sortKey: index
-      }).catch(error => {
-        console.error(error)
+      return new Promise((resolve, reject) => {
+        api(apiString, {
+          id,
+          sortKey: index
+        }).then((response) => {
+          resolve(response)
+        }).catch((reason) => {
+          reject(reason)
+        })
+      })
+    },
+    updateOrder (data) {
+      const promises = []
+      data.forEach((item, index) => {
+        promises.push(this.handleUpdateOrder(item.id, index + 1))
+      })
+      Promise.all(promises).catch((reason) => {
+        console.log(reason)
       }).finally(() => {
-        this.parentFetchData()
         this.parentToggleLoading()
+        this.parentFetchData()
       })
     },
     moveItemUp (record) {
       const data = this.items
       const index = data.findIndex(item => item.id === record.id)
       if (index === 0) return
-
       data.splice(index - 1, 0, data.splice(index, 1)[0])
-
-      data.forEach((item, index) => {
-        this.handleUpdateOrder(item.id, index + 1)
-      })
+      this.updateOrder(data)
     },
     moveItemDown (record) {
       const data = this.items
       const index = data.findIndex(item => item.id === record.id)
       if (index === data.length - 1) return
-
       data.splice(index + 1, 0, data.splice(index, 1)[0])
-
-      data.forEach((item, index) => {
-        this.handleUpdateOrder(item.id, index + 1)
-      })
+      this.updateOrder(data)
     },
     moveItemTop (record) {
       const data = this.items
       const index = data.findIndex(item => item.id === record.id)
       if (index === 0) return
-
       data.unshift(data.splice(index, 1)[0])
-
-      data.forEach((item, index) => {
-        this.handleUpdateOrder(item.id, index + 1)
-      })
+      this.updateOrder(data)
     },
     moveItemBottom (record) {
       const data = this.items
       const index = data.findIndex(item => item.id === record.id)
       if (index === data.length - 1) return
-
       data.push(data.splice(index, 1)[0])
-
-      data.forEach((item, index) => {
-        this.handleUpdateOrder(item.id, index + 1)
-      })
+      this.updateOrder(data)
     },
     editTariffValue (record) {
       this.parentEditTariffAction(true, record)
