@@ -1515,7 +1515,6 @@ export default {
       this.currentStep++
       this.addStep('message.zone.creation.complete', 'stepComplete')
       this.setStepStatus(STATUS_FINISH)
-      this.currentStep++
       this.processStatus = STATUS_FINISH
     },
     async enableZoneAction () {
