@@ -22,7 +22,7 @@ import store from './store'
 import i18n from './locales'
 
 import bootstrap from './core/bootstrap'
-import './core/use'
+import './core/lazy_use'
 import './core/ext'
 import './permission' // permission control
 import './utils/filter' // global filter
