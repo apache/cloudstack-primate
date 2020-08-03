@@ -102,7 +102,7 @@
 "label.action.delete.ip.range.processing": "IP-Bereich wird gelöscht....",
 "label.action.delete.iso": "ISO löschen",
 "label.action.delete.iso.processing": "ISO wird gelöscht....",
-"label.action.delete.load.balancer": "Lastverteilerregel löschen",
+"label.action.delete.load.balancer": "Loadbalancer-Regel löschen",
 "label.action.delete.load.balancer.processing": "Loadbalancer-Regel wird gelöscht....",
 "label.action.delete.network": "Löschen des Netzwerks",
 "label.action.delete.network.processing": "Netzwerk wird gelöscht....",
