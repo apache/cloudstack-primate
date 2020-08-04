@@ -175,7 +175,7 @@
                   }]"
                   :placeholder="field.description"
                 >
-                  <a-select-option :key="null">{{ }}</a-select-option>
+                  <a-select-option key="" >{{ }}</a-select-option>
                   <a-select-option v-for="(opt, optIndex) in currentAction.mapping[field.name].options" :key="optIndex">
                     {{ opt }}
                   </a-select-option>
@@ -196,7 +196,7 @@
                     return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }"
                 >
-                  <a-select-option :key="null">{{ }}</a-select-option>
+                  <a-select-option key="">{{ }}</a-select-option>
                   <a-select-option v-for="(opt, optIndex) in field.opts" :key="optIndex">
                     {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
@@ -216,7 +216,7 @@
                     return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }"
                 >
-                  <a-select-option :key="null">{{ }}</a-select-option>
+                  <a-select-option key="">{{ }}</a-select-option>
                   <a-select-option v-for="opt in field.opts" :key="opt.id">
                     {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
@@ -296,6 +296,7 @@
         :loading="loading"
         :columns="columns"
         :items="items"
+        :actions="actions"
         ref="listview"
         @selection-change="onRowSelectionChange"
         @refresh="this.fetchData" />
@@ -439,7 +440,7 @@ export default {
         const project = json.listprojectsresponse.project[0]
         this.$store.dispatch('SetProject', project)
         this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
-        this.$message.success(`Switched to "${project.name}"`)
+        this.$message.success(`${this.$t('message.switch.to')} "${project.name}"`)
         const query = Object.assign({}, this.$route.query)
         delete query.projectid
         this.$router.replace({ query })
@@ -575,6 +576,18 @@ export default {
           this.items = []
         }
 
+        if (['listTemplates', 'listIsos'].includes(this.apiName) && this.items.length > 1) {
+          this.items = [...new Map(this.items.map(x => [x.id, x])).values()]
+        }
+
+        if (this.apiName === 'listProjects' && this.items.length > 0) {
+          this.columns.map(col => {
+            if (col.title === 'Account') {
+              col.title = this.$t('label.project.owner')
+            }
+          })
+        }
+
         for (let idx = 0; idx < this.items.length; idx++) {
           this.items[idx].key = idx
           for (const key in customRender) {
@@ -639,6 +652,8 @@ export default {
       }
       this.currentAction = action
       this.currentAction.params = store.getters.apis[this.currentAction.api].params
+      this.resource = action.resource
+      this.$emit('change-resource', this.resource)
       var paramFields = this.currentAction.params
       paramFields.sort(function (a, b) {
         if (a.name === 'name' && b.name !== 'name') { return -1 }
@@ -767,7 +782,7 @@ export default {
         },
         errorMethod: () => this.fetchData(),
         loadingMessage: `${this.$t(action.label)} - ${resourceName}`,
-        catchMessage: 'Error encountered while fetching async job result',
+        catchMessage: this.$t('error.fetching.async.job.result'),
         action
       })
     },
@@ -815,7 +830,6 @@ export default {
     execSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
-        console.log(values)
         if (!err) {
           const params = {}
           if ('id' in this.resource && this.currentAction.params.map(i => { return i.name }).includes('id')) {
@@ -827,7 +841,7 @@ export default {
               if (param.name !== key) {
                 continue
               }
-              if (input === undefined || input === null) {
+              if (input === undefined || input === null || input === '') {
                 if (param.type === 'boolean') {
                   params[key] = false
                 }
@@ -864,10 +878,6 @@ export default {
               params[key] = this.currentAction.mapping[key].value(this.resource, params)
             }
           }
-
-          console.log(this.currentAction)
-          console.log(this.resource)
-          console.log(params)
 
           const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username || params.ipaddress || params.virtualmachinename || this.resource.name
 

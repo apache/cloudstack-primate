@@ -29,10 +29,13 @@
               </slot>
             </div>
             <slot name="name">
-              <h4 class="name">
-                {{ resource.displayname || resource.displaytext || resource.name || resource.hostname || resource.username || resource.ipaddress || resource.virtualmachinename || resource.templatetype }}
-              </h4>
-              <console style="margin-left: 10px" :resource="resource" size="default" v-if="resource.id" />
+              <div v-if="['USER.LOGIN', 'USER.LOGOUT', 'ROUTER.HEALTH.CHECKS', 'FIREWALL.CLOSE', 'ALERT.SERVICE.DOMAINROUTER'].includes(resource.name)">{{ $t(resource.name.toLowerCase()) }}</div>
+              <div v-else>
+                <h4 class="name">
+                  {{ resource.displayname || resource.displaytext || resource.name || resource.hostname || resource.username || resource.ipaddress || resource.virtualmachinename || resource.templatetype }}
+                </h4>
+                <console style="margin-left: 10px" :resource="resource" size="default" v-if="resource.id" />
+              </div>
             </slot>
           </div>
           <slot name="actions">
@@ -41,7 +44,10 @@
                 {{ resource.instancename }}
               </a-tag>
               <a-tag v-if="resource.type">
-                {{ resource.type }}
+                <span v-if="['USER.LOGIN', 'USER.LOGOUT', 'ROUTER.HEALTH.CHECKS', 'FIREWALL.CLOSE', 'ALERT.SERVICE.DOMAINROUTER'].includes(resource.type)">{{ $t(resource.type.toLowerCase()) }}</span>
+                <span v-else>
+                  {{ resource.type }}
+                </span>
               </a-tag>
               <a-tag v-if="resource.issourcenat">
                 {{ $t('label.issourcenat') }}
@@ -70,7 +76,7 @@
 
         <a-divider/>
 
-        <div class="resource-detail-item" v-if="resource.state || resource.status">
+        <div class="resource-detail-item" v-if="(resource.state || resource.status) && $route.meta.name !== 'zone'">
           <div class="resource-detail-item__label">{{ $t('label.status') }}</div>
           <div class="resource-detail-item__details">
             <status class="status" :text="resource.state || resource.status" displayText/>
@@ -94,7 +100,7 @@
           <div class="resource-detail-item__details">
             <a-tooltip placement="right" >
               <template slot="title">
-                <span>Copy ID</span>
+                <span>{{ $t('label.copyid') }}</span>
               </template>
               <a-button
                 style="margin-left: -5px"
@@ -102,7 +108,7 @@
                 icon="barcode"
                 type="dashed"
                 size="small"
-                @click="$message.success('Copied to clipboard')"
+                @click="$message.success($t('label.copied.clipboard'))"
                 v-clipboard:copy="resource.id" />
             </a-tooltip>
             <span style="margin-left: 10px;">{{ resource.id }}</span>
@@ -146,7 +152,7 @@
         <div class="resource-detail-item" v-if="resource.memory">
           <div class="resource-detail-item__label">{{ $t('label.memory') }}</div>
           <div class="resource-detail-item__details">
-            <a-icon type="bulb" />{{ resource.memory }} MB Memory
+            <a-icon type="bulb" />{{ resource.memory + ' ' + $t('label.mb.memory') }}
           </div>
           <div>
             <span v-if="resource.memorykbs && resource.memoryintfreekbs">
@@ -163,7 +169,7 @@
         <div class="resource-detail-item" v-else-if="resource.memorytotalgb">
           <div class="resource-detail-item__label">{{ $t('label.memory') }}</div>
           <div class="resource-detail-item__details">
-            <a-icon type="bulb" />{{ resource.memorytotalgb }} Memory
+            <a-icon type="bulb" />{{ resource.memorytotalgb + ' ' + $t('label.memory') }}
           </div>
           <div>
             <span v-if="resource.memoryusedgb">
@@ -191,7 +197,7 @@
 
             <div style="display: flex; flex-direction: column; width: 100%;">
               <div>
-                <a-icon type="bulb" />{{ resource.memorytotal }} Memory
+                <a-icon type="bulb" />{{ resource.memorytotal + ' ' + $t('label.memory') }}
               </div>
               <div>
                 <span
@@ -224,10 +230,10 @@
             <span style="width: 100%;" v-else-if="resource.sizegb || resource.size">{{ resource.sizegb || (resource.size/1024.0) }}</span>
           </div>
           <div style="margin-left: 25px; margin-top: 5px" v-if="resource.diskkbsread && resource.diskkbswrite && resource.diskioread && resource.diskiowrite">
-            <a-tag style="margin-bottom: 5px;">Read {{ toSize(resource.diskkbsread) }}</a-tag>
-            <a-tag style="margin-bottom: 5px;">Write {{ toSize(resource.diskkbswrite) }}</a-tag><br/>
-            <a-tag style="margin-bottom: 5px;">Read (IO) {{ resource.diskioread }}</a-tag>
-            <a-tag>Write (IO) {{ resource.diskiowrite }}</a-tag>
+            <a-tag style="margin-bottom: 5px;">{{ $t('label.read') + ' ' + toSize(resource.diskkbsread) }}</a-tag>
+            <a-tag style="margin-bottom: 5px;">{{ $t('label.write') + ' ' + toSize(resource.diskkbswrite) }}</a-tag><br/>
+            <a-tag style="margin-bottom: 5px;">{{ $t('label.read.io') + ' ' + resource.diskioread }}</a-tag>
+            <a-tag>{{ $t('label.writeio') + ' ' + resource.diskiowrite }}</a-tag>
           </div>
         </div>
         <div class="resource-detail-item" v-else-if="resource.disksizetotalgb">
@@ -259,8 +265,8 @@
             <a-icon type="wifi" />
             <div>
               <div v-if="'networkkbsread' in resource && 'networkkbswrite' in resource">
-                <a-tag><a-icon type="arrow-down" /> RX {{ toSize(resource.networkkbsread) }}</a-tag>
-                <a-tag><a-icon type="arrow-up" /> TX {{ toSize(resource.networkkbswrite) }}</a-tag>
+                <a-tag><a-icon type="arrow-down" />RX {{ toSize(resource.networkkbsread) }}</a-tag>
+                <a-tag><a-icon type="arrow-up" />TX {{ toSize(resource.networkkbswrite) }}</a-tag>
               </div>
               <div v-else>{{ resource.nic.length }} NIC(s)</div>
               <div
@@ -282,11 +288,12 @@
             <span v-else>{{ resource.ipaddress }}</span>
           </div>
         </div>
-        <div class="resource-detail-item" v-if="resource.projectid">
+        <div class="resource-detail-item" v-if="resource.projectid || resource.projectname">
           <div class="resource-detail-item__label">{{ $t('label.project') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="project" />
-            <router-link :to="{ path: '/project/' + resource.projectid }">{{ resource.project || resource.projectname || resource.projectid }}</router-link>
+            <router-link v-if="resource.projectid" :to="{ path: '/project/' + resource.projectid }">{{ resource.project || resource.projectname || resource.projectid }}</router-link>
+            <router-link v-else :to="{ path: '/project', query: { name: resource.projectname }}">{{ resource.projectname }}</router-link>
           </div>
         </div>
 
@@ -452,7 +459,22 @@
             <span v-else>{{ resource.zone || resource.zonename || resource.zoneid }}</span>
           </div>
         </div>
-        <div class="resource-detail-item" v-if="resource.account">
+        <div class="resource-detail-item" v-if="resource.owner">
+          <div class="resource-detail-item__label">{{ $t('label.owners') }}</div>
+          <div class="resource-detail-item__details">
+            <a-icon type="user" />
+            <template v-for="(item,idx) in resource.owner">
+              <span style="margin-right:5px" :key="idx">
+                <span v-if="$store.getters.userInfo.roletype !== 'User'">
+                  <router-link v-if="'user' in item" :to="{ path: '/accountuser', query: { username: item.user, domainid: resource.domainid }}">{{ item.account + '(' + item.user + ')' }}</router-link>
+                  <router-link v-else :to="{ path: '/account', query: { name: item.account, domainid: resource.domainid } }">{{ item.account }}</router-link>
+                </span>
+                <span v-else>{{ item.user ? item.account + '(' + item.user + ')' : item.account }}</span>
+              </span>
+            </template>
+          </div>
+        </div>
+        <div class="resource-detail-item" v-if="resource.account && !resource.account.startsWith('PrjAcct-')">
           <div class="resource-detail-item__label">{{ $t('label.account') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="user" />
@@ -499,7 +521,7 @@
             v-if="$router.resolve('/' + item.name).route.name !== '404'"
             :to="{ path: '/' + item.name + '?' + item.param + '=' + (item.param === 'account' ? resource.name + '&domainid=' + resource.domainid : resource.id) }">
             <a-button style="margin-right: 10px" :icon="$router.resolve('/' + item.name).route.meta.icon" >
-              View {{ $t(item.title) }}
+              {{ $t('label.view') + ' ' + $t(item.title) }}
             </a-button>
           </router-link>
         </div>
@@ -513,9 +535,9 @@
             {{ $t('label.apikey') }}
             <a-tooltip placement="right" >
               <template slot="title">
-                <span>Copy {{ $t('label.apikey') }}</span>
+                <span>{{ $t('label.copy') + ' ' + $t('label.apikey') }}</span>
               </template>
-              <a-button shape="circle" type="dashed" size="small" @click="$message.success('Copied to clipboard')" v-clipboard:copy="resource.apikey">
+              <a-button shape="circle" type="dashed" size="small" @click="$message.success($t('label.copied.clipboard'))" v-clipboard:copy="resource.apikey">
                 <a-icon type="copy"/>
               </a-button>
             </a-tooltip>
@@ -530,9 +552,9 @@
             {{ $t('label.secretkey') }}
             <a-tooltip placement="right" >
               <template slot="title">
-                <span>Copy {{ $t('label.secretkey') }}</span>
+                <span>{{ $t('label.copy') + ' ' + $t('label.secretkey') }}</span>
               </template>
-              <a-button shape="circle" type="dashed" size="small" @click="$message.success('Copied to clipboard')" v-clipboard:copy="resource.secretkey">
+              <a-button shape="circle" type="dashed" size="small" @click="$message.success($t('label.copied.clipboard'))" v-clipboard:copy="resource.secretkey">
                 <a-icon type="copy"/>
               </a-button>
             </a-tooltip>
@@ -545,88 +567,89 @@
 
       <div class="account-center-tags" v-if="resourceType && 'listTags' in $store.getters.apis">
         <a-divider/>
-        <div class="title">{{ $t('label.tags') }}</div>
-        <div>
-          <template v-for="(tag, index) in tags">
-            <a-tag :key="index" :closable="'deleteTags' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
-              {{ tag.key }} = {{ tag.value }}
-            </a-tag>
-          </template>
+        <a-spin :spinning="loadingTags">
+          <div class="title">{{ $t('label.tags') }}</div>
+          <div>
+            <template v-for="(tag, index) in tags">
+              <a-tag :key="index" :closable="isAdminOrOwner() && 'deleteTags' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
+                {{ tag.key }} = {{ tag.value }}
+              </a-tag>
+            </template>
 
-          <div v-if="inputVisible">
-            <a-input-group
-              type="text"
-              size="small"
-              @blur="handleInputConfirm"
-              @keyup.enter="handleInputConfirm"
-              compact>
-              <a-input ref="input" :value="inputKey" @change="handleKeyChange" style="width: 30%; text-align: center" :placeholder="$t('label.key')" />
-              <a-input style=" width: 30px; border-left: 0; pointer-events: none; backgroundColor: #fff" placeholder="=" disabled />
-              <a-input :value="inputValue" @change="handleValueChange" style="width: 30%; text-align: center; border-left: 0" :placeholder="$t('label.value')" />
-              <a-button shape="circle" size="small" @click="handleInputConfirm">
-                <a-icon type="check"/>
-              </a-button>
-              <a-button shape="circle" size="small" @click="inputVisible=false">
-                <a-icon type="close"/>
-              </a-button>
-            </a-input-group>
+            <div v-if="inputVisible">
+              <a-input-group
+                type="text"
+                size="small"
+                @blur="handleInputConfirm"
+                @keyup.enter="handleInputConfirm"
+                compact>
+                <a-input ref="input" :value="inputKey" @change="handleKeyChange" style="width: 30%; text-align: center" :placeholder="$t('label.key')" />
+                <a-input style=" width: 30px; border-left: 0; pointer-events: none; backgroundColor: #fff" placeholder="=" disabled />
+                <a-input :value="inputValue" @change="handleValueChange" style="width: 30%; text-align: center; border-left: 0" :placeholder="$t('label.value')" />
+                <a-button shape="circle" size="small" @click="handleInputConfirm">
+                  <a-icon type="check"/>
+                </a-button>
+                <a-button shape="circle" size="small" @click="inputVisible=false">
+                  <a-icon type="close"/>
+                </a-button>
+              </a-input-group>
+            </div>
+            <a-tag @click="showInput" style="background: #fff; borderStyle: dashed;" v-else-if="isAdminOrOwner() && 'createTags' in $store.getters.apis">
+              <a-icon type="plus" /> {{ $t('label.new.tag') }}
+            </a-tag>
           </div>
-          <a-tag @click="showInput" style="background: #fff; borderStyle: dashed;" v-else-if="'createTags' in $store.getters.apis">
-            <a-icon type="plus" /> {{ $t('label.new.tag') }}
-          </a-tag>
-        </div>
+        </a-spin>
       </div>
 
       <div class="account-center-team" v-if="annotationType && 'listAnnotations' in $store.getters.apis">
         <a-divider :dashed="true"/>
-        <div class="title">
-          {{ $t('label.comments') }} ({{ notes.length }})
-        </div>
-        <a-list
-          v-if="notes.length"
-          :dataSource="notes"
-          itemLayout="horizontal"
-          size="small"
-        >
-          <a-list-item slot="renderItem" slot-scope="item">
-            <a-comment
-              :content="item.annotation"
-              :datetime="item.created"
-            >
-              <a-button
-                v-if="'removeAnnotation' in $store.getters.apis"
-                slot="avatar"
-                type="danger"
-                shape="circle"
-                size="small"
-                @click="deleteNote(item)">
-                <a-icon type="delete"/>
-              </a-button>
-            </a-comment>
-          </a-list-item>
-        </a-list>
-
-        <a-comment v-if="'addAnnotation' in $store.getters.apis">
-          <a-avatar
-            slot="avatar"
-            icon="edit"
-            @click="showNotesInput = true"
-          />
-          <div slot="content">
-            <a-textarea
-              rows="4"
-              @change="handleNoteChange"
-              :value="annotation"
-              :placeholder="$t('label.add.note')" />
-            <a-button
-              style="margin-top: 10px"
-              @click="saveNote"
-              type="primary"
-            >
-              {{ $t('label.save') }}
-            </a-button>
+        <a-spin :spinning="loadingAnnotations">
+          <div class="title">
+            {{ $t('label.comments') }} ({{ notes.length }})
           </div>
-        </a-comment>
+          <a-list
+            v-if="notes.length"
+            :dataSource="notes"
+            itemLayout="horizontal"
+            size="small" >
+            <a-list-item slot="renderItem" slot-scope="item">
+              <a-comment
+                :content="item.annotation"
+                :datetime="item.created" >
+                <a-button
+                  v-if="'removeAnnotation' in $store.getters.apis"
+                  slot="avatar"
+                  type="danger"
+                  shape="circle"
+                  size="small"
+                  @click="deleteNote(item)">
+                  <a-icon type="delete"/>
+                </a-button>
+              </a-comment>
+            </a-list-item>
+          </a-list>
+
+          <a-comment v-if="'addAnnotation' in $store.getters.apis">
+            <a-avatar
+              slot="avatar"
+              icon="edit"
+              @click="showNotesInput = true" />
+            <div slot="content">
+              <a-textarea
+                rows="4"
+                @change="handleNoteChange"
+                :value="annotation"
+                :placeholder="$t('label.add.note')" />
+              <a-button
+                style="margin-top: 10px"
+                @click="saveNote"
+                type="primary"
+              >
+                {{ $t('label.save') }}
+              </a-button>
+            </div>
+          </a-comment>
+        </a-spin>
       </div>
     </a-card>
   </a-spin>
@@ -675,7 +698,9 @@ export default {
       notes: [],
       annotation: '',
       showKeys: false,
-      showNotesInput: false
+      showNotesInput: false,
+      loadingTags: false,
+      loadingAnnotations: false
     }
   },
   watch: {
@@ -740,6 +765,7 @@ export default {
       if (!('listTags' in this.$store.getters.apis) || !this.resource || !this.resource.id) {
         return
       }
+      this.loadingTags = true
       this.tags = []
       const params = {
         listall: true,
@@ -753,18 +779,28 @@ export default {
         if (json.listtagsresponse && json.listtagsresponse.tag) {
           this.tags = json.listtagsresponse.tag
         }
+      }).finally(() => {
+        this.loadingTags = false
       })
     },
     getNotes () {
       if (!('listAnnotations' in this.$store.getters.apis)) {
         return
       }
+      this.loadingAnnotations = true
       this.notes = []
       api('listAnnotations', { entityid: this.resource.id, entitytype: this.annotationType }).then(json => {
         if (json.listannotationsresponse && json.listannotationsresponse.annotation) {
           this.notes = json.listannotationsresponse.annotation
         }
+      }).finally(() => {
+        this.loadingAnnotations = false
       })
+    },
+    isAdminOrOwner () {
+      return ['Admin'].includes(this.$store.getters.userInfo.roletype) ||
+        (this.resource.domainid === this.$store.getters.userInfo.domainid && this.resource.account === this.$store.getters.userInfo.account) ||
+        this.resource.project && this.resource.projectid === this.$store.getters.project.id
     },
     showInput () {
       this.inputVisible = true
@@ -780,6 +816,7 @@ export default {
     },
     handleInputConfirm () {
       const args = {}
+      this.loadingTags = true
       args.resourceids = this.resource.id
       args.resourcetype = this.resourceType
       args['tags[0].key'] = this.inputKey
@@ -795,8 +832,9 @@ export default {
     },
     handleDeleteTag (tag) {
       const args = {}
-      args.resourceids = tag.resourceid
-      args.resourcetype = tag.resourcetype
+      this.loadingTags = true
+      args.resourceids = this.resource.id
+      args.resourcetype = this.resourceType
       args['tags[0].key'] = tag.key
       args['tags[0].value'] = tag.value
       api('deleteTags', args).then(json => {
@@ -811,6 +849,7 @@ export default {
       if (this.annotation.length < 1) {
         return
       }
+      this.loadingAnnotations = true
       this.showNotesInput = false
       const args = {}
       args.entityid = this.resource.id
@@ -823,6 +862,7 @@ export default {
       this.annotation = ''
     },
     deleteNote (annotation) {
+      this.loadingAnnotations = true
       const args = {}
       args.id = annotation.id
       api('removeAnnotation', args).then(json => {
