@@ -150,6 +150,9 @@ export default {
             zoneid: {
               api: 'listZones',
               filter: (record) => { return !record.securitygroupsenabled }
+            },
+            vpcofferingid: {
+              api: 'listVPCOfferings'
             }
           }
         },
