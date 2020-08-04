@@ -61,7 +61,9 @@ import {
   Affix,
   Timeline,
   Pagination,
-  Comment
+  Comment,
+  Tree,
+  Calendar
 } from 'ant-design-vue'
 
 Vue.use(ConfigProvider)
@@ -106,6 +108,8 @@ Vue.use(Affix)
 Vue.use(Timeline)
 Vue.use(Pagination)
 Vue.use(Comment)
+Vue.use(Tree)
+Vue.use(Calendar)
 
 Vue.prototype.$confirm = Modal.confirm
 Vue.prototype.$message = message
