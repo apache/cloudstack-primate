@@ -861,8 +861,8 @@ export default {
         this.resetData()
       }
     },
-    template (newValue) {
-      if (newValue) {
+    template (newValue, oldValue) {
+      if (newValue && (oldValue == null || oldValue === undefined || oldValue.id !== newValue.id)) {
         this.updateTemplateParameters()
       }
     },

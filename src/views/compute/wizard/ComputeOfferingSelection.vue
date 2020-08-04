@@ -148,14 +148,14 @@ export default {
           }
         }
         var disabled = false
-        if ((item.iscustomized === false && maxCpuNumber !== this.minimumCpunumber) ||
-            (item.iscustomized === true && maxCpuNumber < this.minimumCpunumber)) {
+        if (this.minimumCpunumber > 0 && ((item.iscustomized === false && maxCpuNumber !== this.minimumCpunumber) ||
+            (item.iscustomized === true && maxCpuNumber < this.minimumCpunumber))) {
           disabled = true
         }
-        if (disabled === false && maxCpuSpeed && maxCpuSpeed !== this.minimumCpuspeed) {
+        if (disabled === false && this.minimumCpuspeed > 0 && maxCpuSpeed && maxCpuSpeed !== this.minimumCpuspeed) {
           disabled = true
         }
-        if (disabled === false && maxMemory &&
+        if (disabled === false && maxMemory && this.minimumMemory > 0 &&
           ((item.iscustomized === false && maxMemory !== this.minimumMemory) ||
             (item.iscustomized === true && maxMemory < this.minimumMemory))) {
           disabled = true
