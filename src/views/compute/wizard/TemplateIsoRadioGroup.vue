@@ -45,14 +45,18 @@
     <div style="display: block; text-align: right;">
       <a-pagination
         size="small"
-        :current="page"
-        :pageSize="pageSize"
+        :current="options.page"
+        :pageSize="options.pageSize"
         :total="itemCount"
-        :showTotal="total => `Total ${total} items`"
+        :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
         :pageSizeOptions="['10', '20', '40', '80', '100', '500']"
         @change="onChangePage"
         @showSizeChange="onChangePageSize"
-        showSizeChanger />
+        showSizeChanger>
+        <template slot="buildOptionText" slot-scope="props">
+          <span>{{ props.value }} / {{ $t('label.page') }}</span>
+        </template>
+      </a-pagination>
     </div>
   </a-form-item>
 </template>
@@ -88,8 +92,10 @@ export default {
   data () {
     return {
       value: '',
-      page: 1,
-      pageSize: 10
+      options: {
+        page: 1,
+        pageSize: 10
+      }
     }
   },
   mounted () {
@@ -115,14 +121,14 @@ export default {
       this.$emit('emit-update-template-iso', this.inputDecorator, id)
     },
     onChangePage (page, pageSize) {
-      this.page = page
-      this.pageSize = pageSize
-      this.$forceUpdate()
+      this.options.page = page
+      this.options.pageSize = pageSize
+      this.$emit('handle-search-filter', this.options)
     },
     onChangePageSize (page, pageSize) {
-      this.page = page
-      this.pageSize = pageSize
-      this.$forceUpdate()
+      this.options.page = page
+      this.options.pageSize = pageSize
+      this.$emit('handle-search-filter', this.options)
     }
   }
 }

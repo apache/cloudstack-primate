@@ -54,11 +54,15 @@
       :current="page"
       :pageSize="pageSize"
       :total="itemCount"
-      :showTotal="total => `Total ${total} items`"
+      :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="handleChangePage"
       @showSizeChange="handleChangePageSize"
-      showSizeChanger/>
+      showSizeChanger>
+      <template slot="buildOptionText" slot-scope="props">
+        <span>{{ props.value }} / {{ $t('label.page') }}</span>
+      </template>
+    </a-pagination>
 
     <a-modal
       v-if="'copyTemplate' in $store.getters.apis"
@@ -236,9 +240,11 @@ export default {
       this.fetchData()
     },
     isActionPermitted () {
-      return (['Admin'].includes(this.$store.getters.userInfo.roletype) ||
-        (this.resource.domainid === this.$store.getters.userInfo.domainid && this.resource.account === this.$store.getters.userInfo.account)) &&
-        this.resource.isready && this.resource.templatetype !== 'SYSTEM'
+      return (['Admin'].includes(this.$store.getters.userInfo.roletype) || // If admin or owner or belongs to current project
+        (this.resource.domainid === this.$store.getters.userInfo.domainid && this.resource.account === this.$store.getters.userInfo.account) ||
+        (this.resource.domainid === this.$store.getters.userInfo.domainid && this.resource.projectid && this.$store.getters.project && this.$store.getters.project.id && this.resource.projectid === this.$store.getters.project.id)) &&
+        (this.resource.isready || !this.resource.status || this.resource.status.indexOf('Downloaded') === -1) && // Template is ready or downloaded
+        this.resource.templatetype !== 'SYSTEM'
     },
     deleteTemplate () {
       const params = {
@@ -266,8 +272,8 @@ export default {
             }
           },
           errorMethod: () => this.fetchData(),
-          loadingMessage: `Deleting template ${this.resource.name} in progress`,
-          catchMessage: 'Error encountered while fetching async job result'
+          loadingMessage: `${this.$t('label.deleting.template')} ${this.resource.name} ${this.$t('label.in.progress')}`,
+          catchMessage: this.$t('error.fetching.async.job.result')
         })
       }).catch(error => {
         this.$notifyError(error)
@@ -331,12 +337,12 @@ export default {
               this.fetchData()
             },
             errorMethod: () => this.fetchData(),
-            loadingMessage: `Copy template ${this.resource.name} in progress`,
-            catchMessage: 'Error encountered while fetching async job result'
+            loadingMessage: `${this.$t('label.action.copy.template')} ${this.resource.name} ${this.$t('label.in.progress')}`,
+            catchMessage: this.$t('error.fetching.async.job.result')
           })
         }).catch(error => {
           this.$notification.error({
-            message: 'Request Failed',
+            message: this.$t('message.request.failed'),
             description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
           })
         }).finally(() => {

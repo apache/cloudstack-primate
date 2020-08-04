@@ -40,11 +40,15 @@
         :current="options.page"
         :pageSize="options.pageSize"
         :total="rowCount"
-        :showTotal="total => `Total ${total} items`"
+        :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
         :pageSizeOptions="['10', '20', '40', '80', '100', '500']"
         @change="onChangePage"
         @showSizeChange="onChangePageSize"
-        showSizeChanger />
+        showSizeChanger>
+        <template slot="buildOptionText" slot-scope="props">
+          <span>{{ props.value }} / {{ $t('label.page') }}</span>
+        </template>
+      </a-pagination>
     </div>
   </div>
 </template>
@@ -108,19 +112,29 @@ export default {
       }
     }
   },
-  created () {
-    this.initDataItem()
-  },
   computed: {
     tableSource () {
-      return this.dataItems.map((item) => {
-        return {
+      const dataItems = []
+
+      if (this.options.page === 1) {
+        dataItems.push({
+          key: this.$t('label.noselect'),
+          name: this.$t('label.noselect'),
+          account: '-',
+          domain: '-'
+        })
+      }
+
+      this.items.map((item) => {
+        dataItems.push({
           key: item.name,
           name: item.name,
           account: item.account,
           domain: item.domain
-        }
+        })
       })
+
+      return dataItems
     },
     rowSelection () {
       return {
@@ -136,12 +150,6 @@ export default {
         this.selectedRowKeys = [newValue]
       }
     },
-    items (newData, oldData) {
-      if (newData && newData.length > 0) {
-        this.initDataItem()
-        this.dataItems = this.dataItems.concat(newData)
-      }
-    },
     loading () {
       if (!this.loading) {
         if (this.preFillContent.keypair) {
@@ -152,23 +160,13 @@ export default {
             return
           }
           this.oldZoneId = this.zoneId
-          this.selectedRowKeys = [this.dataItems[0].name]
-          this.$emit('select-ssh-key-pair-item', this.dataItems[0].name)
+          this.selectedRowKeys = [this.$t('label.noselect')]
+          this.$emit('select-ssh-key-pair-item', this.$t('label.noselect'))
         }
       }
     }
   },
   methods: {
-    initDataItem () {
-      this.dataItems = []
-      if (this.options.page === 1) {
-        this.dataItems.push({
-          name: this.$t('label.noselect'),
-          account: '-',
-          domain: '-'
-        })
-      }
-    },
     onSelectRow (value) {
       this.selectedRowKeys = value
       this.$emit('select-ssh-key-pair-item', value[0])

@@ -17,7 +17,7 @@
 
 <template>
   <span class="row-action-button">
-    <console :resource="resource" size="default" v-if="resource && resource.id && dataView" />
+    <console :resource="resource" :size="size" v-if="resource && resource.id && dataView" />
     <a-tooltip
       v-for="(action, actionIndex) in actions"
       :key="actionIndex"
@@ -32,7 +32,7 @@
         :count="actionBadge[action.api] ? actionBadge[action.api].badgeNum : 0"
         v-if="action.api in $store.getters.apis &&
           action.showBadge && (
-            (!dataView && (action.listView || (action.groupAction && selectedRowKeys.length > 0))) ||
+            (!dataView && (action.listView || (action.groupAction && selectedRowKeys.length > 0 && ('groupShow' in action ? action.show(resource, $store.getters) : true)))) ||
             (dataView && action.dataView && ('show' in action ? action.show(resource, $store.getters) : true))
           )" >
         <a-button
@@ -40,6 +40,7 @@
           :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
           :shape="!dataView && action.icon === 'plus' ? 'round' : 'circle'"
           style="margin-left: 5px"
+          :size="size"
           @click="execAction(action)">
           <span v-if="!dataView && action.icon === 'plus'">
             {{ $t(action.label) }}
@@ -49,13 +50,14 @@
       <a-button
         v-if="action.api in $store.getters.apis &&
           !action.showBadge && (
-            (!dataView && (action.listView || (action.groupAction && selectedRowKeys.length > 0))) ||
+            (!dataView && (action.listView || (action.groupAction && selectedRowKeys.length > 0 && ('groupShow' in action ? action.show(resource, $store.getters) : true)))) ||
             (dataView && action.dataView && ('show' in action ? action.show(resource, $store.getters) : true))
           )"
         :icon="action.icon"
         :type="action.icon === 'delete' ? 'danger' : (action.icon === 'plus' ? 'primary' : 'default')"
         :shape="!dataView && action.icon === 'plus' ? 'round' : 'circle'"
         style="margin-left: 5px"
+        :size="size"
         @click="execAction(action)">
         <span v-if="!dataView && action.icon === 'plus'">
           {{ $t(action.label) }}
@@ -108,6 +110,10 @@ export default {
     loading: {
       type: Boolean,
       default: false
+    },
+    size: {
+      type: String,
+      default: 'default'
     }
   },
   watch: {

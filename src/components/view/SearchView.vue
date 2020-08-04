@@ -32,7 +32,7 @@
       <a-input-search
         allowClear
         class="input-search"
-        placeholder="Search"
+        :placeholder="$t('label.search')"
         v-model="searchQuery"
         @search="onSearch">
         <a-popover
@@ -91,6 +91,7 @@
                   type="primary"
                   size="small"
                   icon="search"
+                  html-type="submit"
                   @click="handleSubmit">{{ $t('label.search') }}</a-button>
               </div>
             </a-form>

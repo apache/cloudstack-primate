@@ -55,8 +55,14 @@ export default {
       label: 'label.change.service.offering',
       message: 'message.confirm.scale.up.system.vm',
       dataView: true,
-      show: (record) => { return record.hypervisor !== 'KVM' },
-      args: ['serviceofferingid']
+      show: (record) => { return record.state === 'Running' && record.hypervisor === 'VMware' || record.state === 'Stopped' },
+      args: ['serviceofferingid'],
+      mapping: {
+        serviceofferingid: {
+          api: 'listServiceOfferings',
+          params: (record) => { return { virtualmachineid: record.id, issystem: true, systemvmtype: record.systemvmtype } }
+        }
+      }
     },
     {
       api: 'migrateSystemVm',
@@ -68,6 +74,10 @@ export default {
       mapping: {
         virtualmachineid: {
           value: (record) => { return record.id }
+        },
+        hostid: {
+          api: 'findHostsForMigration',
+          params: (record) => { return { virtualmachineid: record.id } }
         }
       }
     },
