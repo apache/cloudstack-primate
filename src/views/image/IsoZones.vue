@@ -62,7 +62,7 @@
       :current="page"
       :pageSize="pageSize"
       :total="itemCount"
-      :showTotal="total => `Total ${total} ${$t('label.items')}`"
+      :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="handleChangePage"
       @showSizeChange="handleChangePageSize"
@@ -230,9 +230,11 @@ export default {
       this.fetchData()
     },
     isActionPermitted () {
-      return (['Admin'].includes(this.$store.getters.userInfo.roletype) ||
-        (this.resource.domainid === this.$store.getters.userInfo.domainid && this.resource.account === this.$store.getters.userInfo.account)) &&
-        !(this.resource.account !== 'SYSTEM' && this.resource.domainid === 1)
+      return (['Admin'].includes(this.$store.getters.userInfo.roletype) || // If admin or owner or belongs to current project
+        (this.resource.domainid === this.$store.getters.userInfo.domainid && this.resource.account === this.$store.getters.userInfo.account) ||
+        (this.resource.domainid === this.$store.getters.userInfo.domainid && this.resource.projectid && this.$store.getters.project && this.$store.getters.project.id && this.resource.projectid === this.$store.getters.project.id)) &&
+        (this.resource.isready || !this.resource.status || this.resource.status.indexOf('Downloaded') === -1) && // Iso is ready or downloaded
+        this.resource.account !== 'system'
     },
     deleteIso (record) {
       const params = {
@@ -259,8 +261,8 @@ export default {
             }
           },
           errorMethod: () => this.fetchData(),
-          loadingMessage: `Deleting ISO ${this.resource.name} in progress`,
-          catchMessage: 'Error encountered while fetching async job result'
+          loadingMessage: `${this.$t('label.deleting.iso')} ${this.resource.name} ${this.$t('label.in.progress')}`,
+          catchMessage: this.$t('error.fetching.async.job.result')
         })
       }).catch(error => {
         this.$notifyError(error)
@@ -317,12 +319,12 @@ export default {
               this.fetchData()
             },
             errorMethod: () => this.fetchData(),
-            loadingMessage: `Copy ISO ${this.resource.name} in progress`,
-            catchMessage: 'Error encountered while fetching async job result'
+            loadingMessage: `${this.$t('label.action.copy.iso')} ${this.resource.name} ${this.$t('label.in.progress')}`,
+            catchMessage: this.$t('error.fetching.async.job.result')
           })
         }).catch(error => {
           this.$notification.error({
-            message: 'Request Failed',
+            message: this.$t('message.request.failed'),
             description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
           })
         }).finally(() => {

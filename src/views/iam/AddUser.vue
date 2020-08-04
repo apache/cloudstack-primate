@@ -21,24 +21,6 @@
       <a-form :form="form" :loading="loading" @submit="handleSubmit" layout="vertical">
         <a-form-item>
           <span slot="label">
-            {{ $t('label.role') }}
-            <a-tooltip :title="apiParams.roleid.description">
-              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
-            </a-tooltip>
-          </span>
-          <a-select
-            v-decorator="['roleid', {
-              initialValue: selectedRole,
-              rules: [{ required: true, message: $t('message.error.select') }] }]"
-            :loading="roleLoading"
-            :placeholder="apiParams.roleid.description">
-            <a-select-option v-for="role in roles" :key="role.id">
-              {{ role.name + ' (' + role.type + ')' }}
-            </a-select-option>
-          </a-select>
-        </a-form-item>
-        <a-form-item>
-          <span slot="label">
             {{ $t('label.username') }}
             <a-tooltip :title="apiParams.username.description">
               <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
@@ -148,14 +130,21 @@
             </a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item>
+        <a-form-item v-if="!account">
           <span slot="label">
             {{ $t('label.account') }}
             <a-tooltip :title="apiParams.account.description">
               <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
             </a-tooltip>
           </span>
-          <a-input v-decorator="['account']" :placeholder="apiParams.account.description" />
+          <a-select
+            v-decorator="['account']"
+            :loading="loadingAccount"
+            :placeholder="apiParams.account.description">
+            <a-select-option v-for="(item, idx) in accountList" :key="idx">
+              {{ item.name }}
+            </a-select-option>
+          </a-select>
         </a-form-item>
         <a-form-item>
           <span slot="label">
@@ -172,17 +161,6 @@
               {{ opt.name || opt.description }}
             </a-select-option>
           </a-select>
-        </a-form-item>
-        <a-form-item>
-          <span slot="label">
-            {{ $t('label.networkdomain') }}
-            <a-tooltip :title="apiParams.networkdomain.description">
-              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
-            </a-tooltip>
-          </span>
-          <a-input
-            v-decorator="['networkdomain']"
-            :placeholder="apiParams.networkdomain.description" />
         </a-form-item>
         <div v-if="'authorizeSamlSso' in $store.getters.apis">
           <a-form-item :label="$t('label.samlenable')">
@@ -214,34 +192,35 @@
     </a-spin>
   </div>
 </template>
+
 <script>
 import { api } from '@/api'
 import { timeZone } from '@/utils/timezone'
 import debounce from 'lodash/debounce'
 
 export default {
-  name: 'AddAccountForm',
+  name: 'AddUser',
   data () {
     this.fetchTimeZone = debounce(this.fetchTimeZone, 800)
     return {
       loading: false,
+      timeZoneLoading: false,
+      timeZoneMap: [],
       domainLoading: false,
       domainsList: [],
       selectedDomain: '',
-      roleLoading: false,
-      roles: [],
-      selectedRole: '',
-      timeZoneLoading: false,
-      timeZoneMap: [],
       samlEnable: false,
       idpLoading: false,
       idps: [],
-      selectedIdp: ''
+      selectedIdp: '',
+      loadingAccount: false,
+      accountList: [],
+      account: null
     }
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
-    this.apiConfig = this.$store.getters.apis.createAccount || {}
+    this.apiConfig = this.$store.getters.apis.createUser || {}
     this.apiParams = {}
     this.apiConfig.params.forEach(param => {
       this.apiParams[param.name] = param
@@ -256,33 +235,14 @@ export default {
   },
   methods: {
     fetchData () {
+      this.account = this.$route.query && this.$route.query.account ? this.$route.query.account : null
       this.fetchDomains()
-      this.fetchRoles()
       this.fetchTimeZone()
+      if (!this.account) {
+        this.fetchAccount()
+      }
       if ('listIdps' in this.$store.getters.apis) {
         this.fetchIdps()
-      }
-    },
-    isAdminOrDomainAdmin () {
-      return ['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype)
-    },
-    isValidValueForKey (obj, key) {
-      return key in obj && obj[key] != null
-    },
-    validateConfirmPassword (rule, value, callback) {
-      if (!value || value.length === 0) {
-        callback()
-      } else if (rule.field === 'confirmpassword') {
-        const form = this.form
-        const messageConfirm = this.$t('error.password.not.match')
-        const passwordVal = form.getFieldValue('password')
-        if (passwordVal && passwordVal !== value) {
-          callback(messageConfirm)
-        } else {
-          callback()
-        }
-      } else {
-        callback()
       }
     },
     fetchDomains () {
@@ -302,13 +262,18 @@ export default {
         this.domainLoading = false
       })
     },
-    fetchRoles () {
-      this.roleLoading = true
-      api('listRoles').then(response => {
-        this.roles = response.listrolesresponse.role || []
-        this.selectedRole = this.roles[0].id
+    fetchAccount () {
+      this.accountList = []
+      this.loadingAccount = true
+      api('listAccounts', { listAll: true }).then(response => {
+        this.accountList = response.listaccountsresponse.account || []
+      }).catch(error => {
+        this.$notification.error({
+          message: `${this.$t('label.error')} ${error.response.status}`,
+          description: error.response.data.errorresponse.errortext
+        })
       }).finally(() => {
-        this.roleLoading = false
+        this.loadingAccount = false
       })
     },
     fetchTimeZone (value) {
@@ -329,6 +294,12 @@ export default {
         this.idpLoading = false
       })
     },
+    isAdminOrDomainAdmin () {
+      return ['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype)
+    },
+    isValidValueForKey (obj, key) {
+      return key in obj && obj[key] != null
+    },
     handleSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
@@ -337,31 +308,30 @@ export default {
         }
         this.loading = true
         const params = {
-          roleid: values.roleid,
           username: values.username,
           password: values.password,
           email: values.email,
           firstname: values.firstname,
           lastname: values.lastname,
-          domainid: values.domainid
+          domainid: values.domainid,
+          accounttype: 0
         }
-        if (this.isValidValueForKey(values, 'account') && values.account.length > 0) {
-          params.account = values.account
+        if (!this.account) {
+          params.account = this.accountList[values.account].name
+        } else {
+          params.account = this.account
         }
         if (this.isValidValueForKey(values, 'timezone') && values.timezone.length > 0) {
           params.timezone = values.timezone
         }
-        if (this.isValidValueForKey(values, 'networkdomain') && values.networkdomain.length > 0) {
-          params.networkdomain = values.networkdomain
-        }
 
-        api('createAccount', params).then(response => {
+        api('createUser', {}, 'POST', params).then(response => {
           this.$emit('refresh-data')
           this.$notification.success({
-            message: this.$t('label.create.account'),
-            description: `${this.$t('message.success.create.account')} ${params.username}`
+            message: this.$t('label.create.user'),
+            description: `${this.$t('message.success.create.user')} ${params.username}`
           })
-          const users = response.createaccountresponse.account.user
+          const users = response.createuserresponse.user.user
           if (values.samlenable && users) {
             for (var i = 0; i < users.length; i++) {
               api('authorizeSamlSso', {
@@ -370,7 +340,7 @@ export default {
                 userid: users[i].id
               }).then(response => {
                 this.$notification.success({
-                  message: this.$t('samlenable'),
+                  message: this.$t('label.samlenable'),
                   description: this.$t('message.success.enable.saml.auth')
                 })
               }).catch(error => {
@@ -397,23 +367,40 @@ export default {
         })
       })
     },
+    validateConfirmPassword (rule, value, callback) {
+      if (!value || value.length === 0) {
+        callback()
+      } else if (rule.field === 'confirmpassword') {
+        const form = this.form
+        const messageConfirm = this.$t('error.password.not.match')
+        const passwordVal = form.getFieldValue('password')
+        if (passwordVal && passwordVal !== value) {
+          callback(messageConfirm)
+        } else {
+          callback()
+        }
+      } else {
+        callback()
+      }
+    },
     closeAction () {
       this.$emit('close-action')
     }
   }
 }
 </script>
+
 <style scoped lang="less">
-  .form-layout {
-    width: 80vw;
-    @media (min-width: 600px) {
-      width: 450px;
-    }
+.form-layout {
+  width: 80vw;
+  @media (min-width: 600px) {
+    width: 450px;
   }
-  .action-button {
-    text-align: right;
-    button {
-      margin-right: 5px;
-    }
+}
+.action-button {
+  text-align: right;
+  button {
+    margin-right: 5px;
   }
+}
 </style>
