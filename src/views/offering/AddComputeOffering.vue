@@ -704,9 +704,7 @@
             </a-tooltip>
           </span>
           <a-select
-            v-decorator="['storagepolicy', {
-              rules: [{ required: true, message: $t('message.error.select') }]
-            }]"
+            v-decorator="['storagepolicy']"
             :placeholder="apiParams.storagepolicy.description">
             <a-select-option v-for="policy in this.storagePolicies" :key="policy.id">
               {{ policy.name || policy.id }}
