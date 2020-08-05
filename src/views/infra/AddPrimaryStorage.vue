@@ -493,14 +493,14 @@ export default {
             path = '/' + path
           }
           path += '/' + values.vCenterDataStore
-          url = this.presetupURL('dummy', path)
+          url = this.presetupURL(server, path)
         } else if (values.protocol === 'datastorecluster' && values.hypervisor === 'VMware') {
           path = values.vCenterDataCenter
           if (path.substring(0, 1) !== '/') {
             path = '/' + path
           }
           path += '/' + values.vCenterDataStore
-          url = this.datastoreclusterURL('dummy', path)
+          url = this.datastoreclusterURL(server, path)
         } else if (values.protocol === 'ocfs2') {
           url = this.ocfs2URL(server, path)
         } else if (values.protocol === 'SharedMountPoint') {
