@@ -121,7 +121,7 @@ export default {
           docHelp: 'adminguide/storage.html#working-with-volume-snapshots',
           label: 'label.action.take.snapshot',
           dataView: true,
-          show: (record) => {
+          show: (record, store) => {
             return record.state === 'Ready' && (record.hypervisor !== 'KVM' ||
               record.hypervisor === 'KVM' && record.vmstate === 'Running' && store.features.kvmsnapshotenabled ||
               record.hypervisor === 'KVM' && record.vmstate !== 'Running')
@@ -135,7 +135,7 @@ export default {
           docHelp: 'adminguide/storage.html#working-with-volume-snapshots',
           label: 'label.action.recurring.snapshot',
           dataView: true,
-          show: (record) => {
+          show: (record, store) => {
             return record.state === 'Ready' && (record.hypervisor !== 'KVM' ||
               record.hypervisor === 'KVM' && record.vmstate === 'Running' && store.features.kvmsnapshotenabled ||
               record.hypervisor === 'KVM' && record.vmstate !== 'Running')
