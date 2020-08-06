@@ -238,17 +238,9 @@ export default {
           label: 'label.action.attach.iso',
           docHelp: 'adminguide/templates.html#attaching-an-iso-to-a-vm',
           dataView: true,
-          args: ['id', 'virtualmachineid'],
+          popup: true,
           show: (record) => { return ['Running', 'Stopped'].includes(record.state) && !record.isoid },
-          mapping: {
-            id: {
-              api: 'listIsos',
-              params: (record) => { return { zoneid: record.zoneid } }
-            },
-            virtualmachineid: {
-              value: (record, params) => { return record.id }
-            }
-          }
+          component: () => import('@/views/compute/AttachIso.vue')
         },
         {
           api: 'detachIso',
