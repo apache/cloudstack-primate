@@ -696,6 +696,7 @@
 "label.deleting.processing": "Deleting....",
 "label.deleting.template": "Deleting template",
 "label.deny": "Deny",
+"label.deployasis":"Deploy As-Is",
 "label.deploymentplanner": "Deployment planner",
 "label.description": "Description",
 "label.destcidr": "Destination CIDR",
