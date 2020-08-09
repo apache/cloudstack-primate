@@ -348,14 +348,14 @@
 
                       <span v-if="property.type && property.type==='boolean'">
                         <a-switch
-                          v-decorator="['properties.' + property.key, { initialValue: property.value==='TRUE'?true:false}]"
+                          v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value==='TRUE'?true:false}]"
                           :defaultChecked="property.value==='TRUE'?true:false"
                           :placeholder="property.description"
                         />
                       </span>
                       <span v-else-if="property.type && (property.type==='int' || property.type==='real')">
                         <a-input-number
-                          v-decorator="['properties.'+property.key]"
+                          v-decorator="['properties.'+ escapePropertyKey(property.key) ]"
                           :defaultValue="property.value"
                           :placeholder="property.description"
                           :min="getPropertyQualifiers(property.qualifiers, 'number-select').min"
@@ -365,7 +365,7 @@
                         <a-select
                           showSearch
                           optionFilterProp="children"
-                          v-decorator="['properties.' + property.key, { initialValue: property.value.length>0 ? property.value: getPropertyQualifiers(property.qualifiers, 'select')[0] }]"
+                          v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value.length>0 ? property.value: getPropertyQualifiers(property.qualifiers, 'select')[0] }]"
                           :placeholder="property.description"
                           :filterOption="(input, option) => {
                             return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -378,12 +378,12 @@
                       </span>
                       <span v-else-if="property.type && property.type==='string' && property.password">
                         <a-input-password
-                          v-decorator="['properties.' + property.key, { initialValue: property.value }]"
+                          v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value }]"
                           :placeholder="property.description" />
                       </span>
                       <span v-else>
                         <a-input
-                          v-decorator="['properties.' + property.key, { initialValue: property.value }]"
+                          v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value }]"
                           :placeholder="property.description" />
                       </span>
                     </a-form-item>
@@ -1172,6 +1172,9 @@ export default {
         keypair: name
       })
     },
+    escapePropertyKey (key) {
+      return key.split('.').join('\\002E')
+    },
     updateSecurityGroups (securitygroupids) {
       this.securitygroupids = securitygroupids
     },
@@ -1298,9 +1301,11 @@ export default {
         if ('properties' in values) {
           const keys = Object.keys(values.properties)
           for (var i = 0; i < keys.length; ++i) {
-            deployVmData['properties[' + i + '].key'] = keys[i]
+            const propKey = keys[i].split('\\002E').join('.')
+            deployVmData['properties[' + i + '].key'] = propKey
             deployVmData['properties[' + i + '].value'] = values.properties[keys[i]]
           }
+          console.log(deployVmData)
         }
         if ('bootintosetup' in values) {
           deployVmData.bootintosetup = values.bootintosetup
