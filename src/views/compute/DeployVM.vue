@@ -1305,7 +1305,6 @@ export default {
             deployVmData['properties[' + i + '].key'] = propKey
             deployVmData['properties[' + i + '].value'] = values.properties[keys[i]]
           }
-          console.log(deployVmData)
         }
         if ('bootintosetup' in values) {
           deployVmData.bootintosetup = values.bootintosetup
