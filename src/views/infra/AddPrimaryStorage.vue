@@ -315,7 +315,10 @@ export default {
       } else if (this.hypervisorType === 'XenServer') {
         this.protocols = ['nfs', 'PreSetup', 'iscsi', 'custom']
       } else if (this.hypervisorType === 'VMware') {
-        this.protocols = ['nfs', 'PreSetup', 'datastorecluster', 'custom']
+        this.protocols = ['nfs', 'vmfs', 'custom']
+        if ('importVsphereStoragePolicies' in this.$store.getters.apis) {
+          this.protocols = ['nfs', 'PreSetup', 'datastorecluster', 'custom']
+        }
       } else if (this.hypervisorType === 'Hyperv') {
         this.protocols = ['SMB']
       } else if (this.hypervisorType === 'Ovm') {

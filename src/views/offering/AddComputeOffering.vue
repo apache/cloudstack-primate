@@ -876,11 +876,14 @@ export default {
         return
       }
       const zoneid = this.zones[zoneIndex].id
-      api('listVsphereStoragePolicies', {
-        zoneid: zoneid
-      }).then(response => {
-        this.storagePolicies = response.listvspherestoragepoliciesresponse.StoragePolicy
-      })
+      if ('importVsphereStoragePolicies' in this.$store.getters.apis) {
+        this.storagePolicies = []
+        api('listVsphereStoragePolicies', {
+          zoneid: zoneid
+        }).then(response => {
+          this.storagePolicies = response.listvspherestoragepoliciesresponse.StoragePolicy || []
+        })
+      }
     },
     handleStorageTypeChange (val) {
       this.storageType = val
