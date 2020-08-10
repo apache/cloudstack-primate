@@ -100,8 +100,6 @@ The children should have:
   the current resource's id as a parameter in their respective list APIs
 - `actions`: Array of actions that can be performed on the resource
 
-Refer : [config.md](https://github.com/apache/cloudstack-primate/blob/master/docs/config.md)
-
 ## Custom Actions
 
 The actions defined for children show up as group of buttons on the default
@@ -165,8 +163,6 @@ For Example:
 }
 ```
 
-Refer : [action.md](https://github.com/apache/cloudstack-primate/blob/master/docs/action.md)
-
 ## Resource List View
 
 After having, defined a section and the actions that can be performed in the
@@ -201,8 +197,6 @@ For example:
     }
 ```
 
-Refer : [listview.md](https://github.com/apache/cloudstack-primate/blob/master/docs/listview.md)
-
 ## Resource Detail View Customization
 
 From the List View of the resources, on can navigate to the individual
@@ -236,5 +230,3 @@ For example,
 ```
 
 Additional tabs can be defined by adding on to the tabs section.
-
-Refer : [detailview.md](https://github.com/apache/cloudstack-primate/blob/master/docs/detailview.md)
