@@ -748,7 +748,10 @@ export default {
               if (res === 'count') {
                 continue
               }
-              const filter = this.currentAction.mapping[param.name].filter
+              let filter = null
+              if (this.currentAction.mapping && param.name in this.currentAction.mapping && this.currentAction.mapping[param.name].filter) {
+                filter = this.currentAction.mapping[param.name].filter
+              }
               if (filter) {
                 param.opts = json[obj][res].filter(filter)
               } else {
