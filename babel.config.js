@@ -31,7 +31,7 @@ const babelConfig = {
   // ]
 }
 
-if (process.env.ENV_NODE === 'test') {
+if (process.env.NODE_ENV === 'test') {
   babelConfig.plugins.push('require-context-hook')
 }
 

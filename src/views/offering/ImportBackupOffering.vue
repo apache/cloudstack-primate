@@ -21,19 +21,37 @@
       layout="vertical"
       :form="form"
       @submit="handleSubmit">
-      <a-form-item :label="$t('label.name')">
+      <a-form-item>
+        <span slot="label">
+          {{ $t('label.name') }}
+          <a-tooltip :title="apiParams.name.description">
+            <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+          </a-tooltip>
+        </span>
         <a-input
           v-decorator="['name', {
-            rules: [{ required: true, message: 'Please enter input' }]
+            rules: [{ required: true, message: $t('message.error.required.input') }]
           }]"/>
       </a-form-item>
-      <a-form-item :label="$t('label.description')">
+      <a-form-item>
+        <span slot="label">
+          {{ $t('label.description') }}
+          <a-tooltip :title="apiParams.description.description">
+            <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+          </a-tooltip>
+        </span>
         <a-input
           v-decorator="['description', {
-            rules: [{ required: true, message: 'Please enter input' }]
+            rules: [{ required: true, message: $t('message.error.required.input') }]
           }]"/>
       </a-form-item>
-      <a-form-item :label="$t('label.zoneid')">
+      <a-form-item>
+        <span slot="label">
+          {{ $t('label.zoneid') }}
+          <a-tooltip :title="apiParams.zoneid.description">
+            <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+          </a-tooltip>
+        </span>
         <a-select
           showSearch
           allowClear
@@ -47,17 +65,31 @@
           </a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item :label="$t('label.externalid')">
+      <a-form-item>
+        <span slot="label">
+          {{ $t('label.externalid') }}
+          <a-tooltip :title="apiParams.externalid.description">
+            <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+          </a-tooltip>
+        </span>
         <a-select
           allowClear
-          v-decorator="['externalid'] "
+          v-decorator="['externalid', {
+            rules: [{ required: true, message: `${this.$t('message.error.select')}` }]
+          }] "
           :loading="externals.loading">
           <a-select-option v-for="opt in externals.opts" :key="opt.id">
             {{ opt.name }}
           </a-select-option>
         </a-select>
       </a-form-item>
-      <a-form-item :label="$t('label.allowuserdrivenbackups')">
+      <a-form-item>
+        <span slot="label">
+          {{ $t('label.allowuserdrivenbackups') }}
+          <a-tooltip :title="apiParams.allowuserdrivenbackups.description">
+            <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+          </a-tooltip>
+        </span>
         <a-switch
           v-decorator="['allowuserdrivenbackups']"
           :default-checked="true"/>
@@ -90,6 +122,11 @@ export default {
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
+    this.apiParams = {}
+    var apiConfig = this.$store.getters.apis.importBackupOffering || {}
+    apiConfig.params.forEach(param => {
+      this.apiParams[param.name] = param
+    })
   },
   mounted () {
     this.fetchData()
@@ -140,9 +177,9 @@ export default {
             params[key] = input
           }
         }
-        params.allowuserdrivenbackups = values.allowuserdrivenbackups ? values.allowuserdrivenbackups : false
+        params.allowuserdrivenbackups = values.allowuserdrivenbackups ? values.allowuserdrivenbackups : true
         this.loading = true
-        const title = 'Import Offering'
+        const title = this.$t('label.import.offering')
         api('importBackupOffering', params).then(json => {
           const jobId = json.importbackupofferingresponse.jobid
           if (jobId) {
@@ -159,8 +196,8 @@ export default {
                 this.parentFetchData()
                 this.closeAction()
               },
-              loadingMessage: `${title} in progress for ${params.name}`,
-              catchMessage: 'Error encountered while fetching async job result'
+              loadingMessage: `${title} ${this.$t('label.in.progress')} ${this.$t('label.for')} ${params.name}`,
+              catchMessage: this.$t('error.fetching.async.job.result')
             })
           }
         }).catch(error => {

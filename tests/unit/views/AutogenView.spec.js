@@ -176,7 +176,12 @@ const messages = {
     'label.confirmpassword': 'confirmpassword-en',
     'label.confirmpassword.description': 'confirmpassword-description-en',
     'label.open.documentation': 'open',
-    'label.metrics': 'metrics'
+    'label.metrics': 'metrics',
+    'label.showing': 'Showing',
+    'label.of': 'of',
+    'label.items': 'items',
+    'label.page': 'page',
+    'error.fetching.async.job.result': 'Error encountered while fetching async job result'
   },
   de: {
     labelname: 'test-name-de',
@@ -204,7 +209,12 @@ const messages = {
     'label.confirmpassword': 'confirmpassword-de',
     'label.confirmpassword.description': 'confirmpassword-description-de',
     'label.open.documentation': 'open',
-    'label.metrics': 'metrics'
+    'label.metrics': 'metrics',
+    'label.showing': 'Showing',
+    'label.of': 'of',
+    'label.items': 'items',
+    'label.page': 'page',
+    'error.fetching.async.job.result': 'Error encountered while fetching async job result'
   }
 }
 
@@ -1620,55 +1630,6 @@ describe('Views > AutogenView.vue', () => {
           })
           expect(param).toEqual({
             name: 'template',
-            type: 'uuid',
-            loading: false,
-            opts: [{
-              id: 'test-id-value',
-              name: 'test-name-value'
-            }]
-          })
-
-          done()
-        })
-      })
-
-      it('check api is called with apiName when listUuidOpts() is called', (done) => {
-        const param = { name: 'id', type: 'uuid' }
-        const mockData = {
-          testapinamecase1response: {
-            count: 1,
-            testapinamecase1: [{
-              id: 'test-id-value',
-              name: 'test-name-value'
-            }]
-          }
-        }
-
-        wrapper = factory()
-
-        mockAxios.mockResolvedValue(mockData)
-        wrapper.setData({
-          currentAction: {
-            mapping: {}
-          },
-          apiName: 'testApiNameCase1'
-        })
-        wrapper.vm.listUuidOpts(param)
-
-        setTimeout(() => {
-          expect(mockAxios).toHaveBeenCalledTimes(1)
-          expect(mockAxios).toHaveBeenCalledWith({
-            url: '/',
-            method: 'GET',
-            data: new URLSearchParams(),
-            params: {
-              command: 'testApiNameCase1',
-              listall: true,
-              response: 'json'
-            }
-          })
-          expect(param).toEqual({
-            name: 'id',
             type: 'uuid',
             loading: false,
             opts: [{

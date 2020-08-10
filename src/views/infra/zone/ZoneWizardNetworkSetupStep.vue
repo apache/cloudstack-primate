@@ -199,7 +199,7 @@ export default {
           key: 'netscalerIp',
           required: false,
           ipV4: true,
-          message: 'Please enter a valid IP v4 address.'
+          message: 'message.error.ipv4.address'
         },
         {
           title: 'label.username',
@@ -240,14 +240,14 @@ export default {
           key: 'gslbproviderpublicip',
           required: false,
           ipV4: true,
-          message: 'Please enter a valid IP v4 address.'
+          message: 'message.error.ipv4.address'
         },
         {
           title: 'label.gslb.service.private.ip',
           key: 'gslbproviderprivateip',
           required: false,
           ipV4: true,
-          message: 'Please enter a valid IP v4 address.'
+          message: 'message.error.ipv4.address'
         },
         {
           title: 'label.numretries',
@@ -260,6 +260,49 @@ export default {
           required: false
         }
       ]
+    },
+    guestTrafficFields () {
+      const fields = [
+        {
+          title: 'label.guest.gateway',
+          key: 'guestGateway',
+          placeHolder: 'message.installwizard.tooltip.configureguesttraffic.guestgateway',
+          required: false
+        },
+        {
+          title: 'label.guest.netmask',
+          key: 'guestNetmask',
+          placeHolder: 'message.installwizard.tooltip.configureguesttraffic.guestnetmask',
+          required: false
+        },
+        {
+          title: 'label.guest.start.ip',
+          key: 'guestStartIp',
+          placeHolder: 'message.installwizard.tooltip.configureguesttraffic.gueststartip',
+          required: false,
+          ipV4: true,
+          message: 'message.error.ipv4.address'
+        },
+        {
+          title: 'label.guest.end.ip',
+          key: 'guestStopIp',
+          placeHolder: 'message.installwizard.tooltip.configureguesttraffic.guestendip',
+          required: false,
+          ipV4: true,
+          message: 'message.error.ipv4.address'
+        }
+      ]
+
+      if (this.sgEnabled) {
+        fields.push({
+          title: 'label.vlanid',
+          key: 'guestVlan',
+          required: false,
+          ipV4: false
+        })
+      }
+
+      return fields
     }
   },
   data () {
@@ -305,7 +348,7 @@ export default {
           placeHolder: 'message.installwizard.tooltip.addpod.reservedsystemstartip',
           required: true,
           ipV4: true,
-          message: 'Please enter a valid IP v4 address.'
+          message: 'message.error.ipv4.address'
         },
         {
           title: 'label.end.reserved.system.ip',
@@ -313,37 +356,7 @@ export default {
           placeHolder: 'message.installwizard.tooltip.addpod.reservedsystemendip',
           required: false,
           ipV4: true,
-          message: 'Please enter a valid IP v4 address.'
-        }
-      ],
-      guestTrafficFields: [
-        {
-          title: 'label.guest.gateway',
-          key: 'guestGateway',
-          placeHolder: 'message.installwizard.tooltip.configureguesttraffic.guestgateway',
-          required: false
-        },
-        {
-          title: 'label.guest.netmask',
-          key: 'guestNetmask',
-          placeHolder: 'message.installwizard.tooltip.configureguesttraffic.guestnetmask',
-          required: false
-        },
-        {
-          title: 'label.guest.start.ip',
-          key: 'guestStartIp',
-          placeHolder: 'message.installwizard.tooltip.configureguesttraffic.gueststartip',
-          required: false,
-          ipV4: true,
-          message: 'Please enter a valid IP v4 address.'
-        },
-        {
-          title: 'label.guest.end.ip',
-          key: 'guestStopIp',
-          placeHolder: 'message.installwizard.tooltip.configureguesttraffic.guestendip',
-          required: false,
-          ipV4: true,
-          message: 'Please enter a valid IP v4 address.'
+          message: 'message.error.ipv4.address'
         }
       ]
     }

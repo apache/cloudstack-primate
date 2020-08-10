@@ -45,7 +45,7 @@
                 <a-select
                   v-if="!dataView && $route.meta.filters && $route.meta.filters.length > 0"
                   :placeholder="$t('label.filterby')"
-                  :value="$route.query.filter"
+                  :value="$route.query.filter || 'self'"
                   style="min-width: 100px; margin-left: 10px"
                   @change="changeFilter">
                   <a-icon slot="suffixIcon" type="filter" />
@@ -175,7 +175,7 @@
                   }]"
                   :placeholder="field.description"
                 >
-                  <a-select-option :key="null">{{ }}</a-select-option>
+                  <a-select-option key="" >{{ }}</a-select-option>
                   <a-select-option v-for="(opt, optIndex) in currentAction.mapping[field.name].options" :key="optIndex">
                     {{ opt }}
                   </a-select-option>
@@ -196,7 +196,7 @@
                     return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }"
                 >
-                  <a-select-option :key="null">{{ }}</a-select-option>
+                  <a-select-option key="">{{ }}</a-select-option>
                   <a-select-option v-for="(opt, optIndex) in field.opts" :key="optIndex">
                     {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
@@ -216,7 +216,7 @@
                     return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }"
                 >
-                  <a-select-option :key="null">{{ }}</a-select-option>
+                  <a-select-option key="">{{ }}</a-select-option>
                   <a-select-option v-for="opt in field.opts" :key="opt.id">
                     {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
@@ -238,6 +238,7 @@
               </span>
               <span v-else-if="field.type==='long'">
                 <a-input-number
+                  style="width: 100%;"
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: `${$t('message.validate.number')}` }]
                   }]"
@@ -296,6 +297,7 @@
         :loading="loading"
         :columns="columns"
         :items="items"
+        :actions="actions"
         ref="listview"
         @selection-change="onRowSelectionChange"
         @refresh="this.fetchData" />
@@ -305,12 +307,16 @@
         :current="page"
         :pageSize="pageSize"
         :total="itemCount"
-        :showTotal="total => `Showing ${Math.min(total, 1+((page-1)*pageSize))}-${Math.min(page*pageSize, total)} of ${total} items`"
+        :showTotal="total => `${$t('label.showing')} ${Math.min(total, 1+((page-1)*pageSize))}-${Math.min(page*pageSize, total)} ${$t('label.of')} ${total} ${$t('label.items')}`"
         :pageSizeOptions="device === 'desktop' ? ['20', '50', '100', '500'] : ['10', '20', '50', '100', '500']"
         @change="changePage"
         @showSizeChange="changePageSize"
         showSizeChanger
-        showQuickJumper />
+        showQuickJumper>
+        <template slot="buildOptionText" slot-scope="props">
+          <span>{{ props.value }} / {{ $t('label.page') }}</span>
+        </template>
+      </a-pagination>
     </div>
   </div>
 </template>
@@ -435,7 +441,7 @@ export default {
         const project = json.listprojectsresponse.project[0]
         this.$store.dispatch('SetProject', project)
         this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
-        this.$message.success(`Switched to "${project.name}"`)
+        this.$message.success(`${this.$t('message.switch.to')} "${project.name}"`)
         const query = Object.assign({}, this.$route.query)
         delete query.projectid
         this.$router.replace({ query })
@@ -530,6 +536,10 @@ export default {
         })
       }
 
+      if (['listTemplates', 'listIsos'].includes(this.apiName) && this.dataView) {
+        delete params.showunique
+      }
+
       this.loading = true
       if (this.$route.params && this.$route.params.id) {
         params.id = this.$route.params.id
@@ -569,6 +579,14 @@ export default {
 
         if (['listTemplates', 'listIsos'].includes(this.apiName) && this.items.length > 1) {
           this.items = [...new Map(this.items.map(x => [x.id, x])).values()]
+        }
+
+        if (this.apiName === 'listProjects' && this.items.length > 0) {
+          this.columns.map(col => {
+            if (col.title === 'Account') {
+              col.title = this.$t('label.project.owner')
+            }
+          })
         }
 
         for (let idx = 0; idx < this.items.length; idx++) {
@@ -635,6 +653,8 @@ export default {
       }
       this.currentAction = action
       this.currentAction.params = store.getters.apis[this.currentAction.api].params
+      this.resource = action.resource
+      this.$emit('change-resource', this.resource)
       var paramFields = this.currentAction.params
       paramFields.sort(function (a, b) {
         if (a.name === 'name' && b.name !== 'name') { return -1 }
@@ -728,16 +748,21 @@ export default {
               if (res === 'count') {
                 continue
               }
-              param.opts = json[obj][res]
+              const filter = this.currentAction.mapping[param.name].filter
+              if (filter) {
+                param.opts = json[obj][res].filter(filter)
+              } else {
+                param.opts = json[obj][res]
+              }
               if (['listTemplates', 'listIsos'].includes(possibleApi)) {
                 param.opts = [...new Map(param.opts.map(x => [x.id, x])).values()]
               }
-              this.$forceUpdate()
               break
             }
             break
           }
         }
+        this.$forceUpdate()
       }).catch(function (error) {
         console.log(error.stack)
         param.loading = false
@@ -763,7 +788,7 @@ export default {
         },
         errorMethod: () => this.fetchData(),
         loadingMessage: `${this.$t(action.label)} - ${resourceName}`,
-        catchMessage: 'Error encountered while fetching async job result',
+        catchMessage: this.$t('error.fetching.async.job.result'),
         action
       })
     },
@@ -811,7 +836,6 @@ export default {
     execSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
-        console.log(values)
         if (!err) {
           const params = {}
           if ('id' in this.resource && this.currentAction.params.map(i => { return i.name }).includes('id')) {
@@ -823,7 +847,7 @@ export default {
               if (param.name !== key) {
                 continue
               }
-              if (input === undefined || input === null) {
+              if (input === undefined || input === null || input === '') {
                 if (param.type === 'boolean') {
                   params[key] = false
                 }
@@ -860,10 +884,6 @@ export default {
               params[key] = this.currentAction.mapping[key].value(this.resource, params)
             }
           }
-
-          console.log(this.currentAction)
-          console.log(this.resource)
-          console.log(params)
 
           const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username || params.ipaddress || params.virtualmachinename || this.resource.name
 

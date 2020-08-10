@@ -207,8 +207,8 @@
           </a-form-item>
         </div>
         <div :span="24" class="action-button">
-          <a-button @click="closeAction">{{ this.$t('Cancel') }}</a-button>
-          <a-button :loading="loading" type="primary" @click="handleSubmit">{{ this.$t('OK') }}</a-button>
+          <a-button @click="closeAction">{{ $t('label.cancel') }}</a-button>
+          <a-button :loading="loading" type="primary" @click="handleSubmit">{{ $t('label.ok') }}</a-button>
         </div>
       </a-form>
     </a-spin>
@@ -243,13 +243,17 @@ export default {
     this.form = this.$form.createForm(this)
     this.apiConfig = this.$store.getters.apis.createAccount || {}
     this.apiParams = {}
-    this.apiConfig.params.forEach(param => {
-      this.apiParams[param.name] = param
-    })
+    if (this.apiConfig.params) {
+      this.apiConfig.params.forEach(param => {
+        this.apiParams[param.name] = param
+      })
+    }
     this.apiConfig = this.$store.getters.apis.authorizeSamlSso || {}
-    this.apiConfig.params.forEach(param => {
-      this.apiParams[param.name] = param
-    })
+    if (this.apiConfig.params) {
+      this.apiConfig.params.forEach(param => {
+        this.apiParams[param.name] = param
+      })
+    }
   },
   mounted () {
     this.fetchData()
@@ -295,7 +299,7 @@ export default {
         this.selectedDomain = this.domainsList[0].id || ''
       }).catch(error => {
         this.$notification.error({
-          message: `Error ${error.response.status}`,
+          message: `${this.$t('label.error')} ${error.response.status}`,
           description: error.response.data.errorresponse.errortext
         })
       }).finally(() => {
@@ -358,8 +362,8 @@ export default {
         api('createAccount', params).then(response => {
           this.$emit('refresh-data')
           this.$notification.success({
-            message: 'Create Account',
-            description: 'Successfully created account ' + params.username
+            message: this.$t('label.create.account'),
+            description: `${this.$t('message.success.create.account')} ${params.username}`
           })
           const users = response.createaccountresponse.account.user
           if (values.samlenable && users) {
@@ -371,11 +375,11 @@ export default {
               }).then(response => {
                 this.$notification.success({
                   message: this.$t('samlenable'),
-                  description: 'Successfully enabled SAML Authorization'
+                  description: this.$t('message.success.enable.saml.auth')
                 })
               }).catch(error => {
                 this.$notification.error({
-                  message: 'Request Failed',
+                  message: this.$t('message.request.failed'),
                   description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message,
                   duration: 0
                 })
@@ -387,7 +391,7 @@ export default {
           }
         }).catch(error => {
           this.$notification.error({
-            message: 'Request Failed',
+            message: this.$t('message.request.failed'),
             description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message,
             duration: 0
           })

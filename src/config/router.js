@@ -51,6 +51,9 @@ function generateRouterMap (section) {
     map.meta.permission = section.children[0].permission
     map.children = []
     for (const child of section.children) {
+      if ('show' in child && !child.show()) {
+        continue
+      }
       var component = child.component ? child.component : AutogenView
       var route = {
         name: child.name,
@@ -215,9 +218,9 @@ export function asyncRouterMap () {
       generateRouterMap(event),
       generateRouterMap(project),
       generateRouterMap(user),
+      generateRouterMap(role),
       generateRouterMap(account),
       generateRouterMap(domain),
-      generateRouterMap(role),
       generateRouterMap(infra),
       generateRouterMap(offering),
       generateRouterMap(config),

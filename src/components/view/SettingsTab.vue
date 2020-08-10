@@ -1,48 +1,56 @@
 <template>
-  <a-list size="large" class="list" :loading="loading || tabLoading">
-    <a-list-item :key="index" v-for="(item, index) in items" class="item">
-      <a-list-item-meta>
-        <span slot="title" style="word-break: break-all">{{ item.name }}</span>
-        <span slot="description" style="word-break: break-all">{{ item.description }}</span>
-      </a-list-item-meta>
+  <div>
+    <a-input-search
+      style="width: 25vw;float: right;margin-bottom: 10px; z-index: 8;"
+      :placeholder="$t('label.search')"
+      v-model="filter"
+      @search="handleSearch" />
 
-      <div class="item__content">
-        <a-input
-          v-if="editableValueKey === index"
-          class="editable-value value"
-          :defaultValue="item.value"
-          v-model="editableValue"
-          @keydown.esc="editableValueKey = null"
-          @pressEnter="updateData(item)">
-        </a-input>
-        <span v-else class="value">
-          {{ item.value }}
-        </span>
-      </div>
+    <a-list size="large" class="list" :loading="loading || tabLoading">
+      <a-list-item :key="index" v-for="(item, index) in items" class="item">
+        <a-list-item-meta>
+          <span slot="title" style="word-break: break-all">{{ item.name }}</span>
+          <span slot="description" style="word-break: break-all">{{ item.description }}</span>
+        </a-list-item-meta>
 
-      <div slot="actions" class="action">
-        <a-button
-          shape="circle"
-          :disabled="!('updateConfiguration' in $store.getters.apis)"
-          v-if="editableValueKey !== index"
-          icon="edit"
-          @click="setEditableSetting(item, index)" />
-        <a-button
-          shape="circle"
-          size="default"
-          @click="editableValueKey = null"
-          v-if="editableValueKey === index" >
-          <a-icon type="close-circle" theme="twoTone" twoToneColor="#f5222d" />
-        </a-button>
-        <a-button
-          shape="circle"
-          @click="updateData(item)"
-          v-if="editableValueKey === index" >
-          <a-icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />
-        </a-button>
-      </div>
-    </a-list-item>
-  </a-list>
+        <div class="item__content">
+          <a-input
+            v-if="editableValueKey === index"
+            class="editable-value value"
+            :defaultValue="item.value"
+            v-model="editableValue"
+            @keydown.esc="editableValueKey = null"
+            @pressEnter="updateData(item)">
+          </a-input>
+          <span v-else class="value">
+            {{ item.value }}
+          </span>
+        </div>
+
+        <div slot="actions" class="action">
+          <a-button
+            shape="circle"
+            :disabled="!('updateConfiguration' in $store.getters.apis)"
+            v-if="editableValueKey !== index"
+            icon="edit"
+            @click="setEditableSetting(item, index)" />
+          <a-button
+            shape="circle"
+            size="default"
+            @click="editableValueKey = null"
+            v-if="editableValueKey === index" >
+            <a-icon type="close-circle" theme="twoTone" twoToneColor="#f5222d" />
+          </a-button>
+          <a-button
+            shape="circle"
+            @click="updateData(item)"
+            v-if="editableValueKey === index" >
+            <a-icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />
+          </a-button>
+        </div>
+      </a-list-item>
+    </a-list>
+  </div>
 </template>
 
 <script>
@@ -66,7 +74,8 @@ export default {
       scopeKey: '',
       editableValueKey: null,
       editableValue: '',
-      tabLoading: false
+      tabLoading: false,
+      filter: ''
     }
   },
   beforeMount () {
@@ -106,14 +115,18 @@ export default {
   methods: {
     fetchData (callback) {
       this.tabLoading = true
-      api('listConfigurations', {
+      const params = {
         [this.scopeKey]: this.resource.id,
         listAll: true
-      }).then(response => {
+      }
+      if (this.filter) {
+        params.keyword = this.filter
+      }
+      api('listConfigurations', params).then(response => {
         this.items = response.listconfigurationsresponse.configuration
       }).catch(error => {
         console.error(error)
-        this.$message.error('There was an error loading these settings.')
+        this.$message.error(this.$t('message.error.loading.setting'))
       }).finally(() => {
         this.tabLoading = false
         if (!callback) return
@@ -127,13 +140,14 @@ export default {
         name: item.name,
         value: this.editableValue
       }).then(() => {
-        this.$message.success('Setting ' + item.name + ' updated to ' + this.editableValue)
+        const message = `${this.$t('label.setting')} ${item.name} ${this.$t('label.update.to')} ${this.editableValue}`
+        this.$message.success(message)
       }).catch(error => {
         console.error(error)
-        this.$message.error('There was an error saving this setting.')
+        this.$message.error(this.$t('message.error.save.setting'))
         this.$notification.error({
           message: this.$t('label.error'),
-          description: 'There was an error saving this setting. Please try again later.'
+          description: this.$t('message.error.try.save.setting')
         })
       }).finally(() => {
         this.tabLoading = false
@@ -145,6 +159,10 @@ export default {
     setEditableSetting (item, index) {
       this.editableValueKey = index
       this.editableValue = item.value
+    },
+    handleSearch (value) {
+      this.filter = value
+      this.fetchData()
     }
   }
 }
@@ -152,6 +170,7 @@ export default {
 
 <style scoped lang="scss">
   .list {
+    clear:both;
   }
   .editable-value {
 

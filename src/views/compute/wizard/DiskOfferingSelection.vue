@@ -52,11 +52,15 @@
         :current="options.page"
         :pageSize="options.pageSize"
         :total="rowCount"
-        :showTotal="total => `Total ${total} items`"
+        :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
         :pageSizeOptions="['10', '20', '40', '80', '100', '500']"
         @change="onChangePage"
         @showSizeChange="onChangePageSize"
-        showSizeChanger />
+        showSizeChanger>
+        <template slot="buildOptionText" slot-scope="props">
+          <span>{{ props.value }} / {{ $t('label.page') }}</span>
+        </template>
+      </a-pagination>
     </div>
   </div>
 </template>
@@ -157,10 +161,8 @@ export default {
       }
     },
     items (newData, oldData) {
-      if (newData && newData.length > 0) {
-        this.initDataItem()
-        this.dataItems = this.dataItems.concat(newData)
-      }
+      this.initDataItem()
+      this.dataItems = this.dataItems.concat(newData)
     },
     loading () {
       if (!this.loading) {

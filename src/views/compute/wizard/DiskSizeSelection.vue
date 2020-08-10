@@ -53,8 +53,9 @@ export default {
   },
   watch: {
     minDiskSize (newItem) {
-      if (this.inputValue < newItem) {
+      if (newItem && newItem > 0) {
         this.inputValue = newItem
+        this.updateDiskSize(newItem)
       }
     }
   },
@@ -80,7 +81,7 @@ export default {
     updateDiskSize (value) {
       if (value < this.minDiskSize) {
         this.inputValue = this.minDiskSize
-        this.error = 'The value must not be less than ' + this.minDiskSize + ' GB'
+        this.error = `${this.$t('message.error.limit.value')} ` + this.minDiskSize + ' GB'
         return
       }
       this.error = false

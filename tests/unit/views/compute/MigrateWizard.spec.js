@@ -31,7 +31,9 @@ const messages = {
     cpuused: 'cpuused-en',
     memused: 'memused-en',
     select: 'select-en',
-    ok: 'ok-en'
+    ok: 'ok-en',
+    'message.load.host.failed': 'Failed to load hosts',
+    'message.migrating.vm.to.host.failed': 'Failed to migrate VM to host'
   },
   de: {
     name: 'name-de',
@@ -39,7 +41,9 @@ const messages = {
     cpuused: 'cpuused-de',
     memused: 'memused-de',
     select: 'select-de',
-    ok: 'ok-de'
+    ok: 'ok-de',
+    'message.load.host.failed': 'Failed to load hosts',
+    'message.migrating.vm.to.host.failed': 'Failed to migrate VM to host'
   }
 }
 const state = {}
@@ -324,7 +328,7 @@ describe('Views > compute > MigrateWizard.vue', () => {
 
         setTimeout(() => {
           expect(mocks.$message.error).toHaveBeenCalled()
-          expect(mocks.$message.error).toHaveBeenCalledWith(`Failed to load hosts: ${mockError}`)
+          expect(mocks.$message.error).toHaveBeenCalledWith(`${i18n.t('message.load.host.failed')}: ${mockError}`)
 
           done()
         })
@@ -574,7 +578,7 @@ describe('Views > compute > MigrateWizard.vue', () => {
 
         setTimeout(() => {
           expect(mocks.$message.error).toHaveBeenCalled()
-          expect(mocks.$message.error).toHaveBeenCalledWith(`Failed to migrate VM to host test-host-name`)
+          expect(mocks.$message.error).toHaveBeenCalledWith(`${i18n.t('message.migrating.vm.to.host.failed')} test-host-name`)
 
           done()
         })

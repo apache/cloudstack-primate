@@ -36,6 +36,12 @@ export default {
     show: (record, route, user) => { return ['Running'].includes(record.state) && ['Admin'].includes(user.roletype) },
     component: () => import('@views/infra/routers/RouterHealthCheck.vue')
   }],
+  related: [{
+    name: 'vm',
+    title: 'label.instances',
+    param: 'networkid',
+    value: 'guestnetworkid'
+  }],
   actions: [
     {
       api: 'startRouter',
@@ -69,7 +75,19 @@ export default {
       message: 'message.confirm.scale.up.router.vm',
       dataView: true,
       args: ['serviceofferingid'],
-      show: (record) => { return record.hypervisor !== 'KVM' }
+      show: (record) => { return record.hypervisor !== 'KVM' },
+      mapping: {
+        serviceofferingid: {
+          api: 'listServiceOfferings',
+          params: (record) => {
+            return {
+              virtualmachineid: record.id,
+              issystem: true,
+              systemvmtype: 'domainrouter'
+            }
+          }
+        }
+      }
     },
     {
       api: 'upgradeRouterTemplate',
@@ -91,6 +109,10 @@ export default {
       mapping: {
         virtualmachineid: {
           value: (record) => { return record.id }
+        },
+        hostid: {
+          api: 'findHostsForMigration',
+          params: (record) => { return { virtualmachineid: record.id } }
         }
       }
     },

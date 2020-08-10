@@ -14,6 +14,7 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
+import store from '@/store'
 
 export default {
   name: 'project',
@@ -28,7 +29,20 @@ export default {
   tabs: [
     {
       name: 'details',
-      component: () => import('@/components/view/DetailsTab.vue')
+      component: () => import('@/views/project/ProjectDetailsTab.vue')
+    },
+    {
+      name: 'accounts',
+      component: () => import('@/views/project/AccountsTab.vue'),
+      show: (record, route, user) => { return ['Admin', 'DomainAdmin'].includes(user.roletype) || record.isCurrentUserProjectAdmin }
+    },
+    {
+      name: 'project.roles',
+      component: () => import('@/views/project/iam/ProjectRoleTab.vue'),
+      show: (record, route, user) => {
+        return (['Admin', 'DomainAdmin'].includes(user.roletype) || record.isCurrentUserProjectAdmin) &&
+        'listProjectRoles' in store.getters.apis
+      }
     },
     {
       name: 'resources',
@@ -38,11 +52,6 @@ export default {
       name: 'limits',
       show: (record, route, user) => { return ['Admin'].includes(user.roletype) },
       component: () => import('@/components/view/ResourceLimitTab.vue')
-    },
-    {
-      name: 'accounts',
-      show: (record, route, user) => { return record.account === user.account || ['Admin', 'DomainAdmin'].includes(user.roletype) },
-      component: () => import('@/views/project/AccountsTab.vue')
     }
   ],
   actions: [
@@ -58,7 +67,7 @@ export default {
       api: 'updateProjectInvitation',
       icon: 'key',
       label: 'label.enter.token',
-      docHelp: 'adminguide/projects.html#setting-up-invitations',
+      docHelp: 'adminguide/projects.html#accepting-a-membership-invitation',
       listView: true,
       popup: true,
       component: () => import('@/views/project/InvitationTokenTemplate.vue')
@@ -67,7 +76,7 @@ export default {
       api: 'listProjectInvitations',
       icon: 'team',
       label: 'label.project.invitation',
-      docHelp: 'adminguide/projects.html#setting-up-invitations',
+      docHelp: 'adminguide/projects.html#accepting-a-membership-invitation',
       listView: true,
       popup: true,
       showBadge: true,
@@ -82,7 +91,10 @@ export default {
       icon: 'edit',
       label: 'label.edit.project.details',
       dataView: true,
-      args: ['displaytext']
+      args: ['displaytext'],
+      show: (record, store) => {
+        return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) || record.isCurrentUserProjectAdmin
+      }
     },
     {
       api: 'activateProject',
@@ -90,16 +102,21 @@ export default {
       label: 'label.activate.project',
       message: 'message.activate.project',
       dataView: true,
-      show: (record) => { return record.state === 'Suspended' }
+      show: (record, store) => {
+        return ((['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) || record.isCurrentUserProjectAdmin) && record.state === 'Suspended'
+      }
     },
     {
       api: 'suspendProject',
       icon: 'pause-circle',
       label: 'label.suspend.project',
       message: 'message.suspend.project',
-      docHelp: 'adminguide/projects.html#suspending-or-deleting-a-project',
+      docHelp: 'adminguide/projects.html#sending-project-membership-invitations',
       dataView: true,
-      show: (record) => { return record.state !== 'Suspended' }
+      show: (record, store) => {
+        return ((['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) ||
+        record.isCurrentUserProjectAdmin) && record.state !== 'Suspended'
+      }
     },
     {
       api: 'addAccountToProject',
@@ -107,13 +124,11 @@ export default {
       label: 'label.action.project.add.account',
       docHelp: 'adminguide/projects.html#adding-project-members-from-the-ui',
       dataView: true,
-      args: ['projectid', 'account', 'email'],
-      show: (record, store) => { return record.account === store.userInfo.account || ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) },
-      mapping: {
-        projectid: {
-          value: (record) => { return record.id }
-        }
-      }
+      popup: true,
+      show: (record, store) => {
+        return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) || record.isCurrentUserProjectAdmin
+      },
+      component: () => import('@/views/project/AddAccountOrUserToProject.vue')
     },
     {
       api: 'deleteProject',
@@ -121,7 +136,10 @@ export default {
       label: 'label.delete.project',
       message: 'message.delete.project',
       docHelp: 'adminguide/projects.html#suspending-or-deleting-a-project',
-      dataView: true
+      dataView: true,
+      show: (record, store) => {
+        return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) || record.isCurrentUserProjectAdmin
+      }
     }
   ]
 }

@@ -69,11 +69,15 @@
           :current="page"
           :pageSize="pageSize"
           :total="itemCount"
-          :showTotal="total => `Total ${total} items`"
+          :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
           :pageSizeOptions="['10', '20', '40', '80', '100']"
           @change="changePage"
           @showSizeChange="changePageSize"
-          showSizeChanger/>
+          showSizeChanger>
+          <template slot="buildOptionText" slot-scope="props">
+            <span>{{ props.value }} / {{ $t('label.page') }}</span>
+          </template>
+        </a-pagination>
       </a-col>
     </a-row>
   </div>
@@ -112,6 +116,11 @@ export default {
         scopedSlots: { customRender: 'project' }
       },
       {
+        title: this.$t('label.account'),
+        dataIndex: 'account',
+        scopedSlots: { customRender: 'account' }
+      },
+      {
         title: this.$t('label.domain'),
         dataIndex: 'domain',
         scopedSlots: { customRender: 'domain' }
@@ -148,6 +157,18 @@ export default {
     this.page = 1
     this.pageSize = 10
     this.itemCount = 0
+    this.apiConfig = this.$store.getters.apis.listProjectInvitations || {}
+    this.apiParams = {}
+    this.apiConfig.params.forEach(param => {
+      this.apiParams[param.name] = param
+    })
+    if (this.apiParams.userid) {
+      this.columns.splice(2, 0, {
+        title: this.$t('label.user'),
+        dataIndex: 'userid',
+        scopedSlots: { customRender: 'user' }
+      })
+    }
   },
   mounted () {
     this.fetchData()
@@ -200,9 +221,9 @@ export default {
 
       this.$confirm({
         title: title,
-        okText: 'OK',
+        okText: this.$t('label.ok'),
         okType: 'danger',
-        cancelText: 'Cancel',
+        cancelText: this.$t('label.cancel'),
         onOk () {
           self.updateProjectInvitation(record, true)
         }
@@ -217,11 +238,15 @@ export default {
         title = this.$t('label.decline.invitation')
       }
 
-      const loading = this.$message.loading(title + 'in progress for ' + record.project, 0)
+      const loading = this.$message.loading(title + `${this.$t('label.in.progress.for')} ` + record.project, 0)
       const params = {}
 
       params.projectid = record.projectid
-      params.account = record.account
+      if (record.userid && record.userid !== null) {
+        params.userid = record.userid
+      } else {
+        params.account = record.account
+      }
       params.domainid = record.domainid
       params.accept = state
 
@@ -245,9 +270,9 @@ export default {
 
       this.$confirm({
         title: title,
-        okText: 'OK',
+        okText: this.$t('label.ok'),
         okType: 'danger',
-        cancelText: 'Cancel',
+        cancelText: this.$t('label.cancel'),
         onOk () {
           self.updateProjectInvitation(record, false)
         }

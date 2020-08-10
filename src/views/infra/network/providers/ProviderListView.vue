@@ -101,12 +101,16 @@
       :current="page"
       :pageSize="pageSize"
       :total="itemCount"
-      :showTotal="total => `Total ${total} items`"
+      :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="changePage"
       @showSizeChange="changePageSize"
       showSizeChanger
-      showQuickJumper />
+      showQuickJumper>
+      <template slot="buildOptionText" slot-scope="props">
+        <span>{{ props.value }} / {{ $t('label.page') }}</span>
+      </template>
+    </a-pagination>
   </div>
 </template>
 
@@ -297,7 +301,7 @@ export default {
             } catch (error) {
               this.actionLoading = false
               this.$notification.error({
-                message: 'Request Failed',
+                message: this.$t('message.request.failed'),
                 description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
               })
             }
@@ -333,7 +337,7 @@ export default {
           } catch (error) {
             this.actionLoading = false
             this.$notification.error({
-              message: 'Request Failed',
+              message: this.$t('message.request.failed'),
               description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message
             })
           }
