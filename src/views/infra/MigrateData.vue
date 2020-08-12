@@ -133,61 +133,68 @@ export default {
         const title = 'Data Migration'
         this.loading = true
 
-        api('migrateSecondaryStorageData', params).then(response => {
-          const jobId = this.checkForAddAsyncJob(response, title)
-          if (jobId) {
-            api('queryAsyncJobResult', {
-              jobid: response.migratesecondarystoragedataresponse.jobid
-            }).then(json => {
-              const result = json.queryasyncjobresultresponse.jobresult
-              const success = result.imagestore.success || false
-              const message = result.imagestore.message || ''
-              if (success) {
-                this.$notification.success({
-                  message: title,
-                  description: message
-                })
-              } else {
-                this.$notification.error({
-                  message: title,
-                  description: message,
-                  duration: 0
-                })
-              }
+        const result = this.migrateData(params, title)
+        result.then(json => {
+          const result = json.jobresult
+          const success = result.imagestore.success || false
+          const message = result.imagestore.message || ''
+          if (success) {
+            this.$notification.success({
+              message: title,
+              description: message
+            })
+          } else {
+            this.$notification.error({
+              message: title,
+              description: message,
+              duration: 0
             })
           }
         }).catch(error => {
-          this.$notification.error({
-            message: 'Request Failed',
-            description: error.response.headers['x-description']
-          })
-        }).finally(() => {
-          this.parentFetchData()
-          this.loading = false
-          this.closeAction()
+          console.log(error)
+        })
+        this.loading = false
+        this.parentFetchData()
+        this.closeAction()
+      })
+    },
+    migrateData (args, title) {
+      return new Promise((resolve, reject) => {
+        api('migrateSecondaryStorageData', args).then(async json => {
+          const jobId = json.migratesecondarystoragedataresponse.jobid
+          if (jobId) {
+            const result = await this.pollJob(jobId, title)
+            if (result.jobstatus === 2) {
+              reject(result.jobresult.errortext)
+              return
+            }
+            resolve(result)
+          }
+        }).catch(error => {
+          reject(error)
         })
       })
     },
-    checkForAddAsyncJob (json, title) {
-      let hasJobId = false
-      for (const obj in json) {
-        if (obj.includes('response')) {
-          for (const res in json[obj]) {
-            if (res === 'jobid') {
-              hasJobId = true
-              const jobId = json[obj][res]
-              this.$store.dispatch('AddAsyncJob', {
-                title: title,
-                jobid: jobId,
-                description: 'imagestore',
-                status: 'progress',
-                silent: true
-              })
+    async pollJob (jobId, title) {
+      return new Promise(resolve => {
+        const asyncJobInterval = setInterval(() => {
+          api('queryAsyncJobResult', { jobId }).then(async json => {
+            const result = json.queryasyncjobresultresponse
+            if (result.jobstatus === 0) {
+              return
             }
-          }
-        }
-      }
-      return hasJobId
+            this.$store.dispatch('AddAsyncJob', {
+              title: title,
+              jobid: jobId,
+              description: 'imagestore',
+              status: 'progress',
+              silent: true
+            })
+            clearInterval(asyncJobInterval)
+            resolve(result)
+          })
+        }, 1000)
+      })
     },
     closeAction () {
       this.$emit('close-action')
