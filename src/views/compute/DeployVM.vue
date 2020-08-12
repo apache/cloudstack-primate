@@ -483,10 +483,10 @@
                         :key="licenseIndex"
                         :v-bind="license.id">
                         <span slot="label">
-                          {{ 'Agreement ' + (licenseIndex+1) }}
+                          {{ 'Agreement ' + (licenseIndex+1) + ': ' + license.name }}
                         </span>
                         <a-textarea
-                          :defaultValue="license.text"
+                          :value="license.text"
                           :auto-size="{ minRows: 3, maxRows: 8 }"
                           readOnly />
                       </div>
@@ -1640,7 +1640,7 @@ export default {
         for (var key of keys) {
           var license = {
             id: this.escapePropertyKey(key.replace(' ', '-')),
-            name: key,
+            name: key.replace('ACS-eula-', ''),
             text: template.details[key]
           }
           licenses.push(license)
