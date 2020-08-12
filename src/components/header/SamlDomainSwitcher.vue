@@ -82,12 +82,6 @@ export default {
             return
           }
           this.samlAccounts = _.orderBy(samlAccounts, ['domainPath'], ['asc'])
-          this.samlAccounts.forEach(x => {
-            x.domainPath = x.domainPath.replace(/[/]+$/, '')
-            if (x.domainName === 'ROOT') {
-              x.domainPath = '/ROOT'
-            }
-          })
           const currentAccount = this.samlAccounts.filter(x => {
             return x.userId === store.getters.userInfo.id
           })[0]
