@@ -90,7 +90,7 @@ export default {
   inject: ['parentFetchData'],
   data () {
     return {
-      imageStores: {},
+      imageStores: [],
       loading: false,
       selectedStore: ''
     }
@@ -105,7 +105,7 @@ export default {
     fetchImageStores () {
       this.loading = true
       api('listImageStores').then(json => {
-        this.imageStores = json.listimagestoresresponse.imagestore || null
+        this.imageStores = json.listimagestoresresponse.imagestore || []
         this.selectedStore = this.imageStores[0].id || ''
       }).finally(() => {
         this.loading = false

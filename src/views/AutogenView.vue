@@ -507,49 +507,6 @@ export default {
         return
       }
 
-      if (['listTemplates', 'listIsos', 'listVirtualMachinesMetrics'].includes(this.apiName) && !this.dataView) {
-        if (['Admin'].includes(this.$store.getters.userInfo.roletype) || this.apiName === 'listVirtualMachinesMetrics') {
-          this.filters = ['all', ...this.filters]
-          if (this.selectedFilter === '') {
-            this.selectedFilter = 'all'
-          }
-        }
-        if (this.selectedFilter === '') {
-          this.selectedFilter = 'self'
-        }
-      }
-
-      if (!['Admin'].includes(this.$store.getters.userInfo.roletype) && this.apiName === 'listTemplates' && this.selectedFilter !== 'self') {
-        this.columnKeys = this.columnKeys.filter(key => { return key !== 'order' })
-      }
-
-      if (this.selectedFilter && this.filters.length > 0) {
-        if (this.$route.path.startsWith('/template')) {
-          params.templatefilter = this.selectedFilter
-        } else if (this.$route.path.startsWith('/iso')) {
-          params.isofilter = this.selectedFilter
-        } else if (this.$route.path.startsWith('/vm')) {
-          if (this.selectedFilter === 'self') {
-            params.account = this.$store.getters.userInfo.account
-            params.domainid = this.$store.getters.userInfo.domainid
-          } else if (['running', 'stopped'].includes(this.selectedFilter)) {
-            params.state = this.selectedFilter
-          }
-        }
-      }
-
-      if (this.searchQuery !== '') {
-        if (this.apiName === 'listRoles') {
-          params.name = this.searchQuery
-        } else if (this.apiName === 'quotaEmailTemplateList') {
-          params.templatetype = this.searchQuery
-        } else if (this.apiName === 'listConfigurations') {
-          params.name = this.searchQuery
-        } else {
-          params.keyword = this.searchQuery
-        }
-      }
-
       if (!this.columnKeys || this.columnKeys.length === 0) {
         for (const field of store.getters.apis[this.apiName].response) {
           this.columnKeys.push(field.name)
