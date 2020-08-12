@@ -469,6 +469,36 @@
                   </div>
                 </template>
               </a-step>
+              <a-step
+                :title="$t('label.license.agreements')"
+                :status="zoneSelected ? 'process' : 'wait'"
+                v-if="vm.templateid && template.licenses && template.licenses.length > 0">
+                <template slot="description">
+                  <div style="margin-top: 10px">
+                    {{ $t('message.read.accept.license.agreements') }}
+                    <a-form-item>
+                      <div
+                        style="margin-top: 10px"
+                        v-for="(license, licenseIndex) in template.licenses"
+                        :key="licenseIndex"
+                        :v-bind="license.id">
+                        <span slot="label">
+                          {{ 'Agreement ' + (licenseIndex+1) }}
+                        </span>
+                        <a-textarea
+                          :defaultValue="license.text"
+                          :auto-size="{ minRows: 3, maxRows: 8 }"
+                          readOnly />
+                      </div>
+                      <a-checkbox
+                        style="margin-top: 10px"
+                        v-decorator="['licensesaccepted']">
+                        {{ $t('label.i.accept.all.license.agreements') }}
+                      </a-checkbox>
+                    </a-form-item>
+                  </div>
+                </template>
+              </a-step>
             </a-steps>
             <div class="card-footer">
               <!-- ToDo extract as component -->
@@ -1202,6 +1232,20 @@ export default {
           })
           return
         }
+        if (!values.computeofferingid) {
+          this.$notification.error({
+            message: this.$t('message.request.failed'),
+            description: this.$t('message.step.2.continue')
+          })
+          return
+        }
+        if ('licensesaccepted' in values && values.licensesaccepted !== true) {
+          this.$notification.error({
+            message: this.$t('message.license.agreements.not.accepted'),
+            description: this.$t('message.step.license.agreements.continue')
+          })
+          return
+        }
 
         this.loading.deploy = true
 
@@ -1588,10 +1632,27 @@ export default {
       }
       return configurations
     },
+    fetchTemplateLicenses (template) {
+      var licenses = []
+      if (template && template.details && Object.keys(template.details).length > 0) {
+        var keys = Object.keys(template.details)
+        keys = keys.filter(key => key.startsWith('ACS-eula-'))
+        for (var key of keys) {
+          var license = {
+            id: this.escapePropertyKey(key.replace(' ', '-')),
+            name: key,
+            text: template.details[key]
+          }
+          licenses.push(license)
+        }
+      }
+      return licenses
+    },
     updateTemplateParameters () {
       if (this.template) {
         this.template.nics = this.fetchTemplateNics(this.template)
         this.template.configurations = this.fetchTemplateConfigurations(this.template)
+        this.template.licenses = this.fetchTemplateLicenses(this.template)
         this.selectedTemplateConfiguration = {}
         if (this.templateConfigurationExists) {
           setTimeout(() => {
