@@ -1473,7 +1473,6 @@ export default {
           const items = response.listtemplatesresponse.template
           if (items && items.length > 0) {
             this.template.details = items[0].details
-            this.template.properties = items[0].properties
             this.updateTemplateParameters()
           }
         }
@@ -1632,8 +1631,14 @@ export default {
     },
     fetchTemplateProperties (template) {
       var properties = []
-      if (template && template.properties && template.properties.length > 0) {
-        properties = template.properties.sort(function (a, b) {
+      if (template && template.details && Object.keys(template.details).length > 0) {
+        var keys = Object.keys(template.details)
+        keys = keys.filter(key => key.startsWith('ACS-property-'))
+        for (var key of keys) {
+          var propertyMap = JSON.parse(template.details[key])
+          properties.push(propertyMap)
+        }
+        properties.sort(function (a, b) {
           return a.label.localeCompare(b.label)
         })
       }
