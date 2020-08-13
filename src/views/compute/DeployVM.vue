@@ -163,7 +163,7 @@
                         }"
                         @change="onSelectTemplateConfigurationId"
                       >
-                        <a-select-option v-for="opt in template.configurations" :key="opt.id">
+                        <a-select-option v-for="opt in templateConfigurations" :key="opt.id">
                           {{ opt.name || opt.description }}
                         </a-select-option>
                       </a-select>
@@ -246,9 +246,9 @@
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
                   <div v-if="zoneSelected">
-                    <div v-if="vm.templateid && template.nics && template.nics.length > 0">
+                    <div v-if="vm.templateid && templateNics && templateNics.length > 0">
                       <a-form-item
-                        v-for="(nic, nicIndex) in template.nics"
+                        v-for="(nic, nicIndex) in templateNics"
                         :key="nicIndex"
                         :v-bind="nic.name" >
                         <span slot="label">
@@ -332,11 +332,11 @@
               <a-step
                 :title="$t('label.ovf.properties')"
                 :status="zoneSelected ? 'process' : 'wait'"
-                v-if="vm.templateid && template.properties && template.properties.length > 0">
+                v-if="vm.templateid && templateProperties && templateProperties.length > 0">
                 <template slot="description">
                   <div>
                     <a-form-item
-                      v-for="(property, propertyIndex) in sortedTemplateProperties"
+                      v-for="(property, propertyIndex) in templateProperties"
                       :key="propertyIndex"
                       :v-bind="property.key" >
                       <span slot="label">
@@ -472,14 +472,14 @@
               <a-step
                 :title="$t('label.license.agreements')"
                 :status="zoneSelected ? 'process' : 'wait'"
-                v-if="vm.templateid && template.licenses && template.licenses.length > 0">
+                v-if="vm.templateid && templateLicenses && templateLicenses.length > 0">
                 <template slot="description">
                   <div style="margin-top: 10px">
                     {{ $t('message.read.accept.license.agreements') }}
                     <a-form-item>
                       <div
                         style="margin-top: 10px"
-                        v-for="(license, licenseIndex) in template.licenses"
+                        v-for="(license, licenseIndex) in templateLicenses"
                         :key="licenseIndex"
                         :v-bind="license.id">
                         <span slot="label">
@@ -640,6 +640,10 @@ export default {
       },
       instanceConfig: {},
       template: {},
+      templateConfigurations: [],
+      templateNics: [],
+      templateLicenses: [],
+      templateProperties: [],
       selectedTemplateConfiguration: {},
       iso: {},
       hypervisor: '',
@@ -867,13 +871,7 @@ export default {
       })
     },
     templateConfigurationExists () {
-      return this.vm.templateid && this.template.configurations && this.template.configurations.length > 0
-    },
-    sortedTemplateProperties () {
-      var properties = this.template.properties
-      return properties.sort(function (a, b) {
-        return a.label.localeCompare(b.label)
-      })
+      return this.vm.templateid && this.templateConfigurations && this.templateConfigurations.length > 0
     },
     networkId () {
       return this.$route.query.networkid || null
@@ -889,11 +887,6 @@ export default {
     '$route' (to, from) {
       if (to.name === 'deployVirtualMachine') {
         this.resetData()
-      }
-    },
-    template (newValue, oldValue) {
-      if (newValue && (oldValue == null || oldValue === undefined || oldValue.id !== newValue.id)) {
-        this.updateTemplateParameters()
       }
     },
     instanceConfig (instanceConfig) {
@@ -1136,6 +1129,16 @@ export default {
         for (const key in this.options.templates) {
           var t = _.find(_.get(this.options.templates[key], 'template', []), (option) => option.id === value)
           if (t) {
+            this.templateConfigurations = []
+            this.selectedTemplateConfiguration = {}
+            this.templateNics = []
+            this.templateLicenses = []
+            this.templateProperties = []
+            this.updateTemplateParameters()
+            if (t.deployasis === true && !t.details && (!this.template || t.id !== this.template.id)) {
+              // Deploy as-is template without details detected, need to retrieve the template details
+              this.fetchTemplateDetails(t)
+            }
             template = t
             break
           }
@@ -1145,6 +1148,11 @@ export default {
           this.dataPreFill.minrootdisksize = Math.ceil(size)
         }
       } else if (name === 'isoid') {
+        this.templateConfigurations = []
+        this.selectedTemplateConfiguration = {}
+        this.templateNics = []
+        this.templateLicenses = []
+        this.templateProperties = []
         this.tabKey = 'isoid'
         this.form.setFieldsValue({
           isoid: value,
@@ -1455,6 +1463,24 @@ export default {
         this.loading[name] = false
       })
     },
+    fetchTemplateDetails (template) {
+      api('listTemplates', {
+        templateFilter: 'all',
+        id: template.id,
+        details: 'all'
+      }).then(response => {
+        if (response && response.listtemplatesresponse) {
+          const items = response.listtemplatesresponse.template
+          if (items && items.length > 0) {
+            this.template.details = items[0].details
+            this.template.properties = items[0].properties
+            this.updateTemplateParameters()
+          }
+        }
+      }).catch(error => {
+        this.$notifyError(error)
+      })
+    },
     fetchTemplates (templateFilter, params) {
       params = params || {}
       if (params.keyword || params.category !== templateFilter) {
@@ -1463,6 +1489,7 @@ export default {
       }
       params.zoneid = _.get(this.zone, 'id')
       params.templatefilter = templateFilter
+      params.details = 'min'
 
       return new Promise((resolve, reject) => {
         api('listTemplates', params).then((response) => {
@@ -1603,6 +1630,15 @@ export default {
       }
       return nics
     },
+    fetchTemplateProperties (template) {
+      var properties = []
+      if (template && template.properties && template.properties.length > 0) {
+        properties = template.properties.sort(function (a, b) {
+          return a.label.localeCompare(b.label)
+        })
+      }
+      return properties
+    },
     fetchTemplateConfigurations (template) {
       var configurations = []
       if (template && template.details && Object.keys(template.details).length > 0) {
@@ -1650,13 +1686,14 @@ export default {
     },
     updateTemplateParameters () {
       if (this.template) {
-        this.template.nics = this.fetchTemplateNics(this.template)
-        this.template.configurations = this.fetchTemplateConfigurations(this.template)
-        this.template.licenses = this.fetchTemplateLicenses(this.template)
+        this.templateNics = this.fetchTemplateNics(this.template)
+        this.templateConfigurations = this.fetchTemplateConfigurations(this.template)
+        this.templateLicenses = this.fetchTemplateLicenses(this.template)
+        this.templateProperties = this.fetchTemplateProperties(this.template)
         this.selectedTemplateConfiguration = {}
         if (this.templateConfigurationExists) {
           setTimeout(() => {
-            this.selectedTemplateConfiguration = this.template.configurations[0]
+            this.selectedTemplateConfiguration = this.templateConfigurations[0]
             if ('templateConfiguration' in this.form.fieldsStore.fieldsMeta) {
               this.updateFieldValue('templateConfiguration', this.selectedTemplateConfiguration.id)
             }
@@ -1666,7 +1703,7 @@ export default {
       }
     },
     onSelectTemplateConfigurationId (value) {
-      this.selectedTemplateConfiguration = _.find(this.template.configurations, (option) => option.id === value)
+      this.selectedTemplateConfiguration = _.find(this.templateConfigurations, (option) => option.id === value)
       this.updateComputeOffering(null)
     },
     updateTemplateConfigurationOfferingDetails (offeringId) {
