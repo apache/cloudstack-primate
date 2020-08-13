@@ -1,6 +1,6 @@
 # Primate Development
 
-The Primate is a modern role-based progressive CloudStack UI based on VueJS and Ant Design..
+Primate is a modern role-based progressive CloudStack UI based on VueJS and Ant Design..
 
 Javascript, VueJS references:
 - https://www.w3schools.com/js/
@@ -8,8 +8,8 @@ Javascript, VueJS references:
 - https://vuejs.org/v2/guide/
 - https://www.youtube.com/watch?v=Wy9q22isx3U
 
-All the source is in the `src` directory with its entry point at `main.js`,
-the following tree shows the basic UI codebase filesystem:
+All the source is in the `src` directory with its entry point at `main.js`.
+The following tree shows the basic UI codebase filesystem:
 
 ```bash
     src
@@ -50,8 +50,8 @@ npm run serve
 
 ### Section Config Definition
 
-A new section may be added in `src/config/section` and in `src/config/router.js`
-import the new section (newconfig.js as example) configuration file and rules to
+A new section may be added in `src/config/section` and in `src/config/router.js`,
+import the new section's (newconfig.js as example) configuration file and rules to
 `asyncRouterMap` as:
 
     import newconfig from '@/config/section/newconfig'
@@ -63,7 +63,7 @@ import the new section (newconfig.js as example) configuration file and rules to
 
 ### Section
 
-An existing or new section config/js file must export the following parameters:
+An existing or new section's config/js file must export the following parameters:
 
 - `name`: Unique path in URL
 - `title`: The name to be displayed in navigation and breadcrumb
@@ -75,7 +75,7 @@ An existing or new section config/js file must export the following parameters:
   via the list API
 - `children`: (optional) Array of resources sub-navigation under the parent
   group
-- `permission`: When children are not defined, the array of API to check against
+- `permission`: When children are not defined, the array of APIs to check against
   allowed auto-discovered APIs
 - `columns`: When children is not defined, list of column keys
 - `component`: When children is not defined, the custom component for rendering
@@ -90,22 +90,19 @@ The children should have:
 - `title`: The name to be displayed in navigation and breadcrumb
 - `icon`: The icon to be displayed, from AntD's icon set
   https://vue.ant.design/components/icon/
-- `permission`: The array of API to check against auto-discovered APIs
+- `permission`: The array of APIs to check against auto-discovered APIs
 - `columns`: List of column keys for list view rendering
 - `details`: List of keys for detail list rendering for a resource
 - `tabs`: Array of custom components that will get rendered as tabs in the
   resource view
 - `component`: The custom component for rendering the route view
-  default list view (table)
 - `related`: A list of associated entitiy types that can be listed via passing
-  the current resource's id as a parameter in their respective list api
-- `actions`: Arrays of actions that can be performed on the resource
-
-Refer : [config.md](https://github.com/apache/cloudstack-primate/blob/master/docs/config.md)
+  the current resource's id as a parameter in their respective list APIs
+- `actions`: Array of actions that can be performed on the resource
 
 ## Custom Actions
 
-The actions defined for a children show up as group of buttons on the default
+The actions defined for children show up as group of buttons on the default
 autogen view (that shows tables, actions etc.). Each action item should define:
 
 - `api`: The CloudStack API for the action. The action button will be hidden if
@@ -130,7 +127,7 @@ autogen view (that shows tables, actions etc.). Each action item should define:
 - `groupAction`: Whether the button supports groupable actions when multiple
   items are selected in the table. Defaults to false
 - `mapping`: The relation of an arg to an api and the associated parameters to
-  be passed and filter on the result (from which it's id is used as a
+  be passed and filtered on the result (from which its id is used as a
   select-option) or a given hardcoded list of select-options
 - `groupMap`: Function that maps the args and returns the list of parameters to
   be passed to the api
@@ -166,19 +163,17 @@ For Example:
 }
 ```
 
-Refer : [action.md](https://github.com/apache/cloudstack-primate/blob/master/docs/action.md)
-
 ## Resource List View
 
 After having, defined a section and the actions that can be performed in the
  particular section; on navigating to the section, we can have a list of
- resources available, for example, On navigating to **Compute > Instances**
+ resources available, for example, on navigating to **Compute > Instances**
  section, we see a list of all the VM instances (each instance referred to as a
  resource).
 
 The columns that should be made available while displaying the list of
   resources can be defined in the section's configuration file under the
-  columns attribute (as mentioned above). **Columns** maybe defined as an array
+  columns attribute (as mentioned above). **columns** maybe defined as an array
   or a function in case we need to selectively (i.e., based on certain
   conditions) restrict the view of certain columns.
 
@@ -201,8 +196,6 @@ For example:
         ...
     }
 ```
-
-Refer : [listview.md](https://github.com/apache/cloudstack-primate/blob/master/docs/listview.md)
 
 ## Resource Detail View Customization
 
@@ -237,5 +230,3 @@ For example,
 ```
 
 Additional tabs can be defined by adding on to the tabs section.
-
-Refer : [detailview.md](https://github.com/apache/cloudstack-primate/blob/master/docs/detailview.md)
