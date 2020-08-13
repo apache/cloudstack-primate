@@ -238,6 +238,7 @@
               </span>
               <span v-else-if="field.type==='long'">
                 <a-input-number
+                  style="width: 100%;"
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: `${$t('message.validate.number')}` }]
                   }]"
@@ -748,17 +749,21 @@ export default {
                 continue
               }
               param.opts = json[obj][res]
+              if (this.currentAction.mapping && this.currentAction.mapping[param.name] && this.currentAction.mapping[param.name].filter) {
+                const filter = this.currentAction.mapping[param.name].filter
+                param.opts = json[obj][res].filter(filter)
+              }
               if (['listTemplates', 'listIsos'].includes(possibleApi)) {
                 param.opts = [...new Map(param.opts.map(x => [x.id, x])).values()]
               }
-              this.$forceUpdate()
               break
             }
             break
           }
         }
+        this.$forceUpdate()
       }).catch(function (error) {
-        console.log(error.stack)
+        console.log(error)
         param.loading = false
       }).then(function () {
       })

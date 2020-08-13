@@ -21,7 +21,7 @@
     :loading="loading"
     :columns="isOrderUpdatable() ? columns : columns.filter(x => x.dataIndex !== 'order')"
     :dataSource="items"
-    :rowKey="record => record.id || record.name || record.usageType"
+    :rowKey="(record, idx) => record.id || record.name || record.usageType || idx + '-' + Math.random()"
     :pagination="false"
     :rowSelection="['vm', 'event', 'alert'].includes($route.name) ? {selectedRowKeys: selectedRowKeys, onChange: onSelectChange} : null"
     :rowClassName="getRowClassName"
@@ -99,13 +99,14 @@
       <router-link :to="{ path: '/accountuser', query: { username: record.username, domainid: record.domainid } }" v-else-if="$store.getters.userInfo.roletype !== 'User'">{{ text }}</router-link>
       <span v-else>{{ text }}</span>
     </span>
-    <a slot="ipaddress" slot-scope="text, record" href="javascript:;">
-      <router-link :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
+    <span slot="ipaddress" slot-scope="text, record" href="javascript:;">
+      <router-link v-if="$route.path === '/publicip'" :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
+      <span v-else>{{ text }}</span>
       <span v-if="record.issourcenat">
         &nbsp;
         <a-tag>source-nat</a-tag>
       </span>
-    </a>
+    </span>
     <a slot="publicip" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
     </a>
@@ -158,6 +159,20 @@
       <span v-else>{{ text }}</span>
     </a>
 
+    <template v-for="(value, name) in thresholdMapping" :slot="name" slot-scope="text, record" href="javascript:;">
+      <span :key="name">
+        <span v-if="record[value.disable]" class="alert-disable-threshold">
+          {{ text }}
+        </span>
+        <span v-else-if="record[value.notification]" class="alert-notification-threshold">
+          {{ text }}
+        </span>
+        <span style="padding: 10%;" v-else>
+          {{ text }}
+        </span>
+      </span>
+    </template>
+
     <a slot="level" slot-scope="text, record" href="javascript:;">
       <router-link :to="{ path: '/event/' + record.id }">{{ text }}</router-link>
     </a>
@@ -205,7 +220,9 @@
       <router-link v-if="$router.resolve('/zone/' + record.zoneid).route.name !== '404'" :to="{ path: '/zone/' + record.zoneid }">{{ text }}</router-link>
       <span v-else>{{ text }}</span>
     </span>
-
+    <a slot="readonly" slot-scope="text, record">
+      <status :text="record.readonly ? 'ReadOnly' : 'ReadWrite'" />
+    </a>
     <div slot="order" slot-scope="text, record" class="shift-btns">
       <a-tooltip placement="top">
         <template slot="title">{{ $t('label.move.to.top') }}</template>
@@ -326,7 +343,49 @@ export default {
     return {
       selectedRowKeys: [],
       editableValueKey: null,
-      editableValue: ''
+      editableValue: '',
+      thresholdMapping: {
+        cpuused: {
+          notification: 'cputhreshold',
+          disable: 'cpudisablethreshold'
+        },
+        cpuallocated: {
+          notification: 'cpuallocatedthreshold',
+          disable: 'cpuallocateddisablethreshold'
+        },
+        memoryused: {
+          notification: 'memorythreshold',
+          disable: 'memorydisablethreshold'
+        },
+        memoryallocated: {
+          notification: 'memoryallocatedthreshold',
+          disable: 'memoryallocateddisablethreshold'
+        },
+        cpuusedghz: {
+          notification: 'cputhreshold',
+          disable: 'cpudisablethreshold'
+        },
+        cpuallocatedghz: {
+          notification: 'cpuallocatedthreshold',
+          disable: 'cpuallocateddisablethreshold'
+        },
+        memoryusedgb: {
+          notification: 'memorythreshold',
+          disable: 'memorydisablethreshold'
+        },
+        memoryallocatedgb: {
+          notification: 'memoryallocatedthreshold',
+          disable: 'memoryallocateddisablethreshold'
+        },
+        disksizeusedgb: {
+          notification: 'storageusagethreshold',
+          disable: 'storageusagedisablethreshold'
+        },
+        disksizeallocatedgb: {
+          notification: 'storageallocatedthreshold',
+          disable: 'storageallocateddisablethreshold'
+        }
+      }
     }
   },
   computed: {
@@ -438,59 +497,56 @@ export default {
       this.parentToggleLoading()
       const apiString = this.getUpdateApi()
 
-      api(apiString, {
-        id,
-        sortKey: index
-      }).catch(error => {
-        console.error(error)
+      return new Promise((resolve, reject) => {
+        api(apiString, {
+          id,
+          sortKey: index
+        }).then((response) => {
+          resolve(response)
+        }).catch((reason) => {
+          reject(reason)
+        })
+      })
+    },
+    updateOrder (data) {
+      const promises = []
+      data.forEach((item, index) => {
+        promises.push(this.handleUpdateOrder(item.id, index + 1))
+      })
+      Promise.all(promises).catch((reason) => {
+        console.log(reason)
       }).finally(() => {
-        this.parentFetchData()
         this.parentToggleLoading()
+        this.parentFetchData()
       })
     },
     moveItemUp (record) {
       const data = this.items
       const index = data.findIndex(item => item.id === record.id)
       if (index === 0) return
-
       data.splice(index - 1, 0, data.splice(index, 1)[0])
-
-      data.forEach((item, index) => {
-        this.handleUpdateOrder(item.id, index + 1)
-      })
+      this.updateOrder(data)
     },
     moveItemDown (record) {
       const data = this.items
       const index = data.findIndex(item => item.id === record.id)
       if (index === data.length - 1) return
-
       data.splice(index + 1, 0, data.splice(index, 1)[0])
-
-      data.forEach((item, index) => {
-        this.handleUpdateOrder(item.id, index + 1)
-      })
+      this.updateOrder(data)
     },
     moveItemTop (record) {
       const data = this.items
       const index = data.findIndex(item => item.id === record.id)
       if (index === 0) return
-
       data.unshift(data.splice(index, 1)[0])
-
-      data.forEach((item, index) => {
-        this.handleUpdateOrder(item.id, index + 1)
-      })
+      this.updateOrder(data)
     },
     moveItemBottom (record) {
       const data = this.items
       const index = data.findIndex(item => item.id === record.id)
       if (index === data.length - 1) return
-
       data.push(data.splice(index, 1)[0])
-
-      data.forEach((item, index) => {
-        this.handleUpdateOrder(item.id, index + 1)
-      })
+      this.updateOrder(data)
     },
     editTariffValue (record) {
       this.parentEditTariffAction(true, record)
@@ -538,5 +594,17 @@ export default {
       transform: rotate(90deg);
     }
 
+  }
+
+  .alert-notification-threshold {
+    background-color: rgba(255, 231, 175, 0.75);
+    color: #e87900;
+    padding: 10%;
+  }
+
+  .alert-disable-threshold {
+    background-color: rgba(255, 190, 190, 0.75);
+    color: #f50000;
+    padding: 10%;
   }
 </style>
