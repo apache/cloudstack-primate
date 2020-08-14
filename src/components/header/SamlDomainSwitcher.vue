@@ -36,7 +36,7 @@
       </a-tooltip>
 
       <a-select-option v-for="(account, index) in samlAccounts" :key="index">
-        {{ `${account.accountName} (${account.domainPath})` }}
+        {{ `${account.accountName} (${account.domainName})` }}
       </a-select-option>
     </a-select>
   </span>
@@ -85,7 +85,7 @@ export default {
           const currentAccount = this.samlAccounts.filter(x => {
             return x.userId === store.getters.userInfo.id
           })[0]
-          this.currentAccount = `${currentAccount.accountName} (${currentAccount.domainPath})`
+          this.currentAccount = `${currentAccount.accountName} (${currentAccount.domainName})`
           this.loading = false
           this.showSwitcher = true
         })
