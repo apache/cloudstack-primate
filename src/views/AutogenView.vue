@@ -748,14 +748,10 @@ export default {
               if (res === 'count') {
                 continue
               }
-              let filter = null
-              if (this.currentAction.mapping && param.name in this.currentAction.mapping && this.currentAction.mapping[param.name].filter) {
-                filter = this.currentAction.mapping[param.name].filter
-              }
-              if (filter) {
+              param.opts = json[obj][res]
+              if (this.currentAction.mapping && this.currentAction.mapping[param.name] && this.currentAction.mapping[param.name].filter) {
+                const filter = this.currentAction.mapping[param.name].filter
                 param.opts = json[obj][res].filter(filter)
-              } else {
-                param.opts = json[obj][res]
               }
               if (['listTemplates', 'listIsos'].includes(possibleApi)) {
                 param.opts = [...new Map(param.opts.map(x => [x.id, x])).values()]
@@ -767,7 +763,7 @@ export default {
         }
         this.$forceUpdate()
       }).catch(function (error) {
-        console.log(error.stack)
+        console.log(error)
         param.loading = false
       }).then(function () {
       })
@@ -902,10 +898,16 @@ export default {
                     hasJobId = true
                     break
                   } else {
+                    var message = this.$t(this.currentAction.label) + (resourceName ? ' - ' + resourceName : '')
+                    var duration = 2
+                    if (this.currentAction.successMessage) {
+                      message = message + ' - ' + this.$t(this.currentAction.successMessage)
+                      duration = 5
+                    }
                     this.$message.success({
-                      content: this.$t(this.currentAction.label) + (resourceName ? ' - ' + resourceName : ''),
+                      content: message,
                       key: this.currentAction.label + resourceName,
-                      duration: 2
+                      duration: duration
                     })
                   }
                 }
