@@ -193,7 +193,7 @@
                       :isConstrained="'serviceofferingdetails' in serviceOffering"
                       :minCpu="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.mincpunumber*1 : 1"
                       :maxCpu="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.maxcpunumber*1 : Number.MAX_SAFE_INTEGER"
-                      :minMemory="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.minmemory*1 : 1"
+                      :minMemory="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.minmemory*1 : 16"
                       :maxMemory="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.maxmemory*1 : Number.MAX_SAFE_INTEGER"
                       @update-compute-cpunumber="updateFieldValue"
                       @update-compute-cpuspeed="updateFieldValue"
@@ -1286,7 +1286,7 @@ export default {
         }
         // step 3: select service offering
         deployVmData.serviceofferingid = values.computeofferingid
-        if (values.cpunumber || values.cpuspeed || values.memory) {
+        if (this.serviceOffering && this.serviceOffering.iscustomized) {
           if (values.cpunumber) {
             deployVmData['details[0].cpuNumber'] = values.cpunumber
           }
