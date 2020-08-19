@@ -335,10 +335,8 @@
                 v-if="vm.templateid && templateProperties && Object.keys(templateProperties).length > 0">
                 <template slot="description">
                   <div v-for="(props, category) in templateProperties" :key="category">
-                    <a-form-item class="vapp-category">
-                      Category: {{ category }} ({{ props.length }} properties)
-                    </a-form-item>
-                    <div>
+                    <a-alert :message="'Category: ' + category + ' (' + props.length + ' properties)'" type="info" />
+                    <div style="margin-left: 15px; margin-top: 10px">
                       <a-form-item
                         v-for="(property, propertyIndex) in props"
                         :key="propertyIndex"
@@ -369,7 +367,7 @@
                           <a-select
                             showSearch
                             optionFilterProp="children"
-                            v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value.length>0 ? property.value: getPropertyQualifiers(property.qualifiers, 'select')[0] }]"
+                            v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value && property.value.length>0 ? property.value: getPropertyQualifiers(property.qualifiers, 'select')[0] }]"
                             :placeholder="property.description"
                             :filterOption="(input, option) => {
                               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -648,7 +646,7 @@ export default {
       templateConfigurations: [],
       templateNics: [],
       templateLicenses: [],
-      templateProperties: [],
+      templateProperties: {},
       selectedTemplateConfiguration: {},
       iso: {},
       hypervisor: '',
@@ -1138,7 +1136,7 @@ export default {
             this.selectedTemplateConfiguration = {}
             this.templateNics = []
             this.templateLicenses = []
-            this.templateProperties = []
+            this.templateProperties = {}
             this.updateTemplateParameters()
             if (t.deployasis === true && !t.details && (!this.template || t.id !== this.template.id)) {
               // Deploy as-is template without details detected, need to retrieve the template details
@@ -1157,7 +1155,7 @@ export default {
         this.selectedTemplateConfiguration = {}
         this.templateNics = []
         this.templateLicenses = []
-        this.templateProperties = []
+        this.templateProperties = {}
         this.tabKey = 'isoid'
         this.form.setFieldsValue({
           isoid: value,
@@ -1805,11 +1803,5 @@ export default {
 
   .form-item-hidden {
     display: none;
-  }
-
-  .vapp-category {
-    background-color: lightblue;
-    padding: 18px;
-    width: 100%;
   }
 </style>
