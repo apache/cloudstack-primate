@@ -56,7 +56,7 @@
         </a-col>
         <a-col :md="colContraned" :lg="colContraned">
           <a-form-item
-            :label="this.$t('label.mb.memory')"
+            :label="this.$t('label.memory.mb')"
             :validate-status="errors.memory.status"
             :help="errors.memory.message">
             <a-row :gutter="12">
