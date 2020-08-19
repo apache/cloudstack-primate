@@ -332,61 +332,66 @@
               <a-step
                 :title="$t('label.ovf.properties')"
                 :status="zoneSelected ? 'process' : 'wait'"
-                v-if="vm.templateid && templateProperties && templateProperties.length > 0">
+                v-if="vm.templateid && templateProperties && Object.keys(templateProperties).length > 0">
                 <template slot="description">
-                  <div>
-                    <a-form-item
-                      v-for="(property, propertyIndex) in templateProperties"
-                      :key="propertyIndex"
-                      :v-bind="property.key" >
-                      <span slot="label">
-                        {{ property.label }}
-                        <a-tooltip :title="property.description">
-                          <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
-                        </a-tooltip>
-                      </span>
-
-                      <span v-if="property.type && property.type==='boolean'">
-                        <a-switch
-                          v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value==='TRUE'?true:false}]"
-                          :defaultChecked="property.value==='TRUE'?true:false"
-                          :placeholder="property.description"
-                        />
-                      </span>
-                      <span v-else-if="property.type && (property.type==='int' || property.type==='real')">
-                        <a-input-number
-                          v-decorator="['properties.'+ escapePropertyKey(property.key) ]"
-                          :defaultValue="property.value"
-                          :placeholder="property.description"
-                          :min="getPropertyQualifiers(property.qualifiers, 'number-select').min"
-                          :max="getPropertyQualifiers(property.qualifiers, 'number-select').max" />
-                      </span>
-                      <span v-else-if="property.type && property.type==='string' && property.qualifiers && property.qualifiers.startsWith('ValueMap')">
-                        <a-select
-                          showSearch
-                          optionFilterProp="children"
-                          v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value.length>0 ? property.value: getPropertyQualifiers(property.qualifiers, 'select')[0] }]"
-                          :placeholder="property.description"
-                          :filterOption="(input, option) => {
-                            return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                          }"
-                        >
-                          <a-select-option v-for="opt in getPropertyQualifiers(property.qualifiers, 'select')" :key="opt">
-                            {{ opt }}
-                          </a-select-option>
-                        </a-select>
-                      </span>
-                      <span v-else-if="property.type && property.type==='string' && property.password">
-                        <a-input-password
-                          v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value }]"
-                          :placeholder="property.description" />
-                      </span>
-                      <span v-else>
-                        <a-input
-                          v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value }]"
-                          :placeholder="property.description" />
-                      </span>
+                  <div v-for="(props, category) in templateProperties" :key="category">
+                    <a-form-item class="vapp-category">
+                      Category: {{ category }} ({{ props.length }} properties)
                     </a-form-item>
+                    <div>
+                      <a-form-item
+                        v-for="(property, propertyIndex) in props"
+                        :key="propertyIndex"
+                        :v-bind="property.key" >
+                        <span slot="label">
+                          {{ property.label }}
+                          <a-tooltip :title="property.description">
+                            <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                          </a-tooltip>
+                        </span>
+
+                        <span v-if="property.type && property.type==='boolean'">
+                          <a-switch
+                            v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value==='TRUE'?true:false}]"
+                            :defaultChecked="property.value==='TRUE'?true:false"
+                            :placeholder="property.description"
+                          />
+                        </span>
+                        <span v-else-if="property.type && (property.type==='int' || property.type==='real')">
+                          <a-input-number
+                            v-decorator="['properties.'+ escapePropertyKey(property.key) ]"
+                            :defaultValue="property.value"
+                            :placeholder="property.description"
+                            :min="getPropertyQualifiers(property.qualifiers, 'number-select').min"
+                            :max="getPropertyQualifiers(property.qualifiers, 'number-select').max" />
+                        </span>
+                        <span v-else-if="property.type && property.type==='string' && property.qualifiers && property.qualifiers.startsWith('ValueMap')">
+                          <a-select
+                            showSearch
+                            optionFilterProp="children"
+                            v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value.length>0 ? property.value: getPropertyQualifiers(property.qualifiers, 'select')[0] }]"
+                            :placeholder="property.description"
+                            :filterOption="(input, option) => {
+                              return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }"
+                          >
+                            <a-select-option v-for="opt in getPropertyQualifiers(property.qualifiers, 'select')" :key="opt">
+                              {{ opt }}
+                            </a-select-option>
+                          </a-select>
+                        </span>
+                        <span v-else-if="property.type && property.type==='string' && property.password">
+                          <a-input-password
+                            v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value }]"
+                            :placeholder="property.description" />
+                        </span>
+                        <span v-else>
+                          <a-input
+                            v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value }]"
+                            :placeholder="property.description" />
+                        </span>
+                      </a-form-item>
+                    </div>
                   </div>
                 </template>
               </a-step>
@@ -1629,6 +1634,16 @@ export default {
       }
       return nics
     },
+    groupBy (array, key) {
+      const result = {}
+      array.forEach(item => {
+        if (!result[item[key]]) {
+          result[item[key]] = []
+        }
+        result[item[key]].push(item)
+      })
+      return result
+    },
     fetchTemplateProperties (template) {
       var properties = []
       if (template && template.details && Object.keys(template.details).length > 0) {
@@ -1639,10 +1654,10 @@ export default {
           properties.push(propertyMap)
         }
         properties.sort(function (a, b) {
-          return a.label.localeCompare(b.label)
+          return a.index - b.index
         })
       }
-      return properties
+      return this.groupBy(properties, 'category')
     },
     fetchTemplateConfigurations (template) {
       var configurations = []
@@ -1790,5 +1805,11 @@ export default {
 
   .form-item-hidden {
     display: none;
+  }
+
+  .vapp-category {
+    background-color: lightblue;
+    padding: 18px;
+    width: 100%;
   }
 </style>
