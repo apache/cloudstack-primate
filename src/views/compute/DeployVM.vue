@@ -540,6 +540,7 @@ import { api } from '@/api'
 import _ from 'lodash'
 import { mixin, mixinDevice } from '@/utils/mixin.js'
 import store from '@/store'
+import eventBus from '@/config/eventBus'
 
 import InfoCard from '@/components/view/InfoCard'
 import ComputeOfferingSelection from '@views/compute/wizard/ComputeOfferingSelection'
@@ -1380,9 +1381,16 @@ export default {
                     duration: 0
                   })
                 }
+                eventBus.$emit('refresh-data')
+              },
+              errorMethod: () => {
+                eventBus.$emit('refresh-data')
               },
               loadingMessage: `${title} ${this.$t('label.in.progress')}`,
-              catchMessage: this.$t('error.fetching.async.job.result')
+              catchMessage: this.$t('error.fetching.async.job.result'),
+              catchMethod: () => {
+                eventBus.$emit('refresh-data')
+              }
             })
             this.$store.dispatch('AddAsyncJob', {
               title: title,

@@ -325,6 +325,7 @@ import { api } from '@/api'
 import { mixinDevice } from '@/utils/mixin.js'
 import { genericCompare } from '@/utils/sort.js'
 import store from '@/store'
+import eventBus from '@/config/eventBus'
 
 import Breadcrumb from '@/components/widgets/Breadcrumb'
 import ChartCard from '@/components/widgets/ChartCard'
@@ -385,6 +386,9 @@ export default {
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
+  },
+  created () {
+    eventBus.$on('refresh-data', this.fetchData)
   },
   mounted () {
     if (this.device === 'desktop') {
