@@ -94,6 +94,10 @@
                   }]"
                   :loading="zones.loading"
                   mode="multiple"
+                  optionFilterProp="children"
+                  :filterOption="(input, option) => {
+                    return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }"
                   :placeholder="apiParams.zoneids.description"
                   @change="handlerSelectZone">
                   <a-select-option v-for="opt in zones.opts" :key="opt.id">
