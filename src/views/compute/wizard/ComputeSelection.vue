@@ -27,7 +27,6 @@
             <a-row :gutter="12">
               <a-input-number
                 v-model="cpuNumberInputValue"
-                :formatter="value => `${value}`"
                 @change="($event) => updateComputeCpuNumber($event)"
               />
             </a-row>
