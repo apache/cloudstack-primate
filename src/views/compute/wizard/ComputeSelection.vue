@@ -21,31 +21,21 @@
       <a-row>
         <a-col :md="colContraned" :lg="colContraned">
           <a-form-item
-            :label="this.$t('label.cpunumber')"
+            :label="$t('label.cpunumber')"
             :validate-status="errors.cpu.status"
             :help="errors.cpu.message">
             <a-row :gutter="12">
-              <a-col :md="10" :lg="10" v-show="isConstrained">
-                <a-slider
-                  :min="minCpu"
-                  :max="maxCpu"
-                  v-model="cpuNumberInputValue"
-                  @change="($event) => updateComputeCpuNumber($event)"
-                />
-              </a-col>
-              <a-col :md="4" :lg="4">
-                <a-input-number
-                  v-model="cpuNumberInputValue"
-                  :formatter="value => `${value}`"
-                  @change="($event) => updateComputeCpuNumber($event)"
-                />
-              </a-col>
+              <a-input-number
+                v-model="cpuNumberInputValue"
+                :formatter="value => `${value}`"
+                @change="($event) => updateComputeCpuNumber($event)"
+              />
             </a-row>
           </a-form-item>
         </a-col>
         <a-col :md="8" :lg="8" v-show="!isConstrained">
           <a-form-item
-            :label="this.$t('label.cpuspeed')"
+            :label="$t('label.cpuspeed')"
             :validate-status="errors.cpuspeed.status"
             :help="errors.cpuspeed.message">
             <a-input-number
@@ -56,26 +46,17 @@
         </a-col>
         <a-col :md="colContraned" :lg="colContraned">
           <a-form-item
-            :label="this.$t('label.memory')"
+            :label="$t('label.memory')"
             :validate-status="errors.memory.status"
             :help="errors.memory.message">
             <a-row :gutter="12">
-              <a-col :md="10" :lg="10" v-show="isConstrained">
-                <a-slider
-                  :min="minMemory"
-                  :max="maxMemory"
-                  v-model="memoryInputValue"
-                  @change="($event) => updateComputeMemory($event)"
-                />
-              </a-col>
-              <a-col :md="4" :lg="4">
+              <span style="display: inline-flex">
                 <a-input-number
                   v-model="memoryInputValue"
-                  :formatter="value => `${value} MB`"
-                  :parser="value => value.replace(' MB', '')"
                   @change="($event) => updateComputeMemory($event)"
                 />
-              </a-col>
+                <span style="padding-top: 6px; margin-left: 5px">MB</span>
+              </span>
             </a-row>
           </a-form-item>
         </a-col>

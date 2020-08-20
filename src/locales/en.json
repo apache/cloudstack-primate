@@ -1286,7 +1286,7 @@
 "label.may.continue": "You may now continue.",
 "label.mb.memory": "MB Memory",
 "label.memallocated": "Mem Allocation",
-"label.memory": "Memory",
+"label.memory": "Memory (in MB)",
 "label.memory.maximum.mb": "Max Memory (in MB)",
 "label.memory.total": "Memory Total",
 "label.memory.used": "Memory Used",
