@@ -266,7 +266,7 @@ export default {
           jobId,
           successMethod: result => {
             if (singleZone) {
-              const isResourcePage = !!(this.$route.params && this.$route.params.id)
+              const isResourcePage = (this.$route.params && this.$route.params.id)
               if (isResourcePage) {
                 this.$router.go(-1)
               }
