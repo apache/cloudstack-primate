@@ -85,19 +85,12 @@
             showSearch
             optionFilterProp="children"
             :filterOption="(input, option) => {
-              return option.componentOptions.children[0].children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
             :loading="zoneLoading"
             :placeholder="apiParams.zoneid.description">
             <a-select-option :value="opt.id" v-for="opt in zones" :key="opt.id">
-              <div v-if="currentForm === 'Upload'">
-                <div v-if="opt.name !== $t('label.all.zone')">
-                  {{ opt.name || opt.description }}
-                </div>
-              </div>
-              <div v-else>
-                {{ opt.name || opt.description }}
-              </div>
+              {{ opt.name || opt.description }}
             </a-select-option>
           </a-select>
         </a-form-item>
@@ -204,7 +197,7 @@ export default {
   },
   created () {
     this.zones = []
-    if (this.$store.getters.userInfo.roletype === 'Admin') {
+    if (this.$store.getters.userInfo.roletype === 'Admin' && this.currentForm === 'Create') {
       this.zones = [
         {
           id: '-1',
@@ -234,7 +227,7 @@ export default {
         this.zones = this.zones.concat(listZones)
       }).finally(() => {
         this.zoneLoading = false
-        this.selectedZone = this.currentForm === 'Create' ? (this.zones[0].id ? this.zones[0].id : '') : ((this.zones[1].id) ? this.zones[1].id : '')
+        this.selectedZone = (this.zones[0].id ? this.zones[0].id : '')
       })
     },
     fetchOsType () {
