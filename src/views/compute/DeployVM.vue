@@ -215,7 +215,7 @@
                 </template>
               </a-step>
               <a-step
-                :title="this.$t('label.diskofferingid')"
+                :title="tabKey == 'templateid' ? $t('label.data.disk') : $t('label.disk.size')"
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
                   <div v-if="zoneSelected">
