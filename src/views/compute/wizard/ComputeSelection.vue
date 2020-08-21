@@ -104,7 +104,7 @@ export default {
     },
     minMemory: {
       type: Number,
-      default: 16
+      default: 0
     },
     maxMemory: {
       type: Number,

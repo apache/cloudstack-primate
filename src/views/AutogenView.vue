@@ -237,6 +237,7 @@
               </span>
               <span v-else-if="field.type==='long'">
                 <a-input-number
+                  :autoFocus="fieldIndex === 0"
                   style="width: 100%;"
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: `${$t('message.validate.number')}` }]
@@ -272,6 +273,7 @@
               </span>
               <span v-else>
                 <a-input
+                  :autoFocus="fieldIndex === 0"
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: `${$t('message.error.required.input')}` }]
                   }]"
