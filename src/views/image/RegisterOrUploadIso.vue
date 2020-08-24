@@ -19,7 +19,7 @@
   <div class="form-layout">
     <span v-if="uploadPercentage > 0">
       <a-icon type="loading" />
-      Do not close this form, file upload is in progress...
+      {{ $t('message.upload.file.processing') }}
       <a-progress :percent="uploadPercentage" />
     </span>
     <a-spin :spinning="loading" v-else>
@@ -29,6 +29,7 @@
         layout="vertical">
         <a-form-item v-if="currentForm === 'Create'" :label="$t('label.url')">
           <a-input
+            autoFocus
             v-decorator="['url', {
               rules: [{ required: true, message: `${this.$t('label.upload.iso.from.local')}` }]
             }]"
@@ -47,7 +48,7 @@
               <a-icon type="cloud-upload" />
             </p>
             <p class="ant-upload-text" v-if="fileList.length === 0">
-              Click or drag file to this area to upload
+              {{ $t('label.volume.volumefileupload.description') }}
             </p>
           </a-upload-dragger>
         </a-form-item>
@@ -265,8 +266,8 @@ export default {
       const { fileList } = this
       if (this.fileList.length > 1) {
         this.$notification.error({
-          message: 'ISO Upload Failed',
-          description: 'Only one ISO can be uploaded at a time',
+          message: this.$t('message.upload.iso.failed'),
+          description: this.$t('message.error.upload.iso.description'),
           duration: 0
         })
       }
@@ -290,17 +291,18 @@ export default {
           timeout: 86400000
         }).then((json) => {
         this.$notification.success({
-          message: 'Upload Successful',
-          description: 'This ISO file has been uploaded. Please check its status at Templates menu'
+          message: this.$t('message.success.upload'),
+          description: this.$t('message.success.upload.description')
         })
-        this.closeAction()
       }).catch(e => {
         this.$notification.error({
-          message: 'Upload Failed',
-          description: `Failed to upload ISO -  ${e}`,
+          message: this.$t('message.upload.failed'),
+          description: `${this.$t('message.upload.iso.failed.description')} -  ${e}`,
           duration: 0
         })
+      }).finally(() => {
         this.closeAction()
+        this.$emit('refresh-data')
       })
     },
     handleSubmit (e) {
@@ -336,16 +338,16 @@ export default {
         if (this.currentForm === 'Create') {
           this.loading = true
           api('registerIso', params).then(json => {
-            this.$emit('refresh-data')
             this.$notification.success({
-              message: this.$t('label.action.register.iso'),
-              description: 'Sucessfully registered ISO ' + params.name
+              message: 'label.action.register.iso',
+              description: `${this.$t('message.success.register.iso')} ${params.name}`
             })
           }).catch(error => {
             this.$notifyError(error)
           }).finally(() => {
             this.loading = false
             this.closeAction()
+            this.$emit('refresh-data')
           })
         } else {
           if (this.fileList.length !== 1) {
@@ -358,14 +360,15 @@ export default {
             const response = this.handleUpload()
             if (response === 'upload successful') {
               this.$notification.success({
-                message: 'Upload Successful',
-                description: 'This ISO file has been uploaded. Please check its status in the Images > ISOs menu'
+                message: this.$t('message.success.upload'),
+                description: this.$t('message.success.upload.iso.description')
               })
             }
           }).catch(error => {
             this.$notifyError(error)
           }).finally(() => {
             this.loading = false
+            this.$emit('refresh-data')
           })
         }
       })

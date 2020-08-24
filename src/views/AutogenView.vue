@@ -70,7 +70,7 @@
             :selectedRowKeys="selectedRowKeys"
             :dataView="dataView"
             :resource="resource"
-            @exec-action="execAction"/>
+            @exec-action="(action) => execAction(action, action.groupAction && !dataView)"/>
           <search-view
             v-if="!dataView"
             :searchFilters="searchFilters"
@@ -143,7 +143,6 @@
           <a-form
             :form="form"
             @submit="handleSubmit"
-            v-show="dataView || !currentAction.groupAction || this.selectedRowKeys.length === 0"
             layout="vertical" >
             <a-form-item
               v-for="(field, fieldIndex) in currentAction.paramFields"
@@ -175,7 +174,7 @@
                   }]"
                   :placeholder="field.description"
                 >
-                  <a-select-option :key="null">{{ }}</a-select-option>
+                  <a-select-option key="" >{{ }}</a-select-option>
                   <a-select-option v-for="(opt, optIndex) in currentAction.mapping[field.name].options" :key="optIndex">
                     {{ opt }}
                   </a-select-option>
@@ -196,7 +195,7 @@
                     return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }"
                 >
-                  <a-select-option :key="null">{{ }}</a-select-option>
+                  <a-select-option key="">{{ }}</a-select-option>
                   <a-select-option v-for="(opt, optIndex) in field.opts" :key="optIndex">
                     {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
@@ -216,7 +215,7 @@
                     return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }"
                 >
-                  <a-select-option :key="null">{{ }}</a-select-option>
+                  <a-select-option key="">{{ }}</a-select-option>
                   <a-select-option v-for="opt in field.opts" :key="opt.id">
                     {{ opt.name || opt.description || opt.traffictype || opt.publicip }}
                   </a-select-option>
@@ -238,6 +237,8 @@
               </span>
               <span v-else-if="field.type==='long'">
                 <a-input-number
+                  :autoFocus="fieldIndex === 0"
+                  style="width: 100%;"
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: `${$t('message.validate.number')}` }]
                   }]"
@@ -272,6 +273,7 @@
               </span>
               <span v-else>
                 <a-input
+                  :autoFocus="fieldIndex === 0"
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: `${$t('message.error.required.input')}` }]
                   }]"
@@ -296,6 +298,7 @@
         :loading="loading"
         :columns="columns"
         :items="items"
+        :actions="actions"
         ref="listview"
         @selection-change="onRowSelectionChange"
         @refresh="this.fetchData" />
@@ -324,6 +327,7 @@ import { api } from '@/api'
 import { mixinDevice } from '@/utils/mixin.js'
 import { genericCompare } from '@/utils/sort.js'
 import store from '@/store'
+import eventBus from '@/config/eventBus'
 
 import Breadcrumb from '@/components/widgets/Breadcrumb'
 import ChartCard from '@/components/widgets/ChartCard'
@@ -385,6 +389,9 @@ export default {
   beforeCreate () {
     this.form = this.$form.createForm(this)
   },
+  created () {
+    eventBus.$on('refresh-data', this.fetchData)
+  },
   mounted () {
     if (this.device === 'desktop') {
       this.pageSize = 20
@@ -439,7 +446,7 @@ export default {
         const project = json.listprojectsresponse.project[0]
         this.$store.dispatch('SetProject', project)
         this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
-        this.$message.success(`Switched to "${project.name}"`)
+        this.$message.success(`${this.$t('message.switch.to')} "${project.name}"`)
         const query = Object.assign({}, this.$route.query)
         delete query.projectid
         this.$router.replace({ query })
@@ -575,6 +582,18 @@ export default {
           this.items = []
         }
 
+        if (['listTemplates', 'listIsos'].includes(this.apiName) && this.items.length > 1) {
+          this.items = [...new Map(this.items.map(x => [x.id, x])).values()]
+        }
+
+        if (this.apiName === 'listProjects' && this.items.length > 0) {
+          this.columns.map(col => {
+            if (col.title === 'Account') {
+              col.title = this.$t('label.project.owner')
+            }
+          })
+        }
+
         for (let idx = 0; idx < this.items.length; idx++) {
           this.items[idx].key = idx
           for (const key in customRender) {
@@ -592,6 +611,10 @@ export default {
         if (this.items.length > 0) {
           this.resource = this.items[0]
           this.$emit('change-resource', this.resource)
+        } else {
+          if (this.dataView) {
+            this.$router.push({ path: '/exception/404' })
+          }
         }
       }).catch(error => {
         if (Object.keys(this.searchParams).length > 0) {
@@ -629,7 +652,7 @@ export default {
     onRowSelectionChange (selection) {
       this.selectedRowKeys = selection
     },
-    execAction (action) {
+    execAction (action, isGroupAction) {
       const self = this
       this.form = this.$form.createForm(this)
       this.formModel = {}
@@ -639,6 +662,8 @@ export default {
       }
       this.currentAction = action
       this.currentAction.params = store.getters.apis[this.currentAction.api].params
+      this.resource = action.resource
+      this.$emit('change-resource', this.resource)
       var paramFields = this.currentAction.params
       paramFields.sort(function (a, b) {
         if (a.name === 'name' && b.name !== 'name') { return -1 }
@@ -652,7 +677,7 @@ export default {
       if ('args' in action) {
         var args = action.args
         if (typeof action.args === 'function') {
-          args = action.args(action.resource, this.$store.getters)
+          args = action.args(action.resource, this.$store.getters, isGroupAction)
         }
         if (args.length > 0) {
           this.currentAction.paramFields = args.map(function (arg) {
@@ -733,17 +758,21 @@ export default {
                 continue
               }
               param.opts = json[obj][res]
+              if (this.currentAction.mapping && this.currentAction.mapping[param.name] && this.currentAction.mapping[param.name].filter) {
+                const filter = this.currentAction.mapping[param.name].filter
+                param.opts = json[obj][res].filter(filter)
+              }
               if (['listTemplates', 'listIsos'].includes(possibleApi)) {
                 param.opts = [...new Map(param.opts.map(x => [x.id, x])).values()]
               }
-              this.$forceUpdate()
               break
             }
             break
           }
         }
+        this.$forceUpdate()
       }).catch(function (error) {
-        console.log(error.stack)
+        console.log(error)
         param.loading = false
       }).then(function () {
       })
@@ -767,7 +796,7 @@ export default {
         },
         errorMethod: () => this.fetchData(),
         loadingMessage: `${this.$t(action.label)} - ${resourceName}`,
-        catchMessage: 'Error encountered while fetching async job result',
+        catchMessage: this.$t('error.fetching.async.job.result'),
         action
       })
     },
@@ -790,24 +819,28 @@ export default {
     },
     handleSubmit (e) {
       if (!this.dataView && this.currentAction.groupAction && this.selectedRowKeys.length > 0) {
-        const paramsList = this.currentAction.groupMap(this.selectedRowKeys)
-        this.actionLoading = true
-        for (const params of paramsList) {
-          api(this.currentAction.api, params).then(json => {
-          }).catch(error => {
-            this.$notifyError(error)
-          })
-        }
-        this.$message.info({
-          content: this.$t(this.currentAction.label),
-          key: this.currentAction.label,
-          duration: 3
+        this.form.validateFields((err, values) => {
+          if (!err) {
+            const paramsList = this.currentAction.groupMap(this.selectedRowKeys, values)
+            this.actionLoading = true
+            for (const params of paramsList) {
+              api(this.currentAction.api, params).then(json => {
+              }).catch(error => {
+                this.$notifyError(error)
+              })
+            }
+            this.$message.info({
+              content: this.$t(this.currentAction.label),
+              key: this.currentAction.label,
+              duration: 3
+            })
+            setTimeout(() => {
+              this.actionLoading = false
+              this.closeAction()
+              this.fetchData()
+            }, 2000)
+          }
         })
-        setTimeout(() => {
-          this.actionLoading = false
-          this.closeAction()
-          this.fetchData()
-        }, 2000)
       } else {
         this.execSubmit(e)
       }
@@ -815,7 +848,6 @@ export default {
     execSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
-        console.log(values)
         if (!err) {
           const params = {}
           if ('id' in this.resource && this.currentAction.params.map(i => { return i.name }).includes('id')) {
@@ -827,7 +859,7 @@ export default {
               if (param.name !== key) {
                 continue
               }
-              if (input === undefined || input === null) {
+              if (input === undefined || input === null || input === '') {
                 if (param.type === 'boolean') {
                   params[key] = false
                 }
@@ -865,10 +897,6 @@ export default {
             }
           }
 
-          console.log(this.currentAction)
-          console.log(this.resource)
-          console.log(params)
-
           const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username || params.ipaddress || params.virtualmachinename || this.resource.name
 
           var hasJobId = false
@@ -883,10 +911,16 @@ export default {
                     hasJobId = true
                     break
                   } else {
+                    var message = this.$t(this.currentAction.label) + (resourceName ? ' - ' + resourceName : '')
+                    var duration = 2
+                    if (this.currentAction.successMessage) {
+                      message = message + ' - ' + this.$t(this.currentAction.successMessage)
+                      duration = 5
+                    }
                     this.$message.success({
-                      content: this.$t(this.currentAction.label) + (resourceName ? ' - ' + resourceName : ''),
+                      content: message,
                       key: this.currentAction.label + resourceName,
-                      duration: 2
+                      duration: duration
                     })
                   }
                 }

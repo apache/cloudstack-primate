@@ -23,7 +23,7 @@ export default {
   icon: 'global',
   permission: ['listZonesMetrics'],
   columns: () => {
-    const fields = ['name', 'state', 'allocationstate', 'networktype', 'clusters']
+    const fields = ['name', 'allocationstate', 'networktype', 'clusters']
     const metricsFields = ['cpuused', 'cpumaxdeviation', 'cpuallocated', 'cputotal', 'memoryused', 'memorymaxdeviation', 'memoryallocated', 'memorytotal']
     if (store.getters.metrics) {
       fields.push(...metricsFields)
@@ -64,7 +64,7 @@ export default {
     component: () => import('@/views/infra/zone/SystemVmsTab.vue')
   }, {
     name: 'resources',
-    component: () => import('@/views/infra/zone/ZoneResources.vue')
+    component: () => import('@/views/infra/Resources.vue')
   }, {
     name: 'settings',
     component: () => import('@/components/view/SettingsTab.vue')
@@ -200,7 +200,8 @@ export default {
       api: 'updateVmwareDc',
       icon: 'block',
       label: 'label.update.vmware.datacenter',
-      message: 'label.update.vmware.datacenter',
+      message: 'message.restart.mgmt.server',
+      successMessage: 'message.restart.mgmt.server',
       dataView: true,
       show: record => record.vmwaredc,
       args: ['zoneid', 'name', 'vcenter', 'username', 'password'],

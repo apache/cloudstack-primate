@@ -19,7 +19,7 @@
   <div class="form-layout">
     <span v-if="uploadPercentage > 0">
       <a-icon type="loading" />
-      Do not close this form, file upload is in progress...
+      {{ $t('message.upload.file.processing') }}
       <a-progress :percent="uploadPercentage" />
     </span>
     <a-spin :spinning="loading" v-else>
@@ -40,7 +40,7 @@
               <a-icon type="cloud-upload" />
             </p>
             <p class="ant-upload-text" v-if="fileList.length === 0">
-              Click or drag file to this area to upload
+              {{ $t('label.volume.volumefileupload.description') }}
             </p>
           </a-upload-dragger>
         </a-form-item>
@@ -53,7 +53,7 @@
           </span>
           <a-input
             v-decorator="['name', {
-              rules: [{ required: true, message: 'Please enter Volume name' }]
+              rules: [{ required: true, message: $t('message.error.volume.name') }]
             }]"
             :placeholder="$t('label.volumename')" />
         </a-form-item>
@@ -110,7 +110,7 @@
           </span>
           <a-input
             v-decorator="['checksum']"
-            placeholder="Use the hash that you created at the start of the volume upload procedure"
+            :placeholder="$t('label.volumechecksum.description')"
           />
         </a-form-item>
         <div :span="24" class="action-button">
@@ -193,8 +193,8 @@ export default {
           const { fileList } = this
           if (this.fileList.length > 1) {
             this.$notification.error({
-              message: 'Volume Upload Failed',
-              description: 'Only one file can be uploaded at a time',
+              message: this.$t('message.upload.volume.failed'),
+              description: this.$t('message.upload.file.limit'),
               duration: 0
             })
           }
@@ -219,14 +219,14 @@ export default {
               timeout: 86400000
             }).then((json) => {
             this.$notification.success({
-              message: 'Upload Successful',
-              description: 'This Volume has been uploaded. Please check its status in the Volumes menu'
+              message: this.$t('message.success.upload'),
+              description: this.$t('message.success.upload.volume.description')
             })
             this.closeAction()
           }).catch(e => {
             this.$notification.error({
-              message: 'Upload Failed',
-              description: `Failed to upload ISO -  ${e}`,
+              message: this.$t('message.upload.failed'),
+              description: `${this.$t('message.upload.iso.failed.description')} -  ${e}`,
               duration: 0
             })
             this.closeAction()

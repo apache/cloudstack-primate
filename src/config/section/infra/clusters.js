@@ -32,7 +32,7 @@ export default {
     fields.push('zonename')
     return fields
   },
-  details: ['name', 'id', 'allocationstate', 'clustertype', 'hypervisortype', 'podname', 'zonename'],
+  details: ['name', 'id', 'allocationstate', 'clustertype', 'managedstate', 'hypervisortype', 'podname', 'zonename'],
   related: [{
     name: 'host',
     title: 'label.hosts',
@@ -41,6 +41,9 @@ export default {
   tabs: [{
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
+  }, {
+    name: 'resources',
+    component: () => import('@/views/infra/Resources.vue')
   }, {
     name: 'settings',
     component: () => import('@/components/view/SettingsTab.vue')

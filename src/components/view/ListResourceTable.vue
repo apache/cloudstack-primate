@@ -27,10 +27,10 @@
     <a-table
       size="small"
       :columns="fetchColumns()"
-      :dataSource="items"
+      :dataSource="dataSource"
       :rowKey="item => item.id"
       :loading="loading"
-      :pagination="false"
+      :pagination="defaultPagination"
       @change="handleTableChange"
       @handle-search-filter="handleTableChange" >
 
@@ -50,14 +50,14 @@
 
     </a-table>
 
-    <div style="display: block; text-align: right; margin-top: 10px;">
+    <div v-if="!defaultPagination" style="display: block; text-align: right; margin-top: 10px;">
       <a-pagination
         size="small"
         :current="options.page"
         :pageSize="options.pageSize"
         :total="total"
-        :showTotal="total => `Total ${total} ${$t('label.items')}`"
-        :pageSizeOptions="['10', '20', '40']"
+        :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
+        :pageSizeOptions="device === 'desktop' ? ['20', '50', '100', '500'] : ['10', '20', '50', '100', '500']"
         @change="handleTableChange"
         @showSizeChange="handlePageSizeChange"
         showSizeChanger>
@@ -72,6 +72,7 @@
 
 <script>
 import { api } from '@/api'
+import { mixinDevice } from '@/utils/mixin.js'
 import Status from '@/components/widgets/Status'
 
 export default {
@@ -79,6 +80,7 @@ export default {
   components: {
     Status
   },
+  mixins: [mixinDevice],
   props: {
     resource: {
       type: Object,
@@ -86,7 +88,7 @@ export default {
     },
     apiName: {
       type: String,
-      required: true
+      default: ''
     },
     routerlinks: {
       type: Function,
@@ -94,7 +96,7 @@ export default {
     },
     params: {
       type: Object,
-      required: true
+      default: () => {}
     },
     columns: {
       type: Array,
@@ -103,14 +105,19 @@ export default {
     showSearch: {
       type: Boolean,
       default: true
+    },
+    items: {
+      type: Array,
+      default: () => []
     }
   },
   data () {
     return {
       loading: false,
-      items: [],
+      dataSource: [],
       total: 0,
       filter: '',
+      defaultPagination: false,
       options: {
         page: 1,
         pageSize: 10,
@@ -124,6 +131,11 @@ export default {
         this.fetchData()
       }
     },
+    items (newItem, oldItem) {
+      if (newItem) {
+        this.dataSource = newItem
+      }
+    },
     '$i18n.locale' (to, from) {
       if (to !== from) {
         this.fetchData()
@@ -135,6 +147,14 @@ export default {
   },
   methods: {
     fetchData () {
+      if (this.items && this.items.length > 0) {
+        this.dataSource = this.items
+        this.defaultPagination = {
+          showSizeChanger: true,
+          pageSizeOptions: this.mixinDevice === 'desktop' ? ['20', '50', '100', '500'] : ['10', '20', '50', '100', '500']
+        }
+        return
+      }
       this.loading = true
       var params = { ...this.params, ...this.options }
       params.listall = true
@@ -157,9 +177,9 @@ export default {
           objectName = key
           break
         }
-        this.items = json[responseName][objectName]
-        if (!this.items || this.items.length === 0) {
-          this.items = []
+        this.dataSource = json[responseName][objectName]
+        if (!this.dataSource || this.dataSource.length === 0) {
+          this.dataSource = []
         }
       }).finally(() => {
         this.loading = false

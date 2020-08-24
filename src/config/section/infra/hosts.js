@@ -137,7 +137,7 @@ export default {
           value: (record) => { return record.id }
         },
         driver: {
-          options: ['ipmitool', 'nestedcloudstack']
+          options: ['ipmitool', 'nestedcloudstack', 'redfish']
         }
       }
     },
@@ -220,6 +220,7 @@ export default {
       message: 'label.ha.configure',
       docHelp: 'adminguide/reliability.html#ha-for-hosts',
       dataView: true,
+      show: (record) => { return ['KVM', 'Simulator'].includes(record.hypervisor) },
       args: ['hostid', 'provider'],
       mapping: {
         hostid: {

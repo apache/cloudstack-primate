@@ -65,9 +65,9 @@
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
             :placeholder="this.$t('label.systemvmtype')">
-            <a-select-option key="domainrouter">Domain Router</a-select-option>
-            <a-select-option key="consoleproxy">Console Proxy</a-select-option>
-            <a-select-option key="secondarystoragevm">Secondary Storage VM</a-select-option>
+            <a-select-option key="domainrouter">{{ $t('label.domain.router') }}</a-select-option>
+            <a-select-option key="consoleproxy">{{ $t('label.console.proxy') }}</a-select-option>
+            <a-select-option key="secondarystoragevm">{{ $t('label.secondary.storage.vm') }}</a-select-option>
           </a-select>
         </a-form-item>
         <a-form-item>
@@ -247,7 +247,7 @@
         </a-form-item>
         <a-form-item v-if="this.offeringType === 'fixed'">
           <span slot="label">
-            {{ $t('label.memory') }}
+            {{ $t('label.memory.mb') }}
             <a-tooltip :title="apiParams.memory.description">
               <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
             </a-tooltip>
@@ -676,7 +676,7 @@
                 {
                   validator: (rule, value, callback) => {
                     if (value && value.length > 1 && value.indexOf(0) !== -1) {
-                      callback(this.$t('label.error.zone.combined'))
+                      callback(this.$t('message.error.zone.combined'))
                     }
                     callback()
                   }
@@ -688,10 +688,26 @@
             :filterOption="(input, option) => {
               return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }"
+            @select="val => fetchvSphereStoragePolicies(val)"
             :loading="zoneLoading"
             :placeholder="this.$t('label.zoneid')">
             <a-select-option v-for="(opt, optIndex) in this.zones" :key="optIndex">
               {{ opt.name || opt.description }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item v-if="'listVsphereStoragePolicies' in $store.getters.apis && storagePolicies !== null">
+          <span slot="label">
+            {{ $t('label.vmware.storage.policy') }}
+            <a-tooltip :title="apiParams.storagetype.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
+          <a-select
+            v-decorator="['storagepolicy']"
+            :placeholder="apiParams.storagepolicy.description">
+            <a-select-option v-for="policy in this.storagePolicies" :key="policy.id">
+              {{ policy.name || policy.id }}
             </a-select-option>
           </a-select>
         </a-form-item>
@@ -727,9 +743,11 @@ export default {
       domains: [],
       domainLoading: false,
       selectedZones: [],
+      selectedZoneIndex: [],
       zones: [],
       zoneLoading: false,
       selectedDeployementPlanner: null,
+      storagePolicies: null,
       storageTags: [],
       storageTagLoading: false,
       deploymentPlanners: [],
@@ -740,7 +758,7 @@ export default {
       gpuTypes: [
         {
           value: '',
-          title: 'None',
+          title: this.$t('label.none'),
           vgpu: []
         },
         {
@@ -760,7 +778,11 @@ export default {
     }
   },
   beforeCreate () {
-    this.form = this.$form.createForm(this)
+    this.form = this.$form.createForm(this, {
+      onValuesChange: (_, values) => {
+        this.selectedZoneIndex = values.zoneid
+      }
+    })
     this.apiParams = {}
     var apiConfig = this.$store.getters.apis.createServiceOffering || {}
     apiConfig.params.forEach(param => {
@@ -847,6 +869,21 @@ export default {
       }).finally(() => {
         this.deploymentPlannerLoading = false
       })
+    },
+    fetchvSphereStoragePolicies (zoneIndex) {
+      if (zoneIndex === 0 || this.selectedZoneIndex.length > 1) {
+        this.storagePolicies = null
+        return
+      }
+      const zoneid = this.zones[zoneIndex].id
+      if ('importVsphereStoragePolicies' in this.$store.getters.apis) {
+        this.storagePolicies = []
+        api('listVsphereStoragePolicies', {
+          zoneid: zoneid
+        }).then(response => {
+          this.storagePolicies = response.listvspherestoragepoliciesresponse.StoragePolicy || []
+        })
+      }
     },
     handleStorageTypeChange (val) {
       this.storageType = val
@@ -1016,8 +1053,14 @@ export default {
         if (zoneId) {
           params.zoneid = zoneId
         }
+        if (values.storagepolicy) {
+          params.storagepolicy = values.storagepolicy
+        }
         api('createServiceOffering', params).then(json => {
-          this.$message.success((this.isSystem ? 'Service offering created: ' : 'Compute offering created: ') + values.name)
+          const message = this.isSystem
+            ? `${this.$t('message.create.service.offering')}: `
+            : `${this.$t('message.create.compute.offering')}: `
+          this.$message.success(message + values.name)
         }).catch(error => {
           this.$notifyError(error)
         }).finally(() => {

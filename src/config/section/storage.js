@@ -26,6 +26,7 @@ export default {
       name: 'volume',
       title: 'label.volumes',
       icon: 'hdd',
+      docHelp: 'adminguide/storage.html#working-with-volumes',
       permission: ['listVolumesMetrics'],
       resourceType: 'Volume',
       columns: () => {
@@ -38,8 +39,8 @@ export default {
               return record.physicalsize ? parseFloat(record.physicalsize / (1024.0 * 1024.0 * 1024.0)).toFixed(2) + 'GB' : ''
             }
           })
-          metricsFields.push('utilization')
         }
+        metricsFields.push('utilization')
 
         if (store.getters.metrics) {
           fields.push(...metricsFields)
@@ -66,6 +67,7 @@ export default {
         {
           api: 'createVolume',
           icon: 'plus',
+          docHelp: 'adminguide/storage.html#creating-a-new-volume',
           label: 'label.action.create.volume',
           listView: true,
           popup: true,
@@ -74,6 +76,7 @@ export default {
         {
           api: 'createVolume',
           icon: 'cloud-upload',
+          docHelp: 'adminguide/storage.html#uploading-an-existing-volume-to-a-virtual-machine',
           label: 'label.upload.volume.from.local',
           listView: true,
           popup: true,
@@ -82,6 +85,7 @@ export default {
         {
           api: 'uploadVolume',
           icon: 'link',
+          docHelp: 'adminguide/storage.html#uploading-an-existing-volume-to-a-virtual-machine',
           label: 'label.upload.volume.from.url',
           listView: true,
           args: ['url', 'name', 'zoneid', 'format', 'diskofferingid', 'checksum'],
@@ -98,7 +102,7 @@ export default {
           message: 'message.confirm.attach.disk',
           args: ['virtualmachineid'],
           dataView: true,
-          show: (record) => { return record.type !== 'ROOT' && record.state !== 'Destroy' && !('virtualmachineid' in record) }
+          show: (record) => { return record.type !== 'ROOT' && ['Allocated', 'Ready', 'Uploaded'].includes(record.state) && !('virtualmachineid' in record) }
         },
         {
           api: 'detachVolume',
@@ -106,23 +110,36 @@ export default {
           label: 'label.action.detach.disk',
           message: 'message.detach.disk',
           dataView: true,
-          show: (record) => { return record.type !== 'ROOT' && 'virtualmachineid' in record && record.virtualmachineid }
+          show: (record) => {
+            return record.type !== 'ROOT' && record.virtualmachineid &&
+              ['Running', 'Stopped', 'Destroyed'].includes(record.vmstate)
+          }
         },
         {
           api: 'createSnapshot',
           icon: 'camera',
+          docHelp: 'adminguide/storage.html#working-with-volume-snapshots',
           label: 'label.action.take.snapshot',
           dataView: true,
-          show: (record) => { return record.state === 'Ready' },
+          show: (record, store) => {
+            return record.state === 'Ready' && (record.hypervisor !== 'KVM' ||
+              record.hypervisor === 'KVM' && record.vmstate === 'Running' && store.features.kvmsnapshotenabled ||
+              record.hypervisor === 'KVM' && record.vmstate !== 'Running')
+          },
           popup: true,
           component: () => import('@/views/storage/TakeSnapshot.vue')
         },
         {
           api: 'createSnapshotPolicy',
           icon: 'clock-circle',
+          docHelp: 'adminguide/storage.html#working-with-volume-snapshots',
           label: 'label.action.recurring.snapshot',
           dataView: true,
-          show: (record) => { return record.state === 'Ready' },
+          show: (record, store) => {
+            return record.state === 'Ready' && (record.hypervisor !== 'KVM' ||
+              record.hypervisor === 'KVM' && record.vmstate === 'Running' && store.features.kvmsnapshotenabled ||
+              record.hypervisor === 'KVM' && record.vmstate !== 'Running')
+          },
           popup: true,
           component: () => import('@/views/storage/RecurringSnapshotVolume.vue'),
           mapping: {
@@ -137,19 +154,21 @@ export default {
         {
           api: 'resizeVolume',
           icon: 'fullscreen',
+          docHelp: 'adminguide/storage.html#resizing-volumes',
           label: 'label.action.resize.volume',
           dataView: true,
           popup: true,
-          show: (record) => { return record.state !== 'Destroy' },
+          show: (record) => { return ['Allocated', 'Ready'].includes(record.state) },
           component: () => import('@/views/storage/ResizeVolume.vue')
         },
         {
           api: 'migrateVolume',
           icon: 'drag',
+          docHelp: 'adminguide/storage.html#id2',
           label: 'label.migrate.volume',
           args: ['volumeid', 'storageid', 'livemigrate'],
           dataView: true,
-          show: (record, store) => { return record && record.state === 'Ready' && ['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) },
+          show: (record, store) => { return record.state === 'Ready' && ['Admin'].includes(store.userInfo.roletype) && record.virtualmachineid },
           popup: true,
           component: () => import('@/views/storage/MigrateVolume.vue')
         },
@@ -159,7 +178,7 @@ export default {
           label: 'label.action.download.volume',
           message: 'message.download.volume.confirm',
           dataView: true,
-          show: (record) => { return record && record.state === 'Ready' && (record.vmstate === 'Stopped' || record.virtualmachineid == null) && record.state !== 'Destroy' },
+          show: (record) => { return record.state === 'Ready' && (record.vmstate === 'Stopped' || !record.virtualmachineid) },
           args: ['zoneid', 'mode'],
           mapping: {
             zoneid: {
@@ -176,7 +195,11 @@ export default {
           icon: 'picture',
           label: 'label.action.create.template.from.volume',
           dataView: true,
-          show: (record) => { return (record.type === 'ROOT' && record.vmstate === 'Stopped') || (record.type !== 'ROOT' && !('virtualmachineid' in record) && !['Allocated', 'Uploaded', 'Destroy'].includes(record.state)) },
+          show: (record) => {
+            return !['Destroy', 'Destroyed', 'Expunging', 'Expunged', 'Migrating', 'Uploading', 'UploadError', 'Creating'].includes(record.state) &&
+            ((record.type === 'ROOT' && record.vmstate === 'Stopped') ||
+            (record.type !== 'ROOT' && !record.virtualmachineid && !['Allocated', 'Uploaded'].includes(record.state)))
+          },
           args: ['volumeid', 'name', 'displaytext', 'ostypeid', 'ispublic', 'isfeatured', 'isdynamicallyscalable', 'requireshvm', 'passwordenabled', 'sshkeyenabled'],
           mapping: {
             volumeid: {
@@ -203,6 +226,7 @@ export default {
           groupAction: true,
           show: (record, store) => {
             return ['Expunging', 'Expunged', 'UploadError'].includes(record.state) ||
+              ['Allocated', 'Uploaded'].includes(record.state) && record.type !== 'ROOT' && !record.virtualmachineid ||
               ((['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) || store.features.allowuserexpungerecovervolume) && record.state === 'Destroy')
           }
         },
@@ -216,7 +240,8 @@ export default {
             return (!['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) && !store.features.allowuserexpungerecovervolumestore) ? [] : ['expunge']
           },
           show: (record, store) => {
-            return (!['Creating'].includes(record.state) && record.type !== 'ROOT' && !('virtualmachineid' in record) && record.state !== 'Destroy')
+            return !['Destroy', 'Destroyed', 'Expunging', 'Expunged', 'Migrating', 'Uploading', 'UploadError', 'Creating', 'Allocated', 'Uploaded'].includes(record.state) &&
+              record.type !== 'ROOT' && !record.virtualmachineid
           }
         }
       ]
@@ -225,11 +250,13 @@ export default {
       name: 'snapshot',
       title: 'label.snapshots',
       icon: 'build',
+      docHelp: 'adminguide/storage.html#working-with-volume-snapshots',
       permission: ['listSnapshots'],
       resourceType: 'Snapshot',
       columns: () => {
         var fields = ['name', 'state', 'volumename', 'intervaltype', 'created']
         if (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype)) {
+          fields.push('domain')
           fields.push('account')
         }
         return fields
@@ -269,14 +296,15 @@ export default {
           label: 'label.action.revert.snapshot',
           message: 'message.action.revert.snapshot',
           dataView: true,
-          show: (record) => { return record.revertable }
+          show: (record) => { return record.state === 'BackedUp' && record.revertable }
         },
         {
           api: 'deleteSnapshot',
           icon: 'delete',
           label: 'label.action.delete.snapshot',
           message: 'message.action.delete.snapshot',
-          dataView: true
+          dataView: true,
+          show: (record) => { return record.state !== 'Destroyed' }
         }
       ]
     },
@@ -284,11 +312,13 @@ export default {
       name: 'vmsnapshot',
       title: 'label.vm.snapshots',
       icon: 'camera',
+      docHelp: 'adminguide/storage.html#working-with-volume-snapshots',
       permission: ['listVMSnapshot'],
       resourceType: 'VMSnapshot',
       columns: () => {
-        var fields = ['displayname', 'state', 'type', 'current', 'parentName', 'created']
+        const fields = ['displayname', 'state', 'name', 'type', 'current', 'parentName', 'created']
         if (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype)) {
+          fields.push('domain')
           fields.push('account')
         }
         return fields
@@ -296,6 +326,16 @@ export default {
       details: ['name', 'id', 'displayname', 'description', 'type', 'current', 'parentName', 'virtualmachineid', 'account', 'domain', 'created'],
       searchFilters: ['name', 'domainid', 'account', 'tags'],
       actions: [
+        {
+          api: 'createSnapshotFromVMSnapshot',
+          icon: 'camera',
+          label: 'label.action.create.snapshot.from.vmsnapshot',
+          message: 'message.action.create.snapshot.from.vmsnapshot',
+          dataView: true,
+          popup: true,
+          show: (record) => { return (record.state === 'Ready' && record.hypervisor === 'KVM') },
+          component: () => import('@/views/storage/CreateSnapshotFromVMSnapshot.vue')
+        },
         {
           api: 'revertToVMSnapshot',
           icon: 'sync',
@@ -316,6 +356,7 @@ export default {
           label: 'label.action.vmsnapshot.delete',
           message: 'message.action.vmsnapshot.delete',
           dataView: true,
+          show: (record) => { return ['Ready', 'Expunging', 'Error'].includes(record.state) },
           args: ['vmsnapshotid'],
           mapping: {
             vmsnapshotid: {
@@ -336,9 +377,11 @@ export default {
         {
           api: 'restoreBackup',
           icon: 'sync',
+          docHelp: 'adminguide/virtual_machines.html#restoring-vm-backups',
           label: 'label.backup.restore',
           message: 'message.backup.restore',
-          dataView: true
+          dataView: true,
+          show: (record) => { return record.state !== 'Destroyed' }
         },
         {
           api: 'restoreVolumeFromBackupAndAttachToVM',
@@ -346,6 +389,7 @@ export default {
           label: 'label.backup.attach.restore',
           message: 'message.backup.attach.restore',
           dataView: true,
+          show: (record) => { return record.state !== 'Destroyed' },
           popup: true,
           component: () => import('@/views/storage/RestoreAttachBackupVolume.vue')
         },
@@ -355,6 +399,7 @@ export default {
           label: 'label.backup.offering.remove',
           message: 'message.backup.offering.remove',
           dataView: true,
+          show: (record) => { return record.state !== 'Destroyed' },
           args: ['forced', 'virtualmachineid'],
           mapping: {
             forced: {
@@ -370,7 +415,8 @@ export default {
           icon: 'delete',
           label: 'label.delete.backup',
           message: 'message.delete.backup',
-          dataView: true
+          dataView: true,
+          show: (record) => { return record.state !== 'Destroyed' }
         }
       ]
     }

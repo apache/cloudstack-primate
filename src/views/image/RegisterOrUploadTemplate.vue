@@ -19,7 +19,7 @@
   <div class="form-layout">
     <span v-if="uploadPercentage > 0">
       <a-icon type="loading" />
-      Do not close this form, file upload is in progress...
+      {{ $t('message.upload.file.processing') }}
       <a-progress :percent="uploadPercentage" />
     </span>
     <a-spin :spinning="loading" v-else>
@@ -31,6 +31,7 @@
           <a-row :gutter="12">
             <a-form-item :label="$t('label.url')">
               <a-input
+                autoFocus
                 v-decorator="['url', {
                   rules: [{ required: true, message: `${this.$t('message.error.required.input')}` }]
                 }]"
@@ -52,7 +53,7 @@
                 <a-icon type="cloud-upload" />
               </p>
               <p class="ant-upload-text" v-if="fileList.length === 0">
-                Click or drag file to this area to upload
+                {{ $t('label.volume.volumefileupload.description') }}
               </p>
             </a-upload-dragger>
           </a-form-item>
@@ -113,9 +114,16 @@
                 :help="zoneErrorMessage">
                 <a-select
                   v-decorator="['zoneid', {
-                    initialValue: this.zoneSelected
+                    initialValue: this.zoneSelected,
+                    rules: [
+                      {
+                        required: true,
+                        message: `${this.$t('message.error.select')}`
+                      }
+                    ]
                   }]"
                   @change="handlerSelectZone"
+                  :placeholder="apiParams.zoneid.description"
                   :loading="zones.loading">
                   <a-select-option :value="zone.id" v-for="zone in zones.opts" :key="zone.id">
                     <div v-if="zone.name !== $t('label.all.zone')">
@@ -180,6 +188,13 @@
                   rules: [{ required: false, message: `${this.$t('message.error.required.input')}` }]
                 }]"
                 :placeholder="apiParams.checksum.description" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-row :gutter="12" v-if="allowed && hyperVMWShow && currentForm !== 'Upload' && deployAsIsSupported">
+          <a-col :md="24" :lg="12">
+            <a-form-item :label="$t('label.deployasis')">
+              <a-switch v-decorator="['deployasis']" />
             </a-form-item>
           </a-col>
         </a-row>
@@ -433,6 +448,11 @@ export default {
   mounted () {
     this.fetchData()
   },
+  computed: {
+    deployAsIsSupported () {
+      return this.apiConfig.params.filter(x => x.name === 'deployasis').length > 0
+    }
+  },
   methods: {
     fetchData () {
       this.fetchZone()
@@ -476,16 +496,17 @@ export default {
           timeout: 86400000
         }).then((json) => {
         this.$notification.success({
-          message: 'Upload Successful',
-          description: 'This template file has been uploaded. Please check its status at Templates menu'
+          message: this.$t('message.success.upload'),
+          description: this.$t('message.success.upload.template.description')
         })
-        this.closeAction()
       }).catch(e => {
         this.$notification.error({
-          message: 'Upload Failed',
-          description: `Failed to upload Template -  ${e}`,
+          message: this.$t('message.upload.failed'),
+          description: `${this.$t('message.upload.template.failed.description')} -  ${e}`,
           duration: 0
         })
+      }).finally(() => {
+        this.$emit('refresh-data')
         this.closeAction()
       })
     },
@@ -852,23 +873,23 @@ export default {
         if (this.currentForm === 'Create') {
           this.loading = true
           api('registerTemplate', params).then(json => {
-            this.$emit('refresh-data')
             this.$notification.success({
-              message: 'Register Template',
-              description: 'Successfully registered template ' + params.name
+              message: this.$t('label.register.template'),
+              description: `${this.$t('message.success.register.template')} ${params.name}`
             })
           }).catch(error => {
             this.$notifyError(error)
           }).finally(() => {
             this.loading = false
+            this.$emit('refresh-data')
             this.closeAction()
           })
         } else {
           this.loading = true
           if (this.fileList.length > 1) {
             this.$notification.error({
-              message: 'Template Upload Failed',
-              description: 'Only one template can be uploaded at a time',
+              message: this.$t('message.error.upload.template'),
+              description: this.$t('message.error.upload.template.description'),
               duration: 0
             })
           }
@@ -894,7 +915,7 @@ export default {
 
       if (allZoneExists.length > 0 && zones.length > 1) {
         this.zoneError = 'error'
-        this.zoneErrorMessage = this.$t('label.error.zone.combined')
+        this.zoneErrorMessage = this.$t('message.error.zone.combined')
       }
     },
     closeAction () {

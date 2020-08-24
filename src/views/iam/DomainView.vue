@@ -176,7 +176,7 @@ export default {
         this.treeSelected = domains[0] || {}
       }).catch(error => {
         this.$notification.error({
-          message: 'Request Failed',
+          message: this.$t('message.request.failed'),
           description: error.response.headers['x-description'],
           duration: 0
         })
@@ -210,12 +210,18 @@ export default {
         return 0
       })
       this.action.paramFields = []
-      if (action.args && action.args.length > 0) {
-        this.action.paramFields = action.args.map(function (arg) {
-          return paramFields.filter(function (param) {
-            return param.name.toLowerCase() === arg.toLowerCase()
-          })[0]
-        })
+      if (action.args) {
+        var args = action.args
+        if (typeof action.args === 'function') {
+          args = action.args(action.resource, this.$store.getters)
+        }
+        if (args.length > 0) {
+          this.action.paramFields = args.map(function (arg) {
+            return paramFields.filter(function (param) {
+              return param.name.toLowerCase() === arg.toLowerCase()
+            })[0]
+          })
+        }
       }
       this.showAction = true
       for (const param of this.action.paramFields) {
