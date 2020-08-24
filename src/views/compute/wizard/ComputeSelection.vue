@@ -86,7 +86,7 @@ export default {
     },
     minMemory: {
       type: Number,
-      default: 1
+      default: 0
     },
     maxMemory: {
       type: Number,
@@ -138,19 +138,22 @@ export default {
   watch: {
     computeOfferingId (newValue, oldValue) {
       if (newValue !== oldValue) {
-        this.cpuNumberInputValue = this.minCpu
-        this.memoryInputValue = this.minMemory
+        this.fillValue()
       }
     }
   },
   mounted () {
-    this.cpuNumberInputValue = this.minCpu
-    this.memoryInputValue = this.minMemory
     this.fillValue()
   },
   methods: {
     fillValue () {
+      this.cpuNumberInputValue = this.minCpu
+      this.memoryInputValue = this.minMemory
+
       if (!this.preFillContent) {
+        this.updateComputeCpuNumber(this.cpuNumberInputValue)
+        this.updateComputeCpuSpeed(this.cpuSpeedInputValue)
+        this.updateComputeMemory(this.memoryInputValue)
         return
       }
       if (this.preFillContent.cpunumber) {
@@ -162,6 +165,9 @@ export default {
       if (this.preFillContent.memory) {
         this.memoryInputValue = this.preFillContent.memory
       }
+      this.updateComputeCpuNumber(this.preFillContent.cpunumber || this.cpuNumberInputValue)
+      this.updateComputeCpuSpeed(this.preFillContent.cpuspeed || this.cpuSpeedInputValue)
+      this.updateComputeMemory(this.preFillContent.memory || this.memoryInputValue)
     },
     updateComputeCpuNumber (value) {
       if (!this.validateInput('cpu', value)) {
