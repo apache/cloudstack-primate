@@ -25,10 +25,20 @@
             :validate-status="errors.cpu.status"
             :help="errors.cpu.message">
             <a-row :gutter="12">
-              <a-input-number
-                v-model="cpuNumberInputValue"
-                @change="($event) => updateComputeCpuNumber($event)"
-              />
+              <a-col :md="10" :lg="10" v-show="isConstrained">
+                <a-slider
+                  :min="minCpu"
+                  :max="maxCpu"
+                  v-model="cpuNumberInputValue"
+                  @change="($event) => updateComputeCpuNumber($event)"
+                />
+              </a-col>
+              <a-col :md="4" :lg="4">
+                <a-input-number
+                  v-model="cpuNumberInputValue"
+                  @change="($event) => updateComputeCpuNumber($event)"
+                />
+              </a-col>
             </a-row>
           </a-form-item>
         </a-col>
@@ -49,13 +59,23 @@
             :validate-status="errors.memory.status"
             :help="errors.memory.message">
             <a-row :gutter="12">
-              <span style="display: inline-flex">
-                <a-input-number
+              <a-col :md="10" :lg="10" v-show="isConstrained">
+                <a-slider
+                  :min="minMemory"
+                  :max="maxMemory"
                   v-model="memoryInputValue"
                   @change="($event) => updateComputeMemory($event)"
                 />
-                <span style="padding-top: 6px; margin-left: 5px">MB</span>
-              </span>
+              </a-col>
+              <a-col :md="4" :lg="4">
+                <span style="display: inline-flex">
+                  <a-input-number
+                    v-model="memoryInputValue"
+                    @change="($event) => updateComputeMemory($event)"
+                  />
+                  <span style="padding-top: 6px; margin-left: 5px">MB</span>
+                </span>
+              </a-col>
             </a-row>
           </a-form-item>
         </a-col>
@@ -170,6 +190,7 @@ export default {
       this.updateComputeMemory(this.preFillContent.memory || this.memoryInputValue)
     },
     updateComputeCpuNumber (value) {
+      if (!value) this.cpuNumberInputValue = 0
       if (!this.validateInput('cpu', value)) {
         return
       }
@@ -179,6 +200,7 @@ export default {
       this.$emit('update-compute-cpuspeed', this.cpuspeedInputDecorator, value)
     },
     updateComputeMemory (value) {
+      if (!value) this.memoryInputValue = 0
       if (!this.validateInput('memory', value)) {
         return
       }
