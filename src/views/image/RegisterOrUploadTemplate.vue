@@ -31,6 +31,7 @@
           <a-row :gutter="12">
             <a-form-item :label="$t('label.url')">
               <a-input
+                autoFocus
                 v-decorator="['url', {
                   rules: [{ required: true, message: `${this.$t('message.error.required.input')}` }]
                 }]"
@@ -187,6 +188,13 @@
                   rules: [{ required: false, message: `${this.$t('message.error.required.input')}` }]
                 }]"
                 :placeholder="apiParams.checksum.description" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-row :gutter="12" v-if="allowed && hyperVMWShow && currentForm !== 'Upload' && deployAsIsSupported">
+          <a-col :md="24" :lg="12">
+            <a-form-item :label="$t('label.deployasis')">
+              <a-switch v-decorator="['deployasis']" />
             </a-form-item>
           </a-col>
         </a-row>
@@ -439,6 +447,11 @@ export default {
   },
   mounted () {
     this.fetchData()
+  },
+  computed: {
+    deployAsIsSupported () {
+      return this.apiConfig.params.filter(x => x.name === 'deployasis').length > 0
+    }
   },
   methods: {
     fetchData () {
