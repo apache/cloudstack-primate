@@ -223,7 +223,7 @@ export default {
 
       this.loading = true
       this.parentToggleLoading()
-      api('addCluster', {
+      api('addCluster', {}, 'POST', {
         zoneId: this.zoneId,
         hypervisor: this.hypervisor,
         clustertype: this.clustertype,
