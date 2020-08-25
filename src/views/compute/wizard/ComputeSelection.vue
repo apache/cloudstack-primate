@@ -68,13 +68,10 @@
                 />
               </a-col>
               <a-col :md="4" :lg="4">
-                <span style="display: inline-flex">
-                  <a-input-number
-                    v-model="memoryInputValue"
-                    @change="($event) => updateComputeMemory($event)"
-                  />
-                  <span style="padding-top: 6px; margin-left: 5px">MB</span>
-                </span>
+                <a-input-number
+                  v-model="memoryInputValue"
+                  @change="($event) => updateComputeMemory($event)"
+                />
               </a-col>
             </a-row>
           </a-form-item>
