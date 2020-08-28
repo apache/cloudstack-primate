@@ -505,7 +505,7 @@
             </a-steps>
             <div class="card-footer">
               <!-- ToDo extract as component -->
-              <a-button @click="() => this.$router.back()" v-if="!this.loading.deploy">
+              <a-button @click="() => this.$router.back()" :disabled="loading.deploy">
                 {{ this.$t('label.cancel') }}
               </a-button>
               <a-button type="primary" @click="handleSubmit" :loading="loading.deploy">
