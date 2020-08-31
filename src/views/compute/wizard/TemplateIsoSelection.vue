@@ -20,7 +20,6 @@
     <a-input-search
       class="search-input"
       :placeholder="$t('label.search')"
-      v-model="filter"
       @search="handleSearch">
     </a-input-search>
     <a-spin :spinning="loading">
@@ -42,7 +41,7 @@
             :selected="checkedValue"
             :preFillContent="preFillContent"
             @emit-update-template-iso="updateTemplateIso"
-            @handle-search-filter="($event) => emitSearchFilter($event)"
+            @handle-search-filter="($event) => eventPagination($event)"
           ></TemplateIsoRadioGroup>
         </a-tab-pane>
       </a-tabs>
@@ -95,17 +94,19 @@ export default {
         id: 'sharedexecutable',
         name: 'label.sharedexecutable'
       }],
-      filterType: 'featured'
+      filterType: 'featured',
+      pagination: false
     }
   },
   watch: {
     items (items) {
-      this.checkedValue = ''
       const key = this.inputDecorator.slice(0, -2)
       for (const filter of this.filterOpts) {
         if (items[filter.id] && items[filter.id][key] && items[filter.id][key].length > 0) {
-          this.filterType = filter.id
-          this.checkedValue = items[filter.id][key][0].id
+          if (!this.pagination) {
+            this.filterType = filter.id
+            this.checkedValue = items[filter.id][key][0].id
+          }
           break
         }
       }
@@ -125,12 +126,20 @@ export default {
       this.$emit('update-template-iso', name, id)
     },
     handleSearch (value) {
+      if (!this.filter && !value) {
+        return
+      }
+      this.pagination = false
       this.filter = value
       const options = {
         page: 1,
         pageSize: 10,
         keyword: this.filter
       }
+      this.emitSearchFilter(options)
+    },
+    eventPagination (options) {
+      this.pagination = true
       this.emitSearchFilter(options)
     },
     emitSearchFilter (options) {

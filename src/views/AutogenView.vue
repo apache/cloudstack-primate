@@ -85,6 +85,7 @@
         <a-modal
           :visible="showAction"
           :closable="true"
+          :maskClosable="false"
           style="top: 20px;"
           @cancel="closeAction"
           :confirmLoading="actionLoading"
@@ -117,6 +118,7 @@
         v-else
         :visible="showAction"
         :closable="true"
+        :maskClosable="false"
         style="top: 20px;"
         @ok="handleSubmit"
         @cancel="closeAction"
@@ -390,7 +392,11 @@ export default {
     this.form = this.$form.createForm(this)
   },
   created () {
-    eventBus.$on('refresh-data', this.fetchData)
+    eventBus.$on('vm-refresh-data', () => {
+      if (this.$route.path === '/vm' || this.$route.path.includes('/vm/')) {
+        this.fetchData()
+      }
+    })
   },
   mounted () {
     if (this.device === 'desktop') {

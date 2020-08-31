@@ -191,7 +191,7 @@
                       :preFillContent="dataPreFill"
                       :computeOfferingId="instanceConfig.computeofferingid"
                       :isConstrained="'serviceofferingdetails' in serviceOffering"
-                      :minCpu="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.mincpunumber*1 : 1"
+                      :minCpu="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.mincpunumber*1 : 0"
                       :maxCpu="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.maxcpunumber*1 : Number.MAX_SAFE_INTEGER"
                       :minMemory="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.minmemory*1 : 0"
                       :maxMemory="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.maxmemory*1 : Number.MAX_SAFE_INTEGER"
@@ -275,7 +275,7 @@
                         </a-select>
                       </a-form-item>
                     </div>
-                    <div v-else>
+                    <div v-show="!(vm.templateid && templateNics && templateNics.length > 0)" >
                       <network-selection
                         v-if="!networkId"
                         :items="options.networks"
@@ -1139,10 +1139,6 @@ export default {
             this.templateLicenses = []
             this.templateProperties = {}
             this.updateTemplateParameters()
-            if (t.deployasis === true && !t.details && (!this.template || t.id !== this.template.id)) {
-              // Deploy as-is template without details detected, need to retrieve the template details
-              this.fetchTemplateDetails(t)
-            }
             template = t
             break
           }
@@ -1334,6 +1330,12 @@ export default {
                 arrNetwork.push(ipToNetwork)
               }
             }
+          } else {
+            this.$notification.error({
+              message: this.$t('message.request.failed'),
+              description: this.$t('message.step.4.continue')
+            })
+            return
           }
           for (let j = 0; j < arrNetwork.length; j++) {
             deployVmData['iptonetworklist[' + j + '].networkid'] = arrNetwork[j].networkid
@@ -1384,15 +1386,15 @@ export default {
                     duration: 0
                   })
                 }
-                eventBus.$emit('refresh-data')
+                eventBus.$emit('vm-refresh-data')
               },
               errorMethod: () => {
-                eventBus.$emit('refresh-data')
+                eventBus.$emit('vm-refresh-data')
               },
               loadingMessage: `${title} ${this.$t('label.in.progress')}`,
               catchMessage: this.$t('error.fetching.async.job.result'),
               catchMethod: () => {
-                eventBus.$emit('refresh-data')
+                eventBus.$emit('vm-refresh-data')
               }
             })
             this.$store.dispatch('AddAsyncJob', {
@@ -1402,6 +1404,10 @@ export default {
               status: 'progress'
             })
           }
+          // Sending a refresh in case it hasn't picked up the new VM
+          new Promise(resolve => setTimeout(resolve, 3000)).then(() => {
+            eventBus.$emit('vm-refresh-data')
+          })
           this.$router.back()
         }).catch(error => {
           this.$notifyError(error)
@@ -1474,35 +1480,18 @@ export default {
         this.loading[name] = false
       })
     },
-    fetchTemplateDetails (template) {
-      api('listTemplates', {
-        templateFilter: 'all',
-        id: template.id,
-        details: 'all'
-      }).then(response => {
-        if (response && response.listtemplatesresponse) {
-          const items = response.listtemplatesresponse.template
-          if (items && items.length > 0) {
-            this.template.details = items[0].details
-            this.updateTemplateParameters()
-          }
-        }
-      }).catch(error => {
-        this.$notifyError(error)
-      })
-    },
     fetchTemplates (templateFilter, params) {
-      params = params || {}
-      if (params.keyword || params.category !== templateFilter) {
-        params.page = 1
-        params.pageSize = params.pageSize || 10
+      const args = Object.assign({}, params)
+      if (args.keyword || args.category !== templateFilter) {
+        args.page = 1
+        args.pageSize = args.pageSize || 10
       }
-      params.zoneid = _.get(this.zone, 'id')
-      params.templatefilter = templateFilter
-      params.details = 'min'
+      args.zoneid = _.get(this.zone, 'id')
+      args.templatefilter = templateFilter
+      args.details = 'all'
 
       return new Promise((resolve, reject) => {
-        api('listTemplates', params).then((response) => {
+        api('listTemplates', args).then((response) => {
           resolve(response)
         }).catch((reason) => {
           // ToDo: Handle errors
@@ -1511,17 +1500,17 @@ export default {
       })
     },
     fetchIsos (isoFilter, params) {
-      params = params || {}
-      if (params.keyword || params.category !== isoFilter) {
-        params.page = 1
-        params.pageSize = params.pageSize || 10
+      const args = Object.assign({}, params)
+      if (args.keyword || args.category !== isoFilter) {
+        args.page = 1
+        args.pageSize = args.pageSize || 10
       }
-      params.zoneid = _.get(this.zone, 'id')
-      params.isoFilter = isoFilter
-      params.bootable = true
+      args.zoneid = _.get(this.zone, 'id')
+      args.isoFilter = isoFilter
+      args.bootable = true
 
       return new Promise((resolve, reject) => {
-        api('listIsos', params).then((response) => {
+        api('listIsos', args).then((response) => {
           resolve(response)
         }).catch((reason) => {
           // ToDo: Handle errors
@@ -1718,13 +1707,12 @@ export default {
         this.templateProperties = this.fetchTemplateProperties(this.template)
         this.selectedTemplateConfiguration = {}
         if (this.templateConfigurationExists) {
-          setTimeout(() => {
-            this.selectedTemplateConfiguration = this.templateConfigurations[0]
-            if ('templateConfiguration' in this.form.fieldsStore.fieldsMeta) {
-              this.updateFieldValue('templateConfiguration', this.selectedTemplateConfiguration.id)
-            }
-            this.updateComputeOffering(null) // reset as existing selection may be incompatible
-          }, 500)
+          this.selectedTemplateConfiguration = this.templateConfigurations[0]
+          this.handleTemplateConfiguration()
+          if ('templateConfiguration' in this.form.fieldsStore.fieldsMeta) {
+            this.updateFieldValue('templateConfiguration', this.selectedTemplateConfiguration.id)
+          }
+          this.updateComputeOffering(null) // reset as existing selection may be incompatible
         }
       }
     },
