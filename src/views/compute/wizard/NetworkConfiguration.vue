@@ -26,16 +26,30 @@
     :scroll="{ y: 225 }"
   >
     <template slot="ipAddress" slot-scope="text, record">
-      <a-input
-        style="width: 150px;"
-        :placeholder="$t('label.ipaddress')"
-        @change="($event) => updateNetworkData('ipAddress', record.id, $event.target.value)" />
+      <a-form-item>
+        <a-input
+          style="width: 150px;"
+          v-decorator="['ipAddress' + record.id]"
+          :placeholder="$t('label.ipaddress')"
+          @change="($event) => updateNetworkData('ipAddress', record.id, $event.target.value)" />
+      </a-form-item>
     </template>
     <template slot="macAddress" slot-scope="text, record">
-      <a-input
-        style="width: 150px;"
-        :placeholder="$t('label.macaddress')"
-        @change="($event) => updateNetworkData('macAddress', record.id, $event.target.value)" />
+      <a-form-item>
+        <a-input
+          style="width: 150px;"
+          :placeholder="$t('label.macaddress')"
+          v-decorator="[`macAddress` + record.id, {
+            rules: [{
+              validator: validatorMacAddress
+            }]
+          }]"
+          @change="($event) => updateNetworkData('macAddress', record.id, $event.target.value)">
+          <a-tooltip slot="suffix" :title="$t('label.macaddress.example')">
+            <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+          </a-tooltip>
+        </a-input>
+      </a-form-item>
     </template>
   </a-table>
 </template>
@@ -80,7 +94,8 @@ export default {
         }
       ],
       selectedRowKeys: [],
-      dataItems: []
+      dataItems: [],
+      macRegex: /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/i
     }
   },
   beforeCreate () {
@@ -150,6 +165,15 @@ export default {
           this.$emit('select-default-network-item', this.dataItems[0].id)
         }
       }
+    },
+    validatorMacAddress (rule, value, callback) {
+      if (!value || value === '') {
+        callback()
+      } else if (!this.macRegex.test(value)) {
+        callback(this.$t('message.error.macaddress'))
+      } else {
+        callback()
+      }
     }
   }
 }
@@ -158,5 +182,14 @@ export default {
 <style lang="less" scoped>
   .ant-table-wrapper {
     margin: 2rem 0;
+  }
+
+  /deep/.ant-table-tbody > tr td {
+    vertical-align: baseline;
+  }
+
+  .ant-form .ant-form-item {
+    margin-bottom: 0;
+    padding-bottom: 0;
   }
 </style>
