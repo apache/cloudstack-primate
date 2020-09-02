@@ -654,6 +654,10 @@ export default {
         }
       }).finally(f => {
         this.loading = false
+        // Refresh the data every 30 sec
+        if (!this.$route.path.startsWith('/exception')) {
+          setTimeout(this.fetchData, 30000)
+        }
       })
     },
     closeAction () {
