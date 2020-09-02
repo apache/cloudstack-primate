@@ -50,7 +50,7 @@
         <a-descriptions-item :label="$t('label.ip6cidr')" v-if="record.ip6cidr">
           {{ record.ip6cidr }}
         </a-descriptions-item>
-        <template v-if="['Admin'].includes($store.getters.userInfo.roletype)">
+        <template v-if="['Admin', 'DomainAdmin'].includes($store.getters.userInfo.roletype)">
           <a-descriptions-item :label="$t('label.broadcasturi')" v-if="record.broadcasturi">
             {{ record.broadcasturi }}
           </a-descriptions-item>
