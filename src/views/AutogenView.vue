@@ -397,6 +397,9 @@ export default {
         this.fetchData()
       }
     })
+    eventBus.$on('async-job-complete', () => {
+      this.fetchData()
+    })
   },
   mounted () {
     if (this.device === 'desktop') {

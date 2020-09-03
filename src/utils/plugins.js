@@ -19,6 +19,7 @@ import _ from 'lodash'
 import i18n from '@/locales'
 import { api } from '@/api'
 import { message, notification } from 'ant-design-vue'
+import eventBus from '@/config/eventBus'
 
 export const pollJobPlugin = {
   install (Vue) {
@@ -63,6 +64,7 @@ export const pollJobPlugin = {
             key: jobId,
             duration: 2
           })
+          eventBus.$emit('async-job-complete')
           successMethod(result)
         } else if (result.jobstatus === 2) {
           message.error({
@@ -84,6 +86,7 @@ export const pollJobPlugin = {
             key: jobId,
             duration: 0
           })
+          eventBus.$emit('async-job-complete')
           errorMethod(result)
         } else if (result.jobstatus === 0) {
           message.loading({
