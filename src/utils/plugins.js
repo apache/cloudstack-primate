@@ -31,6 +31,7 @@ export const pollJobPlugin = {
        * @param {Function} [successMethod=() => {}]
        * @param {String} [errorMessage=Error]
        * @param {Function} [errorMethod=() => {}]
+       * @param {Object} [showLoading=true]
        * @param {String} [loadingMessage=Loading...]
        * @param {String} [catchMessage=Error caught]
        * @param {Function} [catchMethod=() => {}]
@@ -44,6 +45,7 @@ export const pollJobPlugin = {
         errorMessage = i18n.t('label.error'),
         errorMethod = () => {},
         loadingMessage = `${i18n.t('label.loading')}...`,
+        showLoading = true,
         catchMessage = i18n.t('label.error.caught'),
         catchMethod = () => {},
         action = null
@@ -89,11 +91,13 @@ export const pollJobPlugin = {
           eventBus.$emit('async-job-complete')
           errorMethod(result)
         } else if (result.jobstatus === 0) {
-          message.loading({
-            content: loadingMessage,
-            key: jobId,
-            duration: 0
-          })
+          if (showLoading) {
+            message.loading({
+              content: loadingMessage,
+              key: jobId,
+              duration: 0
+            })
+          }
           setTimeout(() => {
             this.$pollJob(options, action)
           }, 3000)
