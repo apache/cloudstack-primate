@@ -95,7 +95,7 @@ export default {
     },
     minCpu: {
       type: Number,
-      default: 1
+      default: 0
     },
     maxCpu: {
       type: Number,
@@ -128,9 +128,9 @@ export default {
   },
   data () {
     return {
-      cpuNumberInputValue: 1,
-      cpuSpeedInputValue: 1,
-      memoryInputValue: 1,
+      cpuNumberInputValue: 0,
+      cpuSpeedInputValue: 0,
+      memoryInputValue: 0,
       errors: {
         cpu: {
           status: '',

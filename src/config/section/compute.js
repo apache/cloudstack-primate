@@ -332,7 +332,7 @@ export default {
           docHelp: 'adminguide/virtual_machines.html#resetting-ssh-keys',
           dataView: true,
           args: ['keypair', 'account', 'domainid'],
-          show: (record) => { return ['Running', 'Stopped'].includes(record.state) },
+          show: (record) => { return ['Stopped'].includes(record.state) },
           mapping: {
             keypair: {
               api: 'listSSHKeyPairs',
@@ -367,6 +367,7 @@ export default {
           api: 'unmanageVirtualMachine',
           icon: 'disconnect',
           label: 'label.action.unmanage.virtualmachine',
+          message: 'message.action.unmanage.virtualmachine',
           dataView: true,
           show: (record) => { return ['Running', 'Stopped'].includes(record.state) && record.hypervisor === 'VMware' }
         },
@@ -387,11 +388,14 @@ export default {
           docHelp: 'adminguide/virtual_machines.html#deleting-vms',
           dataView: true,
           groupAction: true,
-          args: ['expunge'],
+          args: (record, store, group) => {
+            return (['Admin'].includes(store.userInfo.roletype) || store.features.allowuserexpungerecovervm)
+              ? ['expunge'] : []
+          },
           popup: true,
           groupMap: (selection, values) => { return selection.map(x => { return { id: x, expunge: values.expunge } }) },
           show: (record) => { return ['Running', 'Stopped', 'Error'].includes(record.state) },
-          component: () => import('@/views/compute/DestoryVM.vue')
+          component: () => import('@/views/compute/DestroyVM.vue')
         }
       ]
     },
