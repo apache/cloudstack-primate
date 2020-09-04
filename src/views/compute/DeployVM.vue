@@ -1471,6 +1471,11 @@ export default {
               this.fillValue(param.field)
             }
           })
+
+          if (name === 'zones' && this.options.zones.length === 1) {
+            this.form.getFieldDecorator(['zoneid'], { initialValue: this.options.zones[0].id })
+            this.onSelectZoneId(this.options.zones[0].id)
+          }
         })
       }).catch(function (error) {
         console.log(error.stack)
