@@ -281,7 +281,7 @@
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.networks && resource.networks.length > 0">
-          <div class="resource-detail-item__label">Network(s)</div>
+          <div class="resource-detail-item__label">{{ $t('label.networks') }}</div>
           <div class="resource-detail-item__details resource-detail-item__details--start">
             <div>
               <div
