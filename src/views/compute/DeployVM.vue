@@ -157,7 +157,7 @@
                           'templateConfiguration'
                         ]"
                         defaultActiveFirstOption
-                        :placeholder="'Something'"
+                        :placeholder="$t('label.configuration')"
                         :filterOption="(input, option) => {
                           return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
                         }"
@@ -184,7 +184,6 @@
                     ></compute-offering-selection>
                     <compute-selection
                       v-if="serviceOffering && serviceOffering.iscustomized"
-                      v-show="!templateConfigurationExists"
                       cpunumber-input-decorator="cpunumber"
                       cpuspeed-input-decorator="cpuspeed"
                       memory-input-decorator="memory"
@@ -341,7 +340,7 @@
                         v-for="(property, propertyIndex) in props"
                         :key="propertyIndex"
                         :v-bind="property.key" >
-                        <span slot="label">
+                        <span slot="label" style="text-transform: capitalize">
                           {{ property.label }}
                           <a-tooltip :title="property.description">
                             <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
@@ -380,7 +379,49 @@
                         </span>
                         <span v-else-if="property.type && property.type==='string' && property.password">
                           <a-input-password
-                            v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value }]"
+                            v-decorator="['properties.' + escapePropertyKey(property.key), {
+                              rules: [
+                                {
+                                  initialValue: property.value
+                                },
+                                {
+                                  validator: (rule, value, callback) => {
+                                    if (!property.qualifiers) {
+                                      callback()
+                                    }
+                                    var minlength = getPropertyQualifiers(property.qualifiers, 'number-select').min
+                                    var maxlength = getPropertyQualifiers(property.qualifiers, 'number-select').max
+                                    var errorMessage = ''
+                                    var isPasswordInvalidLength = function () {
+                                      return false
+                                    }
+                                    if (minlength) {
+                                      errorMessage = $t('message.validate.minlength').replace('{0}', minlength)
+                                      isPasswordInvalidLength = function () {
+                                        return !value || value.length < minlength
+                                      }
+                                    }
+                                    if (maxlength !== Number.MAX_SAFE_INTEGER) {
+                                      if (minlength) {
+                                        errorMessage = $t('message.validate.range.length').replace('{0}', minlength).replace('{1}', maxlength)
+                                        isPasswordInvalidLength = function () {
+                                          return !value || (maxlength < value.length || value.length < minlength)
+                                        }
+                                      } else {
+                                        errorMessage = $t('message.validate.maxlength').replace('{0}', maxlength)
+                                        isPasswordInvalidLength = function () {
+                                          return !value || value.length > maxlength
+                                        }
+                                      }
+                                    }
+                                    if (isPasswordInvalidLength()) {
+                                      callback(errorMessage)
+                                    }
+                                    callback()
+                                  }
+                                }
+                              ]
+                            }]"
                             :placeholder="property.description" />
                         </span>
                         <span v-else>
@@ -485,7 +526,7 @@
                         v-for="(license, licenseIndex) in templateLicenses"
                         :key="licenseIndex"
                         :v-bind="license.id">
-                        <span slot="label">
+                        <span slot="label" style="text-transform: capitalize">
                           {{ 'Agreement ' + (licenseIndex+1) + ': ' + license.name }}
                         </span>
                         <a-textarea
@@ -495,7 +536,18 @@
                       </div>
                       <a-checkbox
                         style="margin-top: 10px"
-                        v-decorator="['licensesaccepted']">
+                        v-decorator="['licensesaccepted', {
+                          rules: [
+                            {
+                              validator: (rule, value, callback) => {
+                                if (!value) {
+                                  callback($t('message.license.agreements.not.accepted'))
+                                }
+                                callback()
+                              }
+                            }
+                          ]
+                        }]">
                         {{ $t('label.i.accept.all.license.agreements') }}
                       </a-checkbox>
                     </a-form-item>
@@ -1019,11 +1071,14 @@ export default {
         case 'number-select':
           var min = 0
           var max = Number.MAX_SAFE_INTEGER
-          if (qualifiers && qualifiers.includes('MinValue') && qualifiers.includes('MaxValue')) {
-            var arr = qualifiers.split(',')
-            if (arr.length > 1) {
-              min = arr[0].replace('MinValue(', '').slice(0, -1)
-              max = arr[1].replace('MaxValue(', '').slice(0, -1)
+          if (qualifiers) {
+            var match = qualifiers.match(/MinLen\((\d+)\)/)
+            if (match) {
+              min = parseInt(match[1])
+            }
+            match = qualifiers.match(/MaxLen\((\d+)\)/)
+            if (match) {
+              max = parseInt(match[1])
             }
           }
           result = { min: min, max: max }
@@ -1129,10 +1184,12 @@ export default {
           templateid: value,
           isoid: null
         })
+        this.resetFromTemplateConfiguration()
         let template = ''
         for (const key in this.options.templates) {
           var t = _.find(_.get(this.options.templates[key], 'template', []), (option) => option.id === value)
           if (t) {
+            this.template = t
             this.templateConfigurations = []
             this.selectedTemplateConfiguration = {}
             this.templateNics = []
@@ -1154,6 +1211,7 @@ export default {
         this.templateLicenses = []
         this.templateProperties = {}
         this.tabKey = 'isoid'
+        this.resetFromTemplateConfiguration()
         this.form.setFieldsValue({
           isoid: value,
           templateid: null
@@ -1224,6 +1282,18 @@ export default {
       e.preventDefault()
       this.form.validateFields(async (err, values) => {
         if (err) {
+          if (err.licensesaccepted) {
+            this.$notification.error({
+              message: this.$t('message.license.agreements.not.accepted'),
+              description: this.$t('message.step.license.agreements.continue')
+            })
+            return
+          }
+
+          this.$notification.error({
+            message: this.$t('message.request.failed'),
+            description: this.$t('error.form.message')
+          })
           return
         }
 
@@ -1244,13 +1314,6 @@ export default {
           this.$notification.error({
             message: this.$t('message.request.failed'),
             description: this.$t('message.step.2.continue')
-          })
-          return
-        }
-        if ('licensesaccepted' in values && values.licensesaccepted !== true) {
-          this.$notification.error({
-            message: this.$t('message.license.agreements.not.accepted'),
-            description: this.$t('message.step.license.agreements.continue')
           })
           return
         }
@@ -1371,6 +1434,7 @@ export default {
         const title = this.$t('label.launch.vm')
         const description = values.name || ''
         const password = this.$t('label.password')
+
         api('deployVirtualMachine', deployVmData).then(response => {
           const jobId = response.deployvirtualmachineresponse.jobid
           if (jobId) {
@@ -1677,7 +1741,7 @@ export default {
           configurations.push(configuration)
         }
         configurations.sort(function (a, b) {
-          return a.cpunumber - b.cpunumber
+          return a.index - b.index
         })
       }
       return configurations
@@ -1686,17 +1750,47 @@ export default {
       var licenses = []
       if (template && template.details && Object.keys(template.details).length > 0) {
         var keys = Object.keys(template.details)
-        keys = keys.filter(key => key.startsWith('ACS-eula-'))
+        const prefix = /ACS-eula-\d-/
+        keys = keys.filter(key => key.startsWith('ACS-eula-')).sort()
         for (var key of keys) {
           var license = {
             id: this.escapePropertyKey(key.replace(' ', '-')),
-            name: key.replace('ACS-eula-', ''),
+            name: key.replace(prefix, ''),
             text: template.details[key]
           }
           licenses.push(license)
         }
       }
       return licenses
+    },
+    deleteFrom (options, values) {
+      for (const value of values) {
+        delete options[value]
+      }
+    },
+    resetFromTemplateConfiguration () {
+      this.deleteFrom(this.params.serviceOfferings.options, ['cpuspeed', 'cpunumber', 'memory'])
+      this.deleteFrom(this.dataPreFill, ['cpuspeed', 'cpunumber', 'memory'])
+      this.handleSearchFilter('serviceOfferings', {
+        page: 1,
+        pageSize: 10
+      })
+    },
+    handleTemplateConfiguration () {
+      if (!this.selectedTemplateConfiguration) {
+        return
+      }
+      const params = {
+        cpunumber: this.selectedTemplateConfiguration.cpunumber,
+        cpuspeed: this.selectedTemplateConfiguration.cpuspeed,
+        memory: this.selectedTemplateConfiguration.memory,
+        page: 1,
+        pageSize: 10
+      }
+      this.dataPreFill.cpunumber = params.cpunumber
+      this.dataPreFill.cpuspeed = params.cpuspeed
+      this.dataPreFill.memory = params.memory
+      this.handleSearchFilter('serviceOfferings', params)
     },
     updateTemplateParameters () {
       if (this.template) {
@@ -1705,18 +1799,21 @@ export default {
         this.templateLicenses = this.fetchTemplateLicenses(this.template)
         this.templateProperties = this.fetchTemplateProperties(this.template)
         this.selectedTemplateConfiguration = {}
-        if (this.templateConfigurationExists) {
-          this.selectedTemplateConfiguration = this.templateConfigurations[0]
-          this.handleTemplateConfiguration()
-          if ('templateConfiguration' in this.form.fieldsStore.fieldsMeta) {
-            this.updateFieldValue('templateConfiguration', this.selectedTemplateConfiguration.id)
+        setTimeout(() => {
+          if (this.templateConfigurationExists) {
+            this.selectedTemplateConfiguration = this.templateConfigurations[0]
+            this.handleTemplateConfiguration()
+            if ('templateConfiguration' in this.form.fieldsStore.fieldsMeta) {
+              this.updateFieldValue('templateConfiguration', this.selectedTemplateConfiguration.id)
+            }
+            this.updateComputeOffering(null) // reset as existing selection may be incompatible
           }
-          this.updateComputeOffering(null) // reset as existing selection may be incompatible
-        }
+        }, 500)
       }
     },
     onSelectTemplateConfigurationId (value) {
       this.selectedTemplateConfiguration = _.find(this.templateConfigurations, (option) => option.id === value)
+      this.handleTemplateConfiguration()
       this.updateComputeOffering(null)
     },
     updateTemplateConfigurationOfferingDetails (offeringId) {
