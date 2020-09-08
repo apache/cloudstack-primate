@@ -99,30 +99,10 @@ export default {
           api: 'attachVolume',
           icon: 'paper-clip',
           label: 'label.action.attach.disk',
-          message: 'message.confirm.attach.disk',
-          args: ['virtualmachineid'],
-          mapping: {
-            virtualmachineid: {
-              api: 'listVirtualMachines',
-              params: (record) => {
-                var parameters = {
-                  zoneid: record.zoneid
-                }
-                if (record.hypervisor && record.hypervisor !== 'None') {
-                  parameters.hypervisor = record.hypervisor
-                }
-                if (record.project) {
-                  parameters.projectid = record.projectid
-                } else {
-                  parameters.account = record.account
-                  parameters.domainid = record.domainid
-                }
-                return parameters
-              }
-            }
-          },
           dataView: true,
-          show: (record) => { return record.type !== 'ROOT' && ['Allocated', 'Ready', 'Uploaded'].includes(record.state) && !('virtualmachineid' in record) }
+          show: (record) => { return record.type !== 'ROOT' && ['Allocated', 'Ready', 'Uploaded'].includes(record.state) && !('virtualmachineid' in record) },
+          popup: true,
+          component: () => import('@/views/storage/AttachVolume.vue')
         },
         {
           api: 'detachVolume',
