@@ -29,6 +29,7 @@ export const DEFAULT_CONTENT_WIDTH_TYPE = 'DEFAULT_CONTENT_WIDTH_TYPE'
 export const DEFAULT_MULTI_TAB = 'DEFAULT_MULTI_TAB'
 export const APIS = 'APIS'
 export const ZONES = 'ZONES'
+export const BREADCRUMB = 'BREADCRUMB'
 export const ASYNC_JOB_IDS = 'ASYNC_JOB_IDS'
 
 export const CONTENT_WIDTH_TYPE = {

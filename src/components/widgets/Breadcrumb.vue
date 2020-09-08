@@ -20,19 +20,22 @@
     <a-breadcrumb-item v-for="(item, index) in breadList" :key="index">
       <router-link
         v-if="item && item.name"
-        :to="{ path: item.path === '' ? '/' : item.path }"
+        :to="{ path: item.fullPath === '' ? '/' : item.fullPath }"
       >
         <a-icon v-if="index == 0" :type="item.meta.icon" style="font-size: 16px" @click="resetToMainView" />
         {{ $t(item.meta.title) }}
       </router-link>
-      <span v-else-if="$route.params.id">
-        <label v-if="'name' in resource">
-          <span v-if="['USER.LOGIN', 'USER.LOGOUT', 'ROUTER.HEALTH.CHECKS', 'FIREWALL.CLOSE', 'ALERT.SERVICE.DOMAINROUTER'].includes(resource.name)">{{ $t(resource.name.toLowerCase()) }}</span>
-          <span v-else>{{ resource.name }}</span>
-        </label>
-        <label v-else>
-          {{ resource.name || resource.displayname || resource.displaytext || resource.hostname || resource.username || resource.ipaddress || $route.params.id }}
-        </label>
+      <span v-else-if="'breadcrumbName' in item || 'id' in item">
+        <router-link
+          v-if="['USER.LOGIN', 'USER.LOGOUT', 'ROUTER.HEALTH.CHECKS', 'FIREWALL.CLOSE', 'ALERT.SERVICE.DOMAINROUTER'].includes(item.breadcrumbName)"
+          :to="{ path: item.fullPath === '' ? '/' : item.fullPath }"
+          v-html="$t(getBreadcrumbName(item))"
+        ></router-link>
+        <router-link
+          v-else
+          :to="{ path: item.fullPath === '' ? '/' : item.fullPath }"
+          v-html="getBreadcrumbName(item)"
+        ></router-link>
       </span>
       <span v-else>
         {{ $t(item.meta.title) }}
@@ -86,17 +89,26 @@ export default {
   methods: {
     getBreadcrumb () {
       this.name = this.$route.name
-      this.breadList = []
-      this.$route.matched.forEach((item) => {
-        if (item && item.parent && item.parent.name !== 'index' && !item.path.endsWith(':id')) {
-          this.breadList.pop()
-        }
-        this.breadList.push(item)
-      })
+      this.breadList = this.$store.getters.breadcrumb
     },
     resetToMainView () {
       this.$store.dispatch('SetProject', {})
       this.$store.dispatch('ToggleTheme', 'light')
+    },
+    getBreadcrumbName (item) {
+      if (!item.breadcrumbName) {
+        const name = this.resource.name || this.resource.displayname || this.resource.displaytext || this.resource.hostname || this.resource.username || this.resource.ipaddress || item.id
+
+        if (Object.keys(this.resource).length > 0) {
+          const idx = this.breadList.findIndex(bread => bread.id === item.id)
+          this.breadList[idx].breadcrumbName = name
+          this.$store.dispatch('SetBreadcrumb', this.breadList)
+        }
+
+        return name
+      } else {
+        return item.breadcrumbName
+      }
     }
   }
 }

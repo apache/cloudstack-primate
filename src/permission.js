@@ -32,6 +32,60 @@ NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
 const whiteList = ['login'] // no redirect whitelist
 
+const generateBreadcrumb = (from, to) => {
+  console.log(from.path, to.path)
+  store.dispatch('GetBreadcrumb')
+
+  const home = {
+    name: 'home',
+    path: '/dashboard',
+    fullPath: '/dashboard',
+    meta: {
+      icon: 'home'
+    }
+  }
+  let breadcrumb = store.getters.breadcrumb
+  const matched = to.matched[to.matched.length - 1]
+
+  if (breadcrumb.length === 0) {
+    breadcrumb = [home]
+  }
+
+  if (from.path !== '/') {
+    if (!matched.path.endsWith(':id')) {
+      if (Object.keys(to.query).length === 0) {
+        breadcrumb = [home]
+      }
+    }
+  }
+
+  const matchedIndex = breadcrumb.findIndex(item => item.path === to.path)
+  const item = {
+    name: to.name,
+    path: to.path,
+    fullPath: to.fullPath,
+    meta: to.meta,
+    params: to.params,
+    query: to.query
+  }
+
+  if (matched.path.endsWith(':id')) {
+    item.breadcrumbName = null
+    item.id = to.params.id
+  }
+
+  if (matchedIndex === -1) {
+    breadcrumb.push(item)
+  } else {
+    if (from.path !== '/') {
+      const itemIndex = breadcrumb.findIndex(item => item.path === to.path)
+      breadcrumb = breadcrumb.filter((item, index) => index <= itemIndex)
+    }
+  }
+
+  store.dispatch('SetBreadcrumb', breadcrumb)
+}
+
 router.beforeEach((to, from, next) => {
   // start progress bar
   NProgress.start()
@@ -86,6 +140,8 @@ router.beforeEach((to, from, next) => {
   }
 })
 
-router.afterEach(() => {
+router.afterEach((to, from) => {
+  generateBreadcrumb(from, to)
+
   NProgress.done() // finish progress bar
 })

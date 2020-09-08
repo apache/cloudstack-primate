@@ -26,7 +26,8 @@ import {
   DEFAULT_FIXED_SIDEMENU,
   DEFAULT_FIXED_HEADER_HIDDEN,
   DEFAULT_CONTENT_WIDTH_TYPE,
-  DEFAULT_MULTI_TAB
+  DEFAULT_MULTI_TAB,
+  BREADCRUMB
 } from '@/store/mutation-types'
 
 const app = {
@@ -43,7 +44,8 @@ const app = {
     color: null,
     inverted: true,
     multiTab: true,
-    metrics: false
+    metrics: false,
+    breadcrumb: []
   },
   mutations: {
     SET_SIDEBAR_TYPE: (state, type) => {
@@ -95,6 +97,10 @@ const app = {
     },
     SET_METRICS: (state, bool) => {
       state.metrics = bool
+    },
+    SET_BREADCRUMB: (state, breadcrumb) => {
+      Vue.ls.set(BREADCRUMB, breadcrumb)
+      state.breadcrumb = breadcrumb
     }
   },
   actions: {
@@ -139,6 +145,13 @@ const app = {
     },
     SetMetrics ({ commit }, bool) {
       commit('SET_METRICS', bool)
+    },
+    SetBreadcrumb ({ commit }, breadcrumb) {
+      commit('SET_BREADCRUMB', breadcrumb)
+    },
+    GetBreadcrumb ({ commit }) {
+      const breadcrumb = Vue.ls.get(BREADCRUMB, [])
+      commit('SET_BREADCRUMB', breadcrumb)
     }
   }
 }
