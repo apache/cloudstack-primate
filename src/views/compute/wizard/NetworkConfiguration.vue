@@ -25,6 +25,10 @@
     size="middle"
     :scroll="{ y: 225 }"
   >
+    <template slot="name" slot-scope="text, record">
+      <div>{{ text }}</div>
+      <small>{{ $t('label.cidr') + ': ' + record.cidr }}</small>
+    </template>
     <template slot="ipAddress" slot-scope="text, record">
       <a-form-item>
         <a-input
@@ -36,7 +40,7 @@
               networkType: record.type
             }]
           }]"
-          :placeholder="$t('label.ipaddress')"
+          :placeholder="record.cidr"
           @change="($event) => updateNetworkData('ipAddress', record.id, $event.target.value)">
           <a-tooltip v-if="record.type !== 'L2'" slot="suffix" :title="getIpRangeDescription(record)">
             <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
@@ -88,7 +92,8 @@ export default {
         {
           dataIndex: 'name',
           title: this.$t('label.defaultnetwork'),
-          width: '30%'
+          width: '30%',
+          scopedSlots: { customRender: 'name' }
         },
         {
           dataIndex: 'ip',
@@ -229,7 +234,7 @@ export default {
     margin: 2rem 0;
   }
 
-  /deep/.ant-table-tbody > tr td {
+  /deep/.ant-table-tbody > tr td:not(:first-child) {
     vertical-align: baseline;
   }
 
