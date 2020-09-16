@@ -29,6 +29,8 @@ const options = {
   themeVariables: [
     '@primary-color',
     '@link-color',
+    '@link-hover-color',
+    '@loading-color',
     '@success-color',
     '@warning-color',
     '@processing-color',

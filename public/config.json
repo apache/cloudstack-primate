@@ -13,6 +13,8 @@
   "theme": {
     "@primary-color": "#1890ff",
     "@link-color": "#1890ff",
+    "@link-hover-color": "#40a9ff",
+    "@loading-color": "#1890ff",
     "@processing-color": "#1890ff",
     "@success-color": "#52c41a",
     "@warning-color": "#faad14",

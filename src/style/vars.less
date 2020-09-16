@@ -15,14 +15,29 @@
 // specific language governing permissions and limitations
 // under the License.
 
-@import "~ant-design-vue/lib/style/themes/default.less";
-
 @logo-width: 256px;
 @logo-height: 64px;
 @banner-width: 450px;
 @banner-height: 110px;
 @error-width: 256px;
 @error-height: 256px;
+
+@primary-color: #1890ff;
+@link-color: @primary-color;
+@link-hover-color: #40a9ff;
+@processing-color: @primary-color;
+@success-color: #52c41a;
+@warning-color: #faad14;
+@error-color: #f5222d;
+@font-size-base: 14px;
+@heading-color: rgba(0, 0, 0, 0.85);
+@text-color: rgba(0, 0, 0, 0.65);
+@text-color-secondary: rgba(0, 0, 0, 0.45);
+@disabled-color: rgba(0, 0, 0, 0.25);
+@border-color-base: #d9d9d9;
+@border-radius-base: 4px;
+@box-shadow-base: 0 2px 8px rgba(0, 0, 0, 0.15);
+@loading-color: @primary-color;
 
 .ant-layout-sider-children .logo-image {
   width: @logo-width;
@@ -49,9 +64,18 @@ a {
   color: @link-color;
   background-color: transparent;
 }
+
 a:hover {
-  color: color(~`colorPalette("@{primary-color}", 5)`);
+  color: @link-hover-color;
 }
-a:active {
-  color: color(~`colorPalette("@{primary-color}", 7)`);
+
+.ant-message-info .anticon,
+.ant-message-loading .anticon {
+  color: @loading-color;
+}
+
+#nprogress {
+  .bar {
+    background-color: @loading-color;
+  }
 }
