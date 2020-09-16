@@ -855,15 +855,9 @@ export default {
             })
             const paramsList = this.currentAction.groupMap(this.selectedRowKeys, values)
             for (const params of paramsList) {
-              api(this.currentAction.api, params).then(json => {
-                setTimeout(() => {
-                  this.actionLoading = false
-                  this.closeAction()
-                  this.fetchData()
-                }, 2000)
-              }).catch(error => {
-                this.$notifyError(error)
-              })
+              var resourceName = itemsNameMap[params.id]
+              // Using a method for this since it's an async call and don't want wrong prarms to be passed
+              this.callGroupApi(params, resourceName)
             }
             this.$message.info({
               content: this.$t(this.currentAction.label),
