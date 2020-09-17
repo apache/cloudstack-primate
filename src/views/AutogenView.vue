@@ -977,13 +977,13 @@ export default {
             if (!hasJobId) {
               this.fetchData()
             }
+            this.closeAction()
           }
         }).catch(error => {
           console.log(error)
           this.$notifyError(error)
         }).finally(f => {
           this.actionLoading = false
-          this.closeAction()
         })
       })
     },
