@@ -22,6 +22,8 @@
 @error-width: 256px;
 @error-height: 256px;
 
+@logo-background-color: #ffffff;
+@navigation-background-color: #ffffff;
 @primary-color: #1890ff;
 @link-color: @primary-color;
 @link-hover-color: #40a9ff;
@@ -78,4 +80,17 @@ a:hover {
   .bar {
     background-color: @loading-color;
   }
+}
+
+.sider.light .logo {
+  background-color: @logo-background-color;
+}
+
+.ant-menu {
+  background: @navigation-background-color;
+}
+
+.ant-menu-submenu-popup,
+.ant-menu-submenu > .ant-menu {
+  background-color: @navigation-background-color;
 }

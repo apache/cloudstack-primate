@@ -11,6 +11,8 @@
     "500": "assets/500.png"
   },
   "theme": {
+    "@logo-background-color": "#ffffff",
+    "@navigation-background-color": "#ffffff",
     "@primary-color": "#1890ff",
     "@link-color": "#1890ff",
     "@link-hover-color": "#40a9ff",
