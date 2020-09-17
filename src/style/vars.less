@@ -24,6 +24,7 @@
 
 @logo-background-color: #ffffff;
 @navigation-background-color: #ffffff;
+@navigation-text-color:  rgba(0, 0, 0, 0.65);
 @primary-color: #1890ff;
 @link-color: @primary-color;
 @link-hover-color: #40a9ff;
@@ -65,10 +66,10 @@
 a {
   color: @link-color;
   background-color: transparent;
-}
 
-a:hover {
-  color: @link-hover-color;
+  &:hover {
+    color: @link-hover-color;
+  }
 }
 
 .ant-message-info .anticon,
@@ -93,4 +94,50 @@ a:hover {
 .ant-menu-submenu-popup,
 .ant-menu-submenu > .ant-menu {
   background-color: @navigation-background-color;
+}
+
+.ant-menu-item > a {
+  color: @navigation-text-color;
+}
+
+.ant-menu-item-selected > a, .ant-menu-item-selected > a:hover {
+  color: @primary-color;
+}
+
+.ant-menu-vertical .ant-menu-item,
+.ant-menu-vertical-left .ant-menu-item,
+.ant-menu-vertical-right .ant-menu-item,
+.ant-menu-inline .ant-menu-item,
+.ant-menu-vertical .ant-menu-submenu-title,
+.ant-menu-vertical-left .ant-menu-submenu-title,
+.ant-menu-vertical-right .ant-menu-submenu-title,
+.ant-menu-inline .ant-menu-submenu-title {
+  color: @navigation-text-color;
+}
+
+.ant-menu-submenu-vertical ant-menu-submenu-selected,
+.ant-menu-vertical .ant-menu-submenu-selected,
+.ant-menu-vertical-left .ant-menu-submenu-selected,
+.ant-menu-vertical-right .ant-menu-submenu-selected {
+  color: @primary-color;
+
+  .ant-menu-submenu-title {
+    color: @primary-color;
+  }
+}
+
+.kubernet-icon path {
+  color: @navigation-text-color;
+}
+
+.ant-menu-item:hover,
+.ant-menu-item-active,
+.ant-menu:not(.ant-menu-inline) .ant-menu-submenu-open,
+.ant-menu-submenu-active,
+.ant-menu-submenu-title:hover {
+  color: @primary-color;
+
+  .custom-icon path {
+    color: @primary-color;
+  }
 }
