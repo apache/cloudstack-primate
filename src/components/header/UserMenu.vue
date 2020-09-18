@@ -69,7 +69,7 @@ export default {
         this.$router.push('/user/login')
       }).catch(err => {
         this.$message.error({
-          title: '错误',
+          title: 'Failed to Logout',
           description: err.message
         })
       })
