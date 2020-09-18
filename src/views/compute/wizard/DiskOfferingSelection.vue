@@ -28,6 +28,7 @@
       :dataSource="tableSource"
       :pagination="false"
       :rowSelection="rowSelection"
+      :customRow="onClickRow"
       size="middle"
       :scroll="{ y: 225 }"
     >
@@ -228,6 +229,16 @@ export default {
       this.options.page = page
       this.options.pageSize = pageSize
       this.$emit('handle-search-filter', this.options)
+    },
+    onClickRow (record) {
+      return {
+        on: {
+          click: () => {
+            this.selectedRowKeys = [record.id]
+            this.$emit('select-disk-offering-item', record.id)
+          }
+        }
+      }
     }
   }
 }
