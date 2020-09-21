@@ -984,8 +984,8 @@ export default {
             if (!hasJobId) {
               this.fetchData()
             }
-            this.closeAction()
           }
+          this.closeAction()
         }).catch(error => {
           console.log(error)
           this.$notifyError(error)
