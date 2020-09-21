@@ -234,8 +234,8 @@ export default {
       return {
         on: {
           click: () => {
-            this.selectedRowKeys = [record.id]
-            this.$emit('select-disk-offering-item', record.id)
+            this.selectedRowKeys = [record.key]
+            this.$emit('select-disk-offering-item', record.key)
           }
         }
       }
@@ -247,5 +247,9 @@ export default {
 <style lang="less" scoped>
   .ant-table-wrapper {
     margin: 2rem 0;
+  }
+
+  /deep/.ant-table-tbody > tr > td {
+    cursor: pointer;
   }
 </style>

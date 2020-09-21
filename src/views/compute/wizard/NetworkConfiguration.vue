@@ -251,6 +251,10 @@ export default {
     vertical-align: baseline;
   }
 
+  /deep/.ant-table-tbody > tr > td {
+    cursor: pointer;
+  }
+
   .ant-form .ant-form-item {
     margin-bottom: 0;
     padding-bottom: 0;
