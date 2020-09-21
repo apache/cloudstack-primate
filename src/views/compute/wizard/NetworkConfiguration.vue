@@ -234,10 +234,6 @@ export default {
     margin: 2rem 0;
   }
 
-  /deep/.ant-table-tbody > tr td:not(:first-child) {
-    vertical-align: baseline;
-  }
-
   .ant-form .ant-form-item {
     margin-bottom: 0;
     padding-bottom: 0;
