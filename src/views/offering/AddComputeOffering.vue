@@ -933,7 +933,7 @@ export default {
           issystem: this.isSystem,
           name: values.name,
           displaytext: values.displaytext,
-          storagetype: values.storageType,
+          storagetype: values.storagetype,
           provisioningtype: values.provisioningtype,
           cachemode: values.cachemode,
           customized: values.offeringtype !== 'fixed',
@@ -961,7 +961,7 @@ export default {
         }
         // custom fields (end)
 
-        if (values.networkRate != null && values.networkRate.length > 0) {
+        if (values.networkrate != null && values.networkrate.length > 0) {
           params.networkrate = values.networkrate
         }
         if (values.qostype === 'storage') {
