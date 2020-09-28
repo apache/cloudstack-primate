@@ -286,35 +286,13 @@ export default {
     },
     fetchInstances () {
       this.instanceLoading = true
-      this.virtualmachines = []
-      if (!this.isObjectEmpty(this.resource) && this.arrayHasItems(this.resource.virtualmachineids)) {
-        var params = {}
-        if (this.isAdminOrDomainAdmin()) {
-          params.listall = true
+      this.virtualmachines = this.resource.virtualmachines
+      this.virtualmachines.map(vm => {
+        if (vm.nic && vm.nic.length > 0 && vm.nic[0].ipaddress) {
+          vm.ipaddress = vm.nic[0].ipaddress
         }
-        if (this.isValidValueForKey(this.resource, 'projectid') &&
-          this.resource.projectid !== '') {
-          params.projectid = this.resource.projectid
-        }
-        params.ids = this.resource.virtualmachineids.join()
-        api('listVirtualMachines', params).then(json => {
-          const listVms = json.listvirtualmachinesresponse.virtualmachine
-          if (this.arrayHasItems(listVms)) {
-            for (var i = 0; i < listVms.length; ++i) {
-              var vm = listVms[i]
-              if (vm.nic && vm.nic.length > 0 && vm.nic[0].ipaddress) {
-                vm.ipaddress = vm.nic[0].ipaddress
-                listVms[i] = vm
-              }
-            }
-            this.virtualmachines = this.virtualmachines.concat(listVms)
-          }
-        }).catch(error => {
-          this.$notifyError(error)
-        }).finally(() => {
-          this.instanceLoading = false
-        })
-      }
+      })
+      this.instanceLoading = false
     },
     fetchPublicIpAddress () {
       this.networkLoading = true
