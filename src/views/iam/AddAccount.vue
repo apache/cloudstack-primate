@@ -316,9 +316,9 @@ export default {
         this.roles = response.listrolesresponse.role || []
         this.selectedRole = this.roles[0].id
         if (this.isDomainAdmin) {
-          const domainAdminRole = this.roles.filter(role => role.type === 'User')
-          if (domainAdminRole.length > 0) {
-            this.selectedRole = domainAdminRole[0].id
+          const userRole = this.roles.filter(role => role.type === 'User')
+          if (userRole.length > 0) {
+            this.selectedRole = userRole[0].id
           }
         }
       }).finally(() => {
