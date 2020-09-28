@@ -315,7 +315,7 @@ export default {
       api('listRoles').then(response => {
         this.roles = response.listrolesresponse.role || []
         this.selectedRole = this.roles[0].id
-        if (this.isDomainAdmin) {
+        if (this.isDomainAdmin()) {
           const userRole = this.roles.filter(role => role.type === 'User')
           if (userRole.length > 0) {
             this.selectedRole = userRole[0].id
