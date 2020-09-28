@@ -40,23 +40,21 @@
         <a-card :title="$t('label.using.cli')" :loading="this.versionLoading">
           <a-timeline>
             <a-timeline-item>
-              <p>
-                {{ $t('label.download.kubeconfig.cluster') }}
+              <p v-html="$t('label.download.kubeconfig.cluster')">
               </p>
             </a-timeline-item>
             <a-timeline-item>
+              <p v-html="$t('label.download.kubectl')"></p>
               <p>
-                {{ $t('label.download.kubectl') }} <br><br>
                 {{ $t('label.linux') }}: <a :href="this.kubectlLinuxLink">{{ this.kubectlLinuxLink }}</a><br>
                 {{ $t('label.macos') }}: <a :href="this.kubectlMacLink">{{ this.kubectlMacLink }}</a><br>
                 {{ $t('label.windows') }}: <a :href="this.kubectlWindowsLink">{{ this.kubectlWindowsLink }}</a>
               </p>
             </a-timeline-item>
             <a-timeline-item>
+              <p v-html="$t('label.use.kubectl.access.cluster')"></p>
               <p>
-                {{ $t('label.use.kubectl.access.cluster') }}<br><br>
                 <code><b>kubectl --kubeconfig /custom/path/kube.conf {COMMAND}</b></code><br><br>
-
                 <em>{{ $t('label.list.pods') }}</em><br>
                 <code>kubectl --kubeconfig /custom/path/kube.conf get pods --all-namespaces</code><br>
                 <em>{{ $t('label.list.nodes') }}</em><br>
