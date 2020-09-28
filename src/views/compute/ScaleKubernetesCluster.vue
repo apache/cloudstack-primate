@@ -19,7 +19,7 @@
   <div class="form-layout">
     <a-spin :spinning="loading">
       <a-alert type="warning">
-        <span slot="message" v-html="$t('message.kubernetes.cluster.scale')" />
+        <span slot="message" v-html="$t('message.action.scale.kubernetes.cluster.warning')" />
       </a-alert>
       <br />
       <a-form
