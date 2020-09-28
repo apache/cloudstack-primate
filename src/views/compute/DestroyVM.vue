@@ -136,7 +136,7 @@ export default {
             catchMessage: this.$t('error.fetching.async.job.result'),
             successMessage: `${this.$t('message.success.delete.vm')} ${this.resource.name}`,
             successMethod: () => {
-              if (values.expunge) {
+              if ('id' in this.resource && values.expunge) {
                 this.$router.go(-1)
               } else {
                 this.parentFetchData()
