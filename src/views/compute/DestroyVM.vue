@@ -106,7 +106,6 @@ export default {
     },
     handleSubmit (e) {
       e.preventDefault()
-      const self = this
       this.form.validateFields((err, values) => {
         if (err) {
           return
@@ -137,11 +136,14 @@ export default {
             catchMessage: this.$t('error.fetching.async.job.result'),
             successMessage: `${this.$t('message.success.delete.vm')} ${this.resource.name}`,
             successMethod: () => {
-              if (self.$route.path.includes('/vm/') && values.expunge) {
-                self.$router.go(-1)
+              if (this.$route.path.includes('/vm/') && values.expunge) {
+                this.$router.go(-1)
               } else {
-                self.parentFetchData()
+                this.parentFetchData()
               }
+            },
+            action: {
+              api: 'destroyVirtualMachine'
             }
           })
           this.closeAction()
