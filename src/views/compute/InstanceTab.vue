@@ -370,18 +370,6 @@ export default {
         this.secondaryIPs = response.listnicsresponse.nic[0].secondaryip
       })
     },
-    fetchGuestNetwork (networkid) {
-      return new Promise((resolve, reject) => {
-        api('listNetworks', {
-          id: networkid
-        }).then(json => {
-          const network = json.listnetworksresponse.network[0] || {}
-          resolve(network)
-        }).catch(error => {
-          reject(error)
-        })
-      })
-    },
     fetchPublicIps (networkid) {
       this.listIps.loading = true
       this.listIps.opts = []
