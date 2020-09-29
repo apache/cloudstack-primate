@@ -894,13 +894,13 @@ export default {
         if ('egressdefaultpolicy' in values && values.egressdefaultpolicy !== 'allow') {
           params.egressdefaultpolicy = false
         }
-        if ('promiscuousmode' in values && values.promiscuousmode !== '') {
+        if (values.promiscuousmode) {
           params['details[0].promiscuousMode'] = values.promiscuousmode
         }
-        if ('macaddresschanges' in values && values.macaddresschanges !== '') {
+        if (values.macaddresschanges) {
           params['details[0].macaddresschanges'] = values.macaddresschanges
         }
-        if ('forgedtransmits' in values && values.forgedtransmits !== '') {
+        if (values.forgedtransmits) {
           params['details[0].forgedtransmits'] = values.forgedtransmits
         }
         if (values.ispublic !== true) {
