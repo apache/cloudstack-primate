@@ -369,6 +369,15 @@
             </a-form-item>
           </a-col>
         </a-row>
+        <a-row :gutter="12" v-if="$store.getters.userInfo.roletype === 'Admin'">
+          <a-form-item :label="$t('label.templatetag')">
+            <a-input
+              v-decorator="['templatetag', {
+                rules: [{ required: false }]
+              }]"
+              :placeholder="apiParams.templatetag.description" />
+          </a-form-item>
+        </a-row>
 
         <div :span="24" class="action-button">
           <a-button @click="closeAction">{{ this.$t('label.cancel') }}</a-button>

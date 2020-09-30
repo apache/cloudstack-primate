@@ -43,7 +43,7 @@ export default {
         }
         return fields
       },
-      details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'directdownload', 'deployasis', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created', 'url'],
+      details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'directdownload', 'deployasis', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'templatetag', 'account', 'domain', 'created', 'url'],
       searchFilters: ['name', 'zoneid', 'tags'],
       related: [{
         name: 'vm',
@@ -94,7 +94,7 @@ export default {
           args: (record, store) => {
             var fields = ['name', 'displaytext', 'passwordenabled', 'ostypeid', 'isdynamicallyscalable']
             if (['Admin'].includes(store.userInfo.roletype)) {
-              fields.push('isrouting')
+              fields.push('isrouting', 'templatetag')
             }
             return fields
           }
@@ -179,7 +179,7 @@ export default {
         }
         return fields
       },
-      details: ['name', 'id', 'displaytext', 'checksum', 'ostypename', 'size', 'bootable', 'isready', 'directdownload', 'isextractable', 'ispublic', 'isfeatured', 'crosszones', 'account', 'domain', 'created'],
+      details: ['name', 'id', 'displaytext', 'checksum', 'ostypename', 'size', 'bootable', 'isready', 'directdownload', 'isextractable', 'ispublic', 'isfeatured', 'crosszones', 'templatetag', 'account', 'domain', 'created'],
       searchFilters: ['name', 'zoneid', 'tags'],
       related: [{
         name: 'vm',
@@ -224,7 +224,13 @@ export default {
               !(record.account === 'system' && record.domainid === 1) &&
               record.isready
           },
-          args: ['name', 'displaytext', 'bootable', 'ostypeid']
+          args: (record, store) => {
+            var fields = ['name', 'displaytext', 'bootable', 'ostypeid']
+            if (['Admin'].includes(store.userInfo.roletype)) {
+              fields.push('templatetag')
+            }
+            return fields
+          }
         },
         {
           api: 'updateIsoPermissions',

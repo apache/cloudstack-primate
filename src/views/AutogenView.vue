@@ -946,6 +946,9 @@ export default {
               if (param.type === 'boolean') {
                 params[key] = false
               }
+              if (param.name === 'templatetag') {
+                params[key] = ''
+              }
               break
             }
             if (action.mapping && key in action.mapping && action.mapping[key].options) {
