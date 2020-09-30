@@ -32,7 +32,7 @@
       <template slot="action" slot-scope="text, record">
         <span style="margin-right: 5px">
           <a-button
-            :disabled="!('copyIso' in $store.getters.apis)"
+            :disabled="!('copyIso' in $store.getters.apis && record.isready)"
             icon="copy"
             shape="circle"
             :loading="copyLoading"
@@ -40,7 +40,7 @@
         </span>
         <span style="margin-right: 5px">
           <a-popconfirm
-            v-if="'deleteIso' in $store.getters.apis"
+            v-if="'deleteIso' in $store.getters.apis && record.isready"
             placement="topRight"
             :title="$t('message.action.delete.iso')"
             :ok-text="$t('label.yes')"
