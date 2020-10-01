@@ -40,7 +40,7 @@
         </span>
         <span style="margin-right: 5px">
           <a-button
-            :disabled="!('deleteTemplate' in $store.getters.apis && record.isready)"
+            :disabled="!('deleteTemplate' in $store.getters.apis)"
             type="danger"
             icon="delete"
             shape="circle"

@@ -40,7 +40,7 @@
         </span>
         <span style="margin-right: 5px">
           <a-popconfirm
-            v-if="'deleteIso' in $store.getters.apis && record.isready"
+            v-if="'deleteIso' in $store.getters.apis"
             placement="topRight"
             :title="$t('message.action.delete.iso')"
             :ok-text="$t('label.yes')"
