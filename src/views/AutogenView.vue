@@ -1146,7 +1146,6 @@ export default {
       if (!this.showAction) return
       if (!this.currentAction.message) return
 
-      console.log(123131)
       if (this.dataView &&
         'component' in this.currentAction &&
         (!this.currentAction.groupAction || this.selectedRowKeys.length === 0)) {
