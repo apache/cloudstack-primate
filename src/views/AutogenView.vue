@@ -408,6 +408,13 @@ export default {
     eventBus.$on('exec-action', (action, isGroupAction) => {
       this.execAction(action, isGroupAction)
     })
+    window.addEventListener('keyup', (e) => {
+      e.preventDefault()
+      // press `space`
+      if (e.keyCode === 32) {
+        this.onConfirmAction(e)
+      }
+    })
   },
   mounted () {
     if (this.device === 'desktop') {
@@ -1133,6 +1140,19 @@ export default {
         }
       } else {
         callback()
+      }
+    },
+    onConfirmAction (e) {
+      if (!this.showAction) return
+      if (!this.currentAction.message) return
+
+      console.log(123131)
+      if (this.dataView &&
+        'component' in this.currentAction &&
+        (!this.currentAction.groupAction || this.selectedRowKeys.length === 0)) {
+        eventBus.$emit('on-submit-action', e)
+      } else {
+        this.handleSubmit(e)
       }
     }
   }

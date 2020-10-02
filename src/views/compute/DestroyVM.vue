@@ -63,6 +63,7 @@
 
 <script>
 import { api } from '@/api'
+import eventBus from '@/config/eventBus'
 
 export default {
   name: 'DestroyVM',
@@ -86,6 +87,12 @@ export default {
     apiConfig.params.forEach(param => {
       this.apiParams[param.name] = param
     })
+  },
+  beforeDestroy () {
+    eventBus.$off('on-submit-action')
+  },
+  created () {
+    eventBus.$on('on-submit-action', this.handleSubmit)
   },
   mounted () {
     this.fetchData()
