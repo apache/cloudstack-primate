@@ -30,7 +30,7 @@
               <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
             </a-tooltip>
           </span>
-          <a-switch v-decorator="['expunge']" />
+          <a-switch v-decorator="['expunge']" :auto-focus="true" />
         </a-form-item>
 
         <a-form-item v-if="volumes.length > 0">
@@ -63,7 +63,6 @@
 
 <script>
 import { api } from '@/api'
-import eventBus from '@/config/eventBus'
 
 export default {
   name: 'DestroyVM',
@@ -87,12 +86,6 @@ export default {
     apiConfig.params.forEach(param => {
       this.apiParams[param.name] = param
     })
-  },
-  beforeDestroy () {
-    eventBus.$off('on-submit-action')
-  },
-  created () {
-    eventBus.$on('on-submit-action', this.handleSubmit)
   },
   mounted () {
     this.fetchData()

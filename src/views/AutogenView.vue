@@ -170,6 +170,7 @@
                   }]"
                   v-model="formModel[field.name]"
                   :placeholder="field.description"
+                  :autoFocus="fieldIndex === 0"
                 />
               </span>
               <span v-else-if="currentAction.mapping && field.name in currentAction.mapping && currentAction.mapping[field.name].options">
@@ -407,13 +408,6 @@ export default {
     })
     eventBus.$on('exec-action', (action, isGroupAction) => {
       this.execAction(action, isGroupAction)
-    })
-    window.addEventListener('keyup', (e) => {
-      e.preventDefault()
-      // press `space`
-      if (e.keyCode === 32) {
-        this.onConfirmAction(e)
-      }
     })
   },
   mounted () {
@@ -1140,18 +1134,6 @@ export default {
         }
       } else {
         callback()
-      }
-    },
-    onConfirmAction (e) {
-      if (!this.showAction) return
-      if (!this.currentAction.message) return
-
-      if (this.dataView &&
-        'component' in this.currentAction &&
-        (!this.currentAction.groupAction || this.selectedRowKeys.length === 0)) {
-        eventBus.$emit('on-submit-action', e)
-      } else {
-        this.handleSubmit(e)
       }
     }
   }
