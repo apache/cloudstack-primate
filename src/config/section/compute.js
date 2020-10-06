@@ -311,6 +311,8 @@ export default {
           dataView: true,
           show: (record, store) => { return ['Stopped'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) },
           args: ['storageid', 'virtualmachineid'],
+          component: () => import('@/views/compute/MigrateVMStorage'),
+          popup: true,
           mapping: {
             storageid: {
               api: 'listStoragePools',

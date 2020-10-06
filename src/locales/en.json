@@ -2911,6 +2911,7 @@
 "message.migrating.failed": "Migration failed",
 "message.migrating.processing": "Migration in progress for",
 "message.migrating.vm.to.host.failed": "Failed to migrate VM to host",
+"message.migrating.vm.to.storage.failed": "Failed to migrate VM to storage",
 "message.move.acl.order": "Move ACL rule order",
 "message.move.acl.order.failed": "Failed to move ACL rule",
 "message.move.acl.order.processing": "Moving ACL rule...",
