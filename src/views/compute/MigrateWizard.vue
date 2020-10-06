@@ -138,9 +138,6 @@ export default {
       }).then(response => {
         this.hosts = response.findhostsformigrationresponse.host
         this.totalCount = response.findhostsformigrationresponse.count
-        if (this.totalCount > 0) {
-          this.totalCount -= 1
-        }
       }).catch(error => {
         this.$message.error(`${this.$t('message.load.host.failed')}: ${error}`)
       }).finally(() => {
