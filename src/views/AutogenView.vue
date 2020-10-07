@@ -391,11 +391,17 @@ export default {
       searchParams: {},
       actions: [],
       formModel: {},
-      confirmDirty: false
+      confirmDirty: false,
+      promises: []
     }
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
+  },
+  beforeDestroy () {
+    eventBus.$off('vm-refresh-data')
+    eventBus.$off('async-job-complete')
+    eventBus.$off('exec-action')
   },
   created () {
     eventBus.$on('vm-refresh-data', () => {
@@ -404,11 +410,6 @@ export default {
       }
     })
     eventBus.$on('async-job-complete', (action) => {
-      if (this.$route.path.includes('/vm/')) {
-        if (action && 'api' in action && ['destroyVirtualMachine'].includes(action.api)) {
-          return
-        }
-      }
       this.fetchData()
     })
     eventBus.$on('exec-action', (action, isGroupAction) => {
@@ -822,27 +823,29 @@ export default {
       })
     },
     pollActionCompletion (jobId, action, resourceName, showLoading = true) {
-      this.$pollJob({
-        jobId,
-        name: resourceName,
-        successMethod: result => {
-          this.fetchData()
-          if (action.response) {
-            const description = action.response(result.jobresult)
-            if (description) {
-              this.$notification.info({
-                message: this.$t(action.label),
-                description: (<span domPropsInnerHTML={description}></span>),
-                duration: 0
-              })
+      return new Promise((resolve, reject) => {
+        this.$pollJob({
+          jobId,
+          name: resourceName,
+          successMethod: result => {
+            if (action.response) {
+              const description = action.response(result.jobresult)
+              if (description) {
+                this.$notification.info({
+                  message: this.$t(action.label),
+                  description: (<span domPropsInnerHTML={description}></span>),
+                  duration: 0
+                })
+              }
             }
-          }
-        },
-        errorMethod: () => this.fetchData(),
-        loadingMessage: `${this.$t(action.label)} - ${resourceName}`,
-        showLoading: showLoading,
-        catchMessage: this.$t('error.fetching.async.job.result'),
-        action
+            resolve()
+          },
+          errorMethod: () => resolve,
+          loadingMessage: `${this.$t(action.label)} - ${resourceName}`,
+          showLoading: showLoading,
+          catchMessage: this.$t('error.fetching.async.job.result'),
+          action
+        })
       })
     },
     fillEditFormFieldValues () {
@@ -863,6 +866,7 @@ export default {
       })
     },
     handleSubmit (e) {
+      this.promises = []
       if (!this.dataView && this.currentAction.groupAction && this.selectedRowKeys.length > 0) {
         this.form.validateFields((err, values) => {
           if (!err) {
@@ -875,18 +879,18 @@ export default {
             for (const params of paramsList) {
               var resourceName = itemsNameMap[params.id]
               // Using a method for this since it's an async call and don't want wrong prarms to be passed
-              this.callGroupApi(params, resourceName)
+              this.promises.push(this.callGroupApi(params, resourceName))
             }
             this.$message.info({
               content: this.$t(this.currentAction.label),
               key: this.currentAction.label,
               duration: 3
             })
-            setTimeout(() => {
+            Promise.all(this.promises).finally(() => {
               this.actionLoading = false
               this.closeAction()
               this.fetchData()
-            }, 500)
+            })
           }
         })
       } else {
@@ -894,24 +898,28 @@ export default {
       }
     },
     callGroupApi (params, resourceName) {
-      const action = this.currentAction
-      api(action.api, params).then(json => {
-        this.handleResponse(json, resourceName, action, false)
-      }).catch(error => {
-        if ([401].includes(error.response.status)) {
-          return
-        }
-        this.$notifyError(error)
+      return new Promise((resolve, reject) => {
+        const action = this.currentAction
+        action.isFetchData = false
+        api(action.api, params).then(json => {
+          resolve(this.handleResponse(json, resourceName, action, false))
+        }).catch(error => {
+          if ([401].includes(error.response.status)) {
+            return
+          }
+          this.$notifyError(error)
+        })
       })
     },
     handleResponse (response, resourceName, action, showLoading = true) {
       for (const obj in response) {
         if (obj.includes('response')) {
           if (response[obj].jobid) {
-            const jobid = response[obj].jobid
-            this.$store.dispatch('AddAsyncJob', { title: this.$t(action.label), jobid: jobid, description: resourceName, status: 'progress' })
-            this.pollActionCompletion(jobid, action, resourceName, showLoading)
-            return true
+            return new Promise(resolve => {
+              const jobid = response[obj].jobid
+              this.$store.dispatch('AddAsyncJob', { title: this.$t(action.label), jobid: jobid, description: resourceName, status: 'progress' })
+              resolve(this.pollActionCompletion(jobid, action, resourceName, showLoading))
+            })
           } else {
             var message = action.successMessage ? this.$t(action.successMessage) : this.$t(action.label) +
               (resourceName ? ' - ' + resourceName : '')
@@ -991,8 +999,11 @@ export default {
         var hasJobId = false
         this.actionLoading = true
         api(action.api, params).then(json => {
-          hasJobId = this.handleResponse(json, resourceName, action)
-          if ((action.icon === 'delete' || ['archiveEvents', 'archiveAlerts', 'unmanageVirtualMachine'].includes(action.api)) && this.dataView) {
+          const handleResponse = this.handleResponse(json, resourceName, action)
+          if (handleResponse instanceof Promise) {
+            hasJobId = true
+          }
+          if ((action.icon === 'delete' || ['archiveEvents', 'archiveAlerts'].includes(action.api)) && this.dataView) {
             this.$router.go(-1)
           } else {
             if (!hasJobId) {

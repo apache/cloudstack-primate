@@ -66,7 +66,9 @@ export const pollJobPlugin = {
             key: jobId,
             duration: 2
           })
-          eventBus.$emit('async-job-complete', action)
+          if (!action || ('isFetchData' in action && action.isFetchData)) {
+            eventBus.$emit('async-job-complete')
+          }
           successMethod(result)
         } else if (result.jobstatus === 2) {
           message.error({
@@ -88,7 +90,9 @@ export const pollJobPlugin = {
             key: jobId,
             duration: 0
           })
-          eventBus.$emit('async-job-complete', action)
+          if (!action || ('isFetchData' in action && action.isFetchData)) {
+            eventBus.$emit('async-job-complete')
+          }
           errorMethod(result)
         } else if (result.jobstatus === 0) {
           if (showLoading) {
