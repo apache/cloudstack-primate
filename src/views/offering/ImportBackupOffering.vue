@@ -131,7 +131,6 @@ export default {
   mounted () {
     this.fetchData()
   },
-  inject: ['parentFetchData'],
   methods: {
     fetchData () {
       this.fetchZone()
@@ -193,7 +192,6 @@ export default {
                   description: successDescription,
                   status: 'progress'
                 })
-                this.parentFetchData()
                 this.closeAction()
               },
               loadingMessage: `${title} ${this.$t('label.in.progress')} ${this.$t('label.for')} ${params.name}`,

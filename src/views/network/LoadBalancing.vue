@@ -669,13 +669,11 @@ export default {
             jobId: response.createtagsresponse.jobid,
             successMessage: this.$t('message.success.add.tag'),
             successMethod: () => {
-              this.parentFetchData()
               this.parentToggleLoading()
               this.openTagsModal(this.selectedRule)
             },
             errorMessage: this.$t('message.add.tag.failed'),
             errorMethod: () => {
-              this.parentFetchData()
               this.parentToggleLoading()
               this.closeModal()
             },
@@ -704,13 +702,11 @@ export default {
           jobId: response.deletetagsresponse.jobid,
           successMessage: this.$t('message.success.delete.tag'),
           successMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
             this.openTagsModal(this.selectedRule)
           },
           errorMessage: this.$t('message.delete.tag.failed'),
           errorMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
             this.closeModal()
           },
@@ -761,14 +757,12 @@ export default {
           jobId: response.createLBStickinessPolicy.jobid,
           successMessage: this.$t('message.success.config.sticky.policy'),
           successMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
             this.fetchData()
             this.closeModal()
           },
           errorMessage: this.$t('message.config.sticky.policy.failed'),
           errorMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
             this.fetchData()
             this.closeModal()
@@ -793,14 +787,12 @@ export default {
           jobId: response.deleteLBstickinessrruleresponse.jobid,
           successMessage: this.$t('message.success.remove.sticky.policy'),
           successMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
             this.fetchData()
             this.closeModal()
           },
           errorMessage: this.$t('message.remove.sticky.policy.failed'),
           errorMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
             this.fetchData()
             this.closeModal()
@@ -905,14 +897,12 @@ export default {
           jobId: response.updateloadbalancerruleresponse.jobid,
           successMessage: this.$t('message.success.edit.rule'),
           successMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
             this.fetchData()
             this.closeModal()
           },
           errorMessage: this.$t('message.edit.rule.failed'),
           errorMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
             this.fetchData()
             this.closeModal()
@@ -940,14 +930,12 @@ export default {
           jobId: response.deleteloadbalancerruleresponse.jobid,
           successMessage: this.$t('message.success.remove.rule'),
           successMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
             this.fetchData()
             this.closeModal()
           },
           errorMessage: this.$t('message.remove.rule.failed'),
           errorMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
             this.fetchData()
             this.closeModal()
@@ -1072,14 +1060,12 @@ export default {
           jobId: response.assigntoloadbalancerruleresponse.jobid,
           successMessage: this.$t('message.success.asign.vm'),
           successMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
             this.fetchData()
             this.closeModal()
           },
           errorMessage: this.$t('message.assign.vm.failed'),
           errorMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
             this.fetchData()
             this.closeModal()

@@ -253,7 +253,6 @@ export default {
       required: true
     }
   },
-  inject: ['parentFetchData', 'parentToggleLoading'],
   data () {
     return {
       encryptionAlgo: [
@@ -329,12 +328,10 @@ export default {
             successMessage: this.$t('message.success.add.vpn.customer.gateway'),
             successMethod: () => {
               this.closeModal()
-              this.parentFetchData()
             },
             errorMessage: `${this.$t('message.create.vpn.customer.gateway.failed')} ` + response,
             errorMethod: () => {
               this.closeModal()
-              this.parentFetchData()
             },
             loadingMessage: this.$t('message.add.vpn.customer.gateway.processing'),
             catchMessage: this.$t('error.fetching.async.job.result'),

@@ -89,7 +89,6 @@ export default {
   mounted () {
     this.fetchData()
   },
-  inject: ['parentFetchData'],
   methods: {
     fetchData () {
       this.fetchVirtualMachine()
@@ -151,7 +150,6 @@ export default {
                   description: successDescription,
                   status: 'progress'
                 })
-                this.parentFetchData()
                 this.closeAction()
               },
               loadingMessage: `${title} ${this.$t('label.in.progress.for')} ${this.resource.id}`,

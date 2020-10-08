@@ -133,6 +133,7 @@ export default {
       const dataBadge = {}
       const arrAsync = []
       const actionBadge = this.actions.filter(action => action.showBadge === true)
+      if ((actionBadge.dataView ? actionBadge.dataView : false) !== this.dataView) return
 
       if (actionBadge && actionBadge.length > 0) {
         const dataLength = actionBadge.length

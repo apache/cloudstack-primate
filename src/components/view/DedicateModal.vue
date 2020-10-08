@@ -93,7 +93,6 @@ export default {
           jobId: response.dedicatezoneresponse.jobid,
           successMessage: this.$t('label.zone.dedicated'),
           successMethod: () => {
-            this.parentFetchData()
             this.fetchParentData()
             this.dedicatedDomainId = this.domainId
             this.dedicatedDomainModal = false
@@ -106,7 +105,6 @@ export default {
           },
           errorMessage: this.$t('error.dedicate.zone.failed'),
           errorMethod: () => {
-            this.parentFetchData()
             this.fetchParentData()
             this.dedicatedDomainModal = false
           },
@@ -137,7 +135,6 @@ export default {
           jobId: response.dedicatepodresponse.jobid,
           successMessage: this.$t('label.pod.dedicated'),
           successMethod: () => {
-            this.parentFetchData()
             this.fetchParentData()
             this.dedicatedDomainId = this.domainId
             this.dedicatedDomainModal = false
@@ -150,7 +147,6 @@ export default {
           },
           errorMessage: this.$t('error.dedicate.pod.failed'),
           errorMethod: () => {
-            this.parentFetchData()
             this.fetchParentData()
             this.dedicatedDomainModal = false
           },
@@ -181,7 +177,6 @@ export default {
           jobId: response.dedicateclusterresponse.jobid,
           successMessage: this.$t('message.cluster.dedicated'),
           successMethod: () => {
-            this.parentFetchData()
             this.fetchParentData()
             this.dedicatedDomainId = this.domainId
             this.dedicatedDomainModal = false
@@ -194,7 +189,6 @@ export default {
           },
           errorMessage: this.$t('error.dedicate.cluster.failed'),
           errorMethod: () => {
-            this.parentFetchData()
             this.fetchParentData()
             this.dedicatedDomainModal = false
           },
@@ -225,7 +219,6 @@ export default {
           jobId: response.dedicatehostresponse.jobid,
           successMessage: this.$t('message.host.dedicated'),
           successMethod: () => {
-            this.parentFetchData()
             this.fetchParentData()
             this.dedicatedDomainId = this.domainId
             this.dedicatedDomainModal = false
@@ -238,7 +231,6 @@ export default {
           },
           errorMessage: this.$t('error.dedicate.host.failed'),
           errorMethod: () => {
-            this.parentFetchData()
             this.fetchParentData()
             this.dedicatedDomainModal = false
           },
