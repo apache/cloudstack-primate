@@ -93,18 +93,8 @@ export default {
       icon: 'plus-square',
       label: 'Add Traffic Type',
       dataView: true,
-      args: ['traffictype', 'physicalnetworkid', 'isolationmethod'],
-      mapping: {
-        traffictype: {
-          options: ['Public', 'Guest', 'Management', 'Storage']
-        },
-        physicalnetworkid: {
-          value: (record) => { return record.id }
-        },
-        isolationmethod: {
-          options: ['', 'vlan', 'vxlan']
-        }
-      }
+      popup: true,
+      component: () => import('@views/infra/network/AddTrafficType.vue')
     },
     {
       api: 'updateTrafficType',
