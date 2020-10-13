@@ -176,11 +176,11 @@
           </span>
           <a-input
             v-decorator="['masternodes', {
-              initialValue: '1',
+              initialValue: '2',
               rules: [{ required: true, message: $t('message.error.input.value') },
                       {
                         validator: (rule, value, callback) => {
-                          if (value && (isNaN(value) || value <= 0)) {
+                          if (value && (isNaN(value) || value < 2)) {
                             callback(this.$t('message.validate.number'))
                           }
                           callback()
@@ -246,7 +246,7 @@
             </a-select-option>
           </a-select>
         </a-form-item>
-        <div v-if="$store.getters.features.kubernetesclusterexperimentalfeaturesenabled">
+        <div v-if="$store.getters.features.kubernetesclusterexperimentalfeaturesenabled === 'true'">
           <a-form-item :label="$t('label.private.registry')">
             <a-switch v-decorator="['privateregistry']" @change="checked => { this.usePrivateRegistry = checked }" />
           </a-form-item>
@@ -366,7 +366,6 @@ export default {
   },
   methods: {
     fetchData () {
-      console.log(this.$store.getters.features)
       this.fetchZoneData()
       this.fetchNetworkData()
       this.fetchKeyPairData()
