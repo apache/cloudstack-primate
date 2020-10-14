@@ -279,7 +279,7 @@ const user = {
       return new Promise((resolve, reject) => {
         api('listCapabilities').then(response => {
           const result = response.listcapabilitiesresponse.capability
-          resolve(reject)
+          resolve(result)
           commit('SET_FEATURES', result)
         }).catch(error => {
           reject(error)
