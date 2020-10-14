@@ -246,7 +246,7 @@
             </a-select-option>
           </a-select>
         </a-form-item>
-        <div v-if="$store.getters.features.kubernetesclusterexperimentalfeaturesenabled === 'true'">
+        <div v-if="$store.getters.features.kubernetesclusterexperimentalfeaturesenabled">
           <a-form-item :label="$t('label.private.registry')">
             <a-switch v-decorator="['privateregistry']" @change="checked => { this.usePrivateRegistry = checked }" />
           </a-form-item>

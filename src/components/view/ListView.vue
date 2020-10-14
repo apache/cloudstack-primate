@@ -439,9 +439,7 @@ export default {
         value: this.editableValue
       }).then(json => {
         this.editableValueKey = null
-        if (record.name === 'cloud.kubernetes.cluster.experimental.features.enabled') {
-          this.$store.getters.features.kubernetesclusterexperimentalfeaturesenabled = this.editableValue
-        }
+        this.$store.dispatch('RefreshFeatures')
         this.$message.success(`${this.$t('message.setting.updated')} ${record.name}`)
         if (json.updateconfigurationresponse &&
           json.updateconfigurationresponse.configuration &&
