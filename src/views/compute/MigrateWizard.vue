@@ -136,7 +136,10 @@ export default {
         page: this.page,
         pagesize: this.pageSize
       }).then(response => {
-        this.hosts = response.findhostsformigrationresponse.host
+        this.hosts = response.findhostsformigrationresponse.host || []
+        this.hosts.sort((a, b) => {
+          return b.suitableformigration - a.suitableformigration
+        })
         this.totalCount = response.findhostsformigrationresponse.count
       }).catch(error => {
         this.$message.error(`${this.$t('message.load.host.failed')}: ${error}`)
