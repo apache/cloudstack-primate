@@ -174,7 +174,7 @@ export default {
     onChangeVolume (volumeId) {
       const volumeFilter = this.listVolumes.filter(volume => volume.id === volumeId)
       if (volumeFilter && volumeFilter.length > 0) {
-        this.isQuiesceVm = this.resource.quiescevm
+        this.isQuiesceVm = volumeFilter[0].quiescevm
       }
     },
     closeAction () {
