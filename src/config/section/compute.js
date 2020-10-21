@@ -184,17 +184,8 @@ export default {
           label: 'label.action.vmstoragesnapshot.create',
           docHelp: 'adminguide/virtual_machines.html#virtual-machine-snapshots',
           dataView: true,
-          args: ['volumeid', 'name', 'asyncBackup'],
-          mapping: {
-            volumeid: {
-              api: 'listVolumes',
-              params: (record) => {
-                return {
-                  virtualMachineId: record.id
-                }
-              }
-            }
-          }
+          popup: true,
+          component: () => import('@/views/compute/CreateSnapshotWizard.vue')
         },
         {
           api: 'assignVirtualMachineToBackupOffering',
