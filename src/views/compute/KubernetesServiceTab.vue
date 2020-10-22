@@ -116,13 +116,13 @@
                 @confirm="deleteNode(record)"
                 :okText="$t('label.yes')"
                 :cancelText="$t('label.no')"
-                :disabled="!['Created', 'Running'].includes(resource.state)"
+                :disabled="!['Created', 'Running'].includes(resource.state) || resource.autoscalingenabled"
               >
                 <a-button
                   type="danger"
                   icon="delete"
                   shape="circle"
-                  :disabled="!['Created', 'Running'].includes(resource.state)" />
+                  :disabled="!['Created', 'Running'].includes(resource.state) || resource.autoscalingenabled" />
               </a-popconfirm>
             </a-tooltip>
           </template>
