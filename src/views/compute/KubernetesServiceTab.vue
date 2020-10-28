@@ -106,6 +106,9 @@
           <template slot="state" slot-scope="text">
             <status :text="text ? text : ''" displayText />
           </template>
+          <template slot="port" slot-scope="text, record, index">
+            {{ cksSshStartingPort + index }}
+          </template>
         </a-table>
       </a-tab-pane>
       <a-tab-pane :tab="$t('label.firewall')" key="firewall" v-if="publicIpAddress">
@@ -165,7 +168,8 @@ export default {
       networkLoading: false,
       network: {},
       publicIpAddress: {},
-      currentTab: 'details'
+      currentTab: 'details',
+      cksSshStartingPort: 2222
     }
   },
   created () {
@@ -185,8 +189,9 @@ export default {
         dataIndex: 'instancename'
       },
       {
-        title: this.$t('label.ipaddress'),
-        dataIndex: 'ipaddress'
+        title: this.$t('label.ssh.port'),
+        dataIndex: 'port',
+        scopedSlots: { customRender: 'port' }
       },
       {
         title: this.$t('label.zonename'),
