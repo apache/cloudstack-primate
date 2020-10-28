@@ -406,7 +406,7 @@ export default {
       docHelp: 'plugins/cloudstack-kubernetes-service.html',
       permission: ['listKubernetesClusters'],
       columns: () => {
-        var fields = ['name', 'state', 'size', 'cpunumber', 'memory']
+        var fields = ['name', 'state', 'autoscalingenabled', 'size', 'cpunumber', 'memory']
         if (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype)) {
           fields.push('account')
         }
