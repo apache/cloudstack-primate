@@ -45,10 +45,10 @@ export default {
       },
       details: () => {
         var fields = ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled',
-          'directdownload', 'deployasis', 'isextractable', 'isdynamicallyscalable', 'crosszones', 'type',
+          'directdownload', 'deployasis', 'ispublic', 'isfeatured', 'isextractable', 'isdynamicallyscalable', 'crosszones', 'type',
           'account', 'domain', 'created']
         if (['Admin'].includes(store.getters.userInfo.roletype)) {
-          fields.push('ispublic', 'isrouting', 'isfeatured', 'templatetype', 'url')
+          fields.push('templatetype', 'url')
         }
         return fields
       },
