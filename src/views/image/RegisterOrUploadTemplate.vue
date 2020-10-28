@@ -208,14 +208,14 @@
           </a-form-item>
         </a-row>
         <a-row :gutter="12" v-if="hyperKVMShow || hyperVMWShow">
-          <a-col :md="24" :lg="24" v-if="hyperKVMShow">
+          <a-col :md="24" :lg="24">
             <a-form-item :label="$t('label.rootdiskcontrollertype')">
               <a-select
                 v-decorator="['rootDiskControllerType', {
                   initialValue: rootDisk.opts.length > 0 ? 'osdefault' : '',
                   rules: [
                     {
-                      required: true,
+                      required: hyperKVMShow,
                       message: `${this.$t('message.error.select')}`
                     }
                   ]
@@ -247,7 +247,7 @@
             </a-form-item>
           </a-col>
         </a-row>
-        <a-row :gutter="12" v-if="!hyperVMWShow">
+        <a-row :gutter="12">
           <a-col :md="24" :lg="24">
             <a-form-item :label="$t('label.ostypeid')">
               <a-select
