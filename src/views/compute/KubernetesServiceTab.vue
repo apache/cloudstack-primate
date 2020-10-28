@@ -290,11 +290,6 @@ export default {
     fetchInstances () {
       this.instanceLoading = true
       this.virtualmachines = this.resource.virtualmachines
-      this.virtualmachines.map(vm => {
-        if (vm.nic && vm.nic.length > 0 && vm.nic[0].ipaddress) {
-          vm.ipaddress = vm.nic[0].ipaddress
-        }
-      })
       this.instanceLoading = false
     },
     fetchPublicIpAddress () {
