@@ -108,7 +108,7 @@ export default {
           },
           mapping: {
             templatetype: {
-              options: ['BUILTIN', 'USER', 'SYSTEM', 'ROUTING', 'PERHOST']
+              options: ['BUILTIN', 'USER', 'SYSTEM', 'ROUTING']
             }
           }
         },
