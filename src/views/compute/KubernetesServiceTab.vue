@@ -106,6 +106,7 @@
           </template>
           <template slot="port" slot-scope="text, record, index">
             {{ cksSshStartingPort + index }}
+          </template>
           <template slot="action" slot-scope="text, record">
             <a-tooltip placement="bottom" >
               <template slot="title">
