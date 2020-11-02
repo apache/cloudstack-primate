@@ -215,11 +215,6 @@ export default {
       {
         title: this.$t('label.zonename'),
         dataIndex: 'zonename'
-      },
-      {
-        title: this.$t('label.action'),
-        dataIndex: 'action',
-        scopedSlots: { customRender: 'action' }
       }
     ]
     if (!this.isAdmin()) {
@@ -227,6 +222,13 @@ export default {
     }
   },
   mounted () {
+    if (this.$store.getters.apis.scaleKubernetesCluster.params.filter(x => x.name === 'nodeids').length > 0) {
+      this.vmColumns.push({
+        title: this.$t('label.action'),
+        dataIndex: 'action',
+        scopedSlots: { customRender: 'action' }
+      })
+    }
     this.handleFetchData()
   },
   watch: {

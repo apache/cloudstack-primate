@@ -405,10 +405,13 @@ export default {
       icon: kubernetes,
       docHelp: 'plugins/cloudstack-kubernetes-service.html',
       permission: ['listKubernetesClusters'],
-      columns: () => {
-        var fields = ['name', 'state', 'autoscalingenabled', 'size', 'cpunumber', 'memory']
-        if (['Admin', 'DomainAdmin'].includes(store.getters.userInfo.roletype)) {
+      columns: (store) => {
+        var fields = ['name', 'state', 'size', 'cpunumber', 'memory']
+        if (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) {
           fields.push('account')
+        }
+        if (store.apis.scaleKubernetesCluster.params.filter(x => x.name === 'autoscalingenabled').length > 0) {
+          fields.splice(2, 0, 'autoscalingenabled')
         }
         fields.push('zonename')
         return fields
@@ -450,7 +453,7 @@ export default {
           api: 'scaleKubernetesCluster',
           icon: 'swap',
           label: 'label.kubernetes.cluster.scale',
-          message: 'message.action.scale.kubernetes.cluster.warning',
+          message: 'message.kubernetes.cluster.scale',
           docHelp: 'plugins/cloudstack-kubernetes-service.html#scaling-kubernetes-cluster',
           dataView: true,
           show: (record) => { return ['Created', 'Running'].includes(record.state) },
