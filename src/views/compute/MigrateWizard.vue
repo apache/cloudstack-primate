@@ -47,6 +47,12 @@
       <div slot="memused" slot-scope="record">
         {{ record.memoryused | byteToGigabyte }} GB
       </div>
+      <div slot="cluster" slot-scope="record">
+        {{ record.clustername }}
+      </div>
+      <div slot="pod" slot-scope="record">
+        {{ record.podname }}
+      </div>
       <div slot="requiresstoragemigration" slot-scope="record">
         {{ record.requiresStorageMotion ? $t('label.yes') : $t('label.no') }}
       </div>
@@ -119,6 +125,14 @@ export default {
         {
           title: this.$t('label.memused'),
           scopedSlots: { customRender: 'memused' }
+        },
+        {
+          title: this.$t('label.cluster'),
+          scopedSlots: { customRender: 'cluster' }
+        },
+        {
+          title: this.$t('label.pod'),
+          scopedSlots: { customRender: 'pod' }
         },
         {
           title: this.$t('label.storagemigrationrequired'),
@@ -210,9 +224,9 @@ export default {
 <style scoped lang="scss">
 
   .form {
-    width: 85vw;
-    @media (min-width: 800px) {
-      width: 750px;
+    width: 95vw;
+    @media (min-width: 900px) {
+      width: 850px;
     }
   }
 
