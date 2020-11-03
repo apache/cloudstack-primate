@@ -47,6 +47,9 @@
       <div slot="memused" slot-scope="record">
         {{ record.memoryused | byteToGigabyte }} GB
       </div>
+      <div slot="requiresstoragemigration" slot-scope="record">
+        {{ record.requiresStorageMotion ? $t('label.yes') : $t('label.no') }}
+      </div>
       <template slot="select" slot-scope="record">
         <a-radio
           class="host-item__radio"
@@ -116,6 +119,10 @@ export default {
         {
           title: this.$t('label.memused'),
           scopedSlots: { customRender: 'memused' }
+        },
+        {
+          title: this.$t('label.storagemigrationrequired'),
+          scopedSlots: { customRender: 'requiresstoragemigration' }
         },
         {
           title: this.$t('label.select'),

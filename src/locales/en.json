@@ -2019,6 +2019,7 @@
 "label.storage.tags": "Storage Tags",
 "label.storage.traffic": "Storage Traffic",
 "label.storageid": "Primary Storage",
+"label.storagemigrationrequired": "Storage Migration Required",
 "label.storagemotionenabled": "Storage Motion Enabled",
 "label.storagepolicy": "Storage policy",
 "label.storagepool": "Storage Pool",
