@@ -139,7 +139,8 @@ export default {
       dataView: true,
       show: (record, store) => {
         return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) || record.isCurrentUserProjectAdmin
-      }
+      },
+      args: ['cleanup']
     }
   ]
 }
