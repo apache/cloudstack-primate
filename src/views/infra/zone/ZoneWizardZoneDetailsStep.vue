@@ -165,8 +165,6 @@
           v-decorator="['internalDns1', {
             rules: [
               {
-                required: true,
-                message: $t('message.error.internal.dns1'),
                 initialValue: internalDns1
               },
               {
