@@ -224,6 +224,11 @@
     <a slot="readonly" slot-scope="text, record">
       <status :text="record.readonly ? 'ReadOnly' : 'ReadWrite'" />
     </a>
+    <span slot="autoscalingenabled" slot-scope="text, record">
+      <status :text="record.autoscalingenabled ? 'Enabled' : 'Disabled'" />
+      {{ record.autoscalingenabled ? 'Enabled' : 'Disabled' }}
+    </span>
+
     <div slot="order" slot-scope="text, record" class="shift-btns">
       <a-tooltip placement="top">
         <template slot="title">{{ $t('label.move.to.top') }}</template>
