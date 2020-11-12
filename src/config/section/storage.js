@@ -226,7 +226,7 @@ export default {
           groupAction: true,
           show: (record, store) => {
             return ['Expunging', 'Expunged', 'UploadError'].includes(record.state) ||
-              ['Allocated', 'Uploaded'].includes(record.state) && record.type !== 'ROOT' && !record.virtualmachineid ||
+              ['Allocated', 'Uploaded', 'Ready'].includes(record.state) && record.type !== 'ROOT' && !record.virtualmachineid ||
               ((['Admin', 'DomainAdmin'].includes(store.userInfo.roletype) || store.features.allowuserexpungerecovervolume) && record.state === 'Destroy')
           }
         },
