@@ -115,10 +115,6 @@ export default {
         }
         this.loading = true
         var migrateApi = 'migrateVirtualMachine'
-        var params = {
-          virtualmachineid: this.resource.id,
-          storageid: values.storageid
-        }
         if (this.apiParams.hostid && this.apiParams.hostid.required === false) {
           migrateApi = 'migrateVirtualMachineWithVolume'
           var rootVolume = null
@@ -127,53 +123,63 @@ export default {
           }).then(response => {
             var volumes = response.listvolumesresponse.volume
             if (volumes && volumes.length > 0) {
-              for (var v in volumes) {
-                if (v.type === 'ROOT') {
-                  rootVolume = v
-                  break
-                }
+              volumes = volumes.filter(item => item.type === 'ROOT')
+              console.log(volumes)
+              if (volumes && volumes.length > 0) {
+                rootVolume = volumes[0]
               }
+              if (rootVolume == null) {
+                this.$message.error('Failed to find ROOT volume for the VM ' + this.resource.id)
+                this.closeAction()
+              }
+              this.migrateVm(migrateApi, values.storageid, rootVolume.id)
             }
           })
-          if (rootVolume == null) {
-            this.$message.error('Failed to find ROOT volume for the VM ' + this.resource.id)
-            return
-          }
-          params = {
-            virtualmachineid: this.resource.id,
-            'migrateto[0].volume': rootVolume.id,
-            'migrateto[0].pool': this.selectedPoolId
-          }
+          return
         }
-        api(migrateApi, params).then(response => {
-          var jobId = migrateApi === 'migrateVirtualMachineWithVolume' ? response.migratevirtualmachinewithvolumeresponse.jobid : response.migratevirtualmachineresponse.jobid
-          this.$store.dispatch('AddAsyncJob', {
-            title: `${this.$t('label.migrating')} ${this.resource.name}`,
-            jobid: jobId,
-            description: this.resource.name,
-            status: 'progress'
-          })
-          this.$pollJob({
-            jobId: jobId,
-            successMessage: `${this.$t('message.success.migrating')} ${this.resource.name}`,
-            successMethod: () => {
-              this.$parent.$parent.close()
-            },
-            errorMessage: this.$t('message.migrating.failed'),
-            errorMethod: () => {
-              this.$parent.$parent.close()
-            },
-            loadingMessage: `${this.$t('message.migrating.processing')} ${this.resource.name}`,
-            catchMessage: this.$t('error.fetching.async.job.result'),
-            catchMethod: () => {
-              this.$parent.$parent.close()
-            }
-          })
-          this.$parent.$parent.close()
-        }).catch(error => {
-          console.error(error)
-          this.$message.error(`${this.$t('message.migrating.vm.to.storage.failed')} ${values.storageid}`)
+        this.migrateVm(migrateApi, values.storageid, rootVolume.id)
+      })
+    },
+    migrateVm (migrateApi, storageId, rootVolumeId) {
+      var params = {
+        virtualmachineid: this.resource.id,
+        storageid: storageId
+      }
+      if (rootVolumeId !== null) {
+        params = {
+          virtualmachineid: this.resource.id,
+          'migrateto[0].volume': rootVolumeId,
+          'migrateto[0].pool': storageId
+        }
+      }
+      api(migrateApi, params).then(response => {
+        var jobId = migrateApi === 'migrateVirtualMachineWithVolume' ? response.migratevirtualmachinewithvolumeresponse.jobid : response.migratevirtualmachineresponse.jobid
+        this.$store.dispatch('AddAsyncJob', {
+          title: `${this.$t('label.migrating')} ${this.resource.name}`,
+          jobid: jobId,
+          description: this.resource.name,
+          status: 'progress'
         })
+        this.$pollJob({
+          jobId: jobId,
+          successMessage: `${this.$t('message.success.migrating')} ${this.resource.name}`,
+          successMethod: () => {
+            this.$parent.$parent.close()
+          },
+          errorMessage: this.$t('message.migrating.failed'),
+          errorMethod: () => {
+            this.$parent.$parent.close()
+          },
+          loadingMessage: `${this.$t('message.migrating.processing')} ${this.resource.name}`,
+          catchMessage: this.$t('error.fetching.async.job.result'),
+          catchMethod: () => {
+            this.$parent.$parent.close()
+          }
+        })
+        this.$parent.$parent.close()
+      }).catch(error => {
+        console.error(error)
+        this.$message.error(`${this.$t('message.migrating.vm.to.storage.failed')} ${storageId}`)
       })
     },
     closeAction () {
