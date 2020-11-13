@@ -132,6 +132,7 @@ export default {
         params.volumeid = values.volumeid
         params.name = values.name
         params.asyncbackup = values.asyncbackup
+        params.quiescevm = values.quiescevm
 
         const title = this.$t('label.action.vmstoragesnapshot.create')
         const description = values.name || values.volumeid
