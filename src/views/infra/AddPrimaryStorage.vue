@@ -208,7 +208,7 @@
             </a-select-option>
           </a-select>
         </a-form-item>
-        <div v-if="this.providerSelected !== 'DefaultPrimary'">
+        <div v-if="this.providerSelected !== 'DefaultPrimary' && this.providerSelected !== 'PowerFlex'">
           <a-form-item>
             <span slot="label">
               {{ $t('label.ismanaged') }}
@@ -246,6 +246,19 @@
               </a-tooltip>
             </span>
             <a-input v-decorator="['url']" />
+          </a-form-item>
+        </div>
+        <div v-if="this.providerSelected === 'PowerFlex'">
+          <a-form-item :label="$t('label.powerflex.gateway')">
+            <a-input v-decorator="['powerflexGateway']" />
+          <a-form-item :label="$t('label.powerflex.gateway.username')">
+            <a-input v-decorator="['powerflexGatewayUsername']" />
+          </a-form-item>
+          <a-form-item :label="$t('label.powerflex.gateway.password')">
+            <a-input v-decorator="['powerflexGatewayPassword']" />
+          </a-form-item>
+          </a-form-item><a-form-item :label="$t('label.powerflex.storage.pool')">
+            <a-input v-decorator="['powerflexStoragePool']" />
           </a-form-item>
         </div>
         <div v-if="this.protocolSelected === 'RBD'">
