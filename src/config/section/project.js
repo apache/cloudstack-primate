@@ -140,7 +140,13 @@ export default {
       show: (record, store) => {
         return (['Admin', 'DomainAdmin'].includes(store.userInfo.roletype)) || record.isCurrentUserProjectAdmin
       },
-      args: ['cleanup']
+      args: (record, store) => {
+        const fields = []
+        if (store.apis.deleteProject.params.filter(x => x.name === 'cleanup').length > 0) {
+          fields.push('cleanup')
+        }
+        return fields
+      }
     }
   ]
 }
