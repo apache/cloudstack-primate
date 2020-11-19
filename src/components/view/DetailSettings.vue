@@ -28,7 +28,7 @@
           style="width: 100%"
           icon="plus"
           :disabled="!('updateTemplate' in $store.getters.apis && 'updateVirtualMachine' in $store.getters.apis && isAdminOrOwner())"
-          @click="showAddDetail = true">
+          @click="onShowAddDetail">
           {{ $t('label.add.setting') }}
         </a-button>
       </div>
@@ -38,6 +38,7 @@
           compact>
           <a-auto-complete
             class="detail-input"
+            ref="keyElm"
             :filterOption="filterOption"
             :value="newKey"
             :dataSource="Object.keys(detailOptions)"
@@ -250,6 +251,12 @@ export default {
     deleteDetail (index) {
       this.details.splice(index, 1)
       this.runApi()
+    },
+    onShowAddDetail () {
+      this.showAddDetail = true
+      setTimeout(() => {
+        this.$refs.keyElm.focus()
+      })
     },
     closeDetail () {
       this.newKey = ''
