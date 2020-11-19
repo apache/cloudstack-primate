@@ -119,6 +119,7 @@ export default {
           migrateApi = 'migrateVirtualMachineWithVolume'
           var rootVolume = null
           api('listVolumes', {
+            listAll: true,
             virtualmachineid: this.resource.id
           }).then(response => {
             var volumes = response.listvolumesresponse.volume
