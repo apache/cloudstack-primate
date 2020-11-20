@@ -294,13 +294,7 @@ export default {
           dataView: true,
           show: (record, store) => { return ['Running'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) },
           component: () => import('@/views/compute/MigrateWizard'),
-          popup: true,
-          args: ['hostid', 'virtualmachineid'],
-          mapping: {
-            virtualmachineid: {
-              value: (record) => { return record.id }
-            }
-          }
+          popup: true
         },
         {
           api: 'migrateVirtualMachine',
@@ -310,18 +304,8 @@ export default {
           docHelp: 'adminguide/virtual_machines.html#moving-vms-between-hosts-manual-live-migration',
           dataView: true,
           show: (record, store) => { return ['Stopped'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) },
-          args: ['storageid', 'virtualmachineid'],
           component: () => import('@/views/compute/MigrateVMStorage'),
-          popup: true,
-          mapping: {
-            storageid: {
-              api: 'listStoragePools',
-              params: (record) => { return { zoneid: record.zoneid } }
-            },
-            virtualmachineid: {
-              value: (record) => { return record.id }
-            }
-          }
+          popup: true
         },
         {
           api: 'resetPasswordForVirtualMachine',

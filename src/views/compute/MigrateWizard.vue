@@ -103,6 +103,7 @@ export default {
   data () {
     return {
       loading: true,
+      isUserVm: true,
       hosts: [],
       selectedHost: {},
       searchQuery: '',
@@ -145,6 +146,11 @@ export default {
       ]
     }
   },
+  beforeCreate () {
+    if (this.$route.meta.name !== 'vm') {
+      this.isUserVm = false
+    }
+  },
   mounted () {
     this.fetchData()
   },
@@ -170,18 +176,24 @@ export default {
     },
     submitForm () {
       this.loading = true
-      api(this.selectedHost.requiresStorageMotion ? 'migrateVirtualMachineWithVolume' : 'migrateVirtualMachine', {
+      var migrateApi = this.isUserVm
+        ? this.selectedHost.requiresStorageMotion ? 'migratevirtualMachineWithVolume' : 'migrateVirtualMachine'
+        : 'migrateSystemVm'
+      api(migrateApi, {
         hostid: this.selectedHost.id,
         virtualmachineid: this.resource.id
       }).then(response => {
+        var migrateResponse = this.isUserVm
+          ? this.selectedHost.requiresStorageMotion ? response.migratevirtualmachinewithvolumeresponse : response.migratevirtualmachineresponse
+          : response.migratesystemvmresponse
         this.$store.dispatch('AddAsyncJob', {
           title: `${this.$t('label.migrating')} ${this.resource.name}`,
-          jobid: response.migratevirtualmachineresponse.jobid,
+          jobid: migrateResponse.jobid,
           description: this.resource.name,
           status: 'progress'
         })
         this.$pollJob({
-          jobId: response.migratevirtualmachineresponse.jobid,
+          jobId: migrateResponse.jobid,
           successMessage: `${this.$t('message.success.migrating')} ${this.resource.name}`,
           successMethod: () => {
             this.$parent.$parent.close()
