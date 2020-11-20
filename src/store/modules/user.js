@@ -237,6 +237,7 @@ const user = {
         Vue.ls.remove(ASYNC_JOB_IDS)
 
         logout(state.token).then(() => {
+          message.destroy()
           if (cloudianUrl) {
             window.location.href = cloudianUrl
           } else {
@@ -270,6 +271,17 @@ const user = {
           store.dispatch('GenerateRoutes', { apis }).then(() => {
             router.addRoutes(store.getters.addRouters)
           })
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    RefreshFeatures ({ commit }) {
+      return new Promise((resolve, reject) => {
+        api('listCapabilities').then(response => {
+          const result = response.listcapabilitiesresponse.capability
+          resolve(result)
+          commit('SET_FEATURES', result)
         }).catch(error => {
           reject(error)
         })

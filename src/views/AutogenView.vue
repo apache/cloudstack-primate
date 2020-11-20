@@ -47,7 +47,7 @@
                   :placeholder="$t('label.filterby')"
                   :value="$route.query.filter || (projectView && $route.name === 'vm' ||
                     ['Admin', 'DomainAdmin'].includes($store.getters.userInfo.roletype) && ['vm', 'iso', 'template'].includes($route.name)
-                    ? 'all' : 'self')"
+                    ? 'all' : ['guestnetwork'].includes($route.name) ? 'all' : 'self')"
                   style="min-width: 100px; margin-left: 10px"
                   @change="changeFilter">
                   <a-icon slot="suffixIcon" type="filter" />
@@ -170,6 +170,7 @@
                   }]"
                   v-model="formModel[field.name]"
                   :placeholder="field.description"
+                  :autoFocus="fieldIndex === 0"
                 />
               </span>
               <span v-else-if="currentAction.mapping && field.name in currentAction.mapping && currentAction.mapping[field.name].options">
@@ -402,7 +403,12 @@ export default {
         this.fetchData()
       }
     })
-    eventBus.$on('async-job-complete', () => {
+    eventBus.$on('async-job-complete', (action) => {
+      if (this.$route.path.includes('/vm/')) {
+        if (action && 'api' in action && ['destroyVirtualMachine'].includes(action.api)) {
+          return
+        }
+      }
       this.fetchData()
     })
     eventBus.$on('exec-action', (action, isGroupAction) => {
@@ -499,6 +505,12 @@ export default {
         params.isofilter = 'all'
       }
       if (Object.keys(this.$route.query).length > 0) {
+        if ('page' in this.$route.query) {
+          this.page = Number(this.$route.query.page)
+        }
+        if ('pagesize' in this.$route.query) {
+          this.pagesize = Number(this.$route.query.pagesize)
+        }
         Object.assign(params, this.$route.query)
       }
       delete params.q
@@ -986,7 +998,7 @@ export default {
         this.actionLoading = true
         api(action.api, params).then(json => {
           hasJobId = this.handleResponse(json, resourceName, action)
-          if ((action.icon === 'delete' || ['archiveEvents', 'archiveAlerts'].includes(action.api)) && this.dataView) {
+          if ((action.icon === 'delete' || ['archiveEvents', 'archiveAlerts', 'unmanageVirtualMachine'].includes(action.api)) && this.dataView) {
             this.$router.go(-1)
           } else {
             if (!hasJobId) {
@@ -1017,6 +1029,12 @@ export default {
         query.templatefilter = filter
       } else if (this.$route.name === 'iso') {
         query.isofilter = filter
+      } else if (this.$route.name === 'guestnetwork') {
+        if (filter === 'all') {
+          delete query.type
+        } else {
+          query.type = filter
+        }
       } else if (this.$route.name === 'vm') {
         if (filter === 'self') {
           query.account = this.$store.getters.userInfo.account

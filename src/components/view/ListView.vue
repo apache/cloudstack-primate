@@ -101,7 +101,7 @@
       <span v-else>{{ text }}</span>
     </span>
     <span slot="ipaddress" slot-scope="text, record" href="javascript:;">
-      <router-link v-if="$route.path === '/publicip'" :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
+      <router-link v-if="['/publicip', '/privategw'].includes($route.path)" :to="{ path: $route.path + '/' + record.id }">{{ text }}</router-link>
       <span v-else>{{ text }}</span>
       <span v-if="record.issourcenat">
         &nbsp;
@@ -260,6 +260,7 @@
     <template slot="value" slot-scope="text, record">
       <a-input
         v-if="editableValueKey === record.key"
+        :autoFocus="true"
         :defaultValue="record.value"
         :disabled="!('updateConfiguration' in $store.getters.apis)"
         v-model="editableValue"
@@ -439,7 +440,7 @@ export default {
         value: this.editableValue
       }).then(json => {
         this.editableValueKey = null
-
+        this.$store.dispatch('RefreshFeatures')
         this.$message.success(`${this.$t('message.setting.updated')} ${record.name}`)
         if (json.updateconfigurationresponse &&
           json.updateconfigurationresponse.configuration &&
