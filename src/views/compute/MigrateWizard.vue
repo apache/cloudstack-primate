@@ -103,7 +103,6 @@ export default {
   data () {
     return {
       loading: true,
-      isUserVm: true,
       hosts: [],
       selectedHost: {},
       searchQuery: '',
@@ -146,11 +145,6 @@ export default {
       ]
     }
   },
-  beforeCreate () {
-    if (this.$route.meta.name !== 'vm') {
-      this.isUserVm = false
-    }
-  },
   mounted () {
     this.fetchData()
   },
@@ -176,14 +170,18 @@ export default {
     },
     submitForm () {
       this.loading = true
-      var migrateApi = this.isUserVm
-        ? this.selectedHost.requiresStorageMotion ? 'migratevirtualMachineWithVolume' : 'migrateVirtualMachine'
+      var isUserVm = true
+      if (this.$route.meta.name !== 'vm') {
+        isUserVm = false
+      }
+      var migrateApi = isUserVm
+        ? this.selectedHost.requiresStorageMotion ? 'migrateVirtualMachineWithVolume' : 'migrateVirtualMachine'
         : 'migrateSystemVm'
       api(migrateApi, {
         hostid: this.selectedHost.id,
         virtualmachineid: this.resource.id
       }).then(response => {
-        var migrateResponse = this.isUserVm
+        var migrateResponse = isUserVm
           ? this.selectedHost.requiresStorageMotion ? response.migratevirtualmachinewithvolumeresponse : response.migratevirtualmachineresponse
           : response.migratesystemvmresponse
         this.$store.dispatch('AddAsyncJob', {

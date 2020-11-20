@@ -69,16 +69,25 @@ export default {
   beforeCreate () {
     this.form = this.$form.createForm(this)
     this.apiParams = {}
-    this.apiConfig = this.$store.getters.apis.migrateVirtualMachineWithVolume || {}
-    this.apiConfig.params.forEach(param => {
-      this.apiParams[param.name] = param
-    })
-    this.apiConfig = this.$store.getters.apis.migrateVirtualMachine || {}
-    this.apiConfig.params.forEach(param => {
-      if (!(param.name in this.apiParams)) {
+    if (this.$route.meta.name === 'vm') {
+      this.apiConfig = this.$store.getters.apis.migrateVirtualMachineWithVolume || {}
+      this.apiConfig.params.forEach(param => {
         this.apiParams[param.name] = param
-      }
-    })
+      })
+      this.apiConfig = this.$store.getters.apis.migrateVirtualMachine || {}
+      this.apiConfig.params.forEach(param => {
+        if (!(param.name in this.apiParams)) {
+          this.apiParams[param.name] = param
+        }
+      })
+    } else {
+      this.apiConfig = this.$store.getters.apis.migrateSystemVm || {}
+      this.apiConfig.params.forEach(param => {
+        if (!(param.name in this.apiParams)) {
+          this.apiParams[param.name] = param
+        }
+      })
+    }
   },
   created () {
   },
@@ -114,8 +123,12 @@ export default {
           return
         }
         this.loading = true
-        var migrateApi = 'migrateVirtualMachine'
-        if (this.apiParams.hostid && this.apiParams.hostid.required === false) {
+        var isUserVm = true
+        if (this.$route.meta.name !== 'vm') {
+          isUserVm = false
+        }
+        var migrateApi = isUserVm ? 'migrateVirtualMachine' : 'migrateSystemVm'
+        if (isUserVm && this.apiParams.hostid && this.apiParams.hostid.required === false) {
           migrateApi = 'migrateVirtualMachineWithVolume'
           var rootVolume = null
           api('listVolumes', {
@@ -125,7 +138,6 @@ export default {
             var volumes = response.listvolumesresponse.volume
             if (volumes && volumes.length > 0) {
               volumes = volumes.filter(item => item.type === 'ROOT')
-              console.log(volumes)
               if (volumes && volumes.length > 0) {
                 rootVolume = volumes[0]
               }
@@ -138,7 +150,7 @@ export default {
           })
           return
         }
-        this.migrateVm(migrateApi, values.storageid, rootVolume.id)
+        this.migrateVm(migrateApi, values.storageid, null)
       })
     },
     migrateVm (migrateApi, storageId, rootVolumeId) {
@@ -154,7 +166,14 @@ export default {
         }
       }
       api(migrateApi, params).then(response => {
-        var jobId = migrateApi === 'migrateVirtualMachineWithVolume' ? response.migratevirtualmachinewithvolumeresponse.jobid : response.migratevirtualmachineresponse.jobid
+        var jobId = ''
+        if (migrateApi === 'migrateVirtualMachineWithVolume') {
+          jobId = response.migratevirtualmachinewithvolumeresponse.jobid
+        } else if (migrateApi === 'migrateSystemVm') {
+          jobId = response.migratesystemvmresponse.jobid
+        } else {
+          jobId = response.migratevirtualmachine.jobid
+        }
         this.$store.dispatch('AddAsyncJob', {
           title: `${this.$t('label.migrating')} ${this.resource.name}`,
           jobid: jobId,
