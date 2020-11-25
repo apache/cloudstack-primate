@@ -29,6 +29,7 @@
         layout="vertical">
         <a-form-item v-if="currentForm === 'Create'" :label="$t('label.url')">
           <a-input
+            autoFocus
             v-decorator="['url', {
               rules: [{ required: true, message: `${this.$t('label.upload.iso.from.local')}` }]
             }]"
@@ -90,14 +91,7 @@
             :loading="zoneLoading"
             :placeholder="apiParams.zoneid.description">
             <a-select-option :value="opt.id" v-for="opt in zones" :key="opt.id">
-              <div v-if="currentForm === 'Upload'">
-                <div v-if="opt.name !== $t('label.all.zone')">
-                  {{ opt.name || opt.description }}
-                </div>
-              </div>
-              <div v-else>
-                {{ opt.name || opt.description }}
-              </div>
+              {{ opt.name || opt.description }}
             </a-select-option>
           </a-select>
         </a-form-item>
@@ -137,7 +131,9 @@
             }]" />
         </a-form-item>
 
-        <a-form-item :label="$t('label.ispublic')">
+        <a-form-item
+          :label="$t('label.ispublic')"
+          v-if="$store.getters.userInfo.roletype === 'Admin' || $store.getters.features.userpublictemplateenabled" >
           <a-switch
             v-decorator="['ispublic', {
               initialValue: false
@@ -204,7 +200,7 @@ export default {
   },
   created () {
     this.zones = []
-    if (this.$store.getters.userInfo.roletype === 'Admin') {
+    if (this.$store.getters.userInfo.roletype === 'Admin' && this.currentForm === 'Create') {
       this.zones = [
         {
           id: '-1',
@@ -234,7 +230,7 @@ export default {
         this.zones = this.zones.concat(listZones)
       }).finally(() => {
         this.zoneLoading = false
-        this.selectedZone = this.currentForm === 'Create' ? (this.zones[0].id ? this.zones[0].id : '') : ((this.zones[1].id) ? this.zones[1].id : '')
+        this.selectedZone = (this.zones[0].id ? this.zones[0].id : '')
       })
     },
     fetchOsType () {
@@ -293,15 +289,14 @@ export default {
           message: this.$t('message.success.upload'),
           description: this.$t('message.success.upload.description')
         })
+        this.closeAction()
+        this.$emit('refresh-data')
       }).catch(e => {
         this.$notification.error({
           message: this.$t('message.upload.failed'),
           description: `${this.$t('message.upload.iso.failed.description')} -  ${e}`,
           duration: 0
         })
-      }).finally(() => {
-        this.closeAction()
-        this.$emit('refresh-data')
       })
     },
     handleSubmit (e) {
@@ -338,15 +333,15 @@ export default {
           this.loading = true
           api('registerIso', params).then(json => {
             this.$notification.success({
-              message: 'label.action.register.iso',
+              message: this.$t('label.action.register.iso'),
               description: `${this.$t('message.success.register.iso')} ${params.name}`
             })
+            this.closeAction()
+            this.$emit('refresh-data')
           }).catch(error => {
             this.$notifyError(error)
           }).finally(() => {
             this.loading = false
-            this.closeAction()
-            this.$emit('refresh-data')
           })
         } else {
           if (this.fileList.length !== 1) {

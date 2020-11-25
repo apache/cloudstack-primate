@@ -35,6 +35,9 @@
                         v-decorator="['zoneid', {
                           rules: [{ required: true, message: `${this.$t('message.error.select')}` }]
                         }]"
+                        showSearch
+                        optionFilterProp="children"
+                        :filterOption="filterOption"
                         :options="zoneSelectOptions"
                         @change="onSelectZoneId"
                         :loading="loading.zones"
@@ -45,6 +48,9 @@
                       :label="this.$t('label.podid')">
                       <a-select
                         v-decorator="['podid']"
+                        showSearch
+                        optionFilterProp="children"
+                        :filterOption="filterOption"
                         :options="podSelectOptions"
                         :loading="loading.pods"
                         @change="onSelectPodId"
@@ -55,6 +61,9 @@
                       :label="this.$t('label.clusterid')">
                       <a-select
                         v-decorator="['clusterid']"
+                        showSearch
+                        optionFilterProp="children"
+                        :filterOption="filterOption"
                         :options="clusterSelectOptions"
                         :loading="loading.clusters"
                         @change="onSelectClusterId"
@@ -65,6 +74,9 @@
                       :label="this.$t('label.hostid')">
                       <a-select
                         v-decorator="['hostid']"
+                        showSearch
+                        optionFilterProp="children"
+                        :filterOption="filterOption"
                         :options="hostSelectOptions"
                         :loading="loading.hosts"
                       ></a-select>
@@ -143,6 +155,32 @@
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
                   <div v-if="zoneSelected">
+                    <a-form-item v-if="zoneSelected && templateConfigurationExists">
+                      <span slot="label">
+                        {{ $t('label.configuration') }}
+                        <a-tooltip :title="$t('message.ovf.configurations')">
+                          <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                        </a-tooltip>
+                      </span>
+                      <a-select
+                        showSearch
+                        optionFilterProp="children"
+                        v-decorator="[
+                          'templateConfiguration'
+                        ]"
+                        defaultActiveFirstOption
+                        :placeholder="$t('label.configuration')"
+                        :filterOption="(input, option) => {
+                          return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }"
+                        @change="onSelectTemplateConfigurationId"
+                      >
+                        <a-select-option v-for="opt in templateConfigurations" :key="opt.id">
+                          {{ opt.name || opt.description }}
+                        </a-select-option>
+                      </a-select>
+                      <span v-if="selectedTemplateConfiguration && selectedTemplateConfiguration.description">{{ selectedTemplateConfiguration.description }}</span>
+                    </a-form-item>
                     <compute-offering-selection
                       :compute-items="options.serviceOfferings"
                       :row-count="rowCount.serviceOfferings"
@@ -150,6 +188,9 @@
                       :value="serviceOffering ? serviceOffering.id : ''"
                       :loading="loading.serviceOfferings"
                       :preFillContent="dataPreFill"
+                      :minimum-cpunumber="templateConfigurationExists && selectedTemplateConfiguration && selectedTemplateConfiguration.cpunumber ? selectedTemplateConfiguration.cpunumber : 0"
+                      :minimum-cpuspeed="templateConfigurationExists && selectedTemplateConfiguration && selectedTemplateConfiguration.cpuspeed ? selectedTemplateConfiguration.cpuspeed : 0"
+                      :minimum-memory="templateConfigurationExists && selectedTemplateConfiguration && selectedTemplateConfiguration.memory ? selectedTemplateConfiguration.memory : 0"
                       @select-compute-item="($event) => updateComputeOffering($event)"
                       @handle-search-filter="($event) => handleSearchFilter('serviceOfferings', $event)"
                     ></compute-offering-selection>
@@ -161,20 +202,20 @@
                       :preFillContent="dataPreFill"
                       :computeOfferingId="instanceConfig.computeofferingid"
                       :isConstrained="'serviceofferingdetails' in serviceOffering"
-                      :minCpu="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.mincpunumber*1 : 1"
+                      :minCpu="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.mincpunumber*1 : 0"
                       :maxCpu="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.maxcpunumber*1 : Number.MAX_SAFE_INTEGER"
-                      :minMemory="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.minmemory*1 : 1"
+                      :minMemory="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.minmemory*1 : 0"
                       :maxMemory="'serviceofferingdetails' in serviceOffering ? serviceOffering.serviceofferingdetails.maxmemory*1 : Number.MAX_SAFE_INTEGER"
                       @update-compute-cpunumber="updateFieldValue"
                       @update-compute-cpuspeed="updateFieldValue"
                       @update-compute-memory="updateFieldValue" />
                     <span v-if="serviceOffering && serviceOffering.iscustomized">
-                      <a-form-item class="form-item-hidden" >
+                      <a-form-item class="form-item-hidden">
                         <a-input v-decorator="['cpunumber']"/>
                       </a-form-item>
                       <a-form-item
                         class="form-item-hidden"
-                        v-if="serviceOffering && !(serviceOffering.cpuspeed > 0)">
+                        v-if="(serviceOffering && !(serviceOffering.cpuspeed > 0))">
                         <a-input v-decorator="['cpuspeed']"/>
                       </a-form-item>
                       <a-form-item class="form-item-hidden">
@@ -185,7 +226,22 @@
                 </template>
               </a-step>
               <a-step
-                :title="this.$t('label.diskofferingid')"
+                :title="$t('label.data.disk')"
+                :status="zoneSelected ? 'process' : 'wait'"
+                v-if="!template.deployasis && template.childtemplates && template.childtemplates.length > 0" >
+                <template slot="description">
+                  <div v-if="zoneSelected">
+                    <multi-disk-selection
+                      :items="template.childtemplates"
+                      :diskOfferings="options.diskOfferings"
+                      :zoneId="zoneId"
+                      @select-multi-disk-offering="updateMultiDiskOffering($event)" />
+                  </div>
+                </template>
+              </a-step>
+              <a-step
+                v-else
+                :title="tabKey == 'templateid' ? $t('label.data.disk') : $t('label.disk.size')"
                 :status="zoneSelected ? 'process' : 'wait'">
                 <template slot="description">
                   <div v-if="zoneSelected">
@@ -213,27 +269,61 @@
               </a-step>
               <a-step
                 :title="this.$t('label.networks')"
-                :status="zoneSelected ? 'process' : 'wait'">
+                :status="zoneSelected ? 'process' : 'wait'"
+                v-if="zone && zone.networktype !== 'Basic'">
                 <template slot="description">
                   <div v-if="zoneSelected">
-                    <network-selection
-                      v-if="!networkId"
-                      :items="options.networks"
-                      :row-count="rowCount.networks"
-                      :value="networkOfferingIds"
-                      :loading="loading.networks"
-                      :zoneId="zoneId"
-                      :preFillContent="dataPreFill"
-                      @select-network-item="($event) => updateNetworks($event)"
-                      @handle-search-filter="($event) => handleSearchFilter('networks', $event)"
-                    ></network-selection>
-                    <network-configuration
-                      v-if="networks.length > 0"
-                      :items="networks"
-                      :preFillContent="dataPreFill"
-                      @update-network-config="($event) => updateNetworkConfig($event)"
-                      @select-default-network-item="($event) => updateDefaultNetworks($event)"
-                    ></network-configuration>
+                    <div v-if="vm.templateid && templateNics && templateNics.length > 0">
+                      <a-form-item
+                        v-for="(nic, nicIndex) in templateNics"
+                        :key="nicIndex"
+                        :v-bind="nic.name" >
+                        <span slot="label">
+                          {{ nic.elementName + ' - ' + nic.name }}
+                          <a-tooltip :title="nic.networkDescription">
+                            <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                          </a-tooltip>
+                        </span>
+                        <a-select
+                          showSearch
+                          optionFilterProp="children"
+                          v-decorator="[
+                            'networkMap.nic-' + nic.InstanceID.toString(),
+                            { initialValue: options.networks && options.networks.length > 0 ? options.networks[Math.min(nicIndex, options.networks.length - 1)].id : null }
+                          ]"
+                          :placeholder="nic.networkDescription"
+                          :filterOption="(input, option) => {
+                            return option.componentOptions.children[0].children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                          }"
+                        >
+                          <a-select-option v-for="opt in options.networks" :key="opt.id">
+                            <span v-if="opt.type!=='L2'">
+                              {{ opt.name || opt.description }} ({{ `${$t('label.cidr')}: ${opt.cidr}` }})
+                            </span>
+                            <span v-else>{{ opt.name || opt.description }}</span>
+                          </a-select-option>
+                        </a-select>
+                      </a-form-item>
+                    </div>
+                    <div v-show="!(vm.templateid && templateNics && templateNics.length > 0)" >
+                      <network-selection
+                        :items="options.networks"
+                        :row-count="rowCount.networks"
+                        :value="networkOfferingIds"
+                        :loading="loading.networks"
+                        :zoneId="zoneId"
+                        :preFillContent="dataPreFill"
+                        @select-network-item="($event) => updateNetworks($event)"
+                        @handle-search-filter="($event) => handleSearchFilter('networks', $event)"
+                      ></network-selection>
+                      <network-configuration
+                        v-if="networks.length > 0"
+                        :items="networks"
+                        :preFillContent="dataPreFill"
+                        @update-network-config="($event) => updateNetworkConfig($event)"
+                        @select-default-network-item="($event) => updateDefaultNetworks($event)"
+                      ></network-configuration>
+                    </div>
                   </div>
                 </template>
               </a-step>
@@ -271,62 +361,106 @@
               <a-step
                 :title="$t('label.ovf.properties')"
                 :status="zoneSelected ? 'process' : 'wait'"
-                v-if="vm.templateid && template.properties && template.properties.length > 0">
+                v-if="vm.templateid && templateProperties && Object.keys(templateProperties).length > 0">
                 <template slot="description">
-                  <div>
-                    <a-form-item
-                      v-for="(property, propertyIndex) in template.properties"
-                      :key="propertyIndex"
-                      :v-bind="property.key" >
-                      <span slot="label">
-                        {{ property.label }}
-                        <a-tooltip :title="property.description">
-                          <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
-                        </a-tooltip>
-                      </span>
+                  <div v-for="(props, category) in templateProperties" :key="category">
+                    <a-alert :message="'Category: ' + category + ' (' + props.length + ' properties)'" type="info" />
+                    <div style="margin-left: 15px; margin-top: 10px">
+                      <a-form-item
+                        v-for="(property, propertyIndex) in props"
+                        :key="propertyIndex"
+                        :v-bind="property.key" >
+                        <span slot="label" style="text-transform: capitalize">
+                          {{ property.label }}
+                          <a-tooltip :title="property.description">
+                            <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+                          </a-tooltip>
+                        </span>
 
-                      <span v-if="property.type && property.type==='boolean'">
-                        <a-switch
-                          v-decorator="['properties.' + property.key, { initialValue: property.value==='TRUE'?true:false}]"
-                          :defaultChecked="property.value==='TRUE'?true:false"
-                          :placeholder="property.description"
-                        />
-                      </span>
-                      <span v-else-if="property.type && (property.type==='int' || property.type==='real')">
-                        <a-input-number
-                          v-decorator="['properties.'+property.key]"
-                          :defaultValue="property.value"
-                          :placeholder="property.description"
-                          :min="property.qualifiers && property.qualifiers.includes('MinValue') && property.qualifiers.includes('MaxValue')?property.qualifiers.split(',')[0].replace('MinValue(','').slice(0, -1):0"
-                          :max="property.qualifiers && property.qualifiers.includes('MinValue') && property.qualifiers.includes('MaxValue')?property.qualifiers.split(',')[1].replace('MaxValue(','').slice(0, -1):property.type==='real'?1:Number.MAX_SAFE_INTEGER" />
-                      </span>
-                      <span v-else-if="property.type && property.type==='string' && property.qualifiers && property.qualifiers.startsWith('ValueMap')">
-                        <a-select
-                          showSearch
-                          optionFilterProp="children"
-                          v-decorator="['properties.' + property.key, { initialValue: property.value }]"
-                          :placeholder="property.description"
-                          :filterOption="(input, option) => {
-                            return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                          }"
-                        >
-                          <a-select-option :v-if="property.value===''" key="">{{ }}</a-select-option>
-                          <a-select-option v-for="opt in property.qualifiers.replace('ValueMap','').substr(1).slice(0, -1).split(',')" :key="removeQuotes(opt)">
-                            {{ removeQuotes(opt) }}
-                          </a-select-option>
-                        </a-select>
-                      </span>
-                      <span v-else-if="property.type && property.type==='string' && property.password">
-                        <a-input-password
-                          v-decorator="['properties.' + property.key, { initialValue: property.value }]"
-                          :placeholder="property.description" />
-                      </span>
-                      <span v-else>
-                        <a-input
-                          v-decorator="['properties.' + property.key, { initialValue: property.value }]"
-                          :placeholder="property.description" />
-                      </span>
-                    </a-form-item>
+                        <span v-if="property.type && property.type==='boolean'">
+                          <a-switch
+                            v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value==='TRUE'?true:false}]"
+                            :defaultChecked="property.value==='TRUE'?true:false"
+                            :placeholder="property.description"
+                          />
+                        </span>
+                        <span v-else-if="property.type && (property.type==='int' || property.type==='real')">
+                          <a-input-number
+                            v-decorator="['properties.'+ escapePropertyKey(property.key) ]"
+                            :defaultValue="property.value"
+                            :placeholder="property.description"
+                            :min="getPropertyQualifiers(property.qualifiers, 'number-select').min"
+                            :max="getPropertyQualifiers(property.qualifiers, 'number-select').max" />
+                        </span>
+                        <span v-else-if="property.type && property.type==='string' && property.qualifiers && property.qualifiers.startsWith('ValueMap')">
+                          <a-select
+                            showSearch
+                            optionFilterProp="children"
+                            v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value && property.value.length>0 ? property.value: getPropertyQualifiers(property.qualifiers, 'select')[0] }]"
+                            :placeholder="property.description"
+                            :filterOption="(input, option) => {
+                              return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }"
+                          >
+                            <a-select-option v-for="opt in getPropertyQualifiers(property.qualifiers, 'select')" :key="opt">
+                              {{ opt }}
+                            </a-select-option>
+                          </a-select>
+                        </span>
+                        <span v-else-if="property.type && property.type==='string' && property.password">
+                          <a-input-password
+                            v-decorator="['properties.' + escapePropertyKey(property.key), {
+                              rules: [
+                                {
+                                  initialValue: property.value
+                                },
+                                {
+                                  validator: (rule, value, callback) => {
+                                    if (!property.qualifiers) {
+                                      callback()
+                                    }
+                                    var minlength = getPropertyQualifiers(property.qualifiers, 'number-select').min
+                                    var maxlength = getPropertyQualifiers(property.qualifiers, 'number-select').max
+                                    var errorMessage = ''
+                                    var isPasswordInvalidLength = function () {
+                                      return false
+                                    }
+                                    if (minlength) {
+                                      errorMessage = $t('message.validate.minlength').replace('{0}', minlength)
+                                      isPasswordInvalidLength = function () {
+                                        return !value || value.length < minlength
+                                      }
+                                    }
+                                    if (maxlength !== Number.MAX_SAFE_INTEGER) {
+                                      if (minlength) {
+                                        errorMessage = $t('message.validate.range.length').replace('{0}', minlength).replace('{1}', maxlength)
+                                        isPasswordInvalidLength = function () {
+                                          return !value || (maxlength < value.length || value.length < minlength)
+                                        }
+                                      } else {
+                                        errorMessage = $t('message.validate.maxlength').replace('{0}', maxlength)
+                                        isPasswordInvalidLength = function () {
+                                          return !value || value.length > maxlength
+                                        }
+                                      }
+                                    }
+                                    if (isPasswordInvalidLength()) {
+                                      callback(errorMessage)
+                                    }
+                                    callback()
+                                  }
+                                }
+                              ]
+                            }]"
+                            :placeholder="property.description" />
+                        </span>
+                        <span v-else>
+                          <a-input
+                            v-decorator="['properties.' + escapePropertyKey(property.key), { initialValue: property.value }]"
+                            :placeholder="property.description" />
+                        </span>
+                      </a-form-item>
+                    </div>
                   </div>
                 </template>
               </a-step>
@@ -336,12 +470,12 @@
                 <template slot="description" v-if="zoneSelected">
                   <span>
                     {{ $t('label.isadvanced') }}
-                    <a-switch @change="val => { this.showDetails = val }" style="margin-left: 10px"/>
+                    <a-switch @change="val => { this.showDetails = val }" :checked="this.showDetails" style="margin-left: 10px"/>
                   </span>
                   <div style="margin-top: 15px" v-show="this.showDetails">
                     <div
-                      v-if="vm.templateid && ['KVM', 'VMware'].includes(hypervisor)">
-                      <a-form-item :label="$t('label.vm.boottype')">
+                      v-if="vm.templateid && ['KVM', 'VMware'].includes(hypervisor) && !template.deployasis">
+                      <a-form-item :label="$t('label.boottype')">
                         <a-select
                           v-decorator="['boottype']"
                           @change="fetchBootModes"
@@ -351,7 +485,7 @@
                           </a-select-option>
                         </a-select>
                       </a-form-item>
-                      <a-form-item :label="$t('label.vm.bootmode')">
+                      <a-form-item :label="$t('label.bootmode')">
                         <a-select
                           v-decorator="['bootmode']">
                           <a-select-option v-for="bootMode in options.bootModes" :key="bootMode.id">
@@ -398,7 +532,10 @@
                       />
                     </a-form-item>
                     <a-form-item :label="$t('label.group.optional')">
-                      <a-input v-decorator="['group']" />
+                      <a-auto-complete
+                        v-decorator="['group']"
+                        :filterOption="filterOption"
+                        :dataSource="options.instanceGroups" />
                     </a-form-item>
                     <a-form-item :label="$t('label.keyboard')">
                       <a-select
@@ -409,10 +546,51 @@
                   </div>
                 </template>
               </a-step>
+              <a-step
+                :title="$t('label.license.agreements')"
+                :status="zoneSelected ? 'process' : 'wait'"
+                v-if="vm.templateid && templateLicenses && templateLicenses.length > 0">
+                <template slot="description">
+                  <div style="margin-top: 10px">
+                    {{ $t('message.read.accept.license.agreements') }}
+                    <a-form-item>
+                      <div
+                        style="margin-top: 10px"
+                        v-for="(license, licenseIndex) in templateLicenses"
+                        :key="licenseIndex"
+                        :v-bind="license.id">
+                        <span slot="label" style="text-transform: capitalize">
+                          {{ 'Agreement ' + (licenseIndex+1) + ': ' + license.name }}
+                        </span>
+                        <a-textarea
+                          :value="license.text"
+                          :auto-size="{ minRows: 3, maxRows: 8 }"
+                          readOnly />
+                      </div>
+                      <a-checkbox
+                        style="margin-top: 10px"
+                        v-decorator="['licensesaccepted', {
+                          rules: [
+                            {
+                              validator: (rule, value, callback) => {
+                                if (!value) {
+                                  callback($t('message.license.agreements.not.accepted'))
+                                }
+                                callback()
+                              }
+                            }
+                          ]
+                        }]">
+                        {{ $t('label.i.accept.all.license.agreements') }}
+                      </a-checkbox>
+                    </a-form-item>
+                  </div>
+                </template>
+              </a-step>
             </a-steps>
             <div class="card-footer">
               <!-- ToDo extract as component -->
-              <a-button @click="() => this.$router.back()" :loading="loading.deploy">
+              <a-button @click="() => this.$router.back()" :disabled="loading.deploy">
                 {{ this.$t('label.cancel') }}
               </a-button>
               <a-button type="primary" @click="handleSubmit" :loading="loading.deploy">
@@ -425,19 +603,7 @@
       </a-col>
       <a-col :md="24" :lg="7" v-if="!isMobile()">
         <a-affix :offsetTop="75">
-          <info-card class="vm-info-card" :resource="vm" :title="this.$t('label.yourinstance')">
-            <!-- ToDo: Refactor this, maybe move everything to the info-card component -->
-            <div slot="details" v-if="diskSize" style="margin-bottom: 12px;">
-              <a-icon type="hdd"></a-icon>
-              <span style="margin-left: 10px">{{ diskSize }}</span>
-            </div>
-            <div slot="details" v-if="networks">
-              <div v-for="network in networks" :key="network.id" style="margin-bottom: 12px;">
-                <a-icon type="api"></a-icon>
-                <span style="margin-left: 10px">{{ network.name }}</span>
-              </div>
-            </div>
-          </info-card>
+          <info-card class="vm-info-card" :resource="vm" :title="vm.name ? this.$t('label.yourinstance') + ' : ' + vm.name : this.$t('label.yourinstance')" />
         </a-affix>
       </a-col>
     </a-row>
@@ -450,12 +616,14 @@ import { api } from '@/api'
 import _ from 'lodash'
 import { mixin, mixinDevice } from '@/utils/mixin.js'
 import store from '@/store'
+import eventBus from '@/config/eventBus'
 
 import InfoCard from '@/components/view/InfoCard'
 import ComputeOfferingSelection from '@views/compute/wizard/ComputeOfferingSelection'
 import ComputeSelection from '@views/compute/wizard/ComputeSelection'
 import DiskOfferingSelection from '@views/compute/wizard/DiskOfferingSelection'
 import DiskSizeSelection from '@views/compute/wizard/DiskSizeSelection'
+import MultiDiskSelection from '@views/compute/wizard/MultiDiskSelection'
 import TemplateIsoSelection from '@views/compute/wizard/TemplateIsoSelection'
 import AffinityGroupSelection from '@views/compute/wizard/AffinityGroupSelection'
 import NetworkSelection from '@views/compute/wizard/NetworkSelection'
@@ -472,6 +640,7 @@ export default {
     AffinityGroupSelection,
     TemplateIsoSelection,
     DiskSizeSelection,
+    MultiDiskSelection,
     DiskOfferingSelection,
     InfoCard,
     ComputeOfferingSelection,
@@ -550,6 +719,11 @@ export default {
       },
       instanceConfig: {},
       template: {},
+      templateConfigurations: [],
+      templateNics: [],
+      templateLicenses: [],
+      templateProperties: {},
+      selectedTemplateConfiguration: {},
       iso: {},
       hypervisor: '',
       serviceOffering: {},
@@ -775,14 +949,14 @@ export default {
         }
       })
     },
+    templateConfigurationExists () {
+      return this.vm.templateid && this.templateConfigurations && this.templateConfigurations.length > 0
+    },
     networkId () {
       return this.$route.query.networkid || null
     },
-    networkName () {
-      return this.$route.query.name || null
-    },
     showSecurityGroupSection () {
-      return this.networks.length > 0 && this.zone.securitygroupsenabled
+      return (this.networks.length > 0 && this.zone.securitygroupsenabled) || (this.zone && this.zone.networktype === 'Basic')
     }
   },
   watch: {
@@ -819,14 +993,38 @@ export default {
       this.diskOffering = _.find(this.options.diskOfferings, (option) => option.id === instanceConfig.diskofferingid)
       this.zone = _.find(this.options.zones, (option) => option.id === instanceConfig.zoneid)
       this.affinityGroups = _.filter(this.options.affinityGroups, (option) => _.includes(instanceConfig.affinitygroupids, option.id))
-      if (!this.networkId) {
-        this.networks = _.filter(this.options.networks, (option) => _.includes(instanceConfig.networkids, option.id))
-      }
+      this.networks = _.filter(this.options.networks, (option) => _.includes(instanceConfig.networkids, option.id))
       this.sshKeyPair = _.find(this.options.sshKeyPairs, (option) => option.name === instanceConfig.keypair)
 
       if (this.zone) {
         this.vm.zoneid = this.zone.id
         this.vm.zonename = this.zone.name
+      }
+
+      const pod = _.find(this.options.pods, (option) => option.id === instanceConfig.podid)
+      if (pod) {
+        this.vm.podid = pod.id
+        this.vm.podname = pod.name
+      }
+
+      const cluster = _.find(this.options.clusters, (option) => option.id === instanceConfig.clusterid)
+      if (cluster) {
+        this.vm.clusterid = cluster.id
+        this.vm.clustername = cluster.name
+      }
+
+      const host = _.find(this.options.hosts, (option) => option.id === instanceConfig.hostid)
+      if (host) {
+        this.vm.hostid = host.id
+        this.vm.hostname = host.name
+      }
+
+      if (this.diskSize) {
+        this.vm.disksizetotalgb = this.diskSize
+      }
+
+      if (this.networks) {
+        this.vm.networks = this.networks
       }
 
       if (this.template) {
@@ -849,9 +1047,22 @@ export default {
       if (this.serviceOffering) {
         this.vm.serviceofferingid = this.serviceOffering.id
         this.vm.serviceofferingname = this.serviceOffering.displaytext
+        if (this.serviceOffering.cpunumber) {
+          this.vm.cpunumber = this.serviceOffering.cpunumber
+        }
+        if (this.serviceOffering.cpuspeed) {
+          this.vm.cpuspeed = this.serviceOffering.cpuspeed
+        }
+        if (this.serviceOffering.memory) {
+          this.vm.memory = this.serviceOffering.memory
+        }
       }
 
-      if (this.diskOffering) {
+      if (!this.template.deployasis && this.template.childtemplates && this.template.childtemplates.length > 0) {
+        this.vm.diskofferingid = ''
+        this.vm.diskofferingname = ''
+        this.vm.diskofferingsize = ''
+      } else if (this.diskOffering) {
         this.vm.diskofferingid = this.diskOffering.id
         this.vm.diskofferingname = this.diskOffering.displaytext
         this.vm.diskofferingsize = this.diskOffering.disksize
@@ -883,6 +1094,7 @@ export default {
     })
     this.form.getFieldDecorator('computeofferingid', { initialValue: undefined, preserve: true })
     this.form.getFieldDecorator('diskofferingid', { initialValue: undefined, preserve: true })
+    this.form.getFieldDecorator('multidiskoffering', { initialValue: undefined, preserve: true })
     this.form.getFieldDecorator('affinitygroupids', { initialValue: [], preserve: true })
     this.form.getFieldDecorator('networkids', { initialValue: [], preserve: true })
     this.form.getFieldDecorator('keypair', { initialValue: undefined, preserve: true })
@@ -902,22 +1114,41 @@ export default {
     }
   },
   methods: {
-    removeQuotes (value) {
-      return value.replace(/"/g, '')
+    getPropertyQualifiers (qualifiers, type) {
+      var result = ''
+      switch (type) {
+        case 'select':
+          result = []
+          if (qualifiers && qualifiers.includes('ValueMap')) {
+            result = qualifiers.replace('ValueMap', '').substr(1).slice(0, -1).split(',')
+            for (var i = 0; i < result.length; i++) {
+              result[i] = result[i].replace(/"/g, '')
+            }
+          }
+          break
+        case 'number-select':
+          var min = 0
+          var max = Number.MAX_SAFE_INTEGER
+          if (qualifiers) {
+            var match = qualifiers.match(/MinLen\((\d+)\)/)
+            if (match) {
+              min = parseInt(match[1])
+            }
+            match = qualifiers.match(/MaxLen\((\d+)\)/)
+            if (match) {
+              max = parseInt(match[1])
+            }
+          }
+          result = { min: min, max: max }
+          break
+        default:
+      }
+      return result
     },
     fillValue (field) {
       this.form.getFieldDecorator([field], { initialValue: this.dataPreFill[field] })
     },
     fetchData () {
-      if (this.networkId) {
-        this.updateNetworks([this.networkId])
-        this.updateDefaultNetworks(this.networkId)
-        this.networks = [{
-          id: this.networkId,
-          name: this.networkName
-        }]
-      }
-
       if (this.dataPreFill.zoneid) {
         this.fetchDataByZone(this.dataPreFill.zoneid)
       } else {
@@ -930,6 +1161,7 @@ export default {
 
       this.fetchBootTypes()
       this.fetchBootModes()
+      this.fetchInstaceGroups()
       Vue.nextTick().then(() => {
         ['name', 'keyboard', 'boottype', 'bootmode', 'userdata'].forEach(this.fillValue)
         this.instanceConfig = this.form.getFieldsValue() // ToDo: maybe initialize with some other defaults
@@ -985,6 +1217,19 @@ export default {
       this.options.bootModes = bootModes
       this.$forceUpdate()
     },
+    fetchInstaceGroups () {
+      this.options.instanceGroups = []
+      api('listInstanceGroups', {
+        account: this.$store.getters.userInfo.account,
+        domainid: this.$store.getters.userInfo.domainid,
+        listall: true
+      }).then(response => {
+        const groups = response.listinstancegroupsresponse.instancegroup || []
+        groups.forEach(x => {
+          this.options.instanceGroups.push(x.name)
+        })
+      })
+    },
     fetchNetwork () {
       const param = this.params.networks
       this.fetchOptions(param, 'networks')
@@ -1002,10 +1247,18 @@ export default {
           templateid: value,
           isoid: null
         })
+        this.resetFromTemplateConfiguration()
         let template = ''
         for (const key in this.options.templates) {
           var t = _.find(_.get(this.options.templates[key], 'template', []), (option) => option.id === value)
           if (t) {
+            this.template = t
+            this.templateConfigurations = []
+            this.selectedTemplateConfiguration = {}
+            this.templateNics = []
+            this.templateLicenses = []
+            this.templateProperties = {}
+            this.updateTemplateParameters()
             template = t
             break
           }
@@ -1015,10 +1268,21 @@ export default {
           this.dataPreFill.minrootdisksize = Math.ceil(size)
         }
       } else if (name === 'isoid') {
+        this.templateConfigurations = []
+        this.selectedTemplateConfiguration = {}
+        this.templateNics = []
+        this.templateLicenses = []
+        this.templateProperties = {}
         this.tabKey = 'isoid'
+        this.resetFromTemplateConfiguration()
         this.form.setFieldsValue({
           isoid: value,
           templateid: null
+        })
+      } else if (['cpuspeed', 'cpunumber', 'memory'].includes(name)) {
+        this.vm[name] = value
+        this.form.setFieldsValue({
+          [name]: value
         })
       } else {
         this.form.setFieldsValue({
@@ -1030,6 +1294,9 @@ export default {
       this.form.setFieldsValue({
         computeofferingid: id
       })
+      setTimeout(() => {
+        this.updateTemplateConfigurationOfferingDetails(id)
+      }, 500)
     },
     updateDiskOffering (id) {
       if (id === '0') {
@@ -1040,6 +1307,11 @@ export default {
       }
       this.form.setFieldsValue({
         diskofferingid: id
+      })
+    },
+    updateMultiDiskOffering (value) {
+      this.form.setFieldsValue({
+        multidiskoffering: value
       })
     },
     updateAffinityGroups (ids) {
@@ -1069,6 +1341,9 @@ export default {
         keypair: name
       })
     },
+    escapePropertyKey (key) {
+      return key.split('.').join('\\002E')
+    },
     updateSecurityGroups (securitygroupids) {
       this.securitygroupids = securitygroupids
     },
@@ -1080,6 +1355,18 @@ export default {
       e.preventDefault()
       this.form.validateFields(async (err, values) => {
         if (err) {
+          if (err.licensesaccepted) {
+            this.$notification.error({
+              message: this.$t('message.license.agreements.not.accepted'),
+              description: this.$t('message.step.license.agreements.continue')
+            })
+            return
+          }
+
+          this.$notification.error({
+            message: this.$t('message.request.failed'),
+            description: this.$t('error.form.message')
+          })
           return
         }
 
@@ -1096,6 +1383,13 @@ export default {
           })
           return
         }
+        if (!values.computeofferingid) {
+          this.$notification.error({
+            message: this.$t('message.request.failed'),
+            description: this.$t('message.step.2.continue')
+          })
+          return
+        }
 
         this.loading.deploy = true
 
@@ -1107,7 +1401,6 @@ export default {
         deployVmData.podid = values.podid
         deployVmData.clusterid = values.clusterid
         deployVmData.hostid = values.hostid
-        deployVmData.group = values.group
         deployVmData.keyboard = values.keyboard
         deployVmData.boottype = values.boottype
         deployVmData.bootmode = values.bootmode
@@ -1128,7 +1421,7 @@ export default {
         }
         // step 3: select service offering
         deployVmData.serviceofferingid = values.computeofferingid
-        if (values.cpunumber || values.cpuspeed || values.memory) {
+        if (this.serviceOffering && this.serviceOffering.iscustomized) {
           if (values.cpunumber) {
             deployVmData['details[0].cpuNumber'] = values.cpunumber
           }
@@ -1139,62 +1432,105 @@ export default {
             deployVmData['details[0].memory'] = values.memory
           }
         }
+        if (this.selectedTemplateConfiguration) {
+          deployVmData['details[0].configurationId'] = this.selectedTemplateConfiguration.id
+        }
         // step 4: select disk offering
-        deployVmData.diskofferingid = values.diskofferingid
-        if (values.size) {
-          deployVmData.size = values.size
+        if (!this.template.deployasis && this.template.childtemplates && this.template.childtemplates.length > 0) {
+          if (values.multidiskoffering) {
+            let i = 0
+            Object.entries(values.multidiskoffering).forEach(([disk, offering]) => {
+              const diskKey = `datadiskofferinglist[${i}].datadisktemplateid`
+              const offeringKey = `datadiskofferinglist[${i}].diskofferingid`
+              deployVmData[diskKey] = disk
+              deployVmData[offeringKey] = offering
+              i++
+            })
+          }
+        } else {
+          deployVmData.diskofferingid = values.diskofferingid
+          if (values.size) {
+            deployVmData.size = values.size
+          }
         }
         // step 5: select an affinity group
         deployVmData.affinitygroupids = (values.affinitygroupids || []).join(',')
         // step 6: select network
-        const arrNetwork = []
-        networkIds = values.networkids
-        if (networkIds.length > 0) {
-          for (let i = 0; i < networkIds.length; i++) {
-            if (networkIds[i] === this.defaultNetwork) {
-              const ipToNetwork = {
-                networkid: this.defaultNetwork
+        if (this.zone.networktype !== 'Basic') {
+          if ('networkMap' in values) {
+            const keys = Object.keys(values.networkMap)
+            for (var j = 0; j < keys.length; ++j) {
+              if (values.networkMap[keys[j]] && values.networkMap[keys[j]].length > 0) {
+                deployVmData['nicnetworklist[' + j + '].nic'] = keys[j].replace('nic-', '')
+                deployVmData['nicnetworklist[' + j + '].network'] = values.networkMap[keys[j]]
               }
-              arrNetwork.unshift(ipToNetwork)
+            }
+          } else {
+            const arrNetwork = []
+            networkIds = values.networkids
+            if (networkIds.length > 0) {
+              for (let i = 0; i < networkIds.length; i++) {
+                if (networkIds[i] === this.defaultNetwork) {
+                  const ipToNetwork = {
+                    networkid: this.defaultNetwork
+                  }
+                  arrNetwork.unshift(ipToNetwork)
+                } else {
+                  const ipToNetwork = {
+                    networkid: networkIds[i]
+                  }
+                  arrNetwork.push(ipToNetwork)
+                }
+              }
             } else {
-              const ipToNetwork = {
-                networkid: networkIds[i]
+              this.$notification.error({
+                message: this.$t('message.request.failed'),
+                description: this.$t('message.step.4.continue')
+              })
+              this.loading.deploy = false
+              return
+            }
+            for (let j = 0; j < arrNetwork.length; j++) {
+              deployVmData['iptonetworklist[' + j + '].networkid'] = arrNetwork[j].networkid
+              if (this.networkConfig.length > 0) {
+                const networkConfig = this.networkConfig.filter((item) => item.key === arrNetwork[j].networkid)
+                if (networkConfig && networkConfig.length > 0) {
+                  deployVmData['iptonetworklist[' + j + '].ip'] = networkConfig[0].ipAddress ? networkConfig[0].ipAddress : undefined
+                  deployVmData['iptonetworklist[' + j + '].mac'] = networkConfig[0].macAddress ? networkConfig[0].macAddress : undefined
+                }
               }
-              arrNetwork.push(ipToNetwork)
             }
           }
-        }
-        for (let j = 0; j < arrNetwork.length; j++) {
-          deployVmData['iptonetworklist[' + j + '].networkid'] = arrNetwork[j].networkid
-          if (this.networkConfig.length > 0) {
-            const networkConfig = this.networkConfig.filter((item) => item.key === arrNetwork[j].networkid)
-            if (networkConfig && networkConfig.length > 0) {
-              deployVmData['iptonetworklist[' + j + '].ip'] = networkConfig[0].ipAddress ? networkConfig[0].ipAddress : undefined
-              deployVmData['iptonetworklist[' + j + '].mac'] = networkConfig[0].macAddress ? networkConfig[0].macAddress : undefined
-            }
+          if (this.securitygroupids.length > 0) {
+            deployVmData.securitygroupids = this.securitygroupids.join(',')
           }
-        }
-        if (this.securitygroupids.length > 0) {
-          deployVmData.securitygroupids = this.securitygroupids.join(',')
         }
         // step 7: select ssh key pair
         deployVmData.keypair = values.keypair
-        deployVmData.name = values.name
-        deployVmData.displayname = values.name
+        if (values.name) {
+          deployVmData.name = values.name
+          deployVmData.displayname = values.name
+        }
+        if (values.group) {
+          deployVmData.group = values.group
+        }
         // step 8: enter setup
         if ('properties' in values) {
           const keys = Object.keys(values.properties)
           for (var i = 0; i < keys.length; ++i) {
-            deployVmData['properties[' + i + '].key'] = keys[i]
+            const propKey = keys[i].split('\\002E').join('.')
+            deployVmData['properties[' + i + '].key'] = propKey
             deployVmData['properties[' + i + '].value'] = values.properties[keys[i]]
           }
         }
         if ('bootintosetup' in values) {
           deployVmData.bootintosetup = values.bootintosetup
         }
+
         const title = this.$t('label.launch.vm')
         const description = values.name || ''
         const password = this.$t('label.password')
+
         api('deployVirtualMachine', deployVmData).then(response => {
           const jobId = response.deployvirtualmachineresponse.jobid
           if (jobId) {
@@ -1210,9 +1546,16 @@ export default {
                     duration: 0
                   })
                 }
+                eventBus.$emit('vm-refresh-data')
+              },
+              errorMethod: () => {
+                eventBus.$emit('vm-refresh-data')
               },
               loadingMessage: `${title} ${this.$t('label.in.progress')}`,
-              catchMessage: this.$t('error.fetching.async.job.result')
+              catchMessage: this.$t('error.fetching.async.job.result'),
+              catchMethod: () => {
+                eventBus.$emit('vm-refresh-data')
+              }
             })
             this.$store.dispatch('AddAsyncJob', {
               title: title,
@@ -1221,10 +1564,13 @@ export default {
               status: 'progress'
             })
           }
+          // Sending a refresh in case it hasn't picked up the new VM
+          new Promise(resolve => setTimeout(resolve, 3000)).then(() => {
+            eventBus.$emit('vm-refresh-data')
+          })
           this.$router.back()
         }).catch(error => {
           this.$notifyError(error)
-        }).finally(() => {
           this.loading.deploy = false
         })
       })
@@ -1285,6 +1631,19 @@ export default {
               this.fillValue(param.field)
             }
           })
+
+          if (name === 'zones') {
+            let zoneid = ''
+            if (this.$route.query.zoneid) {
+              zoneid = this.$route.query.zoneid
+            } else if (this.options.zones.length === 1) {
+              zoneid = this.options.zones[0].id
+            }
+            if (zoneid) {
+              this.form.getFieldDecorator(['zoneid'], { initialValue: zoneid })
+              this.onSelectZoneId(zoneid)
+            }
+          }
         })
       }).catch(function (error) {
         console.log(error.stack)
@@ -1294,16 +1653,17 @@ export default {
       })
     },
     fetchTemplates (templateFilter, params) {
-      params = params || {}
-      if (params.keyword || params.category !== templateFilter) {
-        params.page = 1
-        params.pageSize = params.pageSize || 10
+      const args = Object.assign({}, params)
+      if (args.keyword || args.category !== templateFilter) {
+        args.page = 1
+        args.pageSize = args.pageSize || 10
       }
-      params.zoneid = _.get(this.zone, 'id')
-      params.templatefilter = templateFilter
+      args.zoneid = _.get(this.zone, 'id')
+      args.templatefilter = templateFilter
+      args.details = 'all'
 
       return new Promise((resolve, reject) => {
-        api('listTemplates', params).then((response) => {
+        api('listTemplates', args).then((response) => {
           resolve(response)
         }).catch((reason) => {
           // ToDo: Handle errors
@@ -1312,17 +1672,17 @@ export default {
       })
     },
     fetchIsos (isoFilter, params) {
-      params = params || {}
-      if (params.keyword || params.category !== isoFilter) {
-        params.page = 1
-        params.pageSize = params.pageSize || 10
+      const args = Object.assign({}, params)
+      if (args.keyword || args.category !== isoFilter) {
+        args.page = 1
+        args.pageSize = args.pageSize || 10
       }
-      params.zoneid = _.get(this.zone, 'id')
-      params.isoFilter = isoFilter
-      params.bootable = true
+      args.zoneid = _.get(this.zone, 'id')
+      args.isoFilter = isoFilter
+      args.bootable = true
 
       return new Promise((resolve, reject) => {
-        api('listIsos', params).then((response) => {
+        api('listIsos', args).then((response) => {
           resolve(response)
         }).catch((reason) => {
           // ToDo: Handle errors
@@ -1372,6 +1732,11 @@ export default {
         this.loading.isos = false
       })
     },
+    filterOption (input, option) {
+      return (
+        option.componentOptions.children[0].text.toUpperCase().indexOf(input.toUpperCase()) >= 0
+      )
+    },
     onSelectZoneId (value) {
       this.dataPreFill = {}
       this.zoneId = value
@@ -1389,7 +1754,9 @@ export default {
       this.tabKey = 'templateid'
       _.each(this.params, (param, name) => {
         if (this.networkId && name === 'networks') {
-          return true
+          param.options = {
+            id: this.networkId
+          }
         }
         if (!('isLoad' in param) || param.isLoad) {
           this.fetchOptions(param, name, ['zones'])
@@ -1425,6 +1792,162 @@ export default {
         .replace(/&gt;/g, '>')
 
       return reversedValue
+    },
+    fetchTemplateNics (template) {
+      var nics = []
+      if (template && template.deployasisdetails && Object.keys(template.deployasisdetails).length > 0) {
+        var keys = Object.keys(template.deployasisdetails)
+        keys = keys.filter(key => key.startsWith('network-'))
+        for (var key of keys) {
+          var propertyMap = JSON.parse(template.deployasisdetails[key])
+          nics.push(propertyMap)
+        }
+        nics.sort(function (a, b) {
+          return a.InstanceID - b.InstanceID
+        })
+      }
+      return nics
+    },
+    groupBy (array, key) {
+      const result = {}
+      array.forEach(item => {
+        if (!result[item[key]]) {
+          result[item[key]] = []
+        }
+        result[item[key]].push(item)
+      })
+      return result
+    },
+    fetchTemplateProperties (template) {
+      var properties = []
+      if (template && template.deployasisdetails && Object.keys(template.deployasisdetails).length > 0) {
+        var keys = Object.keys(template.deployasisdetails)
+        keys = keys.filter(key => key.startsWith('property-'))
+        for (var key of keys) {
+          var propertyMap = JSON.parse(template.deployasisdetails[key])
+          properties.push(propertyMap)
+        }
+        properties.sort(function (a, b) {
+          return a.index - b.index
+        })
+      }
+      return this.groupBy(properties, 'category')
+    },
+    fetchTemplateConfigurations (template) {
+      var configurations = []
+      if (template && template.deployasisdetails && Object.keys(template.deployasisdetails).length > 0) {
+        var keys = Object.keys(template.deployasisdetails)
+        keys = keys.filter(key => key.startsWith('configuration-'))
+        for (var key of keys) {
+          var configuration = JSON.parse(template.deployasisdetails[key])
+          configuration.name = configuration.label
+          configuration.displaytext = configuration.label
+          configuration.iscustomized = true
+          configuration.cpunumber = 0
+          configuration.cpuspeed = 0
+          configuration.memory = 0
+          for (var harwareItem of configuration.hardwareItems) {
+            if (harwareItem.resourceType === 'Processor') {
+              configuration.cpunumber = harwareItem.virtualQuantity
+              configuration.cpuspeed = harwareItem.reservation
+            } else if (harwareItem.resourceType === 'Memory') {
+              configuration.memory = harwareItem.virtualQuantity
+            }
+          }
+          configurations.push(configuration)
+        }
+        configurations.sort(function (a, b) {
+          return a.index - b.index
+        })
+      }
+      return configurations
+    },
+    fetchTemplateLicenses (template) {
+      var licenses = []
+      if (template && template.deployasisdetails && Object.keys(template.deployasisdetails).length > 0) {
+        var keys = Object.keys(template.deployasisdetails)
+        const prefix = /eula-\d-/
+        keys = keys.filter(key => key.startsWith('eula-')).sort()
+        for (var key of keys) {
+          var license = {
+            id: this.escapePropertyKey(key.replace(' ', '-')),
+            name: key.replace(prefix, ''),
+            text: template.deployasisdetails[key]
+          }
+          licenses.push(license)
+        }
+      }
+      return licenses
+    },
+    deleteFrom (options, values) {
+      for (const value of values) {
+        delete options[value]
+      }
+    },
+    resetFromTemplateConfiguration () {
+      this.deleteFrom(this.params.serviceOfferings.options, ['cpuspeed', 'cpunumber', 'memory'])
+      this.deleteFrom(this.dataPreFill, ['cpuspeed', 'cpunumber', 'memory'])
+      this.handleSearchFilter('serviceOfferings', {
+        page: 1,
+        pageSize: 10
+      })
+    },
+    handleTemplateConfiguration () {
+      if (!this.selectedTemplateConfiguration) {
+        return
+      }
+      const params = {
+        cpunumber: this.selectedTemplateConfiguration.cpunumber,
+        cpuspeed: this.selectedTemplateConfiguration.cpuspeed,
+        memory: this.selectedTemplateConfiguration.memory,
+        page: 1,
+        pageSize: 10
+      }
+      this.dataPreFill.cpunumber = params.cpunumber
+      this.dataPreFill.cpuspeed = params.cpuspeed
+      this.dataPreFill.memory = params.memory
+      this.handleSearchFilter('serviceOfferings', params)
+    },
+    updateTemplateParameters () {
+      if (this.template) {
+        this.templateNics = this.fetchTemplateNics(this.template)
+        this.templateConfigurations = this.fetchTemplateConfigurations(this.template)
+        this.templateLicenses = this.fetchTemplateLicenses(this.template)
+        this.templateProperties = this.fetchTemplateProperties(this.template)
+        this.selectedTemplateConfiguration = {}
+        setTimeout(() => {
+          if (this.templateConfigurationExists) {
+            this.selectedTemplateConfiguration = this.templateConfigurations[0]
+            this.handleTemplateConfiguration()
+            if ('templateConfiguration' in this.form.fieldsStore.fieldsMeta) {
+              this.updateFieldValue('templateConfiguration', this.selectedTemplateConfiguration.id)
+            }
+            this.updateComputeOffering(null) // reset as existing selection may be incompatible
+          }
+        }, 500)
+      }
+    },
+    onSelectTemplateConfigurationId (value) {
+      this.selectedTemplateConfiguration = _.find(this.templateConfigurations, (option) => option.id === value)
+      this.handleTemplateConfiguration()
+      this.updateComputeOffering(null)
+    },
+    updateTemplateConfigurationOfferingDetails (offeringId) {
+      var offering = this.serviceOffering
+      if (!offering || offering.id !== offeringId) {
+        offering = _.find(this.options.serviceOfferings, (option) => option.id === offeringId)
+      }
+      if (offering && offering.iscustomized && this.templateConfigurationExists && this.selectedTemplateConfiguration) {
+        if ('cpunumber' in this.form.fieldsStore.fieldsMeta) {
+          this.updateFieldValue('cpunumber', this.selectedTemplateConfiguration.cpunumber)
+        }
+        if ((offering.cpuspeed == null || offering.cpuspeed === undefined) && 'cpuspeed' in this.form.fieldsStore.fieldsMeta) {
+          this.updateFieldValue('cpuspeed', this.selectedTemplateConfiguration.cpuspeed)
+        }
+        if ('memory' in this.form.fieldsStore.fieldsMeta) {
+          this.updateFieldValue('memory', this.selectedTemplateConfiguration.memory)
+        }
+      }
     }
   }
 }

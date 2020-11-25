@@ -20,6 +20,7 @@
     <a-modal
       :visible="showAction"
       :closable="true"
+      :maskClosable="false"
       style="top: 20px;"
       @ok="handleSubmit"
       @cancel="parentCloseAction"
@@ -156,6 +157,10 @@ export default {
       this.$pollJob({
         jobId,
         successMethod: result => {
+          if (this.action.api === 'deleteDomain') {
+            this.$set(this.resource, 'isDel', true)
+            this.parentUpdActionData(this.resource)
+          }
           this.parentFetchData()
           if (action.response) {
             const description = action.response(result.jobresult)
@@ -249,10 +254,8 @@ export default {
           if (!hasJobId) {
             this.parentUpdActionData(json)
             this.parentFetchData()
-          } else {
-            this.$set(this.resource, 'isDel', true)
-            this.parentUpdActionData(this.resource)
           }
+          this.parentCloseAction()
         }).catch(error => {
           this.$notification.error({
             message: this.$t('message.request.failed'),
@@ -260,7 +263,6 @@ export default {
           })
         }).finally(f => {
           this.action.loading = false
-          this.parentCloseAction()
         })
       })
     },

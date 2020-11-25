@@ -30,7 +30,13 @@ export default {
       docHelp: 'adminguide/virtual_machines.html',
       permission: ['listVirtualMachinesMetrics'],
       resourceType: 'UserVm',
-      filters: ['self', 'running', 'stopped'],
+      filters: () => {
+        const filters = ['running', 'stopped']
+        if (!(store.getters.project && store.getters.project.id)) {
+          filters.unshift('self')
+        }
+        return filters
+      },
       columns: () => {
         const fields = ['name', 'state', 'ipaddress']
         const metricsFields = ['cpunumber', 'cpuused', 'cputotal',
@@ -94,8 +100,11 @@ export default {
           groupAction: true,
           groupMap: (selection) => { return selection.map(x => { return { id: x } }) },
           show: (record) => { return ['Stopped'].includes(record.state) },
-          args: (record, store) => {
+          args: (record, store, group) => {
             var fields = []
+            if (group) {
+              return fields
+            }
             if (store.userInfo.roletype === 'Admin') {
               fields = ['podid', 'clusterid', 'hostid']
             }
@@ -116,7 +125,7 @@ export default {
           docHelp: 'adminguide/virtual_machines.html#stopping-and-starting-vms',
           dataView: true,
           groupAction: true,
-          groupMap: (selection) => { return selection.map(x => { return { id: x } }) },
+          groupMap: (selection, values) => { return selection.map(x => { return { id: x, forced: values.forced } }) },
           args: ['forced'],
           show: (record) => { return ['Running'].includes(record.state) }
         },
@@ -188,6 +197,7 @@ export default {
           api: 'createBackup',
           icon: 'cloud-upload',
           label: 'label.create.backup',
+          message: 'message.backup.create',
           docHelp: 'adminguide/virtual_machines.html#creating-vm-backups',
           dataView: true,
           args: ['virtualmachineid'],
@@ -237,17 +247,9 @@ export default {
           label: 'label.action.attach.iso',
           docHelp: 'adminguide/templates.html#attaching-an-iso-to-a-vm',
           dataView: true,
-          args: ['id', 'virtualmachineid'],
+          popup: true,
           show: (record) => { return ['Running', 'Stopped'].includes(record.state) && !record.isoid },
-          mapping: {
-            id: {
-              api: 'listIsos',
-              params: (record) => { return { zoneid: record.zoneid } }
-            },
-            virtualmachineid: {
-              value: (record, params) => { return record.id }
-            }
-          }
+          component: () => import('@/views/compute/AttachIso.vue')
         },
         {
           api: 'detachIso',
@@ -277,7 +279,7 @@ export default {
         {
           api: 'scaleVirtualMachine',
           icon: 'arrows-alt',
-          label: 'Scale VM',
+          label: 'label.scale.vm',
           docHelp: 'adminguide/virtual_machines.html#how-to-dynamically-scale-cpu-and-ram',
           dataView: true,
           show: (record) => { return ['Stopped'].includes(record.state) || (['Running'].includes(record.state) && record.hypervisor !== 'KVM' && record.hypervisor !== 'LXC') },
@@ -291,14 +293,8 @@ export default {
           docHelp: 'adminguide/virtual_machines.html#moving-vms-between-hosts-manual-live-migration',
           dataView: true,
           show: (record, store) => { return ['Running'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) },
-          component: () => import('@/views/compute/MigrateWizard'),
           popup: true,
-          args: ['hostid', 'virtualmachineid'],
-          mapping: {
-            virtualmachineid: {
-              value: (record) => { return record.id }
-            }
-          }
+          component: () => import('@/views/compute/MigrateWizard')
         },
         {
           api: 'migrateVirtualMachine',
@@ -336,7 +332,7 @@ export default {
           docHelp: 'adminguide/virtual_machines.html#resetting-ssh-keys',
           dataView: true,
           args: ['keypair', 'account', 'domainid'],
-          show: (record) => { return ['Running', 'Stopped'].includes(record.state) },
+          show: (record) => { return ['Stopped'].includes(record.state) },
           mapping: {
             keypair: {
               api: 'listSSHKeyPairs',
@@ -371,6 +367,7 @@ export default {
           api: 'unmanageVirtualMachine',
           icon: 'disconnect',
           label: 'label.action.unmanage.virtualmachine',
+          message: 'message.action.unmanage.virtualmachine',
           dataView: true,
           show: (record) => { return ['Running', 'Stopped'].includes(record.state) && record.hypervisor === 'VMware' }
         },
@@ -391,10 +388,14 @@ export default {
           docHelp: 'adminguide/virtual_machines.html#deleting-vms',
           dataView: true,
           groupAction: true,
+          args: (record, store, group) => {
+            return (['Admin'].includes(store.userInfo.roletype) || store.features.allowuserexpungerecovervm)
+              ? ['expunge'] : []
+          },
           popup: true,
-          groupMap: (selection) => { return selection.map(x => { return { id: x, expunge: true } }) },
+          groupMap: (selection, values) => { return selection.map(x => { return { id: x, expunge: values.expunge } }) },
           show: (record) => { return ['Running', 'Stopped', 'Error'].includes(record.state) },
-          component: () => import('@/views/compute/DestoryVM.vue')
+          component: () => import('@/views/compute/DestroyVM.vue')
         }
       ]
     },
@@ -431,6 +432,7 @@ export default {
           api: 'startKubernetesCluster',
           icon: 'caret-right',
           label: 'label.kubernetes.cluster.start',
+          message: 'message.kubernetes.cluster.start',
           docHelp: 'plugins/cloudstack-kubernetes-service.html#starting-a-stopped-kubernetes-cluster',
           dataView: true,
           show: (record) => { return ['Stopped'].includes(record.state) }
@@ -439,6 +441,7 @@ export default {
           api: 'stopKubernetesCluster',
           icon: 'poweroff',
           label: 'label.kubernetes.cluster.stop',
+          message: 'message.kubernetes.cluster.stop',
           docHelp: 'plugins/cloudstack-kubernetes-service.html#stopping-kubernetes-cluster',
           dataView: true,
           show: (record) => { return !['Stopped', 'Destroyed', 'Destroying'].includes(record.state) }
@@ -447,6 +450,7 @@ export default {
           api: 'scaleKubernetesCluster',
           icon: 'swap',
           label: 'label.kubernetes.cluster.scale',
+          message: 'message.kubernetes.cluster.scale',
           docHelp: 'plugins/cloudstack-kubernetes-service.html#scaling-kubernetes-cluster',
           dataView: true,
           show: (record) => { return ['Created', 'Running'].includes(record.state) },
@@ -457,6 +461,7 @@ export default {
           api: 'upgradeKubernetesCluster',
           icon: 'plus-circle',
           label: 'label.kubernetes.cluster.upgrade',
+          message: 'message.kubernetes.cluster.upgrade',
           docHelp: 'plugins/cloudstack-kubernetes-service.html#upgrading-kubernetes-cluster',
           dataView: true,
           show: (record) => { return ['Created', 'Running'].includes(record.state) },
@@ -467,6 +472,7 @@ export default {
           api: 'deleteKubernetesCluster',
           icon: 'delete',
           label: 'label.kubernetes.cluster.delete',
+          message: 'message.kubernetes.cluster.delete',
           docHelp: 'plugins/cloudstack-kubernetes-service.html#deleting-kubernetes-cluster',
           dataView: true,
           show: (record) => { return !['Destroyed', 'Destroying'].includes(record.state) }

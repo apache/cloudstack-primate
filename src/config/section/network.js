@@ -29,8 +29,9 @@ export default {
       icon: 'apartment',
       permission: ['listNetworks'],
       resourceType: 'Network',
-      columns: ['name', 'state', 'type', 'cidr', 'ip6cidr', 'broadcasturi', 'account', 'zonename'],
-      details: ['name', 'id', 'description', 'type', 'traffictype', 'vpcid', 'vlan', 'broadcasturi', 'cidr', 'ip6cidr', 'netmask', 'gateway', 'ispersistent', 'restartrequired', 'reservediprange', 'redundantrouter', 'networkdomain', 'zonename', 'account', 'domain'],
+      columns: ['name', 'state', 'type', 'vpcname', 'cidr', 'ip6cidr', 'broadcasturi', 'domain', 'account', 'zonename'],
+      details: ['name', 'id', 'description', 'type', 'traffictype', 'vpcid', 'vlan', 'broadcasturi', 'cidr', 'ip6cidr', 'netmask', 'gateway', 'aclname', 'ispersistent', 'restartrequired', 'reservediprange', 'redundantrouter', 'networkdomain', 'zonename', 'account', 'domain'],
+      filters: ['all', 'isolated', 'shared', 'l2'],
       searchFilters: ['keyword', 'zoneid', 'domainid', 'account', 'tags'],
       related: [{
         name: 'vm',
@@ -68,14 +69,21 @@ export default {
           icon: 'edit',
           label: 'label.edit',
           dataView: true,
-          args: ['name', 'displaytext', 'guestvmcidr']
+          args: (record) => {
+            var fields = ['name', 'displaytext', 'guestvmcidr']
+            if (record.type === 'Isolated') {
+              fields.push(...['networkofferingid', 'networkdomain'])
+            }
+            return fields
+          }
         },
         {
           api: 'restartNetwork',
           icon: 'sync',
           label: 'label.restart.network',
           dataView: true,
-          args: ['cleanup']
+          args: ['cleanup', 'makeredundant'],
+          show: (record) => record.type !== 'L2'
         },
         {
           api: 'replaceNetworkACLList',
@@ -139,7 +147,8 @@ export default {
           label: 'label.add.vpc',
           docHelp: 'adminguide/networking_and_traffic.html#adding-a-virtual-private-cloud',
           listView: true,
-          args: ['name', 'displaytext', 'zoneid', 'cidr', 'networkdomain', 'vpcofferingid', 'start']
+          popup: true,
+          component: () => import('@/views/network/CreateVpc.vue')
         },
         {
           api: 'updateVPC',
@@ -154,7 +163,13 @@ export default {
           label: 'label.restart.vpc',
           message: 'message.restart.vpc',
           dataView: true,
-          args: ['makeredundant', 'cleanup']
+          args: (record) => {
+            var fields = ['cleanup']
+            if (!record.redundantvpcrouter) {
+              fields.push('makeredundant')
+            }
+            return fields
+          }
         },
         {
           api: 'deleteVPC',
@@ -230,6 +245,7 @@ export default {
       resourceType: 'PublicIpAddress',
       columns: ['ipaddress', 'state', 'associatednetworkname', 'virtualmachinename', 'allocated', 'account', 'zonename'],
       details: ['ipaddress', 'id', 'associatednetworkname', 'virtualmachinename', 'networkid', 'issourcenat', 'isstaticnat', 'virtualmachinename', 'vmipaddress', 'vlan', 'allocated', 'account', 'zonename'],
+      component: () => import('@/views/network/PublicIpResource.vue'),
       tabs: [{
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
@@ -237,7 +253,8 @@ export default {
         name: 'firewall',
         component: () => import('@/views/network/FirewallRules.vue'),
         networkServiceFilter: networkService => networkService.filter(x => x.name === 'Firewall').length > 0
-      }, {
+      },
+      {
         name: 'portforwarding',
         component: () => import('@/views/network/PortForwarding.vue'),
         networkServiceFilter: networkService => networkService.filter(x => x.name === 'PortForwarding').length > 0
@@ -294,7 +311,7 @@ export default {
       hidden: true,
       permission: ['listPrivateGateways'],
       columns: ['ipaddress', 'state', 'gateway', 'netmask', 'account'],
-      details: ['ipaddress', 'gateway', 'netmask', 'vlan', 'sourcenatsupported', 'aclid', 'account', 'domain', 'zone'],
+      details: ['ipaddress', 'gateway', 'netmask', 'vlan', 'sourcenatsupported', 'aclname', 'account', 'domain', 'zone'],
       tabs: [{
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')
@@ -536,7 +553,13 @@ export default {
           icon: 'plus',
           label: 'label.add.vpn.user',
           listView: true,
-          args: ['username', 'password', 'domainid', 'account']
+          args: (record, store) => {
+            if (store.userInfo.roletype === 'User') {
+              return ['username', 'password']
+            }
+
+            return ['username', 'password', 'domainid', 'account']
+          }
         },
         {
           api: 'removeVpnUser',

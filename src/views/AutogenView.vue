@@ -43,16 +43,18 @@
                   {{ $t('label.filterby') }}
                 </template>
                 <a-select
-                  v-if="!dataView && $route.meta.filters && $route.meta.filters.length > 0"
+                  v-if="!dataView && filters && filters.length > 0"
                   :placeholder="$t('label.filterby')"
-                  :value="$route.query.filter || 'self'"
+                  :value="$route.query.filter || (projectView && $route.name === 'vm' ||
+                    ['Admin', 'DomainAdmin'].includes($store.getters.userInfo.roletype) && ['vm', 'iso', 'template'].includes($route.name)
+                    ? 'all' : ['guestnetwork'].includes($route.name) ? 'all' : 'self')"
                   style="min-width: 100px; margin-left: 10px"
                   @change="changeFilter">
                   <a-icon slot="suffixIcon" type="filter" />
-                  <a-select-option v-if="['Admin', 'DomainAdmin'].includes($store.getters.userInfo.roletype) || $route.name === 'vm'" key="all">
+                  <a-select-option v-if="['Admin', 'DomainAdmin'].includes($store.getters.userInfo.roletype) && ['vm', 'iso', 'template'].includes($route.name)" key="all">
                     {{ $t('label.all') }}
                   </a-select-option>
-                  <a-select-option v-for="filter in $route.meta.filters" :key="filter">
+                  <a-select-option v-for="filter in filters" :key="filter">
                     {{ $t('label.' + filter) }}
                   </a-select-option>
                 </a-select>
@@ -63,14 +65,16 @@
         <a-col
           :span="device === 'mobile' ? 24 : 12"
           :style="device === 'mobile' ? { float: 'right', 'margin-top': '12px', 'margin-bottom': '-6px', display: 'table' } : { float: 'right', display: 'table', 'margin-bottom': '-6px' }" >
+          <slot name="action" v-if="dataView && $route.path.startsWith('/publicip')"></slot>
           <action-button
+            v-else
             :style="dataView ? { float: device === 'mobile' ? 'left' : 'right' } : { 'margin-right': '10px', display: 'inline-flex' }"
             :loading="loading"
             :actions="actions"
             :selectedRowKeys="selectedRowKeys"
             :dataView="dataView"
             :resource="resource"
-            @exec-action="execAction"/>
+            @exec-action="(action) => execAction(action, action.groupAction && !dataView)"/>
           <search-view
             v-if="!dataView"
             :searchFilters="searchFilters"
@@ -85,6 +89,7 @@
         <a-modal
           :visible="showAction"
           :closable="true"
+          :maskClosable="false"
           style="top: 20px;"
           @cancel="closeAction"
           :confirmLoading="actionLoading"
@@ -117,6 +122,7 @@
         v-else
         :visible="showAction"
         :closable="true"
+        :maskClosable="false"
         style="top: 20px;"
         @ok="handleSubmit"
         @cancel="closeAction"
@@ -143,7 +149,6 @@
           <a-form
             :form="form"
             @submit="handleSubmit"
-            v-show="dataView || !currentAction.groupAction || this.selectedRowKeys.length === 0"
             layout="vertical" >
             <a-form-item
               v-for="(field, fieldIndex) in currentAction.paramFields"
@@ -165,6 +170,7 @@
                   }]"
                   v-model="formModel[field.name]"
                   :placeholder="field.description"
+                  :autoFocus="fieldIndex === 0"
                 />
               </span>
               <span v-else-if="currentAction.mapping && field.name in currentAction.mapping && currentAction.mapping[field.name].options">
@@ -238,6 +244,8 @@
               </span>
               <span v-else-if="field.type==='long'">
                 <a-input-number
+                  :autoFocus="fieldIndex === 0"
+                  style="width: 100%;"
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: `${$t('message.validate.number')}` }]
                   }]"
@@ -272,6 +280,7 @@
               </span>
               <span v-else>
                 <a-input
+                  :autoFocus="fieldIndex === 0"
                   v-decorator="[field.name, {
                     rules: [{ required: field.required, message: `${$t('message.error.required.input')}` }]
                   }]"
@@ -284,7 +293,7 @@
     </div>
 
     <div v-if="dataView">
-      <slot v-if="$route.path.startsWith('/quotasummary')"></slot>
+      <slot name="resource" v-if="$route.path.startsWith('/quotasummary') || $route.path.startsWith('/publicip')"></slot>
       <resource-view
         v-else
         :resource="resource"
@@ -307,7 +316,7 @@
         :pageSize="pageSize"
         :total="itemCount"
         :showTotal="total => `${$t('label.showing')} ${Math.min(total, 1+((page-1)*pageSize))}-${Math.min(page*pageSize, total)} ${$t('label.of')} ${total} ${$t('label.items')}`"
-        :pageSizeOptions="device === 'desktop' ? ['20', '50', '100', '500'] : ['10', '20', '50', '100', '500']"
+        :pageSizeOptions="device === 'desktop' ? ['20', '50', '100', '200'] : ['10', '20', '50', '100', '200']"
         @change="changePage"
         @showSizeChange="changePageSize"
         showSizeChanger
@@ -325,6 +334,7 @@ import { api } from '@/api'
 import { mixinDevice } from '@/utils/mixin.js'
 import { genericCompare } from '@/utils/sort.js'
 import store from '@/store'
+import eventBus from '@/config/eventBus'
 
 import Breadcrumb from '@/components/widgets/Breadcrumb'
 import ChartCard from '@/components/widgets/ChartCard'
@@ -374,6 +384,7 @@ export default {
       currentAction: {},
       showAction: false,
       dataView: false,
+      projectView: false,
       selectedFilter: '',
       filters: [],
       searchFilters: [],
@@ -385,6 +396,24 @@ export default {
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
+  },
+  created () {
+    eventBus.$on('vm-refresh-data', () => {
+      if (this.$route.path === '/vm' || this.$route.path.includes('/vm/')) {
+        this.fetchData()
+      }
+    })
+    eventBus.$on('async-job-complete', (action) => {
+      if (this.$route.path.includes('/vm/')) {
+        if (action && 'api' in action && ['destroyVirtualMachine'].includes(action.api)) {
+          return
+        }
+      }
+      this.fetchData()
+    })
+    eventBus.$on('exec-action', (action, isGroupAction) => {
+      this.execAction(action, isGroupAction)
+    })
   },
   mounted () {
     if (this.device === 'desktop') {
@@ -447,6 +476,9 @@ export default {
       })
     },
     fetchData (params = {}) {
+      if (this.$route.name === 'deployVirtualMachine') {
+        return
+      }
       if (this.routeName !== this.$route.name) {
         this.routeName = this.$route.name
         this.items = []
@@ -464,7 +496,21 @@ export default {
       if (this.$route.meta.params) {
         Object.assign(params, this.$route.meta.params)
       }
+      if (['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype) &&
+        'templatefilter' in params && this.routeName === 'template') {
+        params.templatefilter = 'all'
+      }
+      if (['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype) &&
+        'isofilter' in params && this.routeName === 'iso') {
+        params.isofilter = 'all'
+      }
       if (Object.keys(this.$route.query).length > 0) {
+        if ('page' in this.$route.query) {
+          this.page = Number(this.$route.query.page)
+        }
+        if ('pagesize' in this.$route.query) {
+          this.pagesize = Number(this.$route.query.pagesize)
+        }
         Object.assign(params, this.$route.query)
       }
       delete params.q
@@ -472,6 +518,12 @@ export default {
       delete params.irefresh
 
       this.searchFilters = this.$route && this.$route.meta && this.$route.meta.searchFilters
+      this.filters = this.$route && this.$route.meta && this.$route.meta.filters
+      if (typeof this.filters === 'function') {
+        this.filters = this.filters()
+      }
+
+      this.projectView = Boolean(store.getters.project && store.getters.project.id)
 
       if (this.$route && this.$route.params && this.$route.params.id) {
         this.dataView = true
@@ -576,6 +628,18 @@ export default {
           this.items = []
         }
 
+        if (['listTemplates', 'listIsos'].includes(this.apiName) && this.items.length > 1) {
+          this.items = [...new Map(this.items.map(x => [x.id, x])).values()]
+        }
+
+        if (this.apiName === 'listProjects' && this.items.length > 0) {
+          this.columns.map(col => {
+            if (col.title === 'Account') {
+              col.title = this.$t('label.project.owner')
+            }
+          })
+        }
+
         for (let idx = 0; idx < this.items.length; idx++) {
           this.items[idx].key = idx
           for (const key in customRender) {
@@ -593,8 +657,16 @@ export default {
         if (this.items.length > 0) {
           this.resource = this.items[0]
           this.$emit('change-resource', this.resource)
+        } else {
+          if (this.dataView) {
+            this.$router.push({ path: '/exception/404' })
+          }
         }
       }).catch(error => {
+        if ([401].includes(error.response.status)) {
+          return
+        }
+
         if (Object.keys(this.searchParams).length > 0) {
           this.itemCount = 0
           this.items = []
@@ -607,7 +679,7 @@ export default {
 
         this.$notifyError(error)
 
-        if ([401, 405].includes(error.response.status)) {
+        if ([405].includes(error.response.status)) {
           this.$router.push({ path: '/exception/403' })
         }
 
@@ -630,7 +702,7 @@ export default {
     onRowSelectionChange (selection) {
       this.selectedRowKeys = selection
     },
-    execAction (action) {
+    execAction (action, isGroupAction) {
       const self = this
       this.form = this.$form.createForm(this)
       this.formModel = {}
@@ -655,7 +727,7 @@ export default {
       if ('args' in action) {
         var args = action.args
         if (typeof action.args === 'function') {
-          args = action.args(action.resource, this.$store.getters)
+          args = action.args(action.resource, this.$store.getters, isGroupAction)
         }
         if (args.length > 0) {
           this.currentAction.paramFields = args.map(function (arg) {
@@ -736,22 +808,26 @@ export default {
                 continue
               }
               param.opts = json[obj][res]
+              if (this.currentAction.mapping && this.currentAction.mapping[param.name] && this.currentAction.mapping[param.name].filter) {
+                const filter = this.currentAction.mapping[param.name].filter
+                param.opts = json[obj][res].filter(filter)
+              }
               if (['listTemplates', 'listIsos'].includes(possibleApi)) {
                 param.opts = [...new Map(param.opts.map(x => [x.id, x])).values()]
               }
-              this.$forceUpdate()
               break
             }
             break
           }
         }
+        this.$forceUpdate()
       }).catch(function (error) {
-        console.log(error.stack)
+        console.log(error)
         param.loading = false
       }).then(function () {
       })
     },
-    pollActionCompletion (jobId, action, resourceName) {
+    pollActionCompletion (jobId, action, resourceName, showLoading = true) {
       this.$pollJob({
         jobId,
         name: resourceName,
@@ -770,6 +846,7 @@ export default {
         },
         errorMethod: () => this.fetchData(),
         loadingMessage: `${this.$t(action.label)} - ${resourceName}`,
+        showLoading: showLoading,
         catchMessage: this.$t('error.fetching.async.job.result'),
         action
       })
@@ -793,124 +870,153 @@ export default {
     },
     handleSubmit (e) {
       if (!this.dataView && this.currentAction.groupAction && this.selectedRowKeys.length > 0) {
-        const paramsList = this.currentAction.groupMap(this.selectedRowKeys)
-        this.actionLoading = true
-        for (const params of paramsList) {
-          api(this.currentAction.api, params).then(json => {
-          }).catch(error => {
-            this.$notifyError(error)
-          })
-        }
-        this.$message.info({
-          content: this.$t(this.currentAction.label),
-          key: this.currentAction.label,
-          duration: 3
+        this.form.validateFields((err, values) => {
+          if (!err) {
+            this.actionLoading = true
+            const itemsNameMap = {}
+            this.items.map(x => {
+              itemsNameMap[x.id] = x.name || x.displaytext || x.id
+            })
+            const paramsList = this.currentAction.groupMap(this.selectedRowKeys, values)
+            for (const params of paramsList) {
+              var resourceName = itemsNameMap[params.id]
+              // Using a method for this since it's an async call and don't want wrong prarms to be passed
+              this.callGroupApi(params, resourceName)
+            }
+            this.$message.info({
+              content: this.$t(this.currentAction.label),
+              key: this.currentAction.label,
+              duration: 3
+            })
+            setTimeout(() => {
+              this.actionLoading = false
+              this.closeAction()
+              this.fetchData()
+            }, 500)
+          }
         })
-        setTimeout(() => {
-          this.actionLoading = false
-          this.closeAction()
-          this.fetchData()
-        }, 2000)
       } else {
         this.execSubmit(e)
       }
     },
+    callGroupApi (params, resourceName) {
+      const action = this.currentAction
+      api(action.api, params).then(json => {
+        this.handleResponse(json, resourceName, action, false)
+      }).catch(error => {
+        if ([401].includes(error.response.status)) {
+          return
+        }
+        this.$notifyError(error)
+      })
+    },
+    handleResponse (response, resourceName, action, showLoading = true) {
+      for (const obj in response) {
+        if (obj.includes('response')) {
+          if (response[obj].jobid) {
+            const jobid = response[obj].jobid
+            this.$store.dispatch('AddAsyncJob', { title: this.$t(action.label), jobid: jobid, description: resourceName, status: 'progress' })
+            this.pollActionCompletion(jobid, action, resourceName, showLoading)
+            return true
+          } else {
+            var message = action.successMessage ? this.$t(action.successMessage) : this.$t(action.label) +
+              (resourceName ? ' - ' + resourceName : '')
+            var duration = 2
+            if (action.additionalMessage) {
+              message = message + ' - ' + this.$t(action.successMessage)
+              duration = 5
+            }
+            this.$message.success({
+              content: message,
+              key: action.label + resourceName,
+              duration: duration
+            })
+          }
+          break
+        }
+      }
+      return false
+    },
     execSubmit (e) {
       e.preventDefault()
       this.form.validateFields((err, values) => {
-        console.log(values)
-        if (!err) {
-          const params = {}
-          if ('id' in this.resource && this.currentAction.params.map(i => { return i.name }).includes('id')) {
-            params.id = this.resource.id
-          }
-          for (const key in values) {
-            const input = values[key]
-            for (const param of this.currentAction.params) {
-              if (param.name !== key) {
-                continue
-              }
-              if (input === undefined || input === null || input === '') {
-                if (param.type === 'boolean') {
-                  params[key] = false
-                }
-                break
-              }
-              if (this.currentAction.mapping && key in this.currentAction.mapping && this.currentAction.mapping[key].options) {
-                params[key] = this.currentAction.mapping[key].options[input]
-              } else if (param.type === 'list') {
-                params[key] = input.map(e => { return param.opts[e].id }).reduce((str, name) => { return str + ',' + name })
-              } else if (param.name === 'account' || param.name === 'keypair') {
-                if (['addAccountToProject', 'createAccount'].includes(this.currentAction.api)) {
-                  params[key] = input
-                } else {
-                  params[key] = param.opts[input].name
-                }
-              } else {
-                params[key] = input
+        if (err) {
+          return
+        }
+        const params = {}
+        const action = this.currentAction
+        if ('id' in this.resource && action.params.map(i => { return i.name }).includes('id')) {
+          params.id = this.resource.id
+        }
+        for (const key in values) {
+          const input = values[key]
+          for (const param of action.params) {
+            if (param.name !== key) {
+              continue
+            }
+            if (input === undefined || input === null || input === '') {
+              if (param.type === 'boolean') {
+                params[key] = false
               }
               break
             }
-          }
-
-          for (const key in this.currentAction.defaultArgs) {
-            if (!params[key]) {
-              params[key] = this.currentAction.defaultArgs[key]
-            }
-          }
-
-          if (this.currentAction.mapping) {
-            for (const key in this.currentAction.mapping) {
-              if (!this.currentAction.mapping[key].value) {
-                continue
+            if (action.mapping && key in action.mapping && action.mapping[key].options) {
+              params[key] = action.mapping[key].options[input]
+            } else if (param.type === 'list') {
+              params[key] = input.map(e => { return param.opts[e].id }).reduce((str, name) => { return str + ',' + name })
+            } else if (param.name === 'account' || param.name === 'keypair') {
+              if (['addAccountToProject', 'createAccount'].includes(action.api)) {
+                params[key] = input
+              } else {
+                params[key] = param.opts[input].name
               }
-              params[key] = this.currentAction.mapping[key].value(this.resource, params)
-            }
-          }
-
-          console.log(this.currentAction)
-          console.log(this.resource)
-          console.log(params)
-
-          const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username || params.ipaddress || params.virtualmachinename || this.resource.name
-
-          var hasJobId = false
-          this.actionLoading = true
-          api(this.currentAction.api, params).then(json => {
-            for (const obj in json) {
-              if (obj.includes('response')) {
-                for (const res in json[obj]) {
-                  if (res === 'jobid') {
-                    this.$store.dispatch('AddAsyncJob', { title: this.$t(this.currentAction.label), jobid: json[obj][res], description: resourceName, status: 'progress' })
-                    this.pollActionCompletion(json[obj][res], this.currentAction, resourceName)
-                    hasJobId = true
-                    break
-                  } else {
-                    this.$message.success({
-                      content: this.$t(this.currentAction.label) + (resourceName ? ' - ' + resourceName : ''),
-                      key: this.currentAction.label + resourceName,
-                      duration: 2
-                    })
-                  }
-                }
-                break
-              }
-            }
-            if ((this.currentAction.icon === 'delete' || ['archiveEvents', 'archiveAlerts'].includes(this.currentAction.api)) && this.dataView) {
-              this.$router.go(-1)
             } else {
-              if (!hasJobId) {
-                this.fetchData()
-              }
+              params[key] = input
             }
-          }).catch(error => {
-            console.log(error)
-            this.$notifyError(error)
-          }).finally(f => {
-            this.actionLoading = false
-            this.closeAction()
-          })
+            break
+          }
         }
+
+        for (const key in action.defaultArgs) {
+          if (!params[key]) {
+            params[key] = action.defaultArgs[key]
+          }
+        }
+
+        if (action.mapping) {
+          for (const key in action.mapping) {
+            if (!action.mapping[key].value) {
+              continue
+            }
+            params[key] = action.mapping[key].value(this.resource, params)
+          }
+        }
+
+        const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username ||
+          params.ipaddress || params.virtualmachinename || this.resource.name || this.resource.ipaddress
+
+        var hasJobId = false
+        this.actionLoading = true
+        api(action.api, params).then(json => {
+          hasJobId = this.handleResponse(json, resourceName, action)
+          if ((action.icon === 'delete' || ['archiveEvents', 'archiveAlerts', 'unmanageVirtualMachine'].includes(action.api)) && this.dataView) {
+            this.$router.go(-1)
+          } else {
+            if (!hasJobId) {
+              this.fetchData()
+            }
+          }
+          this.closeAction()
+        }).catch(error => {
+          if ([401].includes(error.response.status)) {
+            return
+          }
+
+          console.log(error)
+          this.$notifyError(error)
+        }).finally(f => {
+          this.actionLoading = false
+        })
       })
     },
     changeFilter (filter) {
@@ -924,6 +1030,12 @@ export default {
         query.templatefilter = filter
       } else if (this.$route.name === 'iso') {
         query.isofilter = filter
+      } else if (this.$route.name === 'guestnetwork') {
+        if (filter === 'all') {
+          delete query.type
+        } else {
+          query.type = filter
+        }
       } else if (this.$route.name === 'vm') {
         if (filter === 'self') {
           query.account = this.$store.getters.userInfo.account

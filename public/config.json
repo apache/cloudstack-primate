@@ -11,8 +11,15 @@
     "500": "assets/500.png"
   },
   "theme": {
+    "@logo-background-color": "#ffffff",
+    "@navigation-background-color": "#ffffff",
+    "@project-nav-background-color": "#001529",
+    "@project-nav-text-color": "rgba(255, 255, 255, 0.65)",
+    "@navigation-text-color": "rgba(0, 0, 0, 0.65)",
     "@primary-color": "#1890ff",
     "@link-color": "#1890ff",
+    "@link-hover-color": "#40a9ff",
+    "@loading-color": "#1890ff",
     "@processing-color": "#1890ff",
     "@success-color": "#52c41a",
     "@warning-color": "#faad14",
@@ -39,11 +46,5 @@
     "jp": "label.japanese.keyboard",
     "sc": "label.simplified.chinese.keyboard"
   },
-  "plugins": [
-    {
-      "name": "ExamplePlugin",
-      "icon": "appstore",
-      "path": "example.html"
-    }
-  ]
+  "plugins": []
 }

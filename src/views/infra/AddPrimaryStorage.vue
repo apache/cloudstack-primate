@@ -19,14 +19,26 @@
   <div class="form-layout">
     <a-spin :spinning="loading">
       <a-form :form="form" layout="vertical">
-        <a-form-item :label="$t('label.scope')">
+        <a-form-item>
+          <span slot="label">
+            {{ $t('label.scope') }}
+            <a-tooltip :title="apiParams.scope.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
           <a-select v-decorator="['scope', { initialValue: 'cluster' }]" @change="val => { this.scope = val }">
             <a-select-option :value="'cluster'"> {{ $t('label.clusterid') }} </a-select-option>
             <a-select-option :value="'zone'"> {{ $t('label.zoneid') }} </a-select-option>
           </a-select>
         </a-form-item>
         <div v-if="this.scope === 'zone'">
-          <a-form-item :label="$t('label.hypervisor')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.hypervisor') }}
+              <a-tooltip :title="apiParams.hypervisor.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-select
               v-decorator="['hypervisor', { initialValue: hypervisors[0]}]"
               @change="val => this.selectedHypervisor = val">
@@ -36,7 +48,13 @@
             </a-select>
           </a-form-item>
         </div>
-        <a-form-item :label="$t('label.zoneid')">
+        <a-form-item>
+          <span slot="label">
+            {{ $t('label.zoneid') }}
+            <a-tooltip :title="apiParams.zoneid.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
           <a-select
             v-decorator="['zone', { initialValue: this.zoneSelected, rules: [{ required: true, message: `${$t('label.required')}`}] }]"
             @change="val => changeZone(val)">
@@ -46,7 +64,13 @@
           </a-select>
         </a-form-item>
         <div v-if="this.scope === 'cluster' || this.scope === 'host'">
-          <a-form-item :label="$t('label.podid')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.podid') }}
+              <a-tooltip :title="apiParams.podid.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-select
               v-decorator="['pod', { initialValue: this.podSelected, rules: [{ required: true, message: `${$t('label.required')}`}] }]"
               @change="val => changePod(val)">
@@ -55,7 +79,13 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="$t('label.clusterid')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.clusterid') }}
+              <a-tooltip :title="apiParams.clusterid.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-select
               v-decorator="['cluster', { initialValue: this.clusterSelected, rules: [{ required: true, message: `${$t('label.required')}`}] }]"
               @change="val => fetchHypervisor(val)">
@@ -76,10 +106,22 @@
             </a-select>
           </a-form-item>
         </div>
-        <a-form-item :label="$t('label.name')">
+        <a-form-item>
+          <span slot="label">
+            {{ $t('label.name') }}
+            <a-tooltip :title="apiParams.name.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
           <a-input v-decorator="['name', { rules: [{ required: true, message: `${$t('label.required')}` }] }]"/>
         </a-form-item>
-        <a-form-item :label="$t('label.protocol')">
+        <a-form-item>
+          <span slot="label">
+            {{ $t('label.protocol') }}
+            <a-tooltip :title="$t('message.protocol.description')">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
           <a-select
             v-decorator="['protocol', { initialValue: this.protocols[0], rules: [{ required: true, message: `${$t('label.required')}`}] }]"
             @change="val => this.protocolSelected = val">
@@ -89,13 +131,26 @@
           </a-select>
         </a-form-item>
         <div
-          v-if="protocolSelected === 'nfs' || protocolSelected === 'SMB' || protocolSelected === 'iscsi' || protocolSelected === 'vmfs'|| protocolSelected === 'Gluster'">
-          <a-form-item :label="$t('label.server')">
+          v-if="protocolSelected === 'nfs' || protocolSelected === 'SMB' || protocolSelected === 'iscsi' || protocolSelected === 'vmfs'|| protocolSelected === 'Gluster' ||
+            (protocolSelected === 'PreSetup' && hypervisorType === 'VMware') || protocolSelected === 'datastorecluster'">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.server') }}
+              <a-tooltip :title="$t('message.server.description')">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-input v-decorator="['server', { rules: [{ required: true, message: `${$t('label.required')}` }] }]" />
           </a-form-item>
         </div>
-        <div v-if="protocolSelected === 'nfs' || protocolSelected === 'SMB' || protocolSelected === 'ocfs2' || protocolSelected === 'preSetup'|| protocolSelected === 'SharedMountPoint'">
-          <a-form-item :label="$t('label.path')">
+        <div v-if="protocolSelected === 'nfs' || protocolSelected === 'SMB' || protocolSelected === 'ocfs2' || (protocolSelected === 'PreSetup' && hypervisorType !== 'VMware') || protocolSelected === 'SharedMountPoint'">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.path') }}
+              <a-tooltip :title="$t('message.path.description')">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-input v-decorator="['path', { rules: [{ required: true, message: `${$t('label.required')}` }] }]" />
           </a-form-item>
         </div>
@@ -118,15 +173,33 @@
             <a-input v-decorator="['lun', { rules: [{ required: true, message: `${$t('label.required')}` }] }]"/>
           </a-form-item>
         </div>
-        <div v-if="protocolSelected === 'vmfs'">
-          <a-form-item :label="$t('label.vcenterdatacenter')">
+        <div v-if="protocolSelected === 'vmfs' || (protocolSelected === 'PreSetup' && hypervisorType === 'VMware') || protocolSelected === 'datastorecluster'">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.vcenterdatacenter') }}
+              <a-tooltip :title="$t('message.datacenter.description')">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-input v-decorator="['vCenterDataCenter', { rules: [{ required: true, message: `${$t('label.required')}` }] }]"/>
           </a-form-item>
-          <a-form-item :label="$t('label.vcenterdatastore')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.vcenterdatastore') }}
+              <a-tooltip :title="$t('message.datastore.description')">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-input v-decorator="['vCenterDataStore', { rules: [{ required: true, message: `${$t('label.required')}` }] }]"/>
           </a-form-item>
         </div>
-        <a-form-item :label="$t('label.providername')">
+        <a-form-item>
+          <span slot="label">
+            {{ $t('label.providername') }}
+            <a-tooltip :title="apiParams.provider.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
           <a-select
             v-decorator="['provider', { initialValue: providerSelected, rules: [{ required: true, message: `${$t('label.required')}`}] }]"
             @change="val => this.providerSelected = val">
@@ -136,18 +209,42 @@
           </a-select>
         </a-form-item>
         <div v-if="this.providerSelected !== 'DefaultPrimary'">
-          <a-form-item :label="$t('label.ismanaged')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.ismanaged') }}
+              <a-tooltip :title="apiParams.managed.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-checkbox-group v-decorator="['managed']" >
               <a-checkbox value="ismanaged"></a-checkbox>
             </a-checkbox-group>
           </a-form-item>
-          <a-form-item :label="$t('label.capacitybytes')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.capacitybytes') }}
+              <a-tooltip :title="apiParams.capacitybytes.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-input v-decorator="['capacityBytes']" />
           </a-form-item>
-          <a-form-item :label="$t('label.capacityiops')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.capacityiops') }}
+              <a-tooltip :title="apiParams.capacityiops.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-input v-decorator="['capacityIops']" />
           </a-form-item>
-          <a-form-item :label="$t('label.url')">
+          <a-form-item>
+            <span slot="label">
+              {{ $t('label.url') }}
+              <a-tooltip :title="apiParams.url.description">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </span>
             <a-input v-decorator="['url']" />
           </a-form-item>
         </div>
@@ -174,7 +271,13 @@
             <a-input v-decorator="['volume']" />
           </a-form-item>
         </div>
-        <a-form-item :label="$t('label.storagetags')">
+        <a-form-item>
+          <span slot="label">
+            {{ $t('label.storagetags') }}
+            <a-tooltip :title="apiParams.tags.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
           <a-select
             mode="tags"
             v-model="selectedTags"
@@ -193,6 +296,8 @@
 
 <script>
 import { api } from '@/api'
+import _ from 'lodash'
+
 export default {
   name: 'AddPrimaryStorage',
   props: {
@@ -229,6 +334,11 @@ export default {
   },
   beforeCreate () {
     this.form = this.$form.createForm(this)
+    this.apiParams = {}
+    var apiConfig = this.$store.getters.apis.createStoragePool || {}
+    apiConfig.params.forEach(param => {
+      this.apiParams[param.name] = param
+    })
   },
   mounted () {
     this.fetchData()
@@ -302,6 +412,9 @@ export default {
       this.loading = true
       api('listStorageTags').then(json => {
         this.storageTags = json.liststoragetagsresponse.storagetag || []
+        if (this.storageTags) {
+          this.storageTags = _.uniqBy(this.storageTags, 'name')
+        }
       }).finally(() => {
         this.loading = false
       })
@@ -312,9 +425,12 @@ export default {
       if (this.hypervisorType === 'KVM') {
         this.protocols = ['nfs', 'SharedMountPoint', 'RBD', 'CLVM', 'Gluster', 'custom']
       } else if (this.hypervisorType === 'XenServer') {
-        this.protocols = ['nfs', 'preSetup', 'iscsi', 'custom']
+        this.protocols = ['nfs', 'PreSetup', 'iscsi', 'custom']
       } else if (this.hypervisorType === 'VMware') {
         this.protocols = ['nfs', 'vmfs', 'custom']
+        if ('importVsphereStoragePolicies' in this.$store.getters.apis) {
+          this.protocols = ['nfs', 'PreSetup', 'datastorecluster', 'custom']
+        }
       } else if (this.hypervisorType === 'Hyperv') {
         this.protocols = ['SMB']
       } else if (this.hypervisorType === 'Ovm') {
@@ -353,6 +469,15 @@ export default {
       var url
       if (server.indexOf('://') === -1) {
         url = 'presetup://' + server + path
+      } else {
+        url = server + path
+      }
+      return url
+    },
+    datastoreclusterURL (server, path) {
+      var url
+      if (server.indexOf('://') === -1) {
+        url = 'datastorecluster://' + server + path
       } else {
         url = server + path
       }
@@ -475,8 +600,22 @@ export default {
           Object.keys(smbParams).forEach((key, index) => {
             params['details[' + index.toString() + '].' + key] = smbParams[key]
           })
-        } else if (values.protocol === 'PreSetup') {
+        } else if (values.protocol === 'PreSetup' && this.hypervisorType !== 'VMware') {
           url = this.presetupURL(server, path)
+        } else if (values.protocol === 'PreSetup' && this.hypervisorType === 'VMware') {
+          path = values.vCenterDataCenter
+          if (path.substring(0, 1) !== '/') {
+            path = '/' + path
+          }
+          path += '/' + values.vCenterDataStore
+          url = this.presetupURL(server, path)
+        } else if (values.protocol === 'datastorecluster' && this.hypervisorType === 'VMware') {
+          path = values.vCenterDataCenter
+          if (path.substring(0, 1) !== '/') {
+            path = '/' + path
+          }
+          path += '/' + values.vCenterDataStore
+          url = this.datastoreclusterURL(server, path)
         } else if (values.protocol === 'ocfs2') {
           url = this.ocfs2URL(server, path)
         } else if (values.protocol === 'SharedMountPoint') {
@@ -533,12 +672,12 @@ export default {
             message: this.$t('label.add.primary.storage'),
             description: this.$t('label.add.primary.storage')
           })
+          this.closeModal()
+          this.parentFetchData()
         }).catch(error => {
           this.$notifyError(error)
         }).finally(() => {
           this.loading = false
-          this.closeModal()
-          this.parentFetchData()
         })
       })
     }

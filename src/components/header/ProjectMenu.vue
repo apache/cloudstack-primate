@@ -91,9 +91,10 @@ export default {
     },
     changeProject (index) {
       const project = this.projects[index]
+      this.$store.dispatch('ProjectView', project.id)
       this.$store.dispatch('SetProject', project)
       this.$store.dispatch('ToggleTheme', project.id === undefined ? 'light' : 'dark')
-      this.$message.success(`Switched to "${project.displaytext}"`)
+      this.$message.success(`${this.$t('message.switch.to')} "${project.displaytext || project.name}"`)
       if (this.$route.name !== 'dashboard') {
         this.$router.push({ name: 'dashboard' })
       }
@@ -108,7 +109,7 @@ export default {
 <style lang="less" scoped>
 .project {
   &-select {
-    width: 40vw;
+    width: 30vw;
   }
 
   &-icon {

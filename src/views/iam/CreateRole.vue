@@ -96,7 +96,7 @@ export default {
   data () {
     return {
       roles: [],
-      defaultRoles: ['Admin', 'DomainAdmin', 'ResourceAdmin', 'User'],
+      defaultRoles: ['Admin', 'DomainAdmin', 'User'],
       createRoleUsing: 'type',
       loading: false
     }
@@ -162,11 +162,11 @@ export default {
             description: 'Sucessfully created role ' + params.name
           })
         }
+        this.closeAction()
       }).catch(error => {
         this.$notifyError(error)
       }).finally(() => {
         this.loading = false
-        this.closeAction()
       })
     },
     fetchRoles () {

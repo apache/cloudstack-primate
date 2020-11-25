@@ -175,13 +175,17 @@ export default {
         this.resource = domains[0] || {}
         this.treeSelected = domains[0] || {}
       }).catch(error => {
+        if ([401].includes(error.response.status)) {
+          return
+        }
+
         this.$notification.error({
           message: this.$t('message.request.failed'),
           description: error.response.headers['x-description'],
           duration: 0
         })
 
-        if ([401, 405].includes(error.response.status)) {
+        if ([405].includes(error.response.status)) {
           this.$router.push({ path: '/exception/403' })
         }
 
@@ -210,12 +214,18 @@ export default {
         return 0
       })
       this.action.paramFields = []
-      if (action.args && action.args.length > 0) {
-        this.action.paramFields = action.args.map(function (arg) {
-          return paramFields.filter(function (param) {
-            return param.name.toLowerCase() === arg.toLowerCase()
-          })[0]
-        })
+      if (action.args) {
+        var args = action.args
+        if (typeof action.args === 'function') {
+          args = action.args(action.resource, this.$store.getters)
+        }
+        if (args.length > 0) {
+          this.action.paramFields = args.map(function (arg) {
+            return paramFields.filter(function (param) {
+              return param.name.toLowerCase() === arg.toLowerCase()
+            })[0]
+          })
+        }
       }
       this.showAction = true
       for (const param of this.action.paramFields) {

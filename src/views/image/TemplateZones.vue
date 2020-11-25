@@ -32,7 +32,7 @@
       <template slot="action" slot-scope="text, record">
         <span style="margin-right: 5px">
           <a-button
-            :disabled="!('copyTemplate' in $store.getters.apis)"
+            :disabled="!('copyTemplate' in $store.getters.apis && record.isready)"
             icon="copy"
             shape="circle"
             :loading="copyLoading"
@@ -70,6 +70,7 @@
       :title="$t('label.action.copy.template')"
       :visible="showCopyActionForm"
       :closable="true"
+      :maskClosable="false"
       @ok="handleCopyTemplateSubmit"
       @cancel="onCloseModal"
       :confirmLoading="copyLoading"
@@ -111,6 +112,7 @@
       :title="$t('label.action.delete.template')"
       :visible="showDeleteTemplate"
       :closable="true"
+      :maskClosable="false"
       @ok="deleteTemplate"
       @cancel="onCloseModal"
       :confirmLoading="deleteLoading"
@@ -266,7 +268,10 @@ export default {
           jobId,
           successMethod: result => {
             if (singleZone) {
-              this.$router.go(-1)
+              const isResourcePage = (this.$route.params && this.$route.params.id)
+              if (isResourcePage) {
+                this.$router.go(-1)
+              }
             } else {
               this.fetchData()
             }
@@ -275,12 +280,12 @@ export default {
           loadingMessage: `${this.$t('label.deleting.template')} ${this.resource.name} ${this.$t('label.in.progress')}`,
           catchMessage: this.$t('error.fetching.async.job.result')
         })
+        this.onCloseModal()
+        this.fetchData()
       }).catch(error => {
         this.$notifyError(error)
       }).finally(() => {
         this.deleteLoading = false
-        this.onCloseModal()
-        this.fetchData()
       })
     },
     fetchZoneData () {

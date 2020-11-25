@@ -19,6 +19,7 @@ import Cookies from 'js-cookie'
 import Vue from 'vue'
 import md5 from 'md5'
 import message from 'ant-design-vue/es/message'
+import notification from 'ant-design-vue/es/notification'
 import router from '@/router'
 import store from '@/store'
 import { login, logout, api } from '@/api'
@@ -91,7 +92,6 @@ const user = {
       return new Promise((resolve, reject) => {
         login(userInfo).then(response => {
           const result = response.loginresponse || {}
-
           Cookies.set('account', result.account, { expires: 1 })
           Cookies.set('domainid', result.domainid, { expires: 1 })
           Cookies.set('role', result.type, { expires: 1 })
@@ -100,7 +100,6 @@ const user = {
           Cookies.set('userfullname', result.firstname + ' ' + result.lastname, { expires: 1 })
           Cookies.set('userid', result.userid, { expires: 1 })
           Cookies.set('username', result.username, { expires: 1 })
-
           Vue.ls.set(ACCESS_TOKEN, result.sessionkey, 24 * 60 * 60 * 1000)
           commit('SET_TOKEN', result.sessionkey)
 
@@ -113,6 +112,8 @@ const user = {
           commit('SET_FEATURES', {})
           commit('SET_LDAP', {})
           commit('SET_CLOUDIAN', {})
+
+          notification.destroy()
 
           resolve()
         }).catch(error => {
@@ -150,6 +151,8 @@ const user = {
           api('listZones', { listall: true }).then(json => {
             const zones = json.listzonesresponse.zone || []
             commit('SET_ZONES', zones)
+          }).catch(error => {
+            reject(error)
           })
           api('listApis').then(response => {
             const apis = {}
@@ -174,7 +177,7 @@ const user = {
           })
         }
 
-        api('listUsers', { username: Cookies.get('username'), listall: true }).then(response => {
+        api('listUsers', { username: Cookies.get('username') }).then(response => {
           const result = response.listusersresponse.user[0]
           commit('SET_INFO', result)
           commit('SET_NAME', result.firstname + ' ' + result.lastname)
@@ -234,6 +237,7 @@ const user = {
         Vue.ls.remove(ASYNC_JOB_IDS)
 
         logout(state.token).then(() => {
+          message.destroy()
           if (cloudianUrl) {
             window.location.href = cloudianUrl
           } else {
@@ -248,6 +252,40 @@ const user = {
       var jobsArray = Vue.ls.get(ASYNC_JOB_IDS, [])
       jobsArray.push(jobJson)
       commit('SET_ASYNC_JOB_IDS', jobsArray)
+    },
+    ProjectView ({ commit }, projectid) {
+      return new Promise((resolve, reject) => {
+        api('listApis', { projectid: projectid }).then(response => {
+          const apis = {}
+          const apiList = response.listapisresponse.api
+          for (var idx = 0; idx < apiList.length; idx++) {
+            const api = apiList[idx]
+            const apiName = api.name
+            apis[apiName] = {
+              params: api.params,
+              response: api.response
+            }
+          }
+          commit('SET_APIS', apis)
+          resolve(apis)
+          store.dispatch('GenerateRoutes', { apis }).then(() => {
+            router.addRoutes(store.getters.addRouters)
+          })
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    RefreshFeatures ({ commit }) {
+      return new Promise((resolve, reject) => {
+        api('listCapabilities').then(response => {
+          const result = response.listcapabilitiesresponse.capability
+          resolve(result)
+          commit('SET_FEATURES', result)
+        }).catch(error => {
+          reject(error)
+        })
+      })
     }
   }
 }

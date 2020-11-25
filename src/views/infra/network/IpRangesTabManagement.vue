@@ -57,7 +57,7 @@
       style="overflow-y: auto"
       :current="page"
       :pageSize="pageSize"
-      :total="items.length"
+      :total="total"
       :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
       :pageSizeOptions="['10', '20', '40', '80', '100']"
       @change="changePage"
@@ -68,7 +68,11 @@
       </template>
     </a-pagination>
 
-    <a-modal v-model="addIpRangeModal" :title="$t('label.add.ip.range')" @ok="handleAddIpRange">
+    <a-modal
+      v-model="addIpRangeModal"
+      :title="$t('label.add.ip.range')"
+      :maskClosable="false"
+      @ok="handleAddIpRange">
       <a-form
         :form="form"
         @submit="handleAddIpRange"
@@ -137,6 +141,7 @@ export default {
     return {
       componentLoading: false,
       items: [],
+      total: 0,
       domains: [],
       domainsLoading: false,
       addIpRangeModal: false,
@@ -206,6 +211,7 @@ export default {
         pagesize: this.pageSize
       }).then(response => {
         this.items = []
+        this.total = response.listpodsresponse.count || 0
         const pods = response.listpodsresponse.pod ? response.listpodsresponse.pod : []
         for (const pod of pods) {
           if (pod && pod.startip && pod.startip.length > 0) {

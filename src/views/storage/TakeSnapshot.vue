@@ -62,7 +62,7 @@
               compact>
               <a-input ref="input" :value="inputKey" @change="handleKeyChange" style="width: 100px; text-align: center" :placeholder="$t('label.key')" />
               <a-input style=" width: 30px; border-left: 0; pointer-events: none; backgroundColor: #fff" placeholder="=" disabled />
-              <a-input :value="inputValue" @change="handleValueChange" style="width: 100px; text-align: center; border-left: 0" :placeholder="$('label.value')" />
+              <a-input :value="inputValue" @change="handleValueChange" style="width: 100px; text-align: center; border-left: 0" :placeholder="$t('label.value')" />
               <a-button shape="circle" size="small" @click="handleInputConfirm">
                 <a-icon type="check"/>
               </a-button>
@@ -176,12 +176,12 @@ export default {
                   description: successDescription,
                   status: 'progress'
                 })
-                this.closeAction()
               },
               loadingMessage: `${title} ${this.$t('label.in.progress.for')} ${description}`,
               catchMessage: this.$t('error.fetching.async.job.result')
             })
           }
+          this.closeAction()
         }).catch(error => {
           this.$notifyError(error)
         })

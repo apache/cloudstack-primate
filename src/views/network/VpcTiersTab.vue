@@ -52,7 +52,7 @@
               </div>
               <div>
                 <router-link :to="{ path: '/acllist/' + network.aclid }">
-                  {{ network.aclid }}
+                  {{ network.aclname }}
                 </router-link>
               </div>
             </div>
@@ -67,7 +67,7 @@
                 type="dashed"
                 style="margin-bottom: 15px; width: 100%"
                 :disabled="!('deployVirtualMachine' in $store.getters.apis)"
-                @click="$router.push({ path: '/action/deployVirtualMachine?networkid=' + network.id + '&name=' + network.name })">
+                @click="$router.push({ path: '/action/deployVirtualMachine?networkid=' + network.id + '&zoneid=' + network.zoneid })">
                 {{ $t('label.vm.add') }}
               </a-button>
               <a-table
@@ -154,7 +154,11 @@
       </a-list-item>
     </a-list>
 
-    <a-modal v-model="showCreateNetworkModal" :title="$t('label.add.new.tier')" @ok="handleAddNetworkSubmit">
+    <a-modal
+      v-model="showCreateNetworkModal"
+      :title="$t('label.add.new.tier')"
+      :maskClosable="false"
+      @ok="handleAddNetworkSubmit">
       <a-spin :spinning="modalLoading">
         <a-form @submit.prevent="handleAddNetworkSubmit" :form="form">
           <a-form-item :label="$t('label.name')">
@@ -195,7 +199,11 @@
       </a-spin>
     </a-modal>
 
-    <a-modal v-model="showAddInternalLB" :title="$t('label.add.internal.lb')" @ok="handleAddInternalLBSubmit">
+    <a-modal
+      v-model="showAddInternalLB"
+      :title="$t('label.add.internal.lb')"
+      :maskClosable="false"
+      @ok="handleAddInternalLBSubmit">
       <a-spin :spinning="modalLoading">
         <a-form @submit.prevent="handleAddInternalLBSubmit" :form="form">
           <a-form-item :label="$t('label.name')">

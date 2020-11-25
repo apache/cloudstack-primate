@@ -55,6 +55,9 @@ Fix issues and vulnerabilities:
 
     npm audit
 
+A basic development guide and explaination of the basic components can be found
+  [here](docs/development.md)
+
 ## Production
 
 Fetch dependencies and build:
@@ -116,6 +119,20 @@ Change the example configuration in `nginx/default.conf` according to your needs
 Run Primate:
 
     docker run -ti --rm -p 8080:80 -v $(pwd)/nginx:/etc/nginx/conf.d:ro cloudstack-primate:latest
+
+### Packaging
+
+The following is tested to work on any Ubuntu 18.04/20.04 base installation or
+docker container:
+
+    # Install nodejs (lts)
+    curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+    sudo apt-get install -y nodejs debhelper rpm
+    # Install build tools
+    npm install -g @vue/cli webpack eslint
+    # Clone this repository and run package.sh
+    cd <cloned-repository>/packaging
+    bash -x package.sh
 
 ## Documentation
 

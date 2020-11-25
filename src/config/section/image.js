@@ -43,7 +43,7 @@ export default {
         }
         return fields
       },
-      details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'sshkeyenabled', 'directdownload', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created', 'url'],
+      details: ['name', 'id', 'displaytext', 'checksum', 'hypervisor', 'format', 'ostypename', 'size', 'isready', 'passwordenabled', 'directdownload', 'deployasis', 'isextractable', 'isdynamicallyscalable', 'ispublic', 'isfeatured', 'crosszones', 'type', 'account', 'domain', 'created', 'url'],
       searchFilters: ['name', 'zoneid', 'tags'],
       related: [{
         name: 'vm',
@@ -92,7 +92,7 @@ export default {
               record.isready
           },
           args: (record, store) => {
-            var fields = ['name', 'displaytext', 'passwordenabled', 'sshkeyenabled', 'ostypeid', 'isdynamicallyscalable']
+            var fields = ['name', 'displaytext', 'passwordenabled', 'ostypeid', 'isdynamicallyscalable']
             if (['Admin'].includes(store.userInfo.roletype)) {
               fields.push('isrouting')
             }
@@ -104,7 +104,13 @@ export default {
           icon: 'share-alt',
           label: 'label.action.template.share',
           dataView: true,
-          args: ['ispublic', 'isfeatured', 'isextractable'],
+          args: (record, store) => {
+            const fields = ['isfeatured', 'isextractable']
+            if (['Admin'].includes(store.userInfo.roletype) || store.features.userpublictemplateenabled) {
+              fields.unshift('ispublic')
+            }
+            return fields
+          },
           show: (record, store) => {
             return (['Admin'].includes(store.userInfo.roletype) || // If admin or owner or belongs to current project
               (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) ||
@@ -225,7 +231,13 @@ export default {
           icon: 'share-alt',
           label: 'label.action.iso.share',
           dataView: true,
-          args: ['ispublic', 'isfeatured', 'isextractable'],
+          args: (record, store) => {
+            const fields = ['isfeatured', 'isextractable']
+            if (['Admin'].includes(store.userInfo.roletype) || store.features.userpublictemplateenabled) {
+              fields.unshift('ispublic')
+            }
+            return fields
+          },
           show: (record, store) => {
             return (['Admin'].includes(store.userInfo.roletype) || // If admin or owner or belongs to current project
               (record.domainid === store.userInfo.domainid && record.account === store.userInfo.account) ||
@@ -307,6 +319,7 @@ export default {
           api: 'deleteKubernetesSupportedVersion',
           icon: 'delete',
           label: 'label.kubernetes.version.delete',
+          message: 'message.kubernetes.version.delete',
           dataView: true
         }
       ]

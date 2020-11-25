@@ -58,7 +58,7 @@
         :pageSize="options.pageSize"
         :total="rowCount"
         :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
-        :pageSizeOptions="['10', '20', '40', '80', '100', '500']"
+        :pageSizeOptions="['10', '20', '40', '80', '100', '200']"
         @change="onChangePage"
         @showSizeChange="onChangePageSize"
         showSizeChanger>
@@ -72,12 +72,13 @@
       :visible="showCreateForm"
       :title="$t('label.add.network')"
       :closable="true"
+      :maskClosable="false"
       :footer="null"
       @cancel="showCreateForm = false"
       centered
       width="auto">
       <create-network
-        :resource="{}"
+        :resource="{ zoneid: zoneId }"
         @refresh-data="handleSearch"
         @close-action="showCreateForm = false"
       />
@@ -236,7 +237,7 @@ export default {
   inject: ['vmFetchNetworks'],
   methods: {
     getDetails (network) {
-      return [
+      const detail = [
         {
           title: this.$t('label.description'),
           description: network.displaytext
@@ -246,6 +247,13 @@ export default {
           description: network.networkofferingdisplaytext
         }
       ]
+      if (network.type !== 'L2') {
+        detail.push({
+          title: this.$t('label.cidr'),
+          description: network.cidr
+        })
+      }
+      return detail
     },
     handleSearch (value) {
       this.filter = value

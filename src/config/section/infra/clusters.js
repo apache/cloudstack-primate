@@ -42,11 +42,11 @@ export default {
     name: 'details',
     component: () => import('@/components/view/DetailsTab.vue')
   }, {
-    name: 'settings',
-    component: () => import('@/components/view/SettingsTab.vue')
-  }, {
     name: 'resources',
     component: () => import('@/views/infra/Resources.vue')
+  }, {
+    name: 'settings',
+    component: () => import('@/components/view/SettingsTab.vue')
   }],
   actions: [
     {
@@ -57,6 +57,13 @@ export default {
       listView: true,
       popup: true,
       component: () => import('@/views/infra/ClusterAdd.vue')
+    },
+    {
+      api: 'updateCluster',
+      icon: 'edit',
+      label: 'label.edit',
+      dataView: true,
+      args: ['clustername']
     },
     {
       api: 'updateCluster',

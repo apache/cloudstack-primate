@@ -18,11 +18,11 @@
 import Vue from 'vue'
 import axios from 'axios'
 import router from '@/router'
-import store from '@/store'
 import { VueAxios } from './axios'
 import notification from 'ant-design-vue/es/notification'
 import { CURRENT_PROJECT } from '@/store/mutation-types'
 import i18n from '@/locales'
+import store from '@/store'
 
 const service = axios.create({
   timeout: 600000
@@ -37,18 +37,31 @@ const err = (error) => {
       notification.error({ message: i18n.t('label.forbidden'), description: data.message })
     }
     if (response.status === 401) {
-      if (response.config && response.config.params && ['listIdps'].includes(response.config.params.command)) {
+      if (response.config && response.config.params && ['listIdps', 'cloudianIsEnabled'].includes(response.config.params.command)) {
         return
+      }
+      for (const key in response.data) {
+        if (key.includes('response')) {
+          if (response.data[key].errortext.includes('not available for user')) {
+            notification.error({
+              message: 'Error',
+              description: response.data[key].errortext + ' ' + i18n.t('error.unable.to.proceed'),
+              duration: 0
+            })
+            return
+          }
+        }
       }
       notification.error({
         message: i18n.t('label.unauthorized'),
         description: i18n.t('message.authorization.failed'),
-        key: 'http-401'
+        key: 'http-401',
+        duration: 0
       })
       store.dispatch('Logout').then(() => {
-        setTimeout(() => {
-          window.location.reload()
-        }, 1500)
+        if (router.history.current.path !== '/user/login') {
+          router.push({ path: '/user/login', query: { redirect: router.history.current.fullPath } })
+        }
       })
     }
     if (response.status === 404) {

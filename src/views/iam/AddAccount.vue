@@ -167,7 +167,8 @@
           <a-select
             showSearch
             v-decorator="['timezone']"
-            :loading="timeZoneLoading">
+            :loading="timeZoneLoading"
+            :placeholder="apiParams.timezone.description">
             <a-select-option v-for="opt in timeZoneMap" :key="opt.id">
               {{ opt.name || opt.description }}
             </a-select-option>
@@ -243,13 +244,17 @@ export default {
     this.form = this.$form.createForm(this)
     this.apiConfig = this.$store.getters.apis.createAccount || {}
     this.apiParams = {}
-    this.apiConfig.params.forEach(param => {
-      this.apiParams[param.name] = param
-    })
+    if (this.apiConfig.params) {
+      this.apiConfig.params.forEach(param => {
+        this.apiParams[param.name] = param
+      })
+    }
     this.apiConfig = this.$store.getters.apis.authorizeSamlSso || {}
-    this.apiConfig.params.forEach(param => {
-      this.apiParams[param.name] = param
-    })
+    if (this.apiConfig.params) {
+      this.apiConfig.params.forEach(param => {
+        this.apiParams[param.name] = param
+      })
+    }
   },
   mounted () {
     this.fetchData()
@@ -265,6 +270,9 @@ export default {
     },
     isAdminOrDomainAdmin () {
       return ['Admin', 'DomainAdmin'].includes(this.$store.getters.userInfo.roletype)
+    },
+    isDomainAdmin () {
+      return this.$store.getters.userInfo.roletype === 'DomainAdmin'
     },
     isValidValueForKey (obj, key) {
       return key in obj && obj[key] != null
@@ -307,6 +315,12 @@ export default {
       api('listRoles').then(response => {
         this.roles = response.listrolesresponse.role || []
         this.selectedRole = this.roles[0].id
+        if (this.isDomainAdmin()) {
+          const userRole = this.roles.filter(role => role.type === 'User')
+          if (userRole.length > 0) {
+            this.selectedRole = userRole[0].id
+          }
+        }
       }).finally(() => {
         this.roleLoading = false
       })
@@ -379,12 +393,10 @@ export default {
                   description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message,
                   duration: 0
                 })
-              }).finally(() => {
-                this.loading = false
-                this.closeAction()
               })
             }
           }
+          this.closeAction()
         }).catch(error => {
           this.$notification.error({
             message: this.$t('message.request.failed'),
@@ -393,7 +405,6 @@ export default {
           })
         }).finally(() => {
           this.loading = false
-          this.closeAction()
         })
       })
     },

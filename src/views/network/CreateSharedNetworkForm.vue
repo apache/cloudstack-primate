@@ -432,6 +432,10 @@ export default {
     physicalNetworks: {
       type: Array,
       default: null
+    },
+    resource: {
+      type: Object,
+      default: () => { return {} }
     }
   },
   data () {
@@ -456,6 +460,11 @@ export default {
       selectedProject: {}
     }
   },
+  watch: {
+    resource (newItem, oldItem) {
+      this.fetchData()
+    }
+  },
   beforeCreate () {
     this.form = this.$form.createForm(this)
     this.apiConfig = this.$store.getters.apis.createNetwork || {}
@@ -463,7 +472,6 @@ export default {
     this.apiConfig.params.forEach(param => {
       this.apiParams[param.name] = param
     })
-    console.log(this.apiParams)
   },
   created () {
   },
@@ -500,6 +508,7 @@ export default {
       return this.isValidValueForKey(obj, key) && obj[key].length > 0
     },
     fetchZoneData () {
+      this.zones = []
       if (this.zone !== null) {
         this.zones.push(this.zone)
         if (this.arrayHasItems(this.zones)) {
@@ -510,6 +519,9 @@ export default {
         }
       } else {
         const params = {}
+        if (this.resource.zoneid) {
+          params.id = this.resource.zoneid
+        }
         params.listAll = true
         this.zoneLoading = true
         api('listZones', params).then(json => {
@@ -795,12 +807,12 @@ export default {
             description: this.$t('message.success.add.guest.network')
           })
           this.resetForm()
+          this.$emit('refresh-data')
+          this.closeAction()
         }).catch(error => {
           this.$notifyError(error)
         }).finally(() => {
-          this.$emit('refresh-data')
           this.actionLoading = false
-          this.closeAction()
         })
       })
     },

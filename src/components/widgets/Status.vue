@@ -17,7 +17,12 @@
 
 <template>
   <a-tooltip placement="bottom" :title="$t(getTooltip(text))">
-    <a-badge style="display: inline-flex" :title="text" :status="getBadgeStatus(text)" :text="getText()" />
+    <a-badge
+      style="display: inline-flex"
+      :title="text"
+      :color="getStatusColor(text)"
+      :status="getBadgeStatus(text)"
+      :text="getText()" />
   </a-tooltip>
 </template>
 
@@ -87,6 +92,7 @@ export default {
         case 'Setup':
         case 'Started':
         case 'Successfully Installed':
+        case 'ReadWrite':
         case 'True':
         case 'Up':
         case 'enabled':
@@ -100,11 +106,11 @@ export default {
         case 'Error':
         case 'False':
         case 'Stopped':
+        case 'ReadOnly':
           status = 'error'
           break
         case 'Migrating':
         case 'Scaling':
-        case 'Scheduled':
         case 'Starting':
         case 'Stopping':
         case 'Upgrading':
@@ -124,6 +130,13 @@ export default {
           break
       }
       return status
+    },
+    getStatusColor (state) {
+      if (state === 'Scheduled') {
+        return 'blue'
+      }
+
+      return null
     },
     getTooltip (state) {
       if (!(state && this.displayText)) {

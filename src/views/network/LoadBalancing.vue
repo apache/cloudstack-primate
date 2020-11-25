@@ -111,7 +111,7 @@
       <template slot="actions" slot-scope="record">
         <div class="actions">
           <a-button shape="circle" icon="edit" @click="() => openEditRuleModal(record)"></a-button>
-          <a-button :disabled="!('editLoadBalancerRule' in $store.getters.apis)" shape="circle" icon="tag" @click="() => openTagsModal(record.id)" />
+          <a-button :disabled="!('updateLoadBalancerRule' in $store.getters.apis)" shape="circle" icon="tag" @click="() => openTagsModal(record.id)" />
           <a-popconfirm
             :title="$t('label.delete') + '?'"
             @confirm="handleDeleteRule(record)"
@@ -139,7 +139,13 @@
       </template>
     </a-pagination>
 
-    <a-modal :title="$t('label.edit.tags')" v-model="tagsModalVisible" :footer="null" :afterClose="closeModal" class="tags-modal">
+    <a-modal
+      :title="$t('label.edit.tags')"
+      v-model="tagsModalVisible"
+      :footer="null"
+      :afterClose="closeModal"
+      :maskClosable="false"
+      class="tags-modal">
       <span v-show="tagsModalLoading" class="modal-loading">
         <a-icon type="loading"></a-icon>
       </span>
@@ -164,7 +170,7 @@
 
       <div v-show="!tagsModalLoading" class="tags-container">
         <div class="tags" v-for="(tag, index) in tags" :key="index">
-          <a-tag :key="index" :closable="'deleteTag' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
+          <a-tag :key="index" :closable="'deleteTags' in $store.getters.apis" :afterClose="() => handleDeleteTag(tag)">
             {{ tag.key }} = {{ tag.value }}
           </a-tag>
         </div>
@@ -178,6 +184,7 @@
       v-model="stickinessModalVisible"
       :footer="null"
       :afterClose="closeModal"
+      :maskClosable="false"
       :okButtonProps="{ props: {htmlType: 'submit'}}">
 
       <span v-show="stickinessModalLoading" class="modal-loading">
@@ -245,7 +252,12 @@
       </a-form>
     </a-modal>
 
-    <a-modal :title="$t('label.edit.rule')" v-model="editRuleModalVisible" :afterClose="closeModal" @ok="handleSubmitEditForm">
+    <a-modal
+      :title="$t('label.edit.rule')"
+      v-model="editRuleModalVisible"
+      :afterClose="closeModal"
+      :maskClosable="false"
+      @ok="handleSubmitEditForm">
       <span v-show="editRuleModalLoading" class="modal-loading">
         <a-icon type="loading"></a-icon>
       </span>
@@ -276,6 +288,7 @@
 
     <a-modal
       :title="$t('label.add.vms')"
+      :maskClosable="false"
       v-model="addVmModalVisible"
       class="vm-modal"
       width="60vw"
@@ -327,7 +340,7 @@
               v-model="newRule.vmguestip[index]"
             >
               <a-select-option v-for="(nic, nicIndex) in nics[index]" :key="nic" :value="nic">
-                {{ nic }}{{ nicIndex === 0 ? ` (${this.$t('label.primary')})` : null }}
+                {{ nic }}{{ nicIndex === 0 ? ` (${$t('label.primary')})` : null }}
               </a-select-option>
             </a-select>
           </div>
@@ -676,7 +689,6 @@ export default {
           })
         }).catch(error => {
           this.$notifyError(error)
-          this.closeModal()
         })
       })
     },
@@ -712,7 +724,6 @@ export default {
         })
       }).catch(error => {
         this.$notifyError(error)
-        this.closeModal()
       })
     },
     openStickinessModal (id) {
@@ -773,7 +784,6 @@ export default {
         })
       }).catch(error => {
         this.$notifyError(error)
-        this.closeModal()
       })
     },
     handleDeleteStickinessPolicy () {
@@ -806,7 +816,6 @@ export default {
         })
       }).catch(error => {
         this.$notifyError(error)
-        this.closeModal()
       })
     },
     handleSubmitStickinessForm (e) {
@@ -920,7 +929,6 @@ export default {
       }).catch(error => {
         this.$notifyError(error)
         this.loading = false
-        this.closeModal()
       })
     },
     handleDeleteRule (rule) {
@@ -956,7 +964,6 @@ export default {
       }).catch(error => {
         this.$notifyError(error)
         this.loading = false
-        this.closeModal()
       })
     },
     handleOpenAddVMModal () {

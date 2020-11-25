@@ -223,11 +223,7 @@
               </a-tooltip>
             </span>
             <a-input
-              v-decorator="['account', {
-                rules: [
-                  { required: true, message: $t('label.required') }
-                ]
-              }]"
+              v-decorator="['account']"
               :placeholder="this.$t('label.account')"/>
           </a-form-item>
           <div :span="24" class="action-button">
@@ -262,6 +258,10 @@ export default {
     vpc: {
       type: Object,
       default: null
+    },
+    resource: {
+      type: Object,
+      default: () => { return {} }
     }
   },
   data () {
@@ -280,6 +280,11 @@ export default {
       vpcLoading: false,
       selectedVpc: {},
       accountVisible: this.isAdminOrDomainAdmin()
+    }
+  },
+  watch: {
+    resource (newItem, oldItem) {
+      this.fetchData()
     }
   },
   beforeCreate () {
@@ -322,7 +327,11 @@ export default {
       return key in obj && obj[key] != null && obj[key].length > 0
     },
     fetchZoneData () {
+      this.zones = []
       const params = {}
+      if (this.resource.zoneid) {
+        params.id = this.resource.zoneid
+      }
       params.listAll = true
       this.zoneLoading = true
       api('listZones', params).then(json => {
@@ -485,11 +494,11 @@ export default {
             description: this.$t('message.success.create.isolated.network')
           })
           this.$emit('refresh-data')
+          this.closeAction()
         }).catch(error => {
           this.$notifyError(error)
         }).finally(() => {
           this.actionLoading = false
-          this.closeAction()
         })
       })
     },
