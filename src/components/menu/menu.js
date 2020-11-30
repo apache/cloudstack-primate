@@ -17,11 +17,13 @@
 
 import Menu from 'ant-design-vue/es/menu'
 import Icon from 'ant-design-vue/es/icon'
+import { mixinDevice } from '@/utils/mixin.js'
 
 const { Item, SubMenu } = Menu
 
 export default {
   name: 'SMenu',
+  mixins: [mixinDevice],
   props: {
     menu: {
       type: Array,
@@ -47,7 +49,8 @@ export default {
     return {
       openKeys: [],
       selectedKeys: [],
-      cachedOpenKeys: []
+      cachedOpenKeys: [],
+      cachedPath: null
     }
   },
   computed: {
@@ -123,7 +126,7 @@ export default {
       return (
         <Item {...{ key: menu.path }}>
           <router-link {...{ props }}>
-            {this.renderIcon(menu.meta.icon)}
+            {this.renderIcon(menu.meta.icon, menu)}
             <span>{this.$t(menu.meta.title)}</span>
           </router-link>
         </Item>
@@ -131,28 +134,47 @@ export default {
     },
     renderSubMenu (menu) {
       const itemArr = []
+      const on = {
+        click: () => {
+          this.onClickParentMenu(menu)
+        }
+      }
       if (!menu.hideChildrenInMenu) {
         menu.children.forEach(item => itemArr.push(this.renderItem(item)))
       }
       return (
         <SubMenu {...{ key: menu.path }}>
           <span slot="title">
-            {this.renderIcon(menu.meta.icon)}
-            <span>{this.$t(menu.meta.title)}</span>
+            {this.renderIcon(menu.meta.icon, menu)}
+            <span {...{ on: on }}>{this.$t(menu.meta.title)}</span>
           </span>
           {itemArr}
         </SubMenu>
       )
     },
-    renderIcon (icon) {
+    renderIcon (icon, menuItem) {
       if (icon === 'none' || icon === undefined) {
         return null
       }
       const props = {}
+      const on = {
+        click: () => {
+          this.onClickParentMenu(menuItem)
+        }
+      }
       typeof (icon) === 'object' ? props.component = icon : props.type = icon
       return (
-        <Icon {... { props } }/>
+        <Icon {... { props, on: on } } />
       )
+    },
+    onClickParentMenu (menuItem) {
+      if (this.isDesktop() || this.cachedPath === menuItem.redirect) {
+        return
+      }
+      if (menuItem.redirect) {
+        this.cachedPath = menuItem.redirect
+        setTimeout(() => this.$router.push({ path: menuItem.path }))
+      }
     }
   },
   render () {
