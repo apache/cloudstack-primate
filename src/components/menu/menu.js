@@ -136,7 +136,7 @@ export default {
       const itemArr = []
       const on = {
         click: () => {
-          this.onClickParentMenu(menu)
+          this.handleClickParentMenu(menu)
         }
       }
       if (!menu.hideChildrenInMenu) {
@@ -159,7 +159,7 @@ export default {
       const props = {}
       const on = {
         click: () => {
-          this.onClickParentMenu(menuItem)
+          this.handleClickParentMenu(menuItem)
         }
       }
       typeof (icon) === 'object' ? props.component = icon : props.type = icon
@@ -167,7 +167,7 @@ export default {
         <Icon {... { props, on: on } } />
       )
     },
-    onClickParentMenu (menuItem) {
+    handleClickParentMenu (menuItem) {
       if (this.isDesktop() || this.cachedPath === menuItem.redirect) {
         return
       }
