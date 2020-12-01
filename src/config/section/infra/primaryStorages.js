@@ -70,7 +70,7 @@ export default {
       message: 'message.confirm.disable.storage',
       dataView: true,
       defaultArgs: { enabled: false },
-      show: (record) => { return ['Up', 'Connecting', 'Down', 'ErrorInMaintenance'].includes(record.state) }
+      show: (record) => { return record.state === 'Up' }
     },
     {
       api: 'updateStoragePool',
@@ -79,7 +79,7 @@ export default {
       message: 'message.confirm.enable.storage',
       dataView: true,
       defaultArgs: { enabled: true },
-      show: (record) => { return ['Disabled'].includes(record.state) }
+      show: (record) => { return record.state === 'Disabled' }
     },
     {
       api: 'enableStorageMaintenance',
