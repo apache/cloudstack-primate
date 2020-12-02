@@ -109,15 +109,10 @@ export default {
     {
       api: 'updateTrafficType',
       icon: 'branches',
-      label: 'Update Traffic Labels',
+      label: 'label.update.traffic.label',
       dataView: true,
-      args: ['id', 'kvmnetworklabel', 'vmwarenetworklabel', 'xennetworklabel', 'hypervnetworklabel', 'ovm3networklabel'],
-      mapping: {
-        id: {
-          api: 'listTrafficTypes',
-          params: (record) => { return { physicalnetworkid: record.id } }
-        }
-      }
+      popup: true,
+      component: () => import('@/views/infra/network/EditTrafficLabel.vue')
     },
     {
       api: 'deletePhysicalNetwork',

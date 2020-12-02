@@ -2132,6 +2132,7 @@
 "label.update.ssl": " SSL Certificate",
 "label.update.ssl.cert": " SSL Certificate",
 "label.update.to": "updated to",
+"label.update.traffic.label": "Update Traffic Labels",
 "label.update.vmware.datacenter": "Update VMware Datacenter",
 "label.updating": "Updating",
 "label.upgrade.router.newer.template": "Upgrade Router to Use Newer Template",
