@@ -182,7 +182,7 @@ export default {
         this.loading = true
         const params = {}
         for (const key in values) {
-          params[key] = values[key] ? values[key].trim() : undefined
+          params[key] = values[key]
         }
         const title = this.$t('label.update.traffic.label')
         const description = this.traffictype
