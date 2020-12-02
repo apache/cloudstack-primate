@@ -84,14 +84,14 @@ export default {
     {
       api: 'updatePhysicalNetwork',
       icon: 'edit',
-      label: 'Update Physical Network',
+      label: 'label.update.physical.network',
       dataView: true,
       args: ['vlan', 'tags']
     },
     {
       api: 'addTrafficType',
       icon: 'plus-square',
-      label: 'Add Traffic Type',
+      label: 'label.add.traffic.type',
       dataView: true,
       args: ['traffictype', 'physicalnetworkid', 'isolationmethod'],
       mapping: {
