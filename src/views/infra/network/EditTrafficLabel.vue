@@ -47,9 +47,9 @@
           </span>
           <a-input
             v-decorator="['kvmnetworklabel', {
-              initialValue: trafficResource.kvmnetworklabel || $t('label.network.label.display.for.blank.value')
+              initialValue: trafficResource.kvmnetworklabel
             }]"
-            :placeholder="apiParams.kvmnetworklabel.description" />
+            :placeholder="$t('label.network.label.display.for.blank.value')" />
         </a-form-item>
         <a-form-item>
           <span slot="label">
@@ -60,9 +60,9 @@
           </span>
           <a-input
             v-decorator="['vmwarenetworklabel', {
-              initialValue: trafficResource.vmwarenetworklabel || $t('label.network.label.display.for.blank.value')
+              initialValue: trafficResource.vmwarenetworklabel
             }]"
-            :placeholder="apiParams.vmwarenetworklabel.description" />
+            :placeholder="$t('label.network.label.display.for.blank.value')" />
         </a-form-item>
         <a-form-item>
           <span slot="label">
@@ -73,9 +73,9 @@
           </span>
           <a-input
             v-decorator="['xennetworklabel', {
-              initialValue: trafficResource.xennetworklabel || $t('label.network.label.display.for.blank.value')
+              initialValue: trafficResource.xennetworklabel
             }]"
-            :placeholder="apiParams.xennetworklabel.description" />
+            :placeholder="$t('label.network.label.display.for.blank.value')" />
         </a-form-item>
         <a-form-item>
           <span slot="label">
@@ -86,9 +86,9 @@
           </span>
           <a-input
             v-decorator="['hypervnetworklabel', {
-              initialValue: trafficResource.hypervnetworklabel || $t('label.network.label.display.for.blank.value')
+              initialValue: trafficResource.hypervnetworklabel
             }]"
-            :placeholder="apiParams.hypervnetworklabel.description" />
+            :placeholder="$t('label.network.label.display.for.blank.value')" />
         </a-form-item>
         <a-form-item>
           <span slot="label">
@@ -99,9 +99,9 @@
           </span>
           <a-input
             v-decorator="['ovm3networklabel', {
-              initialValue: trafficResource.ovm3networklabel || $t('label.network.label.display.for.blank.value')
+              initialValue: trafficResource.ovm3networklabel
             }]"
-            :placeholder="apiParams.ovm3networklabel.description" />
+            :placeholder="$t('label.network.label.display.for.blank.value')" />
         </a-form-item>
         <div :span="24" class="action-button">
           <a-button @click="closeAction">{{ $t('label.cancel') }}</a-button>
@@ -142,7 +142,6 @@ export default {
         this.apiParams[param.name] = param
       })
     }
-    console.log(this.apiParams)
   },
   inject: ['parentFetchData'],
   mounted () {
@@ -183,12 +182,7 @@ export default {
         this.loading = true
         const params = {}
         for (const key in values) {
-          const input = values[key].trim()
-          if (key === 'id') {
-            params[key] = input
-          } else if (input !== this.$t('label.network.label.display.for.blank.value')) {
-            params[key] = input
-          }
+          params[key] = values[key] ? values[key].trim() : undefined
         }
         const title = this.$t('label.update.traffic.label')
         const description = this.traffictype
