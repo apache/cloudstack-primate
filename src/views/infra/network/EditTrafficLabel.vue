@@ -21,7 +21,7 @@
       <a-form :form="form" :loading="loading" @submit="handleSubmit" layout="vertical">
         <a-form-item>
           <span slot="label">
-            {{ $t('label.id') }}
+            {{ $t('label.traffictype') }}
             <a-tooltip :title="apiParams.id.description">
               <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
             </a-tooltip>
