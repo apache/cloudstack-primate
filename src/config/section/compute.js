@@ -115,6 +115,20 @@ export default {
             }
             return fields
           },
+          mapping: {
+            podid: {
+              api: 'listPods',
+              params: (record) => { return { zoneid: record.zoneid } }
+            },
+            clusterid: {
+              api: 'listClusters',
+              params: (record) => { return { zoneid: record.zoneid } }
+            },
+            hostid: {
+              api: 'listHosts',
+              params: (record) => { return { zoneid: record.zoneid, state: 'Up' } }
+            }
+          },
           response: (result) => { return result.virtualmachine && result.virtualmachine.password ? `Password of the VM is ${result.virtualmachine.password}` : null }
         },
         {
