@@ -25,11 +25,6 @@ import config from '@/config/settings'
 import { createLocalVue } from '@vue/test-utils'
 import registerRequireContextHook from 'babel-plugin-require-context-hook/register'
 
-import mockI18n from './mock/mockI18n'
-import mockStore from './mock/mockStore'
-import mockRouter from './mock/mockRouter'
-import mockAxios from './mock/mockAxios'
-
 const localVue = createLocalVue()
 
 Vue.use(Antd)
@@ -49,18 +44,4 @@ window.matchMedia = window.matchMedia || function () {
   }
 }
 
-const decodeHtml = (html) => {
-  const text = document.createElement('textarea')
-  text.innerHTML = html
-
-  return text.value
-}
-
-module.exports = {
-  localVue,
-  mockI18n,
-  mockStore,
-  mockRouter,
-  mockAxios,
-  decodeHtml
-}
+module.exports = localVue

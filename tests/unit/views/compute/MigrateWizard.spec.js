@@ -15,40 +15,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import { mount } from '@vue/test-utils'
-import { localVue, mockAxios, mockI18n, mockStore } from './../../../setup'
+import mockAxios from '../../../mock/mockAxios'
 import MigrateWizard from '@/views/compute/MigrateWizard'
+import common from '../../../common'
+import mockData from '../../../mockData/MigrateWizard.mock'
 
 jest.mock('axios', () => mockAxios)
 
-let wrapper = null
-let store = null
+let wrapper, i18n, store, mocks
 
-const messages = {
-  en: {
-    name: 'name-en',
-    Suitability: 'Suitability-en',
-    cpuused: 'cpuused-en',
-    memused: 'memused-en',
-    select: 'select-en',
-    ok: 'ok-en',
-    'message.load.host.failed': 'Failed to load hosts',
-    'message.migrating.vm.to.host.failed': 'Failed to migrate VM to host'
-  },
-  de: {
-    name: 'name-de',
-    Suitability: 'Suitability-de',
-    cpuused: 'cpuused-de',
-    memused: 'memused-de',
-    select: 'select-de',
-    ok: 'ok-de',
-    'message.load.host.failed': 'Failed to load hosts',
-    'message.migrating.vm.to.host.failed': 'Failed to migrate VM to host'
-  }
-}
 const state = {}
-const i18n = mockI18n.mock('en', messages)
-const mocks = {
+const actions = {
+  AddAsyncJob: jest.fn((jobObject) => {})
+}
+mocks = {
   $message: {
     error: jest.fn((message) => {})
   },
@@ -72,23 +52,20 @@ const mocks = {
     }
   })
 }
-const actions = {
-  AddAsyncJob: jest.fn((jobObject) => {})
-}
+i18n = common.createMockI18n('en', mockData.messages)
+store = common.createMockStore(state, actions)
 
-store = mockStore.mock(state, actions)
+const factory = (opts = {}) => {
+  i18n = opts.i18n || i18n
+  store = opts.store || store
+  mocks = opts.mocks || mocks
 
-const factory = (component, propData = {}, data = {}, methods = {}) => {
-  return mount(component, {
-    localVue,
+  return common.createFactory(MigrateWizard, {
     i18n,
     store,
-    propsData: propData,
-    methods: methods,
     mocks,
-    data () {
-      return { ...data }
-    }
+    props: opts.props || {},
+    data: opts.data || {}
   })
 }
 
@@ -118,7 +95,11 @@ describe('Views > compute > MigrateWizard.vue', () => {
         }
 
         mockAxios.mockResolvedValue(mockData)
-        wrapper = factory(MigrateWizard, { resource: {} })
+        wrapper = factory({
+          props: {
+            resource: {}
+          }
+        })
 
         wrapper.vm.$nextTick(() => {
           expect(mockAxios).toHaveBeenCalled()
@@ -147,7 +128,11 @@ describe('Views > compute > MigrateWizard.vue', () => {
         }
 
         mockAxios.mockResolvedValue(mockData)
-        wrapper = factory(MigrateWizard, { resource: { id: null } })
+        wrapper = factory({
+          props: {
+            resource: { id: null }
+          }
+        })
 
         wrapper.vm.$nextTick(() => {
           expect(mockAxios).toHaveBeenCalled()
@@ -176,7 +161,11 @@ describe('Views > compute > MigrateWizard.vue', () => {
         }
 
         mockAxios.mockResolvedValue(mockData)
-        wrapper = factory(MigrateWizard, { resource: { id: 'test-id-value' } })
+        wrapper = factory({
+          props: {
+            resource: { id: 'test-id-value' }
+          }
+        })
 
         wrapper.vm.$nextTick(() => {
           expect(mockAxios).toHaveBeenCalled()
@@ -205,7 +194,10 @@ describe('Views > compute > MigrateWizard.vue', () => {
         }
 
         mockAxios.mockResolvedValue(mockData)
-        wrapper = factory(MigrateWizard, { resource: { id: 'test-id-value' } }, { searchQuery: 'test-query-value' })
+        wrapper = factory({
+          props: { resource: { id: 'test-id-value' } },
+          data: { searchQuery: 'test-query-value' }
+        })
 
         wrapper.vm.$nextTick(() => {
           expect(mockAxios).toHaveBeenCalled()
@@ -234,13 +226,13 @@ describe('Views > compute > MigrateWizard.vue', () => {
         }
 
         mockAxios.mockResolvedValue(mockData)
-        wrapper = factory(MigrateWizard, {
-          resource: { id: 'test-id-value' }
-        },
-        {
-          searchQuery: 'test-query-value',
-          page: 2,
-          pageSize: 20
+        wrapper = factory({
+          props: { resource: { id: 'test-id-value' } },
+          data: {
+            searchQuery: 'test-query-value',
+            page: 2,
+            pageSize: 20
+          }
         })
 
         wrapper.vm.$nextTick(() => {
@@ -270,7 +262,7 @@ describe('Views > compute > MigrateWizard.vue', () => {
         }
 
         mockAxios.mockResolvedValue(mockData)
-        wrapper = factory(MigrateWizard, { resource: {} })
+        wrapper = factory({ props: { resource: {} } })
 
         await wrapper.vm.$nextTick()
 
@@ -298,7 +290,7 @@ describe('Views > compute > MigrateWizard.vue', () => {
         }
 
         mockAxios.mockResolvedValue(mockData)
-        wrapper = factory(MigrateWizard, { resource: {} })
+        wrapper = factory({ props: { resource: {} } })
 
         await wrapper.vm.$nextTick()
 
@@ -322,7 +314,7 @@ describe('Views > compute > MigrateWizard.vue', () => {
         console.error = jest.fn()
 
         mockAxios.mockRejectedValue(mockError)
-        wrapper = factory(MigrateWizard, { resource: {} })
+        wrapper = factory({ props: { resource: {} } })
 
         await wrapper.vm.$nextTick()
 
@@ -349,17 +341,19 @@ describe('Views > compute > MigrateWizard.vue', () => {
           }
         }
 
-        wrapper = factory(MigrateWizard, {
-          resource: {
-            id: 'test-resource-id',
-            name: 'test-resource-name'
-          }
-        },
-        {
-          selectedHost: {
-            requiresStorageMotion: true,
-            id: 'test-host-id',
-            name: 'test-host-name'
+        wrapper = factory({
+          props: {
+            resource: {
+              id: 'test-resource-id',
+              name: 'test-resource-name'
+            }
+          },
+          data: {
+            selectedHost: {
+              requiresStorageMotion: true,
+              id: 'test-host-id',
+              name: 'test-host-name'
+            }
           }
         })
         jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
@@ -397,18 +391,19 @@ describe('Views > compute > MigrateWizard.vue', () => {
             }
           }
         }
-
-        wrapper = factory(MigrateWizard, {
-          resource: {
-            id: 'test-resource-id',
-            name: 'test-resource-name'
-          }
-        },
-        {
-          selectedHost: {
-            requiresStorageMotion: false,
-            id: 'test-host-id',
-            name: 'test-host-name'
+        wrapper = factory({
+          props: {
+            resource: {
+              id: 'test-resource-id',
+              name: 'test-resource-name'
+            }
+          },
+          data: {
+            selectedHost: {
+              requiresStorageMotion: false,
+              id: 'test-host-id',
+              name: 'test-host-name'
+            }
           }
         })
         jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
@@ -448,18 +443,19 @@ describe('Views > compute > MigrateWizard.vue', () => {
             }
           }
         }
-
-        wrapper = factory(MigrateWizard, {
-          resource: {
-            id: 'test-resource-id',
-            name: 'test-resource-name'
-          }
-        },
-        {
-          selectedHost: {
-            requiresStorageMotion: true,
-            id: 'test-host-id',
-            name: 'test-host-name'
+        wrapper = factory({
+          props: {
+            resource: {
+              id: 'test-resource-id',
+              name: 'test-resource-name'
+            }
+          },
+          data: {
+            selectedHost: {
+              requiresStorageMotion: true,
+              id: 'test-host-id',
+              name: 'test-host-name'
+            }
           }
         })
         jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
@@ -490,18 +486,19 @@ describe('Views > compute > MigrateWizard.vue', () => {
             }
           }
         }
-
-        wrapper = factory(MigrateWizard, {
-          resource: {
-            id: 'test-resource-id',
-            name: 'test-resource-name'
-          }
-        },
-        {
-          selectedHost: {
-            requiresStorageMotion: true,
-            id: 'test-host-id',
-            name: 'test-host-name'
+        wrapper = factory({
+          props: {
+            resource: {
+              id: 'test-resource-id',
+              name: 'test-resource-name'
+            }
+          },
+          data: {
+            selectedHost: {
+              requiresStorageMotion: true,
+              id: 'test-host-id',
+              name: 'test-host-name'
+            }
           }
         })
         jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
@@ -526,18 +523,19 @@ describe('Views > compute > MigrateWizard.vue', () => {
             jobid: 'test-job-id-case-3'
           }
         }
-
-        wrapper = factory(MigrateWizard, {
-          resource: {
-            id: 'test-resource-id',
-            name: 'test-resource-name'
-          }
-        },
-        {
-          selectedHost: {
-            requiresStorageMotion: true,
-            id: 'test-host-id',
-            name: 'test-host-name'
+        wrapper = factory({
+          props: {
+            resource: {
+              id: 'test-resource-id',
+              name: 'test-resource-name'
+            }
+          },
+          data: {
+            selectedHost: {
+              requiresStorageMotion: true,
+              id: 'test-host-id',
+              name: 'test-host-name'
+            }
           }
         })
         jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
@@ -559,14 +557,16 @@ describe('Views > compute > MigrateWizard.vue', () => {
       it('check $message.error is called when api is called with throw error', async (done) => {
         const mockError = 'Error: throw error message'
 
-        wrapper = factory(MigrateWizard, {
-          resource: {}
-        },
-        {
-          selectedHost: {
-            requiresStorageMotion: true,
-            id: 'test-host-id',
-            name: 'test-host-name'
+        wrapper = factory({
+          props: {
+            resource: {}
+          },
+          data: {
+            selectedHost: {
+              requiresStorageMotion: true,
+              id: 'test-host-id',
+              name: 'test-host-name'
+            }
           }
         })
         jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
@@ -587,11 +587,14 @@ describe('Views > compute > MigrateWizard.vue', () => {
 
     describe('handleChangePage()', () => {
       it('check page, pageSize and fetchData() when handleChangePage() is called', () => {
-        wrapper = factory(MigrateWizard, {
-          resource: {}
-        }, {
-          page: 1,
-          pageSize: 10
+        wrapper = factory({
+          props: {
+            resource: {}
+          },
+          data: {
+            page: 1,
+            pageSize: 10
+          }
         })
         const spyFetchData = jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
 
@@ -607,11 +610,14 @@ describe('Views > compute > MigrateWizard.vue', () => {
 
     describe('handleChangePageSize()', () => {
       it('check page, pageSize and fetchData() when handleChangePageSize() is called', () => {
-        wrapper = factory(MigrateWizard, {
-          resource: {}
-        }, {
-          page: 1,
-          pageSize: 10
+        wrapper = factory({
+          props: {
+            resource: {}
+          },
+          data: {
+            page: 1,
+            pageSize: 10
+          }
         })
         const spyFetchData = jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
 

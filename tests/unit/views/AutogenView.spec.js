@@ -15,334 +15,27 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import { mount } from '@vue/test-utils'
-import {
-  localVue,
-  mockI18n,
-  mockRouter,
-  mockAxios,
-  mockStore
-} from './../../setup'
+import mockAxios from '../../mock/mockAxios'
 import AutogenView from '@/views/AutogenView'
 import user from '@/store/modules/user'
-import { pollJobPlugin, notifierPlugin } from '@/utils/plugins'
+import common from '../../common'
+import mockData from '../../mockData/AutogenView.mock.json'
 
 jest.mock('axios', () => mockAxios)
-localVue.use(pollJobPlugin)
-localVue.use(notifierPlugin)
+user.state.apis = mockData.apis
 
-user.state.apis = {
-  testApiNameCase1: {
-    params: {},
-    response: []
-  },
-  testApiNameCase2: {
-    params: {},
-    response: []
-  },
-  testApiNameCase3: {
-    params: {},
-    response: []
-  },
-  testApiNameCase4: {
-    params: {},
-    response: [
-      {
-        name: 'column2',
-        type: 'string'
-      },
-      {
-        name: 'column1',
-        type: 'string'
-      },
-      {
-        name: 'column3',
-        type: 'string'
-      }
-    ]
-  },
-  testApiNameCase5: {
-    params: [
-      {
-        name: 'column2',
-        type: 'string'
-      },
-      {
-        name: 'column1',
-        type: 'string'
-      },
-      {
-        name: 'column3',
-        type: 'string'
-      },
-      {
-        name: 'name',
-        type: 'string'
-      },
-      {
-        name: 'id',
-        type: 'string'
-      }
-    ],
-    response: []
-  },
-  testApiNameCase6: {
-    params: [
-      {
-        name: 'id',
-        type: 'uuid'
-      },
-      {
-        name: 'tags',
-        type: 'list'
-      },
-      {
-        name: 'column1',
-        type: 'list'
-      },
-      {
-        name: 'column2',
-        type: 'string'
-      },
-      {
-        name: 'account',
-        type: 'string'
-      },
-      {
-        name: 'confirmpassword',
-        type: 'string'
-      }
-    ],
-    response: []
-  },
-  listTemplates: {
-    params: {},
-    response: []
-  },
-  listIsos: {
-    params: {},
-    response: []
-  },
-  listRoles: {
-    params: {},
-    response: []
-  },
-  listHosts: {
-    params: {},
-    response: []
-  },
-  listTestApiNames: {
-    params: {},
-    response: []
-  },
-  createAccount: {
-    params: {},
-    response: []
-  },
-  addAccountToProject: {
-    params: {},
-    response: []
-  },
-  quotaEmailTemplateList: {
-    params: {},
-    response: []
-  }
-}
-
-const messages = {
-  en: {
-    labelname: 'test-name-en',
-    displaytext: 'description-en',
-    'label.column1': 'column1-en',
-    'label.column2': 'column2-en',
-    'label.column3': 'column3-en',
-    'label.id': 'uuid-en',
-    'label.name': 'name-en',
-    'label.domainid': 'domain-en',
-    'label.self': 'self-en',
-    'label.all': 'all-en',
-    'label.tags': 'tags-en',
-    'label.account': 'account-en',
-    'label.domainids': 'domainids-en',
-    'label.keypair': 'keypair-en',
-    'label.filterby': 'filterby-en',
-    'label.refresh': 'refresh-en',
-    'message.error.required.input': 'required-en',
-    'message.error.select': 'select-en',
-    'label.search': 'search-en',
-    'label.quota.configuration': 'quota-configuration-en',
-    'label.quota.value': 'quota-value-en',
-    'label.quota.tariff.effectivedate': 'quota-effectivedate-en',
-    'label.confirmpassword': 'confirmpassword-en',
-    'label.confirmpassword.description': 'confirmpassword-description-en',
-    'label.open.documentation': 'open',
-    'label.metrics': 'metrics',
-    'label.showing': 'Showing',
-    'label.of': 'of',
-    'label.items': 'items',
-    'label.page': 'page',
-    'error.fetching.async.job.result': 'Error encountered while fetching async job result'
-  },
-  de: {
-    labelname: 'test-name-de',
-    displaytext: 'description-de',
-    'label.column1': 'column1-de',
-    'label.column2': 'column2-de',
-    'label.column3': 'column3-de',
-    'label.id': 'uuid-de',
-    'label.name': 'name-de',
-    'label.domainid': 'domain-de',
-    'label.self': 'self-de',
-    'label.all': 'all-de',
-    'label.tags': 'tags-de',
-    'label.account': 'account-de',
-    'label.domainids': 'domainids-de',
-    'label.keypair': 'keypair-de',
-    'label.filterby': 'filterby-de',
-    'label.refresh': 'refresh-de',
-    'message.error.required.input': 'required-de',
-    'message.error.select': 'select-de',
-    'label.search': 'search-de',
-    'label.quota.configuration': 'quota-configuration-de',
-    'label.quota.value': 'quota-value-de',
-    'label.quota.tariff.effectivedate': 'quota-effectivedate-de',
-    'label.confirmpassword': 'confirmpassword-de',
-    'label.confirmpassword.description': 'confirmpassword-description-de',
-    'label.open.documentation': 'open',
-    'label.metrics': 'metrics',
-    'label.showing': 'Showing',
-    'label.of': 'of',
-    'label.items': 'items',
-    'label.page': 'page',
-    'error.fetching.async.job.result': 'Error encountered while fetching async job result'
-  }
-}
+let router, store, i18n, mocks
 
 const state = {
   user: {
-    apis: {
-      testApiNameCase1: {
-        params: {},
-        response: {}
-      },
-      testApiNameCase2: {
-        params: {},
-        response: {}
-      },
-      testApiNameCase3: {
-        params: {},
-        response: {}
-      },
-      testApiNameCase4: {
-        params: {},
-        response: [
-          {
-            name: 'column2',
-            type: 'string'
-          },
-          {
-            name: 'column1',
-            type: 'string'
-          },
-          {
-            name: 'column3',
-            type: 'string'
-          }
-        ]
-      },
-      testApiNameCase5: {
-        params: [
-          {
-            name: 'column2',
-            type: 'string'
-          },
-          {
-            name: 'column1',
-            type: 'string'
-          },
-          {
-            name: 'column3',
-            type: 'string'
-          },
-          {
-            name: 'name',
-            type: 'string'
-          },
-          {
-            name: 'id',
-            type: 'string'
-          }
-        ],
-        response: []
-      },
-      testApiNameCase6: {
-        params: [
-          {
-            name: 'id',
-            type: 'uuid'
-          },
-          {
-            name: 'tags',
-            type: 'list'
-          },
-          {
-            name: 'column1',
-            type: 'list'
-          },
-          {
-            name: 'column2',
-            type: 'string'
-          },
-          {
-            name: 'account',
-            type: 'string'
-          }
-        ],
-        response: []
-      },
-      listTemplates: {
-        params: {},
-        response: []
-      },
-      listIsos: {
-        params: {},
-        response: []
-      },
-      listHosts: {
-        params: {},
-        response: []
-      },
-      listRoles: {
-        params: {},
-        response: []
-      },
-      listTestApiName: {
-        params: {},
-        response: []
-      },
-      createAccount: {
-        params: {},
-        response: []
-      },
-      addAccountToProject: {
-        params: {},
-        response: []
-      },
-      quotaEmailTemplateList: {
-        params: {},
-        response: []
-      }
-    },
-    info: {
-      roletype: 'Normal',
-      account: 'test-account',
-      domainid: 'test-domain-id'
-    }
+    apis: mockData.apis,
+    info: mockData.info
   }
 }
 
-let router
-let store = mockStore.mock(state)
+store = common.createMockStore(state)
+i18n = common.createMockI18n('en', mockData.messages)
+
 const actions = {
   AddAsyncJob: jest.fn((jobId) => {})
 }
@@ -350,8 +43,7 @@ const spyConsole = {
   log: null,
   warn: null
 }
-const i18n = mockI18n.mock('en', messages)
-const mocks = {
+mocks = {
   $notifyError: jest.fn((error) => {
     return error
   }),
@@ -377,32 +69,19 @@ const mocks = {
   }
 }
 
-const createRouter = (newRoute = []) => {
-  let routes = []
-  if (!newRoute || Object.keys(newRoute).length === 0) {
-    return mockRouter.mock(routes)
-  }
+const factory = (opts = {}) => {
+  router = opts.router || router
+  i18n = opts.i18n || i18n
+  store = opts.store || store
+  mocks = opts.mocks || mocks
 
-  routes = [...newRoute]
-
-  return mockRouter.mock(routes)
-}
-
-const factory = (propData = {}, data = {}) => {
-  if (!router) {
-    router = createRouter()
-  }
-
-  return mount(AutogenView, {
-    localVue,
+  return common.createFactory(AutogenView, {
     router,
     i18n,
     store,
-    propsData: propData,
     mocks,
-    data () {
-      return { ...data }
-    }
+    props: opts.props || {},
+    data: opts.data || {}
   })
 }
 
@@ -411,17 +90,13 @@ describe('Views > AutogenView.vue', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    if (wrapper) {
-      wrapper.destroy()
-    }
+
+    if (wrapper) wrapper.destroy()
     if (router && router.currentRoute.name !== 'home') {
       router.replace({ name: 'home' })
     }
     state.user.info.roletype = 'Normal'
-    store = mockStore.mock(state)
-    if (i18n.locale !== 'en') {
-      i18n.locale = 'en'
-    }
+    if (i18n.locale !== 'en') i18n.locale = 'en'
     if (spyConsole.log) {
       spyConsole.log.mockClear()
       spyConsole.log.mockRestore()
@@ -434,14 +109,14 @@ describe('Views > AutogenView.vue', () => {
 
   describe('Navigation Guard', () => {
     it('check beforeRouteUpdate() is called', () => {
-      router = createRouter([{
+      router = common.createMockRouter([{
         name: 'testRouter1',
         path: '/test-router-1',
         meta: {
           icon: 'test-router-1'
         }
       }])
-      wrapper = factory()
+      wrapper = factory({ router: router })
       router.push({ name: 'testRouter1' })
 
       const beforeRouteUpdate = wrapper.vm.$options.beforeRouteUpdate
@@ -456,14 +131,14 @@ describe('Views > AutogenView.vue', () => {
     })
 
     it('check beforeRouteLeave() is called', () => {
-      router = createRouter([{
+      router = common.createMockRouter([{
         name: 'testRouter1',
         path: '/test-router-1',
         meta: {
           icon: 'test-router-1'
         }
       }])
-      wrapper = factory()
+      wrapper = factory({ router: router })
       router.push({ name: 'testRouter1' })
 
       const beforeRouteLeave = wrapper.vm.$options.beforeRouteLeave
@@ -498,14 +173,14 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('The wrapper data changes when $router changes', () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter2',
           path: '/test-router-2',
           meta: {
             icon: 'test-router-2'
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
@@ -553,14 +228,14 @@ describe('Views > AutogenView.vue', () => {
   describe('Methods', () => {
     describe('fetchData()', () => {
       it('check routeName when fetchData() is called with $route.name is not empty', () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter1',
           path: '/test-router-1',
           meta: {
             icon: 'test-router-1'
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         router.push({ name: 'testRouter1' })
 
@@ -571,13 +246,13 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check routeName when fetchData() is called with $route.name is empty', () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           path: '/test-router-3',
           meta: {
             icon: 'test-router-3'
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         router.replace('/test-router-3')
 
@@ -587,14 +262,14 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check resource, dataView when fetchData() is called with $route.meta.params is not empty', () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter4',
           path: '/test-router-4/:id',
           meta: {
             icon: 'test-router-4'
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         router.push({ name: 'testRouter4', params: { id: 'test-id' } })
 
@@ -605,7 +280,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check columnKeys, actions when fetchData() is called with $route.meta.actions, route.meta.columns is not empty', () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter5',
           path: '/test-router-5',
           meta: {
@@ -621,7 +296,7 @@ describe('Views > AutogenView.vue', () => {
             ]
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
         const mockData = {
           testapinamecase1response: {
             count: 0,
@@ -645,7 +320,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check columnKeys assign by store.getters.apis when fetchData() is called', () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter6',
           path: 'test-router-6',
           meta: {
@@ -653,7 +328,7 @@ describe('Views > AutogenView.vue', () => {
             permission: ['testApiNameCase4']
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         const mockData = {
           testapinamecase4response: {
@@ -672,7 +347,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check columnKeys assign by $route.meta.columns when fetchData() is called', () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter7',
           path: 'test-router-7',
           meta: {
@@ -681,7 +356,7 @@ describe('Views > AutogenView.vue', () => {
             columns: [{ name: 'string' }]
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         const mockData = {
           testapinamecase1response: {
@@ -703,7 +378,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api is called with params assign by $route.query', (done) => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter8',
           path: '/test-router-8',
           meta: {
@@ -711,7 +386,7 @@ describe('Views > AutogenView.vue', () => {
             permission: ['testApiNameCase2']
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         const postData = new URLSearchParams()
         const mockData = {
@@ -745,7 +420,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api is called with params assign by $route.meta.params', (done) => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter9',
           path: '/test-router-9',
           meta: {
@@ -756,7 +431,7 @@ describe('Views > AutogenView.vue', () => {
             }
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         const postData = new URLSearchParams()
         const mockData = {
@@ -790,7 +465,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api is called with params has item id, name when $route.path startWith /ssh/', (done) => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter17',
           path: '/ssh/:id',
           meta: {
@@ -798,7 +473,7 @@ describe('Views > AutogenView.vue', () => {
             permission: ['testApiNameCase1']
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         const mockData = {
           testapinamecase1response: {
@@ -832,7 +507,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api is called with params has item id, hostname when $route.path startWith /ldapsetting/', (done) => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter18',
           path: '/ldapsetting/:id',
           meta: {
@@ -840,7 +515,7 @@ describe('Views > AutogenView.vue', () => {
             permission: ['testApiNameCase1']
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         const mockData = {
           testapinamecase1response: {
@@ -874,7 +549,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check items, resource when api is called with result is not empty', (done) => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter19',
           path: '/templates',
           meta: {
@@ -882,7 +557,7 @@ describe('Views > AutogenView.vue', () => {
             permission: ['listTemplates']
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         const mockData = {
           listtemplatesresponse: {
@@ -944,7 +619,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check items, resource when api is called and $route.meta.columns has function', (done) => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter20',
           path: '/test-router-20',
           meta: {
@@ -961,7 +636,7 @@ describe('Views > AutogenView.vue', () => {
             ]
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         const mockData = {
           testapinamecase1response: {
@@ -995,7 +670,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check items, resource when api is called and $route.path startWith /ssh', (done) => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter21',
           path: '/ssh',
           meta: {
@@ -1003,7 +678,7 @@ describe('Views > AutogenView.vue', () => {
             permission: ['testApiNameCase1']
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         const mockData = {
           testapinamecase1response: {
@@ -1034,7 +709,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check items, resource when api is called and $route.path startWith /ldapsetting', (done) => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter22',
           path: '/ldapsetting',
           meta: {
@@ -1042,7 +717,7 @@ describe('Views > AutogenView.vue', () => {
             permission: ['testApiNameCase1']
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         const mockData = {
           testapinamecase1response: {
@@ -1076,7 +751,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check $notifyError is called when api is called with throw error', (done) => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter22',
           path: '/test-router-22',
           meta: {
@@ -1085,7 +760,7 @@ describe('Views > AutogenView.vue', () => {
           }
         }])
 
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         const errorMock = {
           response: {},
@@ -1102,7 +777,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check $notifyError is called and router path = /exception/403 when api is called with throw error', (done) => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter23',
           path: '/test-router-23',
           meta: {
@@ -1111,7 +786,7 @@ describe('Views > AutogenView.vue', () => {
           }
         }])
 
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         const errorMock = {
           response: {
@@ -1132,7 +807,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check $notifyError is called and router path = /exception/404 when api is called with throw error', (done) => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter23',
           path: '/test-router-23',
           meta: {
@@ -1141,7 +816,7 @@ describe('Views > AutogenView.vue', () => {
           }
         }])
 
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         const errorMock = {
           response: {
@@ -1162,7 +837,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check $notifyError is called and router path = /exception/500 when api is called with throw error', (done) => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter23',
           path: '/test-router-23',
           meta: {
@@ -1171,7 +846,7 @@ describe('Views > AutogenView.vue', () => {
           }
         }])
 
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         const errorMock = {
           response: {
@@ -1194,15 +869,15 @@ describe('Views > AutogenView.vue', () => {
 
     describe('onSearch()', () => {
       it('check fetchData() is called when onSearch() is called', async () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter24',
           path: '/test-router-24',
           meta: {
             icon: 'test-router-24'
           }
         }])
+        wrapper = factory({ router: router })
         router.push({ name: 'testRouter24', query: { page: 1, pagesize: 20 } })
-        wrapper = factory()
         const spy = jest.spyOn(wrapper.vm, 'fetchData')
 
         await wrapper.vm.$nextTick()
@@ -1211,19 +886,14 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check onSearch() is called with searchParams have item', async () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter24',
           path: '/test-router-24',
           meta: {
             icon: 'test-router-24'
           }
         }])
-        wrapper = factory({}, {
-          searchParams: {
-            key1: 'key1-value',
-            key2: 'key2-value'
-          }
-        })
+        wrapper = factory({ router: router })
 
         router.push({ name: 'testRouter24' })
         await wrapper.vm.$nextTick()
@@ -1235,14 +905,14 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check onSearch() is called with searchQuery not in opts', async () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter25',
           path: '/test-router-25',
           meta: {
             icon: 'test-router-25'
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         router.push({ name: 'testRouter25' })
         await wrapper.vm.$nextTick()
@@ -1257,7 +927,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check onSearch() is called with searchQuery in opts but this is empty', async () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter26',
           path: '/test-router-26',
           meta: {
@@ -1265,7 +935,7 @@ describe('Views > AutogenView.vue', () => {
           },
           query: {}
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         router.push({ name: 'testRouter26' })
         await wrapper.vm.$nextTick()
@@ -1279,7 +949,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check onSearch() is called with searchQuery in opts', async () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter26',
           path: '/test-router-26',
           meta: {
@@ -1287,7 +957,7 @@ describe('Views > AutogenView.vue', () => {
           },
           query: {}
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         router.push({ name: 'testRouter26' })
         await wrapper.vm.$nextTick()
@@ -1303,7 +973,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check onSearch() is called with searchQuery in opts and route.name equal `role`', async () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'role',
           path: '/test-router-26',
           meta: {
@@ -1311,7 +981,7 @@ describe('Views > AutogenView.vue', () => {
           },
           query: {}
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         router.push({ name: 'role' })
         await wrapper.vm.$nextTick()
@@ -1327,7 +997,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check onSearch() is called with searchQuery in opts and route.name equal `templatetype`', async () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'quotaemailtemplate',
           path: '/test-router-26',
           meta: {
@@ -1335,7 +1005,7 @@ describe('Views > AutogenView.vue', () => {
           },
           query: {}
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         router.push({ name: 'quotaemailtemplate' })
         await wrapper.vm.$nextTick()
@@ -1351,7 +1021,7 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check onSearch() is called with searchQuery in opts and route.name equal `globalsetting`', async () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'globalsetting',
           path: '/test-router-26',
           meta: {
@@ -1359,7 +1029,7 @@ describe('Views > AutogenView.vue', () => {
           },
           query: {}
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         router.push({ name: 'globalsetting' })
         await wrapper.vm.$nextTick()
@@ -1377,12 +1047,13 @@ describe('Views > AutogenView.vue', () => {
 
     describe('closeAction()', () => {
       it('check currentAction, showAction when closeAction() is called', () => {
-        wrapper = factory({}, {
+        const data = {
           currentAction: {
             loading: true
           },
           showAction: true
-        })
+        }
+        wrapper = factory({ data: data })
 
         expect(wrapper.vm.currentAction).toEqual({ loading: true })
         expect(wrapper.vm.showAction).toBeTruthy()
@@ -1398,14 +1069,19 @@ describe('Views > AutogenView.vue', () => {
 
     describe('execAction()', () => {
       it('check showAction, actionData and router name when execAction() is called', () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter26',
           path: '/test-router-26',
           meta: {
             icon: 'test-router-26'
           }
         }])
-        wrapper = factory({}, { actionData: [{ name: 'test-add-action' }] })
+        const data = {
+          actionData: {
+            name: 'test-add-action'
+          }
+        }
+        wrapper = factory({ router: router, data: data })
 
         expect(router.currentRoute.name).toEqual('home')
 
@@ -1560,10 +1236,12 @@ describe('Views > AutogenView.vue', () => {
 
     describe('listUuidOpts()', () => {
       it('check api not called when listUuidOpts() is called with currentAction.mapping.id is null', (done) => {
-        wrapper = factory({}, {
-          currentAction: {
-            mapping: {
-              id: () => { return '' }
+        wrapper = factory({
+          data: {
+            currentAction: {
+              mapping: {
+                id: () => { return '' }
+              }
             }
           }
         })
@@ -1577,9 +1255,11 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api not called when listUuidOpts() is called with currentAction.mapping is empty', (done) => {
-        wrapper = factory({}, {
-          currentAction: {
-            mapping: {}
+        wrapper = factory({
+          data: {
+            currentAction: {
+              mapping: {}
+            }
           }
         })
 
@@ -1603,11 +1283,13 @@ describe('Views > AutogenView.vue', () => {
           }
         }
 
-        wrapper = factory({}, {
-          currentAction: {
-            mapping: {
-              template: {
-                api: 'testApiNameCase1'
+        wrapper = factory({
+          data: {
+            currentAction: {
+              mapping: {
+                template: {
+                  api: 'testApiNameCase1'
+                }
               }
             }
           }
@@ -1697,14 +1379,16 @@ describe('Views > AutogenView.vue', () => {
           }
         }
 
-        wrapper = factory({}, {
-          currentAction: {
-            mapping: {
-              template: {
-                api: 'testApiNameCase1',
-                params: (record) => {
-                  return {
-                    name: record.name
+        wrapper = factory({
+          data: {
+            currentAction: {
+              mapping: {
+                template: {
+                  api: 'testApiNameCase1',
+                  params: (record) => {
+                    return {
+                      name: record.name
+                    }
                   }
                 }
               }
@@ -2061,17 +1745,19 @@ describe('Views > AutogenView.vue', () => {
 
     describe('fillEditFormFieldValues()', () => {
       it('check form getFieldDecorator() is called and formModel when currentAction.paramFields has item type = list', (done) => {
-        wrapper = factory({}, {
-          currentAction: {
-            paramFields: [
-              { name: 'domainids', type: 'list' }
-            ],
-            mapping: {
-              column1: () => { return 'test-column' }
+        wrapper = factory({
+          data: {
+            currentAction: {
+              paramFields: [
+                { name: 'domainids', type: 'list' }
+              ],
+              mapping: {
+                column1: () => { return 'test-column' }
+              }
+            },
+            resource: {
+              domainname: ['test-domain-value-1', 'test-domain-value-2']
             }
-          },
-          resource: {
-            domainname: ['test-domain-value-1', 'test-domain-value-2']
           }
         })
 
@@ -2091,17 +1777,19 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check form getFieldDecorator() is called and formModel when currentAction.paramFields has item name = account', (done) => {
-        wrapper = factory({}, {
-          currentAction: {
-            paramFields: [
-              { name: 'account', type: 'string' }
-            ],
-            mapping: {
-              column1: () => { return 'test-column' }
+        wrapper = factory({
+          data: {
+            currentAction: {
+              paramFields: [
+                { name: 'account', type: 'string' }
+              ],
+              mapping: {
+                column1: () => { return 'test-column' }
+              }
+            },
+            resource: {
+              account: 'test-account-value'
             }
-          },
-          resource: {
-            account: 'test-account-value'
           }
         })
 
@@ -2121,17 +1809,19 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check form getFieldDecorator() is called and formModel when currentAction.paramFields has item exists in currentAction. mapping', (done) => {
-        wrapper = factory({}, {
-          currentAction: {
-            paramFields: [
-              { name: 'column1', type: 'string' }
-            ],
-            mapping: {
-              column1: () => { return 'test-column' }
+        wrapper = factory({
+          data: {
+            currentAction: {
+              paramFields: [
+                { name: 'column1', type: 'string' }
+              ],
+              mapping: {
+                column1: () => { return 'test-column' }
+              }
+            },
+            resource: {
+              column1: 'test-column-value'
             }
-          },
-          resource: {
-            column1: 'test-column-value'
           }
         })
 
@@ -2151,14 +1841,16 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check form getFieldDecorator() is called and formModel when currentAction.paramFields has item exists in resource', (done) => {
-        wrapper = factory({}, {
-          currentAction: {
-            paramFields: [
-              { name: 'column1', type: 'string' }
-            ]
-          },
-          resource: {
-            column1: 'test-column-value'
+        wrapper = factory({
+          data: {
+            currentAction: {
+              paramFields: [
+                { name: 'column1', type: 'string' }
+              ]
+            },
+            resource: {
+              column1: 'test-column-value'
+            }
           }
         })
 
@@ -2178,13 +1870,15 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check form getFieldDecorator() is called and formModel when currentAction.paramFields have not item in resource', (done) => {
-        wrapper = factory({}, {
-          currentAction: {
-            paramFields: [
-              { name: 'column1', type: 'string' }
-            ]
-          },
-          resource: {}
+        wrapper = factory({
+          data: {
+            currentAction: {
+              paramFields: [
+                { name: 'column1', type: 'string' }
+              ]
+            },
+            resource: {}
+          }
         })
 
         const spy = jest.spyOn(wrapper.vm.form, 'getFieldDecorator')
@@ -2200,14 +1894,16 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check form getFieldDecorator() is not called when field value is null', (done) => {
-        wrapper = factory({}, {
-          currentAction: {
-            paramFields: [
-              { name: 'column1', type: 'string' }
-            ]
-          },
-          resource: {
-            column1: null
+        wrapper = factory({
+          data: {
+            currentAction: {
+              paramFields: [
+                { name: 'column1', type: 'string' }
+              ]
+            },
+            resource: {
+              column1: null
+            }
           }
         })
 
@@ -2238,14 +1934,14 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check `route.query` when changeFilter() is called with `$route.name` equal `template`', async () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'template',
           path: '/test-router-1',
           meta: {
             icon: 'test'
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         router.push({ name: 'template' })
         await wrapper.vm.$nextTick()
@@ -2260,14 +1956,14 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check `route.query` when changeFilter() is called with `$route.name` equal `iso`', async () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'iso',
           path: '/test-router-1',
           meta: {
             icon: 'test'
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         router.push({ name: 'iso' })
         await wrapper.vm.$nextTick()
@@ -2282,14 +1978,14 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check `route.query` when changeFilter() is called with `$route.name` equal `vm` and `filter` equal `self`', async () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'vm',
           path: '/test-router-1',
           meta: {
             icon: 'test'
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         router.push({ name: 'vm' })
         await wrapper.vm.$nextTick()
@@ -2305,14 +2001,14 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check `route.query` when changeFilter() is called with `$route.name` equal `vm` and `filter` equal `running`', async () => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'vm',
           path: '/test-router-1',
           meta: {
             icon: 'test'
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
 
         router.push({ name: 'vm' })
         await wrapper.vm.$nextTick()
@@ -2344,7 +2040,7 @@ describe('Views > AutogenView.vue', () => {
 
     describe('changePageSize()', () => {
       it('check page, pageSize and fetchData() when changePageSize() is called', () => {
-        wrapper = factory({})
+        wrapper = factory()
 
         wrapper.vm.$nextTick(() => {
           expect(router.currentRoute.query).toEqual({
@@ -2381,8 +2077,10 @@ describe('Views > AutogenView.vue', () => {
 
     describe('toggleLoading()', () => {
       it('check loading when toggleLoading() is called', () => {
-        wrapper = factory({}, {
-          loading: false
+        wrapper = factory({
+          data: {
+            loading: false
+          }
         })
 
         wrapper.vm.$nextTick(() => {
@@ -2397,8 +2095,10 @@ describe('Views > AutogenView.vue', () => {
 
     describe('startLoading()', () => {
       it('check loading when startLoading() is called', () => {
-        wrapper = factory({}, {
-          loading: false
+        wrapper = factory({
+          data: {
+            loading: false
+          }
         })
 
         wrapper.vm.$nextTick(() => {
@@ -2413,8 +2113,10 @@ describe('Views > AutogenView.vue', () => {
 
     describe('finishLoading()', () => {
       it('check loading when finishLoading() is called', () => {
-        wrapper = factory({}, {
-          loading: true
+        wrapper = factory({
+          data: {
+            loading: true
+          }
         })
 
         wrapper.vm.$nextTick(() => {
@@ -2429,21 +2131,23 @@ describe('Views > AutogenView.vue', () => {
 
     describe('execSubmit()', () => {
       it('check error from validateFields', (done) => {
-        wrapper = factory({}, {
-          showAction: true,
-          currentAction: {
-            loading: false,
-            label: 'labelname',
-            params: [
-              { name: 'id', type: 'uuid' }
-            ],
-            paramFields: [
-              { name: 'id', type: 'uuid', description: '', required: true }
-            ],
-            mapping: {}
-          },
-          resource: {
-            id: 'test-id-value'
+        wrapper = factory({
+          data: {
+            showAction: true,
+            currentAction: {
+              loading: false,
+              label: 'labelname',
+              params: [
+                { name: 'id', type: 'uuid' }
+              ],
+              paramFields: [
+                { name: 'id', type: 'uuid', description: '', required: true }
+              ],
+              mapping: {}
+            },
+            resource: {
+              id: 'test-id-value'
+            }
           }
         })
 
@@ -2460,22 +2164,24 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api is called with params has item id equal resource.id', (done) => {
-        wrapper = factory({}, {
-          showAction: true,
-          currentAction: {
-            api: 'testApiNameCase1',
-            loading: false,
-            label: 'labelname',
-            params: [
-              { name: 'id', type: 'uuid' }
-            ],
-            paramFields: [
-              { name: 'id', type: 'uuid', description: '', required: false }
-            ],
-            mapping: {}
-          },
-          resource: {
-            id: 'test-id-value'
+        wrapper = factory({
+          data: {
+            showAction: true,
+            currentAction: {
+              api: 'testApiNameCase1',
+              loading: false,
+              label: 'labelname',
+              params: [
+                { name: 'id', type: 'uuid' }
+              ],
+              paramFields: [
+                { name: 'id', type: 'uuid', description: '', required: false }
+              ],
+              mapping: {}
+            },
+            resource: {
+              id: 'test-id-value'
+            }
           }
         })
 
@@ -2508,23 +2214,25 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api is called when form has input key not exist in currentAction.params', (done) => {
-        wrapper = factory({}, {
-          showAction: true,
-          currentAction: {
-            api: 'testApiNameCase1',
-            loading: false,
-            label: 'labelname',
-            params: [
-              { name: 'id', type: 'uuid' }
-            ],
-            paramFields: [
-              { name: 'name', type: 'string', description: '', required: false },
-              { name: 'id', type: 'uuid', description: '', required: false }
-            ],
-            mapping: {}
-          },
-          resource: {
-            id: 'test-id-value'
+        wrapper = factory({
+          data: {
+            showAction: true,
+            currentAction: {
+              api: 'testApiNameCase1',
+              loading: false,
+              label: 'labelname',
+              params: [
+                { name: 'id', type: 'uuid' }
+              ],
+              paramFields: [
+                { name: 'name', type: 'string', description: '', required: false },
+                { name: 'id', type: 'uuid', description: '', required: false }
+              ],
+              mapping: {}
+            },
+            resource: {
+              id: 'test-id-value'
+            }
           }
         })
 
@@ -2557,21 +2265,23 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api is called when form has input key exist in currentAction.params, type is boolean and value is undefined', (done) => {
-        wrapper = factory({}, {
-          showAction: true,
-          currentAction: {
-            api: 'testApiNameCase1',
-            loading: false,
-            label: 'labelname',
-            params: [
-              { name: 'column1', type: 'boolean' }
-            ],
-            paramFields: [
-              { name: 'column1', type: 'boolean', description: '', required: false }
-            ],
-            mapping: {}
-          },
-          resource: {}
+        wrapper = factory({
+          data: {
+            showAction: true,
+            currentAction: {
+              api: 'testApiNameCase1',
+              loading: false,
+              label: 'labelname',
+              params: [
+                { name: 'column1', type: 'boolean' }
+              ],
+              paramFields: [
+                { name: 'column1', type: 'boolean', description: '', required: false }
+              ],
+              mapping: {}
+            },
+            resource: {}
+          }
         })
 
         const mockData = {
@@ -2603,21 +2313,23 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api is called when form has input key exist in currentAction.params, type is boolean and value is null', (done) => {
-        wrapper = factory({}, {
-          showAction: true,
-          currentAction: {
-            api: 'testApiNameCase1',
-            loading: false,
-            label: 'labelname',
-            params: [
-              { name: 'column1', type: 'boolean' }
-            ],
-            paramFields: [
-              { name: 'column1', type: 'boolean', description: '', required: false }
-            ],
-            mapping: {}
-          },
-          resource: {}
+        wrapper = factory({
+          data: {
+            showAction: true,
+            currentAction: {
+              api: 'testApiNameCase1',
+              loading: false,
+              label: 'labelname',
+              params: [
+                { name: 'column1', type: 'boolean' }
+              ],
+              paramFields: [
+                { name: 'column1', type: 'boolean', description: '', required: false }
+              ],
+              mapping: {}
+            },
+            resource: {}
+          }
         })
 
         const mockData = {
@@ -2650,25 +2362,27 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api is called when form has input key exist in currentAction.mapping', (done) => {
-        wrapper = factory({}, {
-          showAction: true,
-          currentAction: {
-            api: 'testApiNameCase1',
-            loading: false,
-            label: 'labelname',
-            params: [
-              { name: 'column1', type: 'list' }
-            ],
-            paramFields: [
-              { name: 'column1', type: 'list', description: '', required: false }
-            ],
-            mapping: {
-              column1: {
-                options: ['column-value1', 'column-value2']
+        wrapper = factory({
+          data: {
+            showAction: true,
+            currentAction: {
+              api: 'testApiNameCase1',
+              loading: false,
+              label: 'labelname',
+              params: [
+                { name: 'column1', type: 'list' }
+              ],
+              paramFields: [
+                { name: 'column1', type: 'list', description: '', required: false }
+              ],
+              mapping: {
+                column1: {
+                  options: ['column-value1', 'column-value2']
+                }
               }
-            }
-          },
-          resource: {}
+            },
+            resource: {}
+          }
         })
 
         const mockData = {
@@ -2701,30 +2415,32 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api is called when form has input key not exist in currentAction.mapping, type is list and currentAction.params[input] has id', (done) => {
-        wrapper = factory({}, {
-          showAction: true,
-          currentAction: {
-            api: 'testApiNameCase1',
-            loading: false,
-            label: 'labelname',
-            params: [
-              {
-                name: 'column1',
-                type: 'list',
-                opts: [
-                  { id: 'test-id-1', value: 'test-value-1' },
-                  { id: 'test-id-2', value: 'test-value-2' },
-                  { id: 'test-id-3', value: 'test-value-3' }
-                ]
+        wrapper = factory({
+          data: {
+            showAction: true,
+            currentAction: {
+              api: 'testApiNameCase1',
+              loading: false,
+              label: 'labelname',
+              params: [
+                {
+                  name: 'column1',
+                  type: 'list',
+                  opts: [
+                    { id: 'test-id-1', value: 'test-value-1' },
+                    { id: 'test-id-2', value: 'test-value-2' },
+                    { id: 'test-id-3', value: 'test-value-3' }
+                  ]
+                }
+              ],
+              paramFields: [
+                { name: 'column1', type: 'list', description: '', required: false }
+              ],
+              mapping: {
               }
-            ],
-            paramFields: [
-              { name: 'column1', type: 'list', description: '', required: false }
-            ],
-            mapping: {
-            }
-          },
-          resource: {}
+            },
+            resource: {}
+          }
         })
 
         const mockData = {
@@ -2757,24 +2473,26 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api is called when form has input key has name = account, currentAction.api = createAccount', (done) => {
-        wrapper = factory({}, {
-          showAction: true,
-          currentAction: {
-            api: 'createAccount',
-            loading: false,
-            label: 'labelname',
-            params: [
-              {
-                name: 'account',
-                type: 'string'
-              }
-            ],
-            paramFields: [
-              { name: 'account', type: 'string', description: '', required: false }
-            ],
-            mapping: {}
-          },
-          resource: {}
+        wrapper = factory({
+          data: {
+            showAction: true,
+            currentAction: {
+              api: 'createAccount',
+              loading: false,
+              label: 'labelname',
+              params: [
+                {
+                  name: 'account',
+                  type: 'string'
+                }
+              ],
+              paramFields: [
+                { name: 'account', type: 'string', description: '', required: false }
+              ],
+              mapping: {}
+            },
+            resource: {}
+          }
         })
 
         const mockData = {
@@ -2807,24 +2525,26 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api is called when form has input key has name = keypair, currentAction.api = addAccountToProject', (done) => {
-        wrapper = factory({}, {
-          showAction: true,
-          currentAction: {
-            api: 'addAccountToProject',
-            loading: false,
-            label: 'labelname',
-            params: [
-              {
-                name: 'keypair',
-                type: 'string'
-              }
-            ],
-            paramFields: [
-              { name: 'keypair', type: 'string', description: '', required: false }
-            ],
-            mapping: {}
-          },
-          resource: {}
+        wrapper = factory({
+          data: {
+            showAction: true,
+            currentAction: {
+              api: 'addAccountToProject',
+              loading: false,
+              label: 'labelname',
+              params: [
+                {
+                  name: 'keypair',
+                  type: 'string'
+                }
+              ],
+              paramFields: [
+                { name: 'keypair', type: 'string', description: '', required: false }
+              ],
+              mapping: {}
+            },
+            resource: {}
+          }
         })
 
         const mockData = {
@@ -2857,28 +2577,30 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api is called when form has input key name = (account | keypair), currentAction.api != (addAccountToProject | createAccount)', (done) => {
-        wrapper = factory({}, {
-          showAction: true,
-          currentAction: {
-            api: 'testApiNameCase1',
-            loading: false,
-            label: 'labelname',
-            params: [
-              {
-                name: 'keypair',
-                type: 'string',
-                opts: [
-                  { id: 'test-id-1', name: 'test-name-1' },
-                  { id: 'test-id-2', name: 'test-name-2' }
-                ]
-              }
-            ],
-            paramFields: [
-              { name: 'keypair', type: 'string', description: '', required: false }
-            ],
-            mapping: {}
-          },
-          resource: {}
+        wrapper = factory({
+          data: {
+            showAction: true,
+            currentAction: {
+              api: 'testApiNameCase1',
+              loading: false,
+              label: 'labelname',
+              params: [
+                {
+                  name: 'keypair',
+                  type: 'string',
+                  opts: [
+                    { id: 'test-id-1', name: 'test-name-1' },
+                    { id: 'test-id-2', name: 'test-name-2' }
+                  ]
+                }
+              ],
+              paramFields: [
+                { name: 'keypair', type: 'string', description: '', required: false }
+              ],
+              mapping: {}
+            },
+            resource: {}
+          }
         })
 
         const mockData = {
@@ -2911,24 +2633,26 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api is called when form has input key do not fall under special condition.', (done) => {
-        wrapper = factory({}, {
-          showAction: true,
-          currentAction: {
-            api: 'testApiNameCase1',
-            loading: false,
-            label: 'labelname',
-            params: [
-              {
-                name: 'column1',
-                type: 'string'
-              }
-            ],
-            paramFields: [
-              { name: 'column1', type: 'string', description: '', required: false }
-            ],
-            mapping: {}
-          },
-          resource: {}
+        wrapper = factory({
+          data: {
+            showAction: true,
+            currentAction: {
+              api: 'testApiNameCase1',
+              loading: false,
+              label: 'labelname',
+              params: [
+                {
+                  name: 'column1',
+                  type: 'string'
+                }
+              ],
+              paramFields: [
+                { name: 'column1', type: 'string', description: '', required: false }
+              ],
+              mapping: {}
+            },
+            resource: {}
+          }
         })
 
         const mockData = {
@@ -2961,24 +2685,26 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api is called when currentAction has defaultArgs', (done) => {
-        wrapper = factory({}, {
-          showAction: true,
-          currentAction: {
-            api: 'testApiNameCase1',
-            loading: false,
-            label: 'labelname',
-            params: [
-              { name: 'column1', type: 'string' }
-            ],
-            paramFields: [
-              { name: 'column1', type: 'string', description: '', required: false }
-            ],
-            mapping: {},
-            defaultArgs: {
-              column2: 'test-column2-value'
-            }
-          },
-          resource: {}
+        wrapper = factory({
+          data: {
+            showAction: true,
+            currentAction: {
+              api: 'testApiNameCase1',
+              loading: false,
+              label: 'labelname',
+              params: [
+                { name: 'column1', type: 'string' }
+              ],
+              paramFields: [
+                { name: 'column1', type: 'string', description: '', required: false }
+              ],
+              mapping: {},
+              defaultArgs: {
+                column2: 'test-column2-value'
+              }
+            },
+            resource: {}
+          }
         })
 
         const mockData = {
@@ -3012,29 +2738,31 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check api is called when currentAction.mapping has value and value is function', (done) => {
-        wrapper = factory({}, {
-          showAction: true,
-          currentAction: {
-            api: 'testApiNameCase1',
-            loading: false,
-            label: 'labelname',
-            params: [
-              { name: 'column1', type: 'string' }
-            ],
-            paramFields: [
-              { name: 'column1', type: 'string', description: '', required: false }
-            ],
-            mapping: {
-              column2: {
-                value: (record, params) => {
-                  return record.name
+        wrapper = factory({
+          data: {
+            showAction: true,
+            currentAction: {
+              api: 'testApiNameCase1',
+              loading: false,
+              label: 'labelname',
+              params: [
+                { name: 'column1', type: 'string' }
+              ],
+              paramFields: [
+                { name: 'column1', type: 'string', description: '', required: false }
+              ],
+              mapping: {
+                column2: {
+                  value: (record, params) => {
+                    return record.name
+                  }
                 }
               }
+            },
+            resource: {
+              id: 'test-id-value',
+              name: 'test-name-value'
             }
-          },
-          resource: {
-            id: 'test-id-value',
-            name: 'test-name-value'
           }
         })
 
@@ -3069,14 +2797,14 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check router name when api is called and currentAction.icon = delete and dataView is true', async (done) => {
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter26',
           path: '/test-router-26',
           meta: {
             icon: 'test-router-26'
           }
         }])
-        wrapper = factory()
+        wrapper = factory({ router: router })
         router.push({ name: 'testRouter26' })
 
         const mockData = {
@@ -3122,21 +2850,24 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check pollActionCompletion() and action AddAsyncJob is called when api is called and response have jobId result', async (done) => {
-        store = mockStore.mock(state, actions)
-        wrapper = factory({}, {
-          showAction: true,
-          currentAction: {
-            api: 'testApiNameCase1',
-            loading: false,
-            label: 'labelname',
-            params: [
-              { name: 'column1', type: 'string' }
-            ],
-            paramFields: [
-              { name: 'column1', type: 'string', description: '', required: false }
-            ]
-          },
-          resource: {}
+        store = common.createMockStore(state, actions)
+        wrapper = factory({
+          store: store,
+          data: {
+            showAction: true,
+            currentAction: {
+              api: 'testApiNameCase1',
+              loading: false,
+              label: 'labelname',
+              params: [
+                { name: 'column1', type: 'string' }
+              ],
+              paramFields: [
+                { name: 'column1', type: 'string', description: '', required: false }
+              ]
+            },
+            resource: {}
+          }
         })
 
         const spyPollAction = jest.spyOn(wrapper.vm, 'pollActionCompletion').mockImplementation(() => {})
@@ -3163,21 +2894,23 @@ describe('Views > AutogenView.vue', () => {
       })
 
       it('check $notification when api is called and response have not jobId result', async (done) => {
-        wrapper = factory({}, {
-          showAction: true,
-          currentAction: {
-            api: 'testApiNameCase1',
-            loading: false,
-            label: 'labelname',
-            params: [
-              { name: 'column1', type: 'string' }
-            ],
-            paramFields: [
-              { name: 'column1', type: 'string', description: '', required: false }
-            ]
-          },
-          resource: {
-            name: 'test-name-value'
+        wrapper = factory({
+          data: {
+            showAction: true,
+            currentAction: {
+              api: 'testApiNameCase1',
+              loading: false,
+              label: 'labelname',
+              params: [
+                { name: 'column1', type: 'string' }
+              ],
+              paramFields: [
+                { name: 'column1', type: 'string', description: '', required: false }
+              ]
+            },
+            resource: {
+              name: 'test-name-value'
+            }
           }
         })
 

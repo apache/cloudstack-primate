@@ -15,57 +15,38 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import { mount } from '@vue/test-utils'
-import {
-  localVue,
-  mockI18n,
-  mockStore,
-  mockRouter,
-  mockAxios,
-  decodeHtml
-} from './../../../setup'
+import mockAxios from '../../../mock/mockAxios'
 import ActionButton from '@/components/view/ActionButton'
+import common from '../../../common'
+import mockData from '../../../mockData/ActionButton.mock.json'
 
 jest.mock('axios', () => mockAxios)
 
+let router, store, i18n
+const state = {
+  user: {
+    apis: mockData.apis
+  }
+}
+router = common.createMockRouter(mockData.routes)
+store = common.createMockStore(state)
+i18n = common.createMockI18n('en', mockData.messages)
+
+const factory = (opts = {}) => {
+  router = opts.router || router
+  store = opts.store || store
+  i18n = opts.i18n || i18n
+
+  return common.createFactory(ActionButton, {
+    router,
+    store,
+    i18n,
+    props: opts.props || {},
+    data: opts.data || {}
+  })
+}
+
 describe('Components > View > ActionButton.vue', () => {
-  const routes = [
-    {
-      name: 'testRouter1',
-      path: '/test-router-1',
-      meta: {
-        name: 'systemvm'
-      }
-    },
-    {
-      name: 'testRouter2',
-      path: '/test-router-2',
-      meta: {
-        name: 'test-name'
-      }
-    }
-  ]
-
-  const state = {
-    user: {
-      apis: {
-        'test-api-case-1': {},
-        'test-api-case-2': {},
-        'test-api-case-3': {},
-        'test-api-case-4': {},
-        'test-api-case-5': {},
-        'test-api-case-6': {}
-      }
-    }
-  }
-  const messages = {
-    en: { 'label.action': 'action-en' },
-    de: { 'label.action': 'action-de' }
-  }
-  const router = mockRouter.mock(routes)
-  const store = mockStore.mock(state)
-  const i18n = mockI18n.mock('en', messages)
-
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -73,13 +54,7 @@ describe('Components > View > ActionButton.vue', () => {
   describe('Template', () => {
     it('Button action is show', () => {
       const expected = '<i aria-label="icon: plus" class="anticon anticon-plus">'
-      const wrapper = mount(ActionButton, {
-        localVue,
-        router,
-        i18n,
-        store,
-        propsData: {}
-      })
+      const wrapper = factory()
 
       wrapper.vm.$nextTick(() => {
         const received = wrapper.html()
@@ -105,13 +80,7 @@ describe('Components > View > ActionButton.vue', () => {
         listView: true
       }
 
-      const wrapper = mount(ActionButton, {
-        localVue,
-        router,
-        store,
-        i18n,
-        propsData: propsData
-      })
+      const wrapper = factory({ props: propsData })
 
       wrapper.vm.$nextTick(() => {
         const received = wrapper.html()
@@ -143,17 +112,11 @@ describe('Components > View > ActionButton.vue', () => {
 
       mockAxios.mockImplementation(() => Promise.resolve(dataMock))
 
-      const wrapper = mount(ActionButton, {
-        localVue,
-        router,
-        store,
-        i18n,
-        propsData: propsData
-      })
+      const wrapper = factory({ props: propsData })
 
       wrapper.vm.$nextTick(() => {
         const wrapperHtml = wrapper.html()
-        const received = decodeHtml(wrapperHtml)
+        const received = common.decodeHtml(wrapperHtml)
 
         expect(received).toContain(expected)
 
@@ -183,13 +146,7 @@ describe('Components > View > ActionButton.vue', () => {
 
         mockAxios.mockResolvedValue(dataMock)
 
-        const wrapper = mount(ActionButton, {
-          localVue,
-          router,
-          store,
-          i18n,
-          propsData: propsData
-        })
+        const wrapper = factory({ props: propsData })
 
         setTimeout(() => {
           expect(mockAxios).toHaveBeenCalledTimes(1)
@@ -227,13 +184,7 @@ describe('Components > View > ActionButton.vue', () => {
 
         mockAxios.mockResolvedValue(dataMock)
 
-        const wrapper = mount(ActionButton, {
-          localVue,
-          router,
-          store,
-          i18n,
-          propsData: propsData
-        })
+        const wrapper = factory({ props: propsData })
 
         setTimeout(() => {
           expect(mockAxios).toHaveBeenCalledTimes(1)
@@ -270,13 +221,7 @@ describe('Components > View > ActionButton.vue', () => {
 
         mockAxios.mockImplementationOnce(() => Promise.reject(errorMessage))
 
-        const wrapper = mount(ActionButton, {
-          localVue,
-          router,
-          store,
-          i18n,
-          propsData: propsData
-        })
+        const wrapper = factory({ props: propsData })
 
         setTimeout(() => {
           expect(mockAxios).toHaveBeenCalledTimes(1)
@@ -324,13 +269,7 @@ describe('Components > View > ActionButton.vue', () => {
           }
         }
 
-        const wrapper = mount(ActionButton, {
-          localVue,
-          router,
-          store,
-          i18n,
-          propsData: propsData
-        })
+        const wrapper = factory({ props: propsData })
 
         await wrapper.find('button').trigger('click')
         await wrapper.vm.$nextTick()
@@ -343,12 +282,8 @@ describe('Components > View > ActionButton.vue', () => {
   describe('Watcher', () => {
     describe('handleShowBadge()', () => {
       it('check handleShowBadge() is not called with empty resource', async () => {
-        const wrapper = mount(ActionButton, {
-          localVue,
-          router,
-          i18n,
-          store,
-          propsData: {
+        const wrapper = factory({
+          props: {
             resource: {
               id: 'test-resource-id'
             }
@@ -363,13 +298,11 @@ describe('Components > View > ActionButton.vue', () => {
       })
 
       it('check handleShowBadge() is not called with resource containing id null', async () => {
-        const wrapper = mount(ActionButton, {
-          localVue,
-          router,
-          i18n,
-          store,
-          propsData: {
-            resource: { id: 'test-resource-id' }
+        const wrapper = factory({
+          props: {
+            resource: {
+              id: 'test-resource-id'
+            }
           }
         })
 
@@ -382,12 +315,8 @@ describe('Components > View > ActionButton.vue', () => {
       })
 
       it('check handleShowBadge() is not called with changed resource data', async () => {
-        const wrapper = mount(ActionButton, {
-          localVue,
-          router,
-          i18n,
-          store,
-          propsData: {
+        const wrapper = factory({
+          props: {
             resource: {
               id: 'test-resource-id-1'
             }

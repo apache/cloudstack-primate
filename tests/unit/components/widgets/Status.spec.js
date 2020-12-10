@@ -15,57 +15,25 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import { mount } from '@vue/test-utils'
-import { localVue, mockRouter, mockI18n } from './../../../setup'
 import Status from '@/components/widgets/Status'
+import common from '../../../common'
+import mockData from '../../../mockData/Status.mock.json'
 
-let router
-const messages = {
-  en: {
-    'state.running': 'Running',
-    'state.migrating': 'Migrating',
-    'state.stopped': 'Stopped',
-    'state.starting': 'Starting',
-    'state.stopping': 'Stopping',
-    'state.suspended': 'Suspended',
-    'state.pending': 'Pending',
-    'state.expunging': 'Expunging',
-    'state.error': 'Error',
-    'message.publicip.state.allocated': 'Allocated',
-    'message.publicip.state.created': 'Created',
-    'message.vmsnapshot.state.active': 'Active',
-    'message.vm.state.active': 'Active',
-    'message.volume.state.active': 'Active',
-    'message.guestnetwork.state.active': 'Active',
-    'message.publicip.state.active': 'Active',
-    Created: 'Created',
-    Active: 'Active',
-    Allocated: 'Allocated',
-    Error: 'Error',
-    Expunging: 'Expunging',
-    Suspended: 'Suspended',
-    Pending: 'Pending',
-    Running: 'Running',
-    Starting: 'Starting',
-    Another: 'Another',
-    Ready: 'Ready',
-    Disabled: 'Disabled',
-    Migrating: 'Migrating',
-    Stopping: 'Stopping',
-    Alert: 'Alert',
-    Stopped: 'Stopped'
-  }
-}
-const i18n = mockI18n.mock('en', messages)
-const createRouter = (newRoute = []) => {
-  let routes = []
-  if (!newRoute || Object.keys(newRoute).length === 0) {
-    return mockRouter.mock(routes)
-  }
+let router, i18n
 
-  routes = [...newRoute]
+router = common.createMockRouter()
+i18n = common.createMockI18n('en', mockData.messages)
 
-  return mockRouter.mock(routes)
+const factory = (opts = {}) => {
+  router = opts.router || router
+  i18n = opts.i18n || i18n
+
+  return common.createFactory(Status, {
+    router,
+    i18n,
+    props: opts.props || {},
+    data: opts.data || {}
+  })
 }
 
 describe('Components > Widgets > Status.vue', () => {
@@ -77,14 +45,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: false
         }
 
-        router = createRouter()
-
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
+        const wrapper = factory({ props: propsData })
 
         const received = wrapper.html()
         const expected = '<span class="ant-badge-status-text"></span>'
@@ -98,14 +59,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter()
-
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
+        const wrapper = factory({ props: propsData })
 
         const received = wrapper.html()
         const expected = '<span class="ant-badge-status-text">Running</span>'
@@ -119,14 +73,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter()
-
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
+        const wrapper = factory({ props: propsData })
 
         const received = wrapper.html()
         const expected = '<span class="ant-badge-status-text">Stopped</span>'
@@ -140,14 +87,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter()
-
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
+        const wrapper = factory({ props: propsData })
 
         const received = wrapper.html()
         const expected = '<span class="ant-badge-status-text">Starting</span>'
@@ -161,14 +101,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter()
-
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
+        const wrapper = factory({ props: propsData })
 
         const received = wrapper.html()
         const expected = '<span class="ant-badge-status-text">Stopping</span>'
@@ -182,14 +115,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter()
-
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
+        const wrapper = factory({ props: propsData })
 
         const received = wrapper.html()
         const expected = '<span class="ant-badge-status-text">Suspended</span>'
@@ -203,14 +129,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter()
-
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
+        const wrapper = factory({ props: propsData })
 
         const received = wrapper.html()
         const expected = '<span class="ant-badge-status-text">Pending</span>'
@@ -224,14 +143,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter()
-
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
+        const wrapper = factory({ props: propsData })
 
         const received = wrapper.html()
         const expected = '<span class="ant-badge-status-text">Expunging</span>'
@@ -245,15 +157,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter()
-
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
-
+        const wrapper = factory({ props: propsData })
         const received = wrapper.html()
         const expected = '<span class="ant-badge-status-text">Error</span>'
 
@@ -268,15 +172,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter()
-
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
-
+        const wrapper = factory({ props: propsData })
         const received = wrapper.html()
         const expected = '<span class="ant-badge-status-dot ant-badge-status-default"></span>'
 
@@ -289,15 +185,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter()
-
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
-
+        const wrapper = factory({ props: propsData })
         const received = wrapper.html()
         const expected = '<span class="ant-badge-status-dot ant-badge-status-success"></span>'
 
@@ -310,15 +198,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter()
-
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
-
+        const wrapper = factory({ props: propsData })
         const received = wrapper.html()
         const expected = '<span class="ant-badge-status-dot ant-badge-status-error"></span>'
 
@@ -331,15 +211,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter()
-
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
-
+        const wrapper = factory({ props: propsData })
         const received = wrapper.html()
         const expected = '<span class="ant-badge-status-dot ant-badge-status-processing"></span>'
 
@@ -352,15 +224,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter()
-
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
-
+        const wrapper = factory({ props: propsData })
         const received = wrapper.html()
         const expected = '<span class="ant-badge ant-badge-status ant-badge-not-a-wrapper" style="display: inline-flex;"><span class="ant-badge-status-dot ant-badge-status-error"></span><span class="ant-badge-status-text">Alert</span></span>'
 
@@ -373,15 +237,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter()
-
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
-
+        const wrapper = factory({ props: propsData })
         const received = wrapper.html()
         const expected = '<span class="ant-badge ant-badge-status ant-badge-not-a-wrapper" style="display: inline-flex;"><span class="ant-badge-status-dot ant-badge-status-warning"></span><span class="ant-badge-status-text">Allocated</span></span>'
 
@@ -394,7 +250,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter1',
           path: '/publicip',
           meta: {
@@ -403,13 +259,7 @@ describe('Components > Widgets > Status.vue', () => {
         }])
         router.push({ name: 'testRouter1' })
 
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
-
+        const wrapper = factory({ router: router, props: propsData })
         const received = wrapper.html()
         const expected = '<span class="ant-badge ant-badge-status ant-badge-not-a-wrapper" style="display: inline-flex;"><span class="ant-badge-status-dot ant-badge-status-success"></span><span class="ant-badge-status-text">Allocated</span></span>'
 
@@ -422,15 +272,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter()
-
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
-
+        const wrapper = factory({ props: propsData })
         const received = wrapper.html()
         const expected = '<span class="ant-badge ant-badge-status ant-badge-not-a-wrapper" style="display: inline-flex;"><span class="ant-badge-status-dot ant-badge-status-warning"></span><span class="ant-badge-status-text">Created</span></span>'
 
@@ -445,7 +287,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter1',
           path: '/vmsnapshot',
           meta: {
@@ -454,13 +296,7 @@ describe('Components > Widgets > Status.vue', () => {
         }])
         router.push({ name: 'testRouter1' })
 
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
-
+        const wrapper = factory({ router: router, props: propsData })
         const received = wrapper.html()
         const expected = '<span class="ant-badge ant-badge-status ant-badge-not-a-wrapper" style="display: inline-flex;"><span class="ant-badge-status-dot ant-badge-status-success"></span><span class="ant-badge-status-text">Active</span></span>'
 
@@ -473,7 +309,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter1',
           path: '/vm',
           meta: {
@@ -482,13 +318,7 @@ describe('Components > Widgets > Status.vue', () => {
         }])
         router.push({ name: 'testRouter1' })
 
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
-
+        const wrapper = factory({ router: router, props: propsData })
         const received = wrapper.html()
         const expected = '<span class="ant-badge ant-badge-status ant-badge-not-a-wrapper" style="display: inline-flex;"><span class="ant-badge-status-dot ant-badge-status-success"></span><span class="ant-badge-status-text">Active</span></span>'
 
@@ -501,7 +331,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter1',
           path: '/volume',
           meta: {
@@ -510,13 +340,7 @@ describe('Components > Widgets > Status.vue', () => {
         }])
         router.push({ name: 'testRouter1' })
 
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
-
+        const wrapper = factory({ router: router, props: propsData })
         const received = wrapper.html()
         const expected = '<span class="ant-badge ant-badge-status ant-badge-not-a-wrapper" style="display: inline-flex;"><span class="ant-badge-status-dot ant-badge-status-success"></span><span class="ant-badge-status-text">Active</span></span>'
 
@@ -529,7 +353,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter1',
           path: '/guestnetwork',
           meta: {
@@ -538,13 +362,7 @@ describe('Components > Widgets > Status.vue', () => {
         }])
         router.push({ name: 'testRouter1' })
 
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
-
+        const wrapper = factory({ router: router, props: propsData })
         const received = wrapper.html()
         const expected = '<span class="ant-badge ant-badge-status ant-badge-not-a-wrapper" style="display: inline-flex;"><span class="ant-badge-status-dot ant-badge-status-success"></span><span class="ant-badge-status-text">Active</span></span>'
 
@@ -557,7 +375,7 @@ describe('Components > Widgets > Status.vue', () => {
           displayText: true
         }
 
-        router = createRouter([{
+        router = common.createMockRouter([{
           name: 'testRouter1',
           path: '/publicip',
           meta: {
@@ -566,13 +384,7 @@ describe('Components > Widgets > Status.vue', () => {
         }])
         router.push({ name: 'testRouter1' })
 
-        const wrapper = mount(Status, {
-          localVue,
-          router,
-          i18n,
-          propsData: propsData
-        })
-
+        const wrapper = factory({ router: router, props: propsData })
         const received = wrapper.html()
         const expected = '<span class="ant-badge ant-badge-status ant-badge-not-a-wrapper" style="display: inline-flex;"><span class="ant-badge-status-dot ant-badge-status-success"></span><span class="ant-badge-status-text">Active</span></span>'
 
