@@ -776,36 +776,6 @@ describe('Views > AutogenView.vue', () => {
         })
       })
 
-      it('check $notifyError is called and router path = /exception/403 when api is called with throw error', (done) => {
-        router = common.createMockRouter([{
-          name: 'testRouter23',
-          path: '/test-router-23',
-          meta: {
-            icon: 'test-router-23',
-            permission: ['testApiNameCase1']
-          }
-        }])
-
-        wrapper = factory({ router: router })
-
-        const errorMock = {
-          response: {
-            status: 401
-          },
-          message: 'Error: Unauthorized'
-        }
-        router.push({ name: 'testRouter23' })
-        mockAxios.mockRejectedValue(errorMock)
-
-        setTimeout(() => {
-          expect(mocks.$notifyError).toHaveBeenCalledTimes(1)
-          expect(mocks.$notifyError).toHaveBeenCalledWith(errorMock)
-          expect(router.currentRoute.path).toEqual('/exception/403')
-
-          done()
-        })
-      })
-
       it('check $notifyError is called and router path = /exception/404 when api is called with throw error', (done) => {
         router = common.createMockRouter([{
           name: 'testRouter23',
@@ -1636,7 +1606,7 @@ describe('Views > AutogenView.vue', () => {
         setTimeout(() => {
           expect(spy).toHaveBeenCalled()
           expect(mocks.$notification.info).not.toHaveBeenCalled()
-          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalled()
           expect(mockAxios).toHaveBeenCalledWith({
             url: '/',
             method: 'GET',
@@ -1684,7 +1654,7 @@ describe('Views > AutogenView.vue', () => {
             description: 'test-description',
             duration: 0
           })
-          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalled()
           expect(mockAxios).toHaveBeenCalledWith({
             url: '/',
             method: 'GET',
@@ -1726,7 +1696,7 @@ describe('Views > AutogenView.vue', () => {
 
         setTimeout(() => {
           expect(spy).toHaveBeenCalled()
-          expect(mockAxios).toHaveBeenCalledTimes(1)
+          expect(mockAxios).toHaveBeenCalled()
           expect(mockAxios).toHaveBeenCalledWith({
             url: '/',
             method: 'GET',

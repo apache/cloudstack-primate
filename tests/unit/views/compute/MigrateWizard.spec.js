@@ -303,7 +303,7 @@ describe('Views > compute > MigrateWizard.vue', () => {
             memused: 'test-host-memused',
             select: 'test-host-select'
           }])
-          expect(wrapper.vm.totalCount).toEqual(0)
+          expect(wrapper.vm.totalCount).toEqual(1)
 
           done()
         })

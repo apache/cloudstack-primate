@@ -31,6 +31,7 @@
       "label.of": "of",
       "label.items": "items",
       "label.page": "page",
+      "label.view.console": "view-console-en",
       "error.fetching.async.job.result": "Error encountered while fetching async job result"
     },
     "de": {
@@ -64,6 +65,7 @@
       "label.of": "of",
       "label.items": "items",
       "label.page": "page",
+      "label.view.console": "view-console-de",
       "error.fetching.async.job.result": "Error encountered while fetching async job result"
     }
   },

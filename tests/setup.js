@@ -21,6 +21,7 @@ import Antd from 'ant-design-vue'
 import VueRouter from 'vue-router'
 import VueI18n from 'vue-i18n'
 import VueStorage from 'vue-ls'
+import VueClipboard from 'vue-clipboard2'
 import config from '@/config/settings'
 import { createLocalVue } from '@vue/test-utils'
 import registerRequireContextHook from 'babel-plugin-require-context-hook/register'
@@ -33,6 +34,7 @@ Vue.use(VueStorage, config.storageOptions)
 localVue.use(VueRouter)
 localVue.use(VueI18n)
 localVue.use(Vuex)
+localVue.use(VueClipboard)
 
 registerRequireContextHook()
 
