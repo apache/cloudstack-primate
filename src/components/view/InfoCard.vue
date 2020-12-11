@@ -21,9 +21,12 @@
       <div>
         <div class="resource-details">
           <div class="resource-details__name">
-            <div class="avatar">
+            <div
+              class="avatar"
+              @click="$message.success(`${$t('label.copied.clipboard')} : ${name}`)"
+              v-clipboard:copy="name" >
               <slot name="avatar">
-                <os-logo v-if="resource.ostypeid || resource.ostypename" :osId="resource.ostypeid" :osName="resource.ostypename" size="4x" />
+                <os-logo v-if="resource.ostypeid || resource.ostypename" :osId="resource.ostypeid" :osName="resource.ostypename" size="4x" @update-osname="(name) => this.resource.ostypename = name"/>
                 <a-icon v-else-if="typeof $route.meta.icon ==='string'" style="font-size: 36px" :type="$route.meta.icon" />
                 <a-icon v-else style="font-size: 36px" :component="$route.meta.icon" />
               </slot>
@@ -32,9 +35,8 @@
               <div v-if="['USER.LOGIN', 'USER.LOGOUT', 'ROUTER.HEALTH.CHECKS', 'FIREWALL.CLOSE', 'ALERT.SERVICE.DOMAINROUTER'].includes(resource.name)">{{ $t(resource.name.toLowerCase()) }}</div>
               <div v-else>
                 <h4 class="name">
-                  {{ resource.displayname || resource.displaytext || resource.name || resource.hostname || resource.username || resource.ipaddress || resource.virtualmachinename || resource.templatetype }}
+                  {{ name }}
                 </h4>
-                <console style="margin-left: 10px" :resource="resource" size="default" v-if="resource.id" />
               </div>
             </slot>
           </div>
@@ -70,6 +72,12 @@
               <a-tag v-if="resource.version">
                 {{ resource.version }}
               </a-tag>
+              <a-tooltip placement="right" >
+                <template slot="title">
+                  <span>{{ $t('label.view.console') }}</span>
+                </template>
+                <console style="margin-top: -5px;" :resource="resource" size="default" v-if="resource.id" />
+              </a-tooltip>
             </div>
           </slot>
         </div>
@@ -121,12 +129,12 @@
             <span style="margin-left: 8px">{{ resource.ostypename }}</span>
           </div>
         </div>
-        <div class="resource-detail-item" v-if="(resource.cpunumber && resource.cpuspeed) || resource.cputotal">
+        <div class="resource-detail-item" v-if="('cpunumber' in resource && 'cpuspeed' in resource) || resource.cputotal">
           <div class="resource-detail-item__label">{{ $t('label.cpu') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="appstore" />
-            <span v-if="resource.cpunumber && resource.cpuspeed">{{ resource.cpunumber }} CPU x {{ parseFloat(resource.cpuspeed / 1000.0).toFixed(2) }} Ghz</span>
-            <span v-else-if="resource.cputotal">{{ resource.cputotal }}</span>
+            <span v-if="resource.cputotal">{{ resource.cputotal }}</span>
+            <span v-else>{{ resource.cpunumber }} CPU x {{ parseFloat(resource.cpuspeed / 1000.0).toFixed(2) }} Ghz</span>
           </div>
           <div>
             <span v-if="resource.cpuused">
@@ -136,7 +144,7 @@
                 size="small"
                 status="active"
                 :percent="parseFloat(resource.cpuused)"
-                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('label.cpuusedghz')"
+                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('label.used')"
               />
             </span>
             <span v-if="resource.cpuallocated">
@@ -144,12 +152,12 @@
                 class="progress-bar"
                 size="small"
                 :percent="parseFloat(resource.cpuallocated)"
-                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('label.cpuallocatedghz')"
+                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('label.allocated')"
               />
             </span>
           </div>
         </div>
-        <div class="resource-detail-item" v-if="resource.memory">
+        <div class="resource-detail-item" v-if="'memory' in resource">
           <div class="resource-detail-item__label">{{ $t('label.memory') }}</div>
           <div class="resource-detail-item__details">
             <a-icon type="bulb" />{{ resource.memory + ' ' + $t('label.mb.memory') }}
@@ -161,7 +169,7 @@
                 size="small"
                 status="active"
                 :percent="Number(parseFloat(100.0 * (resource.memorykbs - resource.memoryintfreekbs) / resource.memorykbs).toFixed(2))"
-                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('label.memoryusedgb')"
+                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('label.used')"
               />
             </span>
           </div>
@@ -178,7 +186,7 @@
                 size="small"
                 status="active"
                 :percent="Number(parseFloat(100.0 * parseFloat(resource.memoryusedgb) / parseFloat(resource.memorytotalgb)).toFixed(2))"
-                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('label.memoryusedgb')"
+                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('label.used')"
               />
             </span>
             <span v-if="resource.memoryallocatedgb">
@@ -186,7 +194,7 @@
                 class="progress-bar"
                 size="small"
                 :percent="Number(parseFloat(100.0 * parseFloat(resource.memoryallocatedgb) / parseFloat(resource.memorytotalgb)).toFixed(2))"
-                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('label.memoryallocatedgb')"
+                :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('label.allocated')"
               />
             </span>
           </div>
@@ -207,7 +215,7 @@
                     size="small"
                     status="active"
                     :percent="parseFloat(resource.memoryused)"
-                    :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('label.memoryused')" />
+                    :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('label.used')" />
                 </span>
                 <span
                   v-if="resource.memoryallocated">
@@ -215,7 +223,7 @@
                     class="progress-bar"
                     size="small"
                     :percent="parseFloat(resource.memoryallocated)"
-                    :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('label.memoryallocatedgb')" />
+                    :format="(percent, successPercent) => parseFloat(percent).toFixed(2) + '% ' + $t('label.allocated')" />
                 </span>
               </div>
             </div>
@@ -280,12 +288,28 @@
             </div>
           </div>
         </div>
+        <div class="resource-detail-item" v-if="resource.networks && resource.networks.length > 0">
+          <div class="resource-detail-item__label">{{ $t('label.networks') }}</div>
+          <div class="resource-detail-item__details resource-detail-item__details--start">
+            <div>
+              <div
+                v-for="network in resource.networks"
+                :key="network.id"
+                style="margin-top: 5px;">
+                <a-icon type="api" />{{ network.name }}
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="resource-detail-item" v-if="resource.ipaddress">
           <div class="resource-detail-item__label">{{ $t('label.ip') }}</div>
           <div class="resource-detail-item__details">
-            <a-icon type="environment" />
-            <span v-if="resource.nic && resource.nic.length > 0">{{ resource.nic.filter(e => { return e.ipaddress }).map(e => { return e.ipaddress }).join(', ') }}</span>
-            <span v-else>{{ resource.ipaddress }}</span>
+            <a-icon
+              type="environment"
+              @click="$message.success(`${$t('label.copied.clipboard')} : ${ ipaddress }`)"
+              v-clipboard:copy="ipaddress" />
+            <router-link v-if="resource.ipaddressid" :to="{ path: '/publicip/' + resource.ipaddressid }">{{ ipaddress }}</router-link>
+            <span v-else>{{ ipaddress }}</span>
           </div>
         </div>
         <div class="resource-detail-item" v-if="resource.projectid || resource.projectname">
@@ -689,6 +713,8 @@ export default {
   },
   data () {
     return {
+      name: '',
+      ipaddress: '',
       resourceType: '',
       annotationType: '',
       inputVisible: false,
@@ -709,6 +735,7 @@ export default {
       this.resourceType = this.$route.meta.resourceType
       this.annotationType = ''
       this.showKeys = false
+      this.setData()
 
       switch (this.resourceType) {
         case 'UserVm':
@@ -739,7 +766,19 @@ export default {
       }
     }
   },
+  created () {
+    this.setData()
+  },
   methods: {
+    setData () {
+      this.name = this.resource.displayname || this.resource.displaytext || this.resource.name || this.resource.username ||
+        this.resource.ipaddress || this.resource.virtualmachinename || this.resource.templatetype
+      if (this.resource.nic && this.resource.nic.length > 0) {
+        this.ipaddress = this.resource.nic.filter(e => { return e.ipaddress }).map(e => { return e.ipaddress }).join(', ')
+      } else {
+        this.ipaddress = this.resource.ipaddress
+      }
+    },
     toSize (kb) {
       if (!kb) {
         return '0 KB'
@@ -892,6 +931,7 @@ export default {
       margin-right: 20px;
       overflow: hidden;
       min-width: 50px;
+      cursor: pointer;
 
       img {
         height: 100%;

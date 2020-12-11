@@ -56,7 +56,7 @@
       </div>
 
       <div class="form__item required-field">
-        <div class="form__label"><span class="required">* </span>{{ selectedClusterHyperVisorType === 'VMware' ? $t('label.vcenterhost') : $t('label.hostnamelabel') }}</div>
+        <div class="form__label"><span class="required">* </span>{{ selectedClusterHyperVisorType === 'VMware' ? $t('label.esx.host') : $t('label.hostnamelabel') }}</div>
         <span class="required required-label">{{ $t('label.required') }}</span>
         <a-input v-model="hostname"></a-input>
       </div>
@@ -294,6 +294,8 @@ export default {
         if (host.id && this.showDedicated) {
           this.dedicateHost(host.id)
         }
+        this.parentFetchData()
+        this.$parent.$parent.close()
       }).catch(error => {
         this.$notification.error({
           message: `${this.$t('label.error')} ${error.response.status}`,
@@ -302,8 +304,6 @@ export default {
         })
       }).finally(() => {
         this.loading = false
-        this.parentFetchData()
-        this.$parent.$parent.close()
       })
     },
     dedicateHost (hostId) {

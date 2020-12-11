@@ -32,7 +32,7 @@
       <template slot="action" slot-scope="text, record">
         <span style="margin-right: 5px">
           <a-button
-            :disabled="!('copyTemplate' in $store.getters.apis)"
+            :disabled="!('copyTemplate' in $store.getters.apis && record.isready)"
             icon="copy"
             shape="circle"
             :loading="copyLoading"
@@ -280,12 +280,12 @@ export default {
           loadingMessage: `${this.$t('label.deleting.template')} ${this.resource.name} ${this.$t('label.in.progress')}`,
           catchMessage: this.$t('error.fetching.async.job.result')
         })
+        this.onCloseModal()
+        this.fetchData()
       }).catch(error => {
         this.$notifyError(error)
       }).finally(() => {
         this.deleteLoading = false
-        this.onCloseModal()
-        this.fetchData()
       })
     },
     fetchZoneData () {

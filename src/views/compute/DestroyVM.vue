@@ -30,7 +30,7 @@
               <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
             </a-tooltip>
           </span>
-          <a-switch v-decorator="['expunge']" />
+          <a-switch v-decorator="['expunge']" :auto-focus="true" />
         </a-form-item>
 
         <a-form-item v-if="volumes.length > 0">
@@ -134,14 +134,23 @@ export default {
             jobId,
             loadingMessage: `${this.$t('message.deleting.vm')} ${this.resource.name}`,
             catchMessage: this.$t('error.fetching.async.job.result'),
-            successMessage: `${this.$t('message.success.delete.vm')} ${this.resource.name}`
+            successMessage: `${this.$t('message.success.delete.vm')} ${this.resource.name}`,
+            successMethod: () => {
+              if (this.$route.path.includes('/vm/') && values.expunge) {
+                this.$router.go(-1)
+              } else {
+                this.parentFetchData()
+              }
+            },
+            action: {
+              api: 'destroyVirtualMachine'
+            }
           })
+          this.closeAction()
         }).catch(error => {
           this.$notifyError(error)
         }).finally(() => {
           this.loading = false
-          this.parentFetchData()
-          this.closeAction()
         })
       })
     },

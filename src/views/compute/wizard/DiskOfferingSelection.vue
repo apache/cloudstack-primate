@@ -28,6 +28,7 @@
       :dataSource="tableSource"
       :pagination="false"
       :rowSelection="rowSelection"
+      :customRow="onClickRow"
       size="middle"
       :scroll="{ y: 225 }"
     >
@@ -53,7 +54,7 @@
         :pageSize="options.pageSize"
         :total="rowCount"
         :showTotal="total => `${$t('label.total')} ${total} ${$t('label.items')}`"
-        :pageSizeOptions="['10', '20', '40', '80', '100', '500']"
+        :pageSizeOptions="['10', '20', '40', '80', '100', '200']"
         @change="onChangePage"
         @showSizeChange="onChangePageSize"
         showSizeChanger>
@@ -132,6 +133,9 @@ export default {
   },
   created () {
     this.initDataItem()
+    if (this.items) {
+      this.dataItems = this.dataItems.concat(this.items)
+    }
   },
   computed: {
     tableSource () {
@@ -228,6 +232,16 @@ export default {
       this.options.page = page
       this.options.pageSize = pageSize
       this.$emit('handle-search-filter', this.options)
+    },
+    onClickRow (record) {
+      return {
+        on: {
+          click: () => {
+            this.selectedRowKeys = [record.key]
+            this.$emit('select-disk-offering-item', record.key)
+          }
+        }
+      }
     }
   }
 }
@@ -236,5 +250,9 @@ export default {
 <style lang="less" scoped>
   .ant-table-wrapper {
     margin: 2rem 0;
+  }
+
+  /deep/.ant-table-tbody > tr > td {
+    cursor: pointer;
   }
 </style>

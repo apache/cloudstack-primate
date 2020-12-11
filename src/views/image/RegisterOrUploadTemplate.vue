@@ -62,7 +62,7 @@
           <a-form-item :label="$t('label.name')">
             <a-input
               v-decorator="['name', {
-                rules: [{ required: true, message: `${this.$t('label.upload.template.from.local')}` }]
+                rules: [{ required: true, message: `${this.$t('message.error.required.input')}` }]
               }]"
               :placeholder="apiParams.name.description" />
           </a-form-item>
@@ -198,13 +198,6 @@
             </a-form-item>
           </a-col>
         </a-row>
-        <a-row :gutter="12" v-if="allowed && hyperVMWShow && currentForm !== 'Upload' && deployAsIsSupported">
-          <a-col :md="24" :lg="12">
-            <a-form-item :label="$t('label.deployasis')">
-              <a-switch v-decorator="['deployasis']" />
-            </a-form-item>
-          </a-col>
-        </a-row>
         <a-row :gutter="12" v-if="allowed && hyperXenServerShow">
           <a-form-item v-if="hyperXenServerShow" :label="$t('label.xenservertoolsversion61plus')">
             <a-switch
@@ -219,6 +212,7 @@
             <a-form-item :label="$t('label.rootdiskcontrollertype')">
               <a-select
                 v-decorator="['rootDiskControllerType', {
+                  initialValue: rootDisk.opts.length > 0 ? 'osdefault' : '',
                   rules: [
                     {
                       required: true,
@@ -229,43 +223,6 @@
                 :loading="rootDisk.loading"
                 :placeholder="$t('label.rootdiskcontrollertype')">
                 <a-select-option v-for="opt in rootDisk.opts" :key="opt.id">
-                  {{ opt.name || opt.description }}
-                </a-select-option>
-              </a-select>
-            </a-form-item>
-          </a-col>
-          <a-col :md="24" :lg="12" v-if="hyperVMWShow">
-            <a-form-item :label="$t('label.rootdiskcontrollertype')">
-              <a-select
-                v-decorator="['rootDiskControllerType', {
-                  rules: [
-                    {
-                      required: false,
-                      message: `${this.$t('message.error.select')}`
-                    }
-                  ]
-                }]"
-                :loading="rootDisk.loading"
-                :placeholder="$t('label.rootdiskcontrollertype')">
-                <a-select-option v-for="opt in rootDisk.opts" :key="opt.id">
-                  {{ opt.name || opt.description }}
-                </a-select-option>
-              </a-select>
-            </a-form-item>
-          </a-col>
-          <a-col :md="24" :lg="12" v-if="hyperVMWShow">
-            <a-form-item :label="$t('label.nicadaptertype')">
-              <a-select
-                v-decorator="['nicAdapterType', {
-                  rules: [
-                    {
-                      required: false,
-                      message: `${this.$t('message.error.select')}`
-                    }
-                  ]
-                }]"
-                :placeholder="$t('label.nicadaptertype')">
-                <a-select-option v-for="opt in nicAdapterType.opts" :key="opt.id">
                   {{ opt.name || opt.description }}
                 </a-select-option>
               </a-select>
@@ -290,13 +247,17 @@
             </a-form-item>
           </a-col>
         </a-row>
-        <a-row :gutter="12">
+        <a-row :gutter="12" v-if="!hyperVMWShow">
           <a-col :md="24" :lg="24">
             <a-form-item :label="$t('label.ostypeid')">
               <a-select
                 showSearch
+                optionFilterProp="children"
+                :filterOption="(input, option) => {
+                  return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }"
                 v-decorator="['ostypeid', {
-                  initialValue: defaultOsType,
+                  initialValue: defaultOsId,
                   rules: [
                     {
                       required: true,
@@ -306,7 +267,7 @@
                 }]"
                 :loading="osTypes.loading"
                 :placeholder="apiParams.ostypeid.description">
-                <a-select-option v-for="opt in osTypes.opts" :key="opt.name || opt.description">
+                <a-select-option v-for="opt in osTypes.opts" :key="opt.id">
                   {{ opt.name || opt.description }}
                 </a-select-option>
               </a-select>
@@ -339,8 +300,8 @@
                     </a-checkbox>
                   </a-col>
                   <a-col :span="12">
-                    <a-checkbox value="ispublic">
-                      {{ $t('label.ispublic') }}
+                    <a-checkbox value="requireshvm">
+                      {{ $t('label.requireshvm') }}
                     </a-checkbox>
                   </a-col>
                 </a-row>
@@ -351,8 +312,10 @@
                     </a-checkbox>
                   </a-col>
                   <a-col :span="12">
-                    <a-checkbox value="requireshvm">
-                      {{ $t('label.requireshvm') }}
+                    <a-checkbox
+                      value="ispublic"
+                      v-if="$store.getters.userInfo.roletype === 'Admin' || $store.getters.features.userpublictemplateenabled" >
+                      {{ $t('label.ispublic') }}
                     </a-checkbox>
                   </a-col>
                 </a-row>
@@ -409,6 +372,7 @@ export default {
       format: {},
       osTypes: {},
       defaultOsType: '',
+      defaultOsId: null,
       xenServerProvider: false,
       hyperKVMShow: false,
       hyperXenServerShow: false,
@@ -451,9 +415,6 @@ export default {
     this.fetchData()
   },
   computed: {
-    deployAsIsSupported () {
-      return this.apiConfig.params.filter(x => x.name === 'deployasis').length > 0
-    }
   },
   methods: {
     fetchData () {
@@ -501,15 +462,14 @@ export default {
           message: this.$t('message.success.upload'),
           description: this.$t('message.success.upload.template.description')
         })
+        this.$emit('refresh-data')
+        this.closeAction()
       }).catch(e => {
         this.$notification.error({
           message: this.$t('message.upload.failed'),
           description: `${this.$t('message.upload.template.failed.description')} -  ${e}`,
           duration: 0
         })
-      }).finally(() => {
-        this.$emit('refresh-data')
-        this.closeAction()
       })
     },
     fetchZone () {
@@ -571,6 +531,7 @@ export default {
         const listOsTypes = json.listostypesresponse.ostype
         this.$set(this.osTypes, 'opts', listOsTypes)
         this.defaultOsType = this.osTypes.opts[1].description
+        this.defaultOsId = this.osTypes.opts[1].id
       }).finally(() => {
         this.osTypes.loading = false
       })
@@ -835,12 +796,9 @@ export default {
             }
             params[key] = input.join()
           } else if (key === 'zoneid') {
-            params[key] = values[key]
+            params[key] = input
           } else if (key === 'ostypeid') {
-            const osTypeSelected = this.osTypes.opts.filter(item => item.description === input)
-            if (osTypeSelected && osTypeSelected[0]) {
-              params[key] = osTypeSelected[0].id
-            }
+            params[key] = input
           } else if (key === 'hypervisor') {
             params[key] = this.hyperVisor.opts[input].name
           } else if (key === 'groupenabled') {
@@ -879,12 +837,12 @@ export default {
               message: this.$t('label.register.template'),
               description: `${this.$t('message.success.register.template')} ${params.name}`
             })
+            this.$emit('refresh-data')
+            this.closeAction()
           }).catch(error => {
             this.$notifyError(error)
           }).finally(() => {
             this.loading = false
-            this.$emit('refresh-data')
-            this.closeAction()
           })
         } else {
           this.loading = true

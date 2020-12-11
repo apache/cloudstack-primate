@@ -333,6 +333,28 @@
             }]"
             :placeholder="this.$t('label.networkrate')"/>
         </a-form-item>
+        <a-form-item v-if="apiParams.rootdisksize">
+          <span slot="label">
+            {{ $t('label.root.disk.size') }}
+            <a-tooltip :title="apiParams.rootdisksize.description">
+              <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+            </a-tooltip>
+          </span>
+          <a-input
+            v-decorator="['rootdisksize', {
+              rules: [
+                {
+                  validator: (rule, value, callback) => {
+                    if (value && (isNaN(value) || value <= 0)) {
+                      callback(this.$t('message.error.number'))
+                    }
+                    callback()
+                  }
+                }
+              ]
+            }]"
+            :placeholder="this.$t('label.root.disk.size')"/>
+        </a-form-item>
         <a-form-item :label="$t('label.qostype')">
           <a-radio-group
             v-decorator="['qostype', {
@@ -933,7 +955,7 @@ export default {
           issystem: this.isSystem,
           name: values.name,
           displaytext: values.displaytext,
-          storagetype: values.storageType,
+          storagetype: values.storagetype,
           provisioningtype: values.provisioningtype,
           cachemode: values.cachemode,
           customized: values.offeringtype !== 'fixed',
@@ -961,8 +983,11 @@ export default {
         }
         // custom fields (end)
 
-        if (values.networkRate != null && values.networkRate.length > 0) {
+        if (values.networkrate != null && values.networkrate.length > 0) {
           params.networkrate = values.networkrate
+        }
+        if (values.rootdisksize != null && values.rootdisksize.length > 0) {
+          params.rootdisksize = values.rootdisksize
         }
         if (values.qostype === 'storage') {
           var customIops = values.iscustomizeddiskiops === true
@@ -1061,12 +1086,12 @@ export default {
             ? `${this.$t('message.create.service.offering')}: `
             : `${this.$t('message.create.compute.offering')}: `
           this.$message.success(message + values.name)
+          this.$emit('refresh-data')
+          this.closeAction()
         }).catch(error => {
           this.$notifyError(error)
         }).finally(() => {
           this.loading = false
-          this.$emit('refresh-data')
-          this.closeAction()
         })
       })
     },

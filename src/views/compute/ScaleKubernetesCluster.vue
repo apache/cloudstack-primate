@@ -18,6 +18,10 @@
 <template>
   <div class="form-layout">
     <a-spin :spinning="loading">
+      <a-alert type="warning">
+        <span slot="message" v-html="$t('message.kubernetes.cluster.scale')" />
+      </a-alert>
+      <br />
       <a-form
         :form="form"
         @submit="handleSubmit"
@@ -198,12 +202,12 @@ export default {
               this.$emit('refresh-data')
             }
           })
+          this.closeAction()
+          this.$emit('refresh-data')
         }).catch(error => {
           this.$notifyError(error)
         }).finally(() => {
-          this.$emit('refresh-data')
           this.loading = false
-          this.closeAction()
         })
       })
     },

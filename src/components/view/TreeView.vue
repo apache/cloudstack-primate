@@ -315,6 +315,11 @@ export default {
         if (listDomains[0].id === this.rootKey) {
           const rootDomain = this.generateTreeData(listDomains)
           this.treeViewData = rootDomain
+          this.defaultSelected = []
+          this.defaultSelected.push(this.treeViewData[0].key)
+          this.resource = this.treeViewData[0]
+          this.$emit('change-resource', this.resource)
+
           return
         }
 
@@ -345,6 +350,7 @@ export default {
     reloadTreeData (objData) {
       if (objData && objData[0].isDel) {
         this.treeVerticalData = this.treeVerticalData.filter(item => item.id !== objData[0].id)
+        this.treeVerticalData = this.treeVerticalData.filter(item => item.parentdomainid !== objData[0].id)
       } else {
         // data response from action
         let jsonResponse = this.getResponseJsonData(objData[0])

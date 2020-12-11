@@ -67,18 +67,23 @@
         </a-button>
         <NicsTable :resource="vm" :loading="loading">
           <span slot="actions" slot-scope="record">
-            <a-popconfirm
-              :title="$t('label.set.default.nic')"
-              @confirm="setAsDefault(record.nic)"
-              :okText="$t('label.yes')"
-              :cancelText="$t('label.no')"
-              v-if="!record.nic.isdefault"
-            >
-              <a-button
-                :disabled="!('updateDefaultNicForVirtualMachine' in $store.getters.apis)"
-                icon="check-square"
-                shape="circle" />
-            </a-popconfirm>
+            <a-tooltip placement="bottom">
+              <template slot="title">
+                {{ $t('label.set.default.nic') }}
+              </template>
+              <a-popconfirm
+                :title="$t('label.set.default.nic')"
+                @confirm="setAsDefault(record.nic)"
+                :okText="$t('label.yes')"
+                :cancelText="$t('label.no')"
+                v-if="!record.nic.isdefault"
+              >
+                <a-button
+                  :disabled="!('updateDefaultNicForVirtualMachine' in $store.getters.apis)"
+                  icon="check-square"
+                  shape="circle" />
+              </a-popconfirm>
+            </a-tooltip>
             <a-tooltip placement="bottom" v-if="record.nic.type !== 'L2'">
               <template slot="title">
                 {{ $t('label.change.ip.addess') }}
@@ -87,7 +92,7 @@
                 icon="swap"
                 shape="circle"
                 :disabled="!('updateVmNicIp' in $store.getters.apis)"
-                @click="editIpAddressNic = record.nic.id; showUpdateIpModal = true" />
+                @click="onChangeIPAddress(record)" />
             </a-tooltip>
             <a-tooltip placement="bottom" v-if="record.nic.type !== 'L2'">
               <template slot="title">
@@ -99,19 +104,24 @@
                 :disabled="(!('addIpToNic' in $store.getters.apis) && !('addIpToNic' in $store.getters.apis))"
                 @click="fetchSecondaryIPs(record.nic.id)" />
             </a-tooltip>
-            <a-popconfirm
-              :title="$t('message.network.removenic')"
-              @confirm="removeNIC(record.nic)"
-              :okText="$t('label.yes')"
-              :cancelText="$t('label.no')"
-              v-if="!record.nic.isdefault"
-            >
-              <a-button
-                :disabled="!('removeNicFromVirtualMachine' in $store.getters.apis)"
-                type="danger"
-                icon="delete"
-                shape="circle" />
-            </a-popconfirm>
+            <a-tooltip placement="bottom">
+              <template slot="title">
+                {{ $t('label.action.delete.nic') }}
+              </template>
+              <a-popconfirm
+                :title="$t('message.network.removenic')"
+                @confirm="removeNIC(record.nic)"
+                :okText="$t('label.yes')"
+                :cancelText="$t('label.no')"
+                v-if="!record.nic.isdefault"
+              >
+                <a-button
+                  :disabled="!('removeNicFromVirtualMachine' in $store.getters.apis)"
+                  type="danger"
+                  icon="delete"
+                  shape="circle" />
+              </a-popconfirm>
+            </a-tooltip>
           </span>
         </NicsTable>
       </a-tab-pane>
@@ -177,7 +187,18 @@
 
       <div class="modal-form">
         <p class="modal-form__label">{{ $t('label.publicip') }}:</p>
-        <a-input v-model="editIpAddressValue"></a-input>
+        <a-select
+          showSearch
+          v-if="editNicResource.type==='Shared'"
+          v-model="editIpAddressValue"
+          :loading="listIps.loading">
+          <a-select-option v-for="ip in listIps.opts" :key="ip.ipaddress">
+            {{ ip.ipaddress }}
+          </a-select-option>
+        </a-select>
+        <a-input
+          v-else
+          v-model="editIpAddressValue"></a-input>
       </div>
     </a-modal>
 
@@ -294,7 +315,12 @@ export default {
           dataIndex: 'size',
           scopedSlots: { customRender: 'size' }
         }
-      ]
+      ],
+      editNicResource: {},
+      listIps: {
+        loading: false,
+        opts: []
+      }
     }
   },
   created () {
@@ -344,6 +370,33 @@ export default {
         this.secondaryIPs = response.listnicsresponse.nic[0].secondaryip
       })
     },
+    fetchPublicIps (networkid) {
+      this.listIps.loading = true
+      this.listIps.opts = []
+      api('listPublicIpAddresses', {
+        networkid: networkid,
+        allocatedonly: false,
+        forvirtualnetwork: false
+      }).then(json => {
+        const listPublicIps = json.listpublicipaddressesresponse.publicipaddress || []
+        listPublicIps.forEach(item => {
+          if (item.state === 'Free') {
+            this.listIps.opts.push({
+              ipaddress: item.ipaddress
+            })
+          }
+        })
+        this.listIps.opts.sort(function (a, b) {
+          const currentIp = a.ipaddress.replaceAll('.', '')
+          const nextIp = b.ipaddress.replaceAll('.', '')
+          if (parseInt(currentIp) < parseInt(nextIp)) { return -1 }
+          if (parseInt(currentIp) > parseInt(nextIp)) { return 1 }
+          return 0
+        })
+      }).finally(() => {
+        this.listIps.loading = false
+      })
+    },
     showAddModal () {
       this.showAddNetworkModal = true
       this.listNetworks()
@@ -356,6 +409,14 @@ export default {
       this.addNetworkData.ip = ''
       this.editIpAddressValue = ''
       this.newSecondaryIp = ''
+    },
+    onChangeIPAddress (record) {
+      this.editNicResource = record.nic
+      this.editIpAddressNic = record.nic.id
+      this.showUpdateIpModal = true
+      if (record.nic.type === 'Shared') {
+        this.fetchPublicIps(record.nic.networkid)
+      }
     },
     submitAddNetwork () {
       const params = {}

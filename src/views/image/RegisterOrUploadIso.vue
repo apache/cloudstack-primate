@@ -118,7 +118,7 @@
             }"
             :loading="osTypeLoading"
             :placeholder="apiParams.ostypeid.description">
-            <a-select-option :value="opt.description" v-for="(opt, optIndex) in osTypes" :key="optIndex">
+            <a-select-option :value="opt.id" v-for="(opt, optIndex) in osTypes" :key="optIndex">
               {{ opt.name || opt.description }}
             </a-select-option>
           </a-select>
@@ -131,7 +131,9 @@
             }]" />
         </a-form-item>
 
-        <a-form-item :label="$t('label.ispublic')">
+        <a-form-item
+          :label="$t('label.ispublic')"
+          v-if="$store.getters.userInfo.roletype === 'Admin' || $store.getters.features.userpublictemplateenabled" >
           <a-switch
             v-decorator="['ispublic', {
               initialValue: false
@@ -242,7 +244,7 @@ export default {
         this.osTypes = this.osTypes.concat(listOsTypes)
       }).finally(() => {
         this.osTypeLoading = false
-        this.defaultOsType = this.osTypes[0].description
+        this.defaultOsType = this.osTypes[0].id
       })
     },
     handleRemove (file) {
@@ -287,15 +289,14 @@ export default {
           message: this.$t('message.success.upload'),
           description: this.$t('message.success.upload.description')
         })
+        this.closeAction()
+        this.$emit('refresh-data')
       }).catch(e => {
         this.$notification.error({
           message: this.$t('message.upload.failed'),
           description: `${this.$t('message.upload.iso.failed.description')} -  ${e}`,
           duration: 0
         })
-      }).finally(() => {
-        this.closeAction()
-        this.$emit('refresh-data')
       })
     },
     handleSubmit (e) {
@@ -319,8 +320,7 @@ export default {
               params[key] = zone[0].id
               break
             case 'ostypeid':
-              var os = this.osTypes.filter(osType => osType.description === input)
-              params[key] = os[0].id
+              params[key] = input
               break
             default:
               params[key] = input
@@ -335,12 +335,12 @@ export default {
               message: this.$t('label.action.register.iso'),
               description: `${this.$t('message.success.register.iso')} ${params.name}`
             })
+            this.closeAction()
+            this.$emit('refresh-data')
           }).catch(error => {
             this.$notifyError(error)
           }).finally(() => {
             this.loading = false
-            this.closeAction()
-            this.$emit('refresh-data')
           })
         } else {
           if (this.fileList.length !== 1) {
