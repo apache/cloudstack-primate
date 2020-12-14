@@ -18,15 +18,7 @@
 <template>
   <div class="form-layout">
     <a-tabs defaultActiveKey="1" :animated="false">
-      <a-tab-pane :tab="$t('label.isolated')" key="1" v-if="this.isAdvancedZoneWithoutSGAvailable()">
-        <CreateIsolatedNetworkForm
-          :loading="loading"
-          :resource="resource"
-          @close-action="closeAction"
-          @refresh-data="refreshParent"
-          @refresh="handleRefresh"/>
-      </a-tab-pane>
-      <a-tab-pane :tab="$t('label.l2')" key="2">
+      <a-tab-pane :tab="$t('label.l2')" key="1">
         <CreateL2NetworkForm
           :loading="loading"
           :resource="resource"
@@ -34,8 +26,16 @@
           @refresh-data="refreshParent"
           @refresh="handleRefresh"/>
       </a-tab-pane>
-      <a-tab-pane :tab="$t('label.shared')" key="3" v-if="this.isAdmin()">
+      <a-tab-pane :tab="$t('label.shared')" key="2" v-if="this.isAdmin()">
         <CreateSharedNetworkForm
+          :loading="loading"
+          :resource="resource"
+          @close-action="closeAction"
+          @refresh-data="refreshParent"
+          @refresh="handleRefresh"/>
+      </a-tab-pane>
+      <a-tab-pane :tab="$t('label.isolated')" key="3" v-if="this.isAdvancedZoneWithoutSGAvailable()">
+        <CreateIsolatedNetworkForm
           :loading="loading"
           :resource="resource"
           @close-action="closeAction"

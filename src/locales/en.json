@@ -2222,6 +2222,7 @@
 "label.virtualmachinename": "VM name",
 "label.virtualsize": "Virtual Size",
 "label.vlan": "VLAN/VNI",
+"label.vlan.description": "The VLAN ID of the network",
 "label.vlan.range": "VLAN/VNI Range",
 "label.vlan.range.details": "VLAN Range details",
 "label.vlan.vni.ranges": "VLAN/VNI Range(s)",

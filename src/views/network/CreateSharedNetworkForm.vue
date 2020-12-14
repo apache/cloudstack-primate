@@ -103,7 +103,7 @@
           <a-form-item>
             <span slot="label">
               {{ $t('label.vlan') }}
-              <a-tooltip :title="apiParams.vlan.description" v-if="'vlan' in apiParams">
+              <a-tooltip :title="this.$t('label.vlan.description')">
                 <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
               </a-tooltip>
             </span>
