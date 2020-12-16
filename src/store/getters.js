@@ -33,7 +33,8 @@ const getters = {
   asyncJobIds: state => state.user.asyncJobIds,
   isLdapEnabled: state => state.user.isLdapEnabled,
   cloudian: state => state.user.cloudian,
-  zones: state => state.user.zones
+  zones: state => state.user.zones,
+  server: state => state.app.server
 }
 
 export default getters
