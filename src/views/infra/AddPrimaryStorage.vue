@@ -202,7 +202,7 @@
           </span>
           <a-select
             v-decorator="['provider', { initialValue: providerSelected, rules: [{ required: true, message: `${$t('label.required')}`}] }]"
-            @change="val => this.providerSelected = val">
+            @change="updateProviderAndProtocol">
             <a-select-option :value="provider" v-for="(provider,idx) in providers" :key="idx">
               {{ provider }}
             </a-select-option>
@@ -599,6 +599,14 @@ export default {
       var url = 'powerflex://' + encodeURIComponent(username) + ':' + encodeURIComponent(password) + '@' +
        gateway + '/' + encodeURIComponent(pool)
       return url
+    },
+    updateProviderAndProtocol (value) {
+      if (value === 'PowerFlex') {
+        this.protocols = ['custom']
+      } else {
+        this.fetchHypervisor(null)
+      }
+      this.providerSelected = value
     },
     closeModal () {
       this.$parent.$parent.close()
