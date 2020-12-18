@@ -38,7 +38,7 @@
           <span v-else>{{ resource[item] }}</span>
         </div>
         <div v-else-if="['created', 'sent', 'lastannotated'].includes(item)">
-          {{ $toLocalDate(resource[item]) }}
+          {{ $toLocaleDate(resource[item]) }}
         </div>
         <div v-else>
           {{ resource[item] }}

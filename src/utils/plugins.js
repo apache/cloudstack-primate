@@ -148,9 +148,9 @@ export const notifierPlugin = {
   }
 }
 
-export const toLocalDatePlugin = {
+export const toLocaleDatePlugin = {
   install (Vue) {
-    Vue.prototype.$toLocalDate = function (date) {
+    Vue.prototype.$toLocaleDate = function (date) {
       var milliseconds = Date.parse(date)
       var timezoneOffset = this.$store.getters.timezoneoffset
       // e.g. "Tue, 08 Jun 2010 19:13:49 GMT", "Tue, 25 May 2010 12:07:01 UTC"

@@ -225,10 +225,10 @@
       <status :text="record.readonly ? 'ReadOnly' : 'ReadWrite'" />
     </a>
     <span slot="created" slot-scope="text">
-      {{ $toLocalDate(text) }}
+      {{ $toLocaleDate(text) }}
     </span>
     <span slot="sent" slot-scope="text">
-      {{ $toLocalDate(text) }}
+      {{ $toLocaleDate(text) }}
     </span>
     <div slot="order" slot-scope="text, record" class="shift-btns">
       <a-tooltip placement="top">
