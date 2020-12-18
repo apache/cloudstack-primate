@@ -639,7 +639,7 @@
             <a-list-item slot="renderItem" slot-scope="item">
               <a-comment
                 :content="item.annotation"
-                :datetime="item.created" >
+                :datetime="$toLocalDate(item.created)" >
                 <a-button
                   v-if="'removeAnnotation' in $store.getters.apis"
                   slot="avatar"
