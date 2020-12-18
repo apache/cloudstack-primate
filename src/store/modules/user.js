@@ -46,9 +46,9 @@ const user = {
     SET_TOKEN: (state, token) => {
       state.token = token
     },
-    SET_TIMEZONE_OFFSET: (state, value) => {
-      Vue.ls.set(TIMEZONE_OFFSET, value)
-      state.timezoneoffset = value
+    SET_TIMEZONE_OFFSET: (state, timezoneoffset) => {
+      Vue.ls.set(TIMEZONE_OFFSET, timezoneoffset)
+      state.timezoneoffset = timezoneoffset
     },
     SET_PROJECT: (state, project = {}) => {
       Vue.ls.set(CURRENT_PROJECT, project)
