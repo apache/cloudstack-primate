@@ -34,17 +34,6 @@
       :isFixError="isFixError"
     />
     <static-inputs-form
-      v-if="steps && steps[currentStep].formKey === 'tungsten'"
-      @nextPressed="nextPressed"
-      @backPressed="handleBack"
-      @fieldsChanged="fieldsChanged"
-      @submitLaunchZone="submitLaunchZone"
-      :fields="tungstenFields"
-      :prefillContent="prefillContent"
-      :description="tungstenSetupDescription"
-      :isFixError="isFixError"
-    />
-    <static-inputs-form
       v-if="steps && steps[currentStep].formKey === 'netscaler'"
       @nextPressed="nextPressed"
       @backPressed="handleBack"
@@ -67,6 +56,17 @@
       :isFixError="isFixError"
     />
 
+    <static-inputs-form
+      v-if="steps && steps[currentStep].formKey === 'tungsten'"
+      @nextPressed="nextPressed"
+      @backPressed="handleBack"
+      @fieldsChanged="fieldsChanged"
+      @submitLaunchZone="submitLaunchZone"
+      :fields="tungstenFields"
+      :prefillContent="prefillContent"
+      :description="tungstenSetupDescription"
+      :isFixError="isFixError"
+    />
     <static-inputs-form
       v-if="steps && steps[currentStep].formKey === 'pod'"
       @nextPressed="nextPressed"
