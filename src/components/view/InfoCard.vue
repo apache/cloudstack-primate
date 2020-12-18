@@ -533,7 +533,7 @@
         <div class="resource-detail-item" v-if="resource.created">
           <div class="resource-detail-item__label">{{ $t('label.created') }}</div>
           <div class="resource-detail-item__details">
-            <a-icon type="calendar" />{{ resource.created }}
+            <a-icon type="calendar" />{{ $toLocalDate(resource.created) }}
           </div>
         </div>
       </div>

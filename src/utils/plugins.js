@@ -147,3 +147,17 @@ export const notifierPlugin = {
     }
   }
 }
+
+export const toLocalDatePlugin = {
+  install (Vue) {
+    Vue.prototype.$toLocalDate = function (date) {
+      console.log(date)
+      var milliseconds = Date.parse(date)
+      var timezoneOffset = this.$store.getters.timezoneoffset
+      var s1 = new Date(milliseconds + (timezoneOffset * 60 * 60 * 1000)).toUTCString()
+      var s2 = s1.substring(s1.indexOf(', ') + 2)
+      var s3 = s2.substring(0, s2.length - 4)
+      return s3
+    }
+  }
+}
