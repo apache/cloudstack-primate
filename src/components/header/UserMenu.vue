@@ -35,7 +35,7 @@
         <a-menu-item class="user-menu-item" key="1">
           <a @click="toggleUseBrowserTimezone">
             <a-icon class="user-menu-item-icon" type="clock-circle"/>
-            <span class="user-menu-item-name" style="margin-right: 5px">{{ $t('label.use.browser.timezone') }}</span>
+            <span class="user-menu-item-name" style="margin-right: 5px">{{ $t('label.use.local.timezone') }}</span>
             <a-switch
               :checked="$store.getters.usebrowsertimezone" />
           </a>
