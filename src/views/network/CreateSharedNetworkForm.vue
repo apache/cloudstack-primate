@@ -94,7 +94,7 @@
               }"
               :loading="zoneLoading"
               :placeholder="this.$t('label.physicalnetworkid')"
-              @change="val => { this.handleZoneChange(this.formPhysicalNetworks[val]) }">
+              @change="val => { this.handlePhysicalNetworkChange(this.formPhysicalNetworks[val]) }">
               <a-select-option v-for="(opt, optIndex) in this.formPhysicalNetworks" :key="optIndex">
                 {{ opt.name || opt.description }}
               </a-select-option>
@@ -638,7 +638,7 @@ export default {
         state: 'Enabled'
       }
       if (!this.isObjectEmpty(this.formSelectedPhysicalNetwork) &&
-        !this.isObjectEmpty(this.formSelectedPhysicalNetwork.tags) &&
+        this.formSelectedPhysicalNetwork.tags &&
         this.formSelectedPhysicalNetwork.tags.length > 0) {
         params.tags = this.formSelectedPhysicalNetwork.tags
       }
@@ -650,8 +650,12 @@ export default {
           params.domainid = this.selectedDomain.id
         }
       }
+      this.handleNetworkOfferingChange(null)
+      this.networkOfferings = []
       api('listNetworkOfferings', params).then(json => {
         this.networkOfferings = json.listnetworkofferingsresponse.networkoffering
+      }).catch(error => {
+        this.$notifyError(error)
       }).finally(() => {
         this.networkOfferingLoading = false
         if (this.arrayHasItems(this.networkOfferings)) {
@@ -659,6 +663,10 @@ export default {
             networkofferingid: 0
           })
           this.handleNetworkOfferingChange(this.networkOfferings[0])
+        } else {
+          this.form.setFieldsValue({
+            networkofferingid: null
+          })
         }
       })
     },
