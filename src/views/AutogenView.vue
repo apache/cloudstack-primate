@@ -90,6 +90,7 @@
           :visible="showAction"
           :closable="true"
           :maskClosable="false"
+          :cancelText="$t('label.cancel')"
           style="top: 20px;"
           @cancel="closeAction"
           :confirmLoading="actionLoading"
