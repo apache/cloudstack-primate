@@ -17,13 +17,11 @@
 
 import Menu from 'ant-design-vue/es/menu'
 import Icon from 'ant-design-vue/es/icon'
-import { mixinDevice } from '@/utils/mixin.js'
 
 const { Item, SubMenu } = Menu
 
 export default {
   name: 'SMenu',
-  mixins: [mixinDevice],
   props: {
     menu: {
       type: Array,
@@ -168,7 +166,7 @@ export default {
       )
     },
     handleClickParentMenu (menuItem) {
-      if (this.isDesktop() || this.cachedPath === menuItem.redirect) {
+      if (this.cachedPath === menuItem.redirect) {
         return
       }
       if (menuItem.redirect) {
