@@ -46,9 +46,9 @@
               }
             ]"
             @change="onChangeServer">
-            <a-select-option v-for="server in $config.servers" :key="server.apiBase">
+            <a-select-option v-for="item in $config.servers" :key="item.apiBase">
               <a-icon slot="prefix" type="database" :style="{ color: 'rgba(0,0,0,.25)' }"></a-icon>
-              {{ server.name }}
+              {{ item.name }}
             </a-select-option>
           </a-select>
         </a-form-item>
