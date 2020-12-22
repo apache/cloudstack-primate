@@ -48,7 +48,8 @@ export default {
       openKeys: [],
       selectedKeys: [],
       cachedOpenKeys: [],
-      cachedPath: null
+      cachedPath: null,
+      cacheParentKey: null
     }
   },
   computed: {
@@ -81,6 +82,10 @@ export default {
         this.openKeys = openKeys
         return
       }
+      const openMenu = this.menu.find(menuItem => menuItem.path === this.cacheParentKey)
+      if (openMenu && 'redirect' in openMenu && !this.selectedKeys.includes(openMenu.redirect)) {
+        return
+      }
       const latestOpenKey = openKeys.find(key => !this.openKeys.includes(key))
       if (!this.rootSubmenuKeys.includes(latestOpenKey)) {
         this.openKeys = openKeys
@@ -105,10 +110,7 @@ export default {
         })
       }
 
-      if (openKeys.length === 1) {
-        this.cachedPath = null
-      }
-
+      this.cachedPath = this.selectedKeys[0]
       this.collapsed ? (this.cachedOpenKeys = openKeys) : (this.openKeys = openKeys)
     },
 
@@ -166,13 +168,14 @@ export default {
       }
       typeof (icon) === 'object' ? props.component = icon : props.type = icon
       return (
-        <Icon {... { props, on: on } } />
+        <Icon {... { props, on } } />
       )
     },
     handleClickParentMenu (menuItem) {
       if (this.cachedPath === menuItem.redirect) {
         return
       }
+      this.cacheParentKey = menuItem.path
       if (menuItem.redirect) {
         this.cachedPath = menuItem.redirect
         setTimeout(() => this.$router.push({ path: menuItem.path }))
