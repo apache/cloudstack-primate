@@ -1,8 +1,12 @@
 {
   "servers": [
     {
-      "name": "Manager 1",
+      "name": "Local-Server",
       "apiBase": "/client/api"
+    },
+    {
+      "name": "Primate-QA",
+      "apiBase": "http://primate-qa.cloudstack.cloud:8080/client/api"
     }
   ],
   "docBase": "http://docs.cloudstack.apache.org/en/latest",
