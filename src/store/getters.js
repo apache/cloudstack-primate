@@ -34,6 +34,7 @@ const getters = {
   isLdapEnabled: state => state.user.isLdapEnabled,
   cloudian: state => state.user.cloudian,
   zones: state => state.user.zones,
+  timezoneoffset: state => state.user.timezoneoffset,
   server: state => state.app.server
 }
 

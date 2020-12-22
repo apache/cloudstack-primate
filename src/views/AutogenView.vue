@@ -90,6 +90,7 @@
           :visible="showAction"
           :closable="true"
           :maskClosable="false"
+          :cancelText="$t('label.cancel')"
           style="top: 20px;"
           @cancel="closeAction"
           :confirmLoading="actionLoading"
@@ -123,6 +124,8 @@
         :visible="showAction"
         :closable="true"
         :maskClosable="false"
+        :okText="$t('label.ok')"
+        :cancelText="$t('label.cancel')"
         style="top: 20px;"
         @ok="handleSubmit"
         @cancel="closeAction"
@@ -993,7 +996,7 @@ export default {
         }
 
         const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username ||
-          params.ipaddress || params.virtualmachinename || this.resource.name || this.resource.ipaddress
+          params.ipaddress || params.virtualmachinename || this.resource.name || this.resource.ipaddress || this.resource.id
 
         var hasJobId = false
         this.actionLoading = true

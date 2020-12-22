@@ -100,7 +100,7 @@
       <a-tab-pane key="saml" :disabled="idps.length === 0">
         <span slot="tab">
           <a-icon type="audit" />
-          Single Sign-On
+          {{ $t('label.login.single.signon') }}
         </span>
         <a-form-item>
           <a-select
