@@ -105,6 +105,10 @@ export default {
         })
       }
 
+      if (openKeys.length === 1) {
+        this.cachedPath = null
+      }
+
       this.collapsed ? (this.cachedOpenKeys = openKeys) : (this.openKeys = openKeys)
     },
 
