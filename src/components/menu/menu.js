@@ -48,8 +48,7 @@ export default {
       openKeys: [],
       selectedKeys: [],
       cachedOpenKeys: [],
-      cachedPath: null,
-      cacheParentKey: null
+      cachedPath: null
     }
   },
   computed: {
@@ -80,10 +79,6 @@ export default {
     onOpenChange (openKeys) {
       if (this.mode === 'horizontal') {
         this.openKeys = openKeys
-        return
-      }
-      const openMenu = this.menu.find(menuItem => menuItem.path === this.cacheParentKey)
-      if (openMenu && 'redirect' in openMenu && !this.selectedKeys.includes(openMenu.redirect)) {
         return
       }
       const latestOpenKey = openKeys.find(key => !this.openKeys.includes(key))
@@ -175,7 +170,6 @@ export default {
       if (this.cachedPath === menuItem.redirect) {
         return
       }
-      this.cacheParentKey = menuItem.path
       if (menuItem.redirect) {
         this.cachedPath = menuItem.redirect
         setTimeout(() => this.$router.push({ path: menuItem.path }))
