@@ -27,7 +27,8 @@ import {
   DEFAULT_FIXED_HEADER_HIDDEN,
   DEFAULT_CONTENT_WIDTH_TYPE,
   DEFAULT_MULTI_TAB,
-  SERVER_MANAGER
+  SERVER_MANAGER,
+  USE_BROWSER_TIMEZONE
 } from '@/store/mutation-types'
 
 const app = {
@@ -101,6 +102,10 @@ const app = {
     SET_SERVER: (state, server) => {
       Vue.ls.set(SERVER_MANAGER, server)
       state.server = server
+    },
+    SET_USE_BROWSER_TIMEZONE: (state, bool) => {
+      Vue.ls.set(USE_BROWSER_TIMEZONE, bool)
+      state.usebrowsertimezone = bool
     }
   },
   actions: {
@@ -148,6 +153,9 @@ const app = {
     },
     SetServer ({ commit }, server) {
       commit('SET_SERVER', server)
+    },
+    SetUseBrowserTimezone ({ commit }, bool) {
+      commit('SET_USE_BROWSER_TIMEZONE', bool)
     }
   }
 }
