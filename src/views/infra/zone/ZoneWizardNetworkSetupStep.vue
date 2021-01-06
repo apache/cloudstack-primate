@@ -386,7 +386,7 @@ export default {
       podSetupDescription: 'message.add.pod.during.zone.creation',
       tungstenSetupDescription: 'message.infra.setup.tungsten.description',
       netscalerSetupDescription: 'label.please.specify.netscaler.info',
-      storageTrafficDescription: 'label.zoneWizard.trafficType.management',
+      storageTrafficDescription: 'label.zonewizard.traffictype.storage',
       podFields: [
         {
           title: 'label.pod.name',
