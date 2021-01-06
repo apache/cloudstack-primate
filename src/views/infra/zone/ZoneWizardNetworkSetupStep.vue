@@ -57,6 +57,17 @@
     />
 
     <static-inputs-form
+      v-if="steps && steps[currentStep].formKey === 'tungsten'"
+      @nextPressed="nextPressed"
+      @backPressed="handleBack"
+      @fieldsChanged="fieldsChanged"
+      @submitLaunchZone="submitLaunchZone"
+      :fields="tungstenFields"
+      :prefillContent="prefillContent"
+      :description="tungstenSetupDescription"
+      :isFixError="isFixError"
+    />
+    <static-inputs-form
       v-if="steps && steps[currentStep].formKey === 'pod'"
       @nextPressed="nextPressed"
       @backPressed="handleBack"
@@ -152,12 +163,29 @@ export default {
       return this.zoneType === 'Basic' ||
         (this.zoneType === 'Advanced' && this.sgEnabled)
     },
+    isTungstenZone () {
+      let isTungsten = false
+
+      if (!this.prefillContent.physicalNetworks) {
+        isTungsten = false
+      } else if (this.prefillContent.physicalNetworks[0].isolationMethod === 'TF') {
+        isTungsten = true
+      }
+
+      return isTungsten
+    },
     allSteps () {
       const steps = []
       steps.push({
         title: 'label.physical.network',
         formKey: 'physicalNetwork'
       })
+      if (this.isTungstenZone) {
+        steps.push({
+          title: 'label.tungsten.provider',
+          formKey: 'tungsten'
+        })
+      }
       if (this.havingNetscaler) {
         steps.push({
           title: 'label.netScaler',
@@ -191,6 +219,41 @@ export default {
         return { width: 'calc(100% / ' + this.allSteps.length + ')' }
       }
       return {}
+    },
+    tungstenFields () {
+      const fields = [
+        {
+          title: 'label.tungsten.provider.name',
+          key: 'tungstenName',
+          placeHolder: 'message.installwizard.tooltip.tungsten.provider.name',
+          required: true
+        },
+        {
+          title: 'label.tungsten.provider.hostname',
+          key: 'tungstenHostname',
+          placeHolder: 'message.installwizard.tooltip.tungsten.provider.hostname',
+          required: true
+        },
+        {
+          title: 'label.tungsten.provider.port',
+          key: 'tungstenPort',
+          placeHolder: 'message.installwizard.tooltip.tungsten.provider.port',
+          required: true
+        },
+        {
+          title: 'label.tungsten.provider.vrouter',
+          key: 'tungstenVrouter',
+          placeHolder: 'message.installwizard.tooltip.tungsten.provider.vrouter',
+          required: true
+        },
+        {
+          title: 'label.tungsten.provider.vrouterport',
+          key: 'tungstenVrouterport',
+          placeHolder: 'message.installwizard.tooltip.tungsten.provider.vrouterport',
+          required: true
+        }
+      ]
+      return fields
     },
     netscalerFields () {
       return [
@@ -321,6 +384,7 @@ export default {
         basic: 'message.guest.traffic.in.basic.zone'
       },
       podSetupDescription: 'message.add.pod.during.zone.creation',
+      tungstenSetupDescription: 'message.infra.setup.tungsten.description',
       netscalerSetupDescription: 'label.please.specify.netscaler.info',
       storageTrafficDescription: 'label.zonewizard.traffictype.storage',
       podFields: [
