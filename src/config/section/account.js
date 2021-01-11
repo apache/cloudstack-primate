@@ -160,15 +160,7 @@ export default {
       label: 'label.add.certificate',
       dataView: true,
       args: ['name', 'certificate', 'privatekey', 'certchain', 'password', 'account', 'domainid'],
-      show: (record) => { return record.state === 'enabled' },
-      mapping: {
-        account: {
-          value: (record) => { return record.name }
-        },
-        domainid: {
-          value: (record) => { return record.domainid }
-        }
-      }
+      show: (record) => { return record.state === 'enabled' }
     },
     {
       api: 'deleteAccount',
