@@ -153,14 +153,15 @@ export default {
         hostid: this.selectedHost.id,
         virtualmachineid: this.resource.id
       }).then(response => {
+        const jobid = this.selectedHost.requiresStorageMotion ? response.migratevirtualmachinewithvolumeresponse.jobid : response.migratevirtualmachineresponse.jobid
         this.$store.dispatch('AddAsyncJob', {
           title: `${this.$t('label.migrating')} ${this.resource.name}`,
-          jobid: response.migratevirtualmachineresponse.jobid,
+          jobid: jobid,
           description: this.resource.name,
           status: 'progress'
         })
         this.$pollJob({
-          jobId: response.migratevirtualmachineresponse.jobid,
+          jobId: jobid,
           successMessage: `${this.$t('message.success.migrating')} ${this.resource.name}`,
           successMethod: () => {
             this.$emit('close-action')
@@ -177,8 +178,13 @@ export default {
         })
         this.$emit('close-action')
       }).catch(error => {
-        console.error(error)
-        this.$message.error(`${this.$t('message.migrating.vm.to.host.failed')} ${this.selectedHost.name}`)
+        this.$notification.error({
+          message: this.$t('message.request.failed'),
+          description: (error.response && error.response.headers && error.response.headers['x-description']) || error.message,
+          duration: 0
+        })
+      }).finally(() => {
+        this.loading = false
       })
     },
     handleChangePage (page, pageSize) {
