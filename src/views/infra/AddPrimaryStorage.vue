@@ -593,14 +593,15 @@ export default {
         } else if (values.protocol === 'SMB') {
           url = this.smbURL(server, path)
           const smbParams = {
-            user: values.smbUsername,
-            password: values.smbPassword,
+            user: encodeURIComponent(values.smbUsername),
+            password: encodeURIComponent(values.smbPassword),
             domain: values.smbDomain
           }
           Object.keys(smbParams).forEach((key, index) => {
             params['details[' + index.toString() + '].' + key] = smbParams[key]
           })
         } else if (values.protocol === 'PreSetup' && this.hypervisorType !== 'VMware') {
+          server = 'localhost'
           url = this.presetupURL(server, path)
         } else if (values.protocol === 'PreSetup' && this.hypervisorType === 'VMware') {
           path = values.vCenterDataCenter
@@ -619,6 +620,7 @@ export default {
         } else if (values.protocol === 'ocfs2') {
           url = this.ocfs2URL(server, path)
         } else if (values.protocol === 'SharedMountPoint') {
+          server = 'localhost'
           url = this.SharedMountPointURL(server, path)
         } else if (values.protocol === 'CLVM') {
           var vg = (values.volumegroup.substring(0, 1) !== '/') ? ('/' + values.volumegroup) : values.volumegroup
@@ -667,7 +669,7 @@ export default {
           params.tags = this.selectedTags.join()
         }
         this.loading = true
-        api('createStoragePool', params).then(json => {
+        api('createStoragePool', {}, 'POST', params).then(json => {
           this.$notification.success({
             message: this.$t('label.add.primary.storage'),
             description: this.$t('label.add.primary.storage')

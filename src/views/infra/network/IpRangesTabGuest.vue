@@ -58,6 +58,7 @@
       :closable="true"
       :maskClosable="false"
       :footer="null"
+      :cancelText="$t('label.cancel')"
       @cancel="showCreateForm = false"
       centered
       width="auto">
@@ -138,6 +139,7 @@ export default {
       this.componentLoading = true
       api('listNetworks', {
         zoneid: this.resource.zoneid,
+        physicalnetworkid: this.resource.id,
         page: this.page,
         pagesize: this.pageSize
       }).then(response => {

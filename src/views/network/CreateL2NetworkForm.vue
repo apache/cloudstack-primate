@@ -304,7 +304,7 @@ export default {
     fetchZoneData () {
       this.zones = []
       const params = {}
-      if (this.resource.zoneid) {
+      if (this.resource.zoneid && this.$route.name === 'deployVirtualMachine') {
         params.id = this.resource.zoneid
       }
       params.listAll = true
@@ -387,6 +387,8 @@ export default {
       }
       api('listNetworkOfferings', params).then(json => {
         this.networkOfferings = json.listnetworkofferingsresponse.networkoffering
+      }).catch(error => {
+        this.$notifyError(error)
       }).finally(() => {
         this.networkOfferingLoading = false
         if (this.arrayHasItems(this.networkOfferings)) {
