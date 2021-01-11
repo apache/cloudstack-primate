@@ -32,6 +32,9 @@ mocks = {
   $message: {
     error: jest.fn((message) => {})
   },
+  $notification: {
+    error: jest.fn((message) => {})
+  },
   $pollJob: jest.fn((obj) => {
     switch (obj.jobId) {
       case 'test-job-id-case-1':
@@ -431,9 +434,9 @@ describe('Views > compute > MigrateWizard.vue', () => {
         })
       })
 
-      it('check store dispatch `AddAsyncJob` and $pollJob have successMethod() is called', async (done) => {
+      it('check store dispatch `AddAsyncJob` and $pollJob have successMethod() is called with requiresStorageMotion is true', async (done) => {
         const mockData = {
-          migratevirtualmachineresponse: {
+          migratevirtualmachinewithvolumeresponse: {
             jobid: 'test-job-id-case-1'
           },
           queryasyncjobresultresponse: {
@@ -474,10 +477,53 @@ describe('Views > compute > MigrateWizard.vue', () => {
         })
       })
 
-      it('check store dispatch `AddAsyncJob` and $pollJob have errorMethod() is called', async (done) => {
+      it('check store dispatch `AddAsyncJob` and $pollJob have successMethod() is called with requiresStorageMotion is false', async (done) => {
         const mockData = {
           migratevirtualmachineresponse: {
             jobid: 'test-job-id-case-2'
+          },
+          queryasyncjobresultresponse: {
+            jobstatus: 1,
+            jobresult: {
+              name: 'test-name-value'
+            }
+          }
+        }
+        wrapper = factory({
+          props: {
+            resource: {
+              id: 'test-resource-id',
+              name: 'test-resource-name'
+            }
+          },
+          data: {
+            selectedHost: {
+              requiresStorageMotion: false,
+              id: 'test-host-id',
+              name: 'test-host-name'
+            }
+          }
+        })
+        jest.spyOn(wrapper.vm, 'fetchData').mockImplementation(() => {})
+
+        mockAxios.mockResolvedValue(mockData)
+
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.submitForm()
+
+        setTimeout(() => {
+          expect(actions.AddAsyncJob).toHaveBeenCalled()
+          expect(mocks.$pollJob).toHaveBeenCalled()
+          expect(wrapper.emitted()['close-action'][0]).toEqual([])
+
+          done()
+        })
+      })
+
+      it('check store dispatch `AddAsyncJob` and $pollJob have errorMethod() is called', async (done) => {
+        const mockData = {
+          migratevirtualmachinewithvolumeresponse: {
+            jobid: 'test-job-id-case-3'
           },
           queryasyncjobresultresponse: {
             jobstatus: 2,
@@ -519,8 +565,8 @@ describe('Views > compute > MigrateWizard.vue', () => {
 
       it('check store dispatch `AddAsyncJob` and $pollJob have catchMethod() is called', async (done) => {
         const mockData = {
-          migratevirtualmachineresponse: {
-            jobid: 'test-job-id-case-3'
+          migratevirtualmachinewithvolumeresponse: {
+            jobid: 'test-job-id-case-4'
           }
         }
         wrapper = factory({
@@ -555,7 +601,9 @@ describe('Views > compute > MigrateWizard.vue', () => {
       })
 
       it('check $message.error is called when api is called with throw error', async (done) => {
-        const mockError = 'Error: throw error message'
+        const mockError = {
+          message: 'Error: throw error message'
+        }
 
         wrapper = factory({
           props: {
@@ -577,8 +625,12 @@ describe('Views > compute > MigrateWizard.vue', () => {
         await wrapper.vm.submitForm()
 
         setTimeout(() => {
-          expect(mocks.$message.error).toHaveBeenCalled()
-          expect(mocks.$message.error).toHaveBeenCalledWith(`${i18n.t('message.migrating.vm.to.host.failed')} test-host-name`)
+          expect(mocks.$notification.error).toHaveBeenCalled()
+          expect(mocks.$notification.error).toHaveBeenCalledWith({
+            message: i18n.t('message.request.failed'),
+            description: 'Error: throw error message',
+            duration: 0
+          })
 
           done()
         })
