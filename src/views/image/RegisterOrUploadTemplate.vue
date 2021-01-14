@@ -198,13 +198,6 @@
             </a-form-item>
           </a-col>
         </a-row>
-        <a-row :gutter="12" v-if="hyperVMWShow && currentForm === 'Create' && deployAsIsSupported">
-          <a-col :md="24" :lg="12">
-            <a-form-item :label="$t('label.deployasis')">
-              <a-switch v-decorator="['deployasis']" @change="handleChangeDeployAsIs" />
-            </a-form-item>
-          </a-col>
-        </a-row>
         <a-row :gutter="12" v-if="allowed && hyperXenServerShow">
           <a-form-item v-if="hyperXenServerShow" :label="$t('label.xenservertoolsversion61plus')">
             <a-switch
@@ -219,6 +212,7 @@
             <a-form-item :label="$t('label.rootdiskcontrollertype')">
               <a-select
                 v-decorator="['rootDiskControllerType', {
+                  initialValue: rootDisk.opts.length > 0 ? 'osdefault' : '',
                   rules: [
                     {
                       required: true,
@@ -229,43 +223,6 @@
                 :loading="rootDisk.loading"
                 :placeholder="$t('label.rootdiskcontrollertype')">
                 <a-select-option v-for="opt in rootDisk.opts" :key="opt.id">
-                  {{ opt.name || opt.description }}
-                </a-select-option>
-              </a-select>
-            </a-form-item>
-          </a-col>
-          <a-col :md="24" :lg="12" v-if="hyperVMWShow && !deployAsIsSelected">
-            <a-form-item :label="$t('label.rootdiskcontrollertype')">
-              <a-select
-                v-decorator="['rootDiskControllerType', {
-                  rules: [
-                    {
-                      required: false,
-                      message: `${this.$t('message.error.select')}`
-                    }
-                  ]
-                }]"
-                :loading="rootDisk.loading"
-                :placeholder="$t('label.rootdiskcontrollertype')">
-                <a-select-option v-for="opt in rootDisk.opts" :key="opt.id">
-                  {{ opt.name || opt.description }}
-                </a-select-option>
-              </a-select>
-            </a-form-item>
-          </a-col>
-          <a-col :md="24" :lg="12" v-if="hyperVMWShow && !deployAsIsSelected">
-            <a-form-item :label="$t('label.nicadaptertype')">
-              <a-select
-                v-decorator="['nicAdapterType', {
-                  rules: [
-                    {
-                      required: false,
-                      message: `${this.$t('message.error.select')}`
-                    }
-                  ]
-                }]"
-                :placeholder="$t('label.nicadaptertype')">
-                <a-select-option v-for="opt in nicAdapterType.opts" :key="opt.id">
                   {{ opt.name || opt.description }}
                 </a-select-option>
               </a-select>
@@ -290,13 +247,17 @@
             </a-form-item>
           </a-col>
         </a-row>
-        <a-row :gutter="12" v-if="!deployAsIsSelected">
+        <a-row :gutter="12" v-if="!hyperVMWShow">
           <a-col :md="24" :lg="24">
-            <a-form-item :label="$t('label.ostypeid')" v-if="!deployAsIsSelected">
+            <a-form-item :label="$t('label.ostypeid')">
               <a-select
                 showSearch
+                optionFilterProp="children"
+                :filterOption="(input, option) => {
+                  return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }"
                 v-decorator="['ostypeid', {
-                  initialValue: defaultOsType,
+                  initialValue: defaultOsId,
                   rules: [
                     {
                       required: true,
@@ -306,7 +267,7 @@
                 }]"
                 :loading="osTypes.loading"
                 :placeholder="apiParams.ostypeid.description">
-                <a-select-option v-for="opt in osTypes.opts" :key="opt.name || opt.description">
+                <a-select-option v-for="opt in osTypes.opts" :key="opt.id">
                   {{ opt.name || opt.description }}
                 </a-select-option>
               </a-select>
@@ -422,7 +383,6 @@ export default {
       rootAdmin: 'Admin',
       allowed: false,
       allowDirectDownload: false,
-      deployAsIsSelected: false,
       uploadParams: null,
       currentForm: this.action.currentAction.icon === 'plus' ? 'Create' : 'Upload'
     }
@@ -455,9 +415,6 @@ export default {
     this.fetchData()
   },
   computed: {
-    deployAsIsSupported () {
-      return this.apiConfig.params.filter(x => x.name === 'deployasis').length > 0
-    }
   },
   methods: {
     fetchData () {
@@ -808,7 +765,6 @@ export default {
       this.hyperVMWShow = false
       this.hyperKVMShow = false
       this.allowDirectDownload = false
-      this.deployAsIsSelected = false
 
       this.resetSelect()
       this.fetchFormat(hyperVisor)
@@ -823,9 +779,6 @@ export default {
           return
         }
         let params = {}
-        if (this.deployAsIsSelected) {
-          params.ostypeid = this.defaultOsId
-        }
         for (const key in values) {
           const input = values[key]
 
@@ -843,12 +796,9 @@ export default {
             }
             params[key] = input.join()
           } else if (key === 'zoneid') {
-            params[key] = values[key]
+            params[key] = input
           } else if (key === 'ostypeid') {
-            const osTypeSelected = this.osTypes.opts.filter(item => item.description === input)
-            if (osTypeSelected && osTypeSelected[0]) {
-              params[key] = osTypeSelected[0].id
-            }
+            params[key] = input
           } else if (key === 'hypervisor') {
             params[key] = this.hyperVisor.opts[input].name
           } else if (key === 'groupenabled') {
@@ -916,9 +866,6 @@ export default {
     },
     handleChangeDirect (checked) {
       this.allowDirectDownload = checked
-    },
-    handleChangeDeployAsIs (checked) {
-      this.deployAsIsSelected = checked
     },
     validZone (zones) {
       const allZoneExists = zones.filter(zone => zone === this.$t('label.all.zone'))

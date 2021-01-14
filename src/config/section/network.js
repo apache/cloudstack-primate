@@ -29,8 +29,9 @@ export default {
       icon: 'apartment',
       permission: ['listNetworks'],
       resourceType: 'Network',
-      columns: ['name', 'state', 'type', 'cidr', 'ip6cidr', 'broadcasturi', 'account', 'zonename'],
+      columns: ['name', 'state', 'type', 'vpcname', 'cidr', 'ip6cidr', 'broadcasturi', 'domain', 'account', 'zonename'],
       details: ['name', 'id', 'description', 'type', 'traffictype', 'vpcid', 'vlan', 'broadcasturi', 'cidr', 'ip6cidr', 'netmask', 'gateway', 'aclname', 'ispersistent', 'restartrequired', 'reservediprange', 'redundantrouter', 'networkdomain', 'zonename', 'account', 'domain'],
+      filters: ['all', 'isolated', 'shared', 'l2'],
       searchFilters: ['keyword', 'zoneid', 'domainid', 'account', 'tags'],
       related: [{
         name: 'vm',
@@ -310,7 +311,7 @@ export default {
       hidden: true,
       permission: ['listPrivateGateways'],
       columns: ['ipaddress', 'state', 'gateway', 'netmask', 'account'],
-      details: ['ipaddress', 'gateway', 'netmask', 'vlan', 'sourcenatsupported', 'aclid', 'account', 'domain', 'zone'],
+      details: ['ipaddress', 'gateway', 'netmask', 'vlan', 'sourcenatsupported', 'aclname', 'account', 'domain', 'zone'],
       tabs: [{
         name: 'details',
         component: () => import('@/components/view/DetailsTab.vue')

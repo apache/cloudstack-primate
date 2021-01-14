@@ -47,7 +47,7 @@
                   :placeholder="$t('label.filterby')"
                   :value="$route.query.filter || (projectView && $route.name === 'vm' ||
                     ['Admin', 'DomainAdmin'].includes($store.getters.userInfo.roletype) && ['vm', 'iso', 'template'].includes($route.name)
-                    ? 'all' : 'self')"
+                    ? 'all' : ['guestnetwork'].includes($route.name) ? 'all' : 'self')"
                   style="min-width: 100px; margin-left: 10px"
                   @change="changeFilter">
                   <a-icon slot="suffixIcon" type="filter" />
@@ -90,6 +90,7 @@
           :visible="showAction"
           :closable="true"
           :maskClosable="false"
+          :cancelText="$t('label.cancel')"
           style="top: 20px;"
           @cancel="closeAction"
           :confirmLoading="actionLoading"
@@ -123,6 +124,8 @@
         :visible="showAction"
         :closable="true"
         :maskClosable="false"
+        :okText="$t('label.ok')"
+        :cancelText="$t('label.cancel')"
         style="top: 20px;"
         @ok="handleSubmit"
         @cancel="closeAction"
@@ -506,6 +509,12 @@ export default {
         params.isofilter = 'all'
       }
       if (Object.keys(this.$route.query).length > 0) {
+        if ('page' in this.$route.query) {
+          this.page = Number(this.$route.query.page)
+        }
+        if ('pagesize' in this.$route.query) {
+          this.pagesize = Number(this.$route.query.pagesize)
+        }
         Object.assign(params, this.$route.query)
       }
       delete params.q
@@ -994,16 +1003,20 @@ export default {
           }
         }
 
-        const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username || params.ipaddress || params.virtualmachinename || this.resource.name
+        const resourceName = params.displayname || params.displaytext || params.name || params.hostname || params.username ||
+          params.ipaddress || params.virtualmachinename || this.resource.name || this.resource.ipaddress || this.resource.id
 
         var hasJobId = false
         this.actionLoading = true
-        api(action.api, params).then(json => {
-          const handleResponse = this.handleResponse(json, resourceName, action)
-          if (handleResponse instanceof Promise) {
-            hasJobId = true
-          }
-          if ((action.icon === 'delete' || ['archiveEvents', 'archiveAlerts'].includes(action.api)) && this.dataView) {
+        let args = null
+        if (action.post) {
+          args = [action.api, {}, 'POST', params]
+        } else {
+          args = [action.api, params]
+        }
+        api(...args).then(json => {
+          hasJobId = this.handleResponse(json, resourceName, action)
+          if ((action.icon === 'delete' || ['archiveEvents', 'archiveAlerts', 'unmanageVirtualMachine'].includes(action.api)) && this.dataView) {
             this.$router.go(-1)
           } else {
             if (!hasJobId) {
@@ -1034,6 +1047,12 @@ export default {
         query.templatefilter = filter
       } else if (this.$route.name === 'iso') {
         query.isofilter = filter
+      } else if (this.$route.name === 'guestnetwork') {
+        if (filter === 'all') {
+          delete query.type
+        } else {
+          query.type = filter
+        }
       } else if (this.$route.name === 'vm') {
         if (filter === 'self') {
           query.account = this.$store.getters.userInfo.account

@@ -98,24 +98,10 @@ export default {
           docHelp: 'adminguide/virtual_machines.html#stopping-and-starting-vms',
           dataView: true,
           groupAction: true,
+          popup: true,
           groupMap: (selection) => { return selection.map(x => { return { id: x } }) },
           show: (record) => { return ['Stopped'].includes(record.state) },
-          args: (record, store, group) => {
-            var fields = []
-            if (group) {
-              return fields
-            }
-            if (store.userInfo.roletype === 'Admin') {
-              fields = ['podid', 'clusterid', 'hostid']
-            }
-            if (record.hypervisor === 'VMware') {
-              if (store.apis.startVirtualMachine.params.filter(x => x.name === 'bootintosetup').length > 0) {
-                fields.push('bootintosetup')
-              }
-            }
-            return fields
-          },
-          response: (result) => { return result.virtualmachine && result.virtualmachine.password ? `Password of the VM is ${result.virtualmachine.password}` : null }
+          component: () => import('@/views/compute/StartVirtualMachine.vue')
         },
         {
           api: 'stopVirtualMachine',
@@ -177,6 +163,15 @@ export default {
               value: (record, params) => { return record.id }
             }
           }
+        },
+        {
+          api: 'createSnapshot',
+          icon: ['fas', 'camera-retro'],
+          label: 'label.action.vmstoragesnapshot.create',
+          docHelp: 'adminguide/virtual_machines.html#virtual-machine-snapshots',
+          dataView: true,
+          popup: true,
+          component: () => import('@/views/compute/CreateSnapshotWizard.vue')
         },
         {
           api: 'assignVirtualMachineToBackupOffering',
@@ -293,14 +288,8 @@ export default {
           docHelp: 'adminguide/virtual_machines.html#moving-vms-between-hosts-manual-live-migration',
           dataView: true,
           show: (record, store) => { return ['Running'].includes(record.state) && ['Admin'].includes(store.userInfo.roletype) },
-          component: () => import('@/views/compute/MigrateWizard'),
           popup: true,
-          args: ['hostid', 'virtualmachineid'],
-          mapping: {
-            virtualmachineid: {
-              value: (record) => { return record.id }
-            }
-          }
+          component: () => import('@/views/compute/MigrateWizard')
         },
         {
           api: 'migrateVirtualMachine',
@@ -438,6 +427,7 @@ export default {
           api: 'startKubernetesCluster',
           icon: 'caret-right',
           label: 'label.kubernetes.cluster.start',
+          message: 'message.kubernetes.cluster.start',
           docHelp: 'plugins/cloudstack-kubernetes-service.html#starting-a-stopped-kubernetes-cluster',
           dataView: true,
           show: (record) => { return ['Stopped'].includes(record.state) }
@@ -446,6 +436,7 @@ export default {
           api: 'stopKubernetesCluster',
           icon: 'poweroff',
           label: 'label.kubernetes.cluster.stop',
+          message: 'message.kubernetes.cluster.stop',
           docHelp: 'plugins/cloudstack-kubernetes-service.html#stopping-kubernetes-cluster',
           dataView: true,
           show: (record) => { return !['Stopped', 'Destroyed', 'Destroying'].includes(record.state) }
@@ -454,6 +445,7 @@ export default {
           api: 'scaleKubernetesCluster',
           icon: 'swap',
           label: 'label.kubernetes.cluster.scale',
+          message: 'message.kubernetes.cluster.scale',
           docHelp: 'plugins/cloudstack-kubernetes-service.html#scaling-kubernetes-cluster',
           dataView: true,
           show: (record) => { return ['Created', 'Running'].includes(record.state) },
@@ -464,6 +456,7 @@ export default {
           api: 'upgradeKubernetesCluster',
           icon: 'plus-circle',
           label: 'label.kubernetes.cluster.upgrade',
+          message: 'message.kubernetes.cluster.upgrade',
           docHelp: 'plugins/cloudstack-kubernetes-service.html#upgrading-kubernetes-cluster',
           dataView: true,
           show: (record) => { return ['Created', 'Running'].includes(record.state) },
@@ -474,6 +467,7 @@ export default {
           api: 'deleteKubernetesCluster',
           icon: 'delete',
           label: 'label.kubernetes.cluster.delete',
+          message: 'message.kubernetes.cluster.delete',
           docHelp: 'plugins/cloudstack-kubernetes-service.html#deleting-kubernetes-cluster',
           dataView: true,
           show: (record) => { return !['Destroyed', 'Destroying'].includes(record.state) }
