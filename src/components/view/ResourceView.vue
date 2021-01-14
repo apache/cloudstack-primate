@@ -37,7 +37,7 @@
           v-else
           style="width: 100%"
           :animated="false"
-          :defaultActiveKey="activeTab || tabs[0].name"
+          :activeKey="activeTab || tabs[0].name"
           @change="onTabChange" >
           <a-tab-pane
             v-for="tab in tabs"
@@ -106,10 +106,13 @@ export default {
           }
         })
       }
+    },
+    $route: function (newItem, oldItem) {
+      this.setActiveTab()
     }
   },
-  created () {
-    this.activeTab = this.$route.query.tab ? this.$route.query.tab : ''
+  mounted () {
+    this.setActiveTab()
   },
   methods: {
     onTabChange (key) {
@@ -153,6 +156,9 @@ export default {
       } else {
         return true
       }
+    },
+    setActiveTab () {
+      this.activeTab = this.$route.query.tab ? this.$route.query.tab : this.tabs[0].name
     }
   }
 }
