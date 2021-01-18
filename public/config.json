@@ -2,6 +2,7 @@
   "servers": [
     {
       "name": "Local-Server",
+      "apiHost": "",
       "apiBase": "/client/api"
     }
   ],

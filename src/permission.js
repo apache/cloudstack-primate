@@ -39,8 +39,13 @@ router.beforeEach((to, from, next) => {
     const title = i18n.t(to.meta.title) + ' - ' + Vue.prototype.$config.appTitle
     setDocumentTitle(title)
   }
-  const server = Vue.ls.get(SERVER_MANAGER) || Vue.prototype.$config.servers[0].apiBase
-  Vue.axios.defaults.baseURL = server
+
+  const servers = Vue.prototype.$config.servers
+  const serverStorage = Vue.ls.get(SERVER_MANAGER)
+  const serverFilter = servers.filter(ser => ser.apiHost + ser.apiBase === serverStorage.apiHost + serverStorage.apiBase)
+  const server = serverFilter[0] || servers[0]
+
+  Vue.axios.defaults.baseURL = server.apiHost + server.apiBase
   store.dispatch('SetServer', server)
 
   const validLogin = Vue.ls.get(ACCESS_TOKEN) || Cookies.get('userid') || Cookies.get('userid', { path: '/client' })
