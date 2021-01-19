@@ -135,7 +135,7 @@ export default {
           scopedSlots: { customRender: 'pod' }
         },
         {
-          title: this.$t('label.storagemigrationrequired'),
+          title: this.$t('label.storage.migration.required'),
           scopedSlots: { customRender: 'requiresstoragemigration' }
         },
         {
