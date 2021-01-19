@@ -42,7 +42,11 @@ router.beforeEach((to, from, next) => {
 
   const servers = Vue.prototype.$config.servers
   const serverStorage = Vue.ls.get(SERVER_MANAGER)
-  const serverFilter = servers.filter(ser => ser.apiHost + ser.apiBase === serverStorage.apiHost + serverStorage.apiBase)
+  let apiFullPath = null
+  if (serverStorage) {
+    apiFullPath = serverStorage.apiHost + serverStorage.apiBase
+  }
+  const serverFilter = servers.filter(ser => ser.apiHost + ser.apiBase === apiFullPath)
   const server = serverFilter[0] || servers[0]
 
   Vue.axios.defaults.baseURL = server.apiHost + server.apiBase
