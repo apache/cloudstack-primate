@@ -42,11 +42,11 @@
             v-decorator="[
               'server',
               {
-                initialValue: server.apiHost + server.apiBase
+                initialValue: server.apiHost || '' + server.apiBase
               }
             ]"
             @change="onChangeServer">
-            <a-select-option v-for="item in $config.servers" :key="item.apiHost + item.apiBase">
+            <a-select-option v-for="item in $config.servers" :key="item.apiHost || '' + item.apiBase">
               <a-icon slot="prefix" type="database" :style="{ color: 'rgba(0,0,0,.25)' }"></a-icon>
               {{ item.name }}
             </a-select-option>
@@ -109,11 +109,11 @@
             v-decorator="[
               'server',
               {
-                initialValue: server.apiHost + server.apiBase
+                initialValue: server.apiHost || '' + server.apiBase
               }
             ]"
             @change="onChangeServer">
-            <a-select-option v-for="item in $config.servers" :key="item.apiHost + item.apiBase">
+            <a-select-option v-for="item in $config.servers" :key="item.apiHost || '' + item.apiBase">
               <a-icon slot="prefix" type="database" :style="{ color: 'rgba(0,0,0,.25)' }"></a-icon>
               {{ item.name }}
             </a-select-option>
@@ -217,7 +217,7 @@ export default {
 
       validateFields(validateFieldsKey, { force: true }, (err, values) => {
         if (!err) {
-          this.axios.defaults.baseURL = this.server.apiHost + this.server.apiBase
+          this.axios.defaults.baseURL = this.server.apiHost || '' + this.server.apiBase
           store.dispatch('SetServer', this.server)
 
           if (customActiveKey === 'cs') {
@@ -263,7 +263,7 @@ export default {
     },
     onChangeServer (server) {
       const servers = this.$config.servers || []
-      const serverFilter = servers.filter(ser => ser.apiHost + ser.apiBase === server)
+      const serverFilter = servers.filter(ser => ser.apiHost || '' + ser.apiBase === server)
       this.server = serverFilter[0] || {}
     }
   }
