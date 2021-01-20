@@ -27,6 +27,7 @@ import {
   DEFAULT_FIXED_HEADER_HIDDEN,
   DEFAULT_CONTENT_WIDTH_TYPE,
   DEFAULT_MULTI_TAB,
+  SERVER_MANAGER,
   USE_BROWSER_TIMEZONE
 } from '@/store/mutation-types'
 
@@ -44,7 +45,8 @@ const app = {
     color: null,
     inverted: true,
     multiTab: true,
-    metrics: false
+    metrics: false,
+    server: ''
   },
   mutations: {
     SET_SIDEBAR_TYPE: (state, type) => {
@@ -97,6 +99,10 @@ const app = {
     SET_METRICS: (state, bool) => {
       state.metrics = bool
     },
+    SET_SERVER: (state, server) => {
+      Vue.ls.set(SERVER_MANAGER, server)
+      state.server = server
+    },
     SET_USE_BROWSER_TIMEZONE: (state, bool) => {
       Vue.ls.set(USE_BROWSER_TIMEZONE, bool)
       state.usebrowsertimezone = bool
@@ -144,6 +150,9 @@ const app = {
     },
     SetMetrics ({ commit }, bool) {
       commit('SET_METRICS', bool)
+    },
+    SetServer ({ commit }, server) {
+      commit('SET_SERVER', server)
     },
     SetUseBrowserTimezone ({ commit }, bool) {
       commit('SET_USE_BROWSER_TIMEZONE', bool)
