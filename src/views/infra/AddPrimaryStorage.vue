@@ -603,6 +603,10 @@ export default {
     updateProviderAndProtocol (value) {
       if (value === 'PowerFlex') {
         this.protocols = ['custom']
+        this.protocolSelected = 'custom'
+        this.form.setFieldsValue({
+          protocol: 'custom'
+        })
       } else {
         this.fetchHypervisor(null)
       }
