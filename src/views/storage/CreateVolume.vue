@@ -163,16 +163,11 @@ export default {
                 description: values.name,
                 status: 'progress'
               })
-              this.$emit('refresh-data')
             },
             errorMessage: this.$t('message.create.volume.failed'),
-            errorMethod: () => {
-              this.$emit('refresh-data')
-            },
             loadingMessage: this.$t('message.create.volume.processing'),
             catchMessage: this.$t('error.fetching.async.job.result')
           })
-          this.$emit('refresh-data')
           this.closeModal()
         }).catch(error => {
           this.$notifyError(error)

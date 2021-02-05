@@ -144,7 +144,7 @@ export default {
               }
             },
             action: {
-              api: 'destroyVirtualMachine'
+              isFetchData: false
             }
           })
           this.closeAction()

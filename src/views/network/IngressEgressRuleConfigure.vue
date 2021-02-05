@@ -278,12 +278,10 @@ export default {
             : response.authorizesecuritygroupegressresponse.jobid,
           successMessage: this.$t('message.success.add.rule'),
           successMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
           },
           errorMessage: this.$t('message.add.rule.failed'),
           errorMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
           },
           loadingMessage: this.$t('message.add.rule.processing'),
@@ -310,12 +308,10 @@ export default {
             : response.revokesecuritygroupegressresponse.jobid,
           successMessage: this.$t('message.success.remove.rule'),
           successMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
           },
           errorMessage: this.$t('message.remove.rule.failed'),
           errorMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
           },
           loadingMessage: this.$t('message.remove.securitygroup.rule.processing'),
@@ -354,14 +350,12 @@ export default {
           jobId: response.deletetagsresponse.jobid,
           successMessage: this.$t('message.success.delete.tag'),
           successMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
             this.fetchTags(this.selectedRule)
             this.tagsLoading = false
           },
           errorMessage: this.$t('message.delete.tag.failed'),
           errorMethod: () => {
-            this.parentFetchData()
             this.parentToggleLoading()
             this.fetchTags(this.selectedRule)
             this.tagsLoading = false
@@ -402,14 +396,12 @@ export default {
             jobId: response.createtagsresponse.jobid,
             successMessage: this.$t('message.success.add.tag'),
             successMethod: () => {
-              this.parentFetchData()
               this.parentToggleLoading()
               this.fetchTags(this.selectedRule)
               this.tagsLoading = false
             },
             errorMessage: this.$t('message.add.tag.failed'),
             errorMethod: () => {
-              this.parentFetchData()
               this.parentToggleLoading()
               this.fetchTags(this.selectedRule)
               this.tagsLoading = false

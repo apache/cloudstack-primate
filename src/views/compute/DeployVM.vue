@@ -1546,15 +1546,14 @@ export default {
                     duration: 0
                   })
                 }
-                eventBus.$emit('vm-refresh-data')
-              },
-              errorMethod: () => {
-                eventBus.$emit('vm-refresh-data')
               },
               loadingMessage: `${title} ${this.$t('label.in.progress')}`,
               catchMessage: this.$t('error.fetching.async.job.result'),
               catchMethod: () => {
                 eventBus.$emit('vm-refresh-data')
+              },
+              action: {
+                isFetchData: false
               }
             })
             this.$store.dispatch('AddAsyncJob', {
